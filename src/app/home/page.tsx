@@ -146,8 +146,42 @@ export default function Home() {
         ))}
       </div>
 
+      {/* Hyper-Local Category Grid (Mobile Only) */}
+      <div className="lg:hidden p-5 pt-2 grid grid-cols-4 gap-4">
+        {[
+          { label: "Our Apps", icon: Rocket, color: "bg-red-50 text-red-500" },
+          { label: "Places", icon: MapPin, color: "bg-blue-50 text-blue-500" },
+          { label: "Experts", icon: Target, color: "bg-orange-50 text-orange-500" },
+          { label: "Groups", icon: Users, color: "bg-pink-50 text-pink-500" },
+          { label: "Liquidation", icon: ShoppingBag, color: "bg-green-50 text-green-500" },
+          { label: "Events", icon: Calendar, color: "bg-indigo-50 text-indigo-500" },
+          { label: "Logistics", icon: Globe, color: "bg-slate-50 text-slate-500" },
+          { label: "Flash Deals", icon: Zap, color: "bg-amber-50 text-amber-500" },
+        ].map((cat, i) => (
+          <div key={i} className="flex flex-col items-center gap-1.5">
+            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm active:scale-90 transition-all", cat.color)}>
+              <cat.icon size={22} />
+            </div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter text-center">{cat.label}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="p-4 lg:p-10 space-y-6">
-         
+        {/* Live Now Nearby Section (Mobile Only) */}
+        <div className="lg:hidden bg-slate-900 rounded-[2rem] p-6 text-white overflow-hidden relative group">
+           <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Live Now Nearby</span>
+              </div>
+              <h4 className="text-lg font-bold mb-1">Mobile Expo @ Phase 1</h4>
+              <p className="text-[11px] text-slate-400 font-medium mb-4">32 Businesses are exhibiting right now. Join them!</p>
+              <button className="px-5 py-2.5 bg-white text-slate-900 rounded-xl font-bold text-[10px] uppercase tracking-normal active:scale-95 transition-all">Check In</button>
+           </div>
+           <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+        </div>
+
          {/* Share Something Section */}
          <div className="bg-white rounded-[2rem] border border-[#EBEFF1] mb-10 shadow-xl shadow-slate-200/20 overflow-hidden">
             <div className="flex border-b border-slate-50 overflow-x-auto no-scrollbar">

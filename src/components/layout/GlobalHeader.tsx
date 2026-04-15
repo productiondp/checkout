@@ -2,14 +2,20 @@
 
 import React from "react";
 import Link from "next/link";
+import { MapPin, ChevronDown } from "lucide-react";
 
 export default function GlobalHeader() {
   return (
     <div className="h-14 lg:h-16 px-4 lg:px-6 flex items-center justify-between border-b border-slate-100 bg-white/90 backdrop-blur-md sticky top-0 left-0 right-0 z-[1000] shadow-sm">
-      {/* Brand Section */}
-      <div className="flex items-center w-auto lg:w-[240px] flex-shrink-0">
+      {/* Location & Brand Section */}
+      <div className="flex flex-col items-start w-auto lg:w-[240px] flex-shrink-0">
+        <div className="lg:hidden flex items-center gap-1 mb-0.5">
+           <MapPin size={12} className="text-[#E53935]" />
+           <span className="text-[10px] font-bold text-slate-900 uppercase tracking-tighter">Technopark, Trivandrum</span>
+           <ChevronDown size={10} className="text-slate-400" />
+        </div>
         <Link href="/home" className="flex items-center group">
-           <div className="h-12 w-56 relative overflow-hidden flex items-center">
+           <div className="h-8 lg:h-12 w-32 lg:w-56 relative overflow-hidden flex items-center">
               <img src="/images/logo.png" alt="Checkout Logo" className="h-full object-contain group-hover:scale-105 transition-transform" />
            </div>
         </Link>

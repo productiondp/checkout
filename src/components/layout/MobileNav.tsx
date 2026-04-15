@@ -18,7 +18,7 @@ export default function MobileNav() {
   ];
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 h-16 bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-2xl flex items-center justify-around lg:hidden z-[999] px-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+    <div className="fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-xl border-t border-slate-200/50 flex items-center justify-around lg:hidden z-[999] px-4 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]">
       {menu.slice(0, 2).map((item) => {
         const active = pathname === item.href;
         return (

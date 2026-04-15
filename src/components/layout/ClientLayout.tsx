@@ -18,7 +18,7 @@ export default function ClientLayout({
   if (isAuthPage) return <>{children}</>;
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#F2F5F7] overflow-hidden selection:bg-[#E53935] selection:text-white font-sans">
+    <div className="h-screen w-screen flex flex-col bg-white lg:bg-[#F2F5F7] overflow-hidden selection:bg-[#E53935] selection:text-white font-sans">
       <GlobalHeader />
       
       <div className="flex flex-1 overflow-hidden relative">
@@ -26,9 +26,11 @@ export default function ClientLayout({
           <DesktopSidebar />
         </div>
         
-        <main className="flex-1 flex overflow-hidden bg-white border-l border-[#F2F5F7]">
-          <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth bg-white">
-             {children}
+        <main className="flex-1 flex overflow-hidden bg-white">
+          <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+             <div className="pb-32 lg:pb-0">
+               {children}
+             </div>
           </div>
 
           <div className="hidden 3xl:block">
@@ -37,9 +39,7 @@ export default function ClientLayout({
         </main>
       </div>
 
-      <div className="lg:hidden px-4 pb-4">
-        <MobileNav />
-      </div>
+      <MobileNav />
     </div>
   );
 }

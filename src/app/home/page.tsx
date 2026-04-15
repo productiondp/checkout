@@ -120,10 +120,33 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-1 min-h-0 bg-[#F8FAFB]">
-      
-      {/* Main Feed Section */}
-      <div className="flex-1 p-8 border-r border-[#EBEFF1] overflow-y-auto no-scrollbar">
+    <div className="max-w-[700px] mx-auto min-h-screen">
+      {/* Mobile-Only Stories Rail */}
+      <div className="lg:hidden flex gap-4 overflow-x-auto no-scrollbar px-5 py-6 border-b border-slate-50 bg-white">
+        {[
+          { name: "You", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop", add: true },
+          { name: "Events", img: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=100&auto=format&fit=crop" },
+          { name: "Invest", img: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=100&auto=format&fit=crop" },
+          { name: "Legal", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=100&auto=format&fit=crop" },
+          { name: "Tech", img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=100&auto=format&fit=crop" },
+        ].map((story, i) => (
+          <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            <div className={`w-16 h-16 rounded-full p-1 border-2 ${i === 0 ? 'border-red-500' : 'border-slate-100'}`}>
+              <div className="w-full h-full rounded-full overflow-hidden relative">
+                <img src={story.img} className="w-full h-full object-cover" alt={story.name} />
+                {story.add && (
+                  <div className="absolute bottom-0 right-0 h-5 w-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <Plus size={10} className="text-white" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{story.name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-4 lg:p-10 space-y-6">
          
          {/* Share Something Section */}
          <div className="bg-white rounded-[2rem] border border-[#EBEFF1] mb-10 shadow-xl shadow-slate-200/20 overflow-hidden">

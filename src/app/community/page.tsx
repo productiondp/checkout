@@ -17,6 +17,7 @@ const INITIAL_POSTS = [
 export default function Community() {
   const [joinedGroups, setJoinedGroups] = useState<string[]>([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<"Feed" | "Groups">("Feed");
 
   const toggleGroup = (name: string) => {
     if (joinedGroups.includes(name)) {
@@ -30,8 +31,21 @@ export default function Community() {
 
   return (
     <div className="flex flex-col xl:flex-row min-h-screen bg-white">
-      <div className="flex-1 p-8 border-r border-slate-50 max-w-[800px] mx-auto xl:mx-0">
-           <div className="flex items-center justify-between px-2 mb-8">
+      {/* Mobile-Only Tabs */}
+      <div className="lg:hidden flex border-b border-slate-50 sticky top-14 left-0 right-0 bg-white/90 backdrop-blur-md z-40">
+        {(["Feed", "Groups"] as const).map(tab => (
+          <button 
+            key={tab}
+            onClick={() => setActiveMobileTab(tab)}
+            className={`flex-1 py-4 text-[11px] font-bold uppercase tracking-tighter transition-all ${activeMobileTab === tab ? "text-[#E53935] border-b-2 border-[#E53935]" : "text-slate-400"}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      <div className={`flex-1 p-5 lg:p-8 border-r border-slate-50 max-w-[800px] mx-auto xl:mx-0 ${activeMobileTab === "Groups" ? "hidden lg:block" : "block"}`}>
+           <div className="flex items-center justify-between px-2 mb-8 hidden lg:flex">
               <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Our <span className="text-[#E53935]">Groups</span></h2>
               <button 
                 onClick={() => setShowCreate(!showCreate)}
@@ -79,7 +93,7 @@ export default function Community() {
            </div>
       </div>
 
-      <div className="w-full xl:w-80 p-8 space-y-10 bg-slate-50/30">
+      <div className={`w-full xl:w-80 p-8 space-y-10 bg-slate-50/30 ${activeMobileTab === "Feed" ? "hidden xl:block" : "block"}`}>
           <div>
               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-normal mb-6">Find Groups</h3>
                <div className="space-y-6">

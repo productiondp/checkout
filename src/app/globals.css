@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #1A73E8;
+  --bg-gray: #F2F5F7;
+  --border-gray: #E8ECEF;
+}
+
+body {
+  color: #202124;
+  background-color: var(--bg-gray);
+  background-image: radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 1) 0, transparent 50%), 
+                    radial-gradient(at 100% 0%, hsla(210, 100%, 98%, 1) 0, transparent 50%);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  /* THE MAIN WHITE APP SHELL */
+  .app-canvas {
+    @apply bg-white rounded-[2rem] shadow-[0_10px_50px_rgba(0,0,0,0.03)] overflow-hidden;
+  }
+
+  /* SIDEBAR NAV */
+  .nav-link {
+    @apply flex items-center gap-5 px-6 py-3.5 text-[#5F6368] text-[14px] font-medium transition-all mx-2 rounded-xl;
+  }
+
+  .nav-link.active {
+    @apply bg-[#E8F0FE] text-primary font-bold shadow-sm;
+  }
+
+  /* SEARCH PILL */
+  .search-pill {
+    @apply w-full bg-[#F2F5F7] border-none rounded-2xl px-6 py-3 text-[14px] outline-none;
+  }
+
+  /* BUTTONS */
+  .btn-blue {
+    @apply flex items-center gap-3 px-6 py-2.5 bg-[#E8F0FE] text-primary rounded-xl text-[12px] font-bold hover:bg-primary hover:text-white transition-all shrink-0;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }

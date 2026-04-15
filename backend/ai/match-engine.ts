@@ -1,5 +1,15 @@
 import OpenAI from "openai";
-import { User, Opportunity } from "@/lib/ai-engine";
+
+export interface User {
+  skills: string[];
+  location: string;
+  intent: string[];
+}
+
+export interface Opportunity {
+  skills_required: string[];
+  location: string;
+}
 
 /**
  * CHECKOUT AI ENGINE (Production Backend Implementation)

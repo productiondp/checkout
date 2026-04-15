@@ -1,14 +1,10 @@
 import React from "react";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import ClientLayout from "@/components/layout/ClientLayout";
-import { cn } from "@/lib/utils";
-
-const inter = Inter({ subsets: ["latin"] });
+import ClientLayout from "../components/layout/ClientLayout";
 
 export const metadata = {
-  title: "Checkout | Hyperlocal Matchmaking",
-  description: "The premium network for local commerce.",
+  title: "Checkout Terminal | v.1 Production Build",
+  description: "The premium Business OS for local commerce, trade networking, and commercial growth.",
 };
 
 export default function RootLayout({
@@ -18,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "bg-[#F0F2F5] min-h-screen text-[#1C1E21] overflow-x-hidden")}>
+      <body className="bg-white">
         <ClientLayout>
           {children}
         </ClientLayout>

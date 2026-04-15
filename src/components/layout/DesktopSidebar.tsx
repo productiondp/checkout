@@ -3,96 +3,57 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { 
-  PlusSquare,
+  Home, 
+  MessageSquare, 
   Users, 
+  MapPin, 
   Calendar, 
-  Globe, 
-  Layers, 
-  UserCircle, 
-  ShoppingBag,
-  Zap,
-  LayoutGrid,
-  MapPin,
-  MessageSquare
+  Search, 
+  LayoutGrid, 
+  GraduationCap, 
+  ShoppingBag, 
+  Zap, 
+  User 
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Feed", icon: LayoutGrid, href: "/home" },
+  { label: "Home Feed", icon: Home, href: "/home" },
   { label: "Messages", icon: MessageSquare, href: "/chat" },
   { label: "Partners", icon: Users, href: "/match" },
-  { label: "Meetups", icon: MapPin, href: "/meetup" },
-  { label: "Events", icon: Calendar, href: "/events" },
-  { label: "Directory", icon: Globe, href: "/explore" },
-  { label: "Community", icon: Layers, href: "/community" },
-  { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
-  { label: "Profile", icon: UserCircle, href: "/profile" },
-];
-
-const PAGES_YOU_LIKE = [
-  { name: "Football FC", color: "bg-green-500", count: 120 },
-  { name: "Badminton Club", color: "bg-purple-500" },
-  { name: "UI/UX Community", color: "bg-blue-400" },
-  { name: "Web Designer", color: "bg-pink-400" },
+  { label: "Meetings", icon: MapPin, href: "/meetup" },
+  { label: "Business Expos", icon: LayoutGrid, href: "/events" },
+  { label: "Search Places", icon: Search, href: "/explore" },
+  { label: "Groups", icon: LayoutGrid, href: "/community" },
+  { label: "Talk to Experts", icon: GraduationCap, href: "/advisors" },
+  { label: "Buy & Sell", icon: ShoppingBag, href: "/marketplace" },
+  { label: "My Wallet", icon: Zap, href: "/wallet" },
+  { label: "My Profile", icon: User, href: "/profile" },
 ];
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[280px] hidden lg:flex flex-col border-r border-[#F2F5F7] bg-white h-full relative z-10">
-      {/* Search Hub / Action */}
-      <div className="p-8 pb-4">
-         <button className="w-full py-3.5 bg-primary text-white rounded-2xl font-bold text-[13px] flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-black transition-all">
-            <PlusSquare size={18} />
-            Create Posting
-         </button>
-      </div>
-
-      {/* Main Nav */}
+    <aside className="w-[240px] hidden lg:flex flex-col border-r border-slate-50 bg-white h-full relative z-10">
       <nav className="flex flex-col flex-1 py-4 overflow-y-auto no-scrollbar">
-        <div className="px-8 pb-4">
-           <h4 className="text-[10px] font-bold text-[#5F6368] uppercase tracking-[0.2em] mb-4">Main Menu</h4>
-        </div>
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.label}
               href={item.href}
-              className={cn("nav-link", isActive && "active")}
+              className={`flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium transition-all mx-3 rounded-lg border border-transparent ${
+                isActive ? "bg-red-50 text-[#E53935] font-semibold" : "text-slate-500 hover:bg-slate-50"
+              }`}
             >
-              <item.icon size={20} className={cn("flex-shrink-0", isActive ? "text-primary" : "text-[#5F6368]")} />
-              <span className={cn("truncate", isActive ? "text-primary font-bold" : "text-[#5F6368] font-medium")}>{item.label}</span>
+              <item.icon size={18} className={isActive ? "text-[#E53935]" : "text-slate-400"} />
+              <span className={`truncate ${isActive ? "text-[#E53935]" : "text-slate-600"}`}>{item.label}</span>
             </Link>
           );
         })}
-
-        {/* Separator */}
-        <div className="h-px bg-[#F2F5F7] mx-8 my-8" />
-
-        {/* Pages Section */}
-        <div className="px-8 space-y-6">
-           <h4 className="text-[10px] font-bold text-[#5F6368] uppercase tracking-[0.2em]">Pages You Like</h4>
-           <div className="space-y-5 pb-10">
-              {PAGES_YOU_LIKE.map((page) => (
-                <div key={page.name} className="flex items-center justify-between group cursor-pointer">
-                   <div className="flex items-center gap-3">
-                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center text-[11px] font-black text-white uppercase shadow-sm", page.color)}>
-                        {page.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <span className="text-[14px] font-medium text-[#202124] group-hover:text-primary transition-colors">{page.name}</span>
-                   </div>
-                   {page.count && (
-                     <span className="text-[10px] bg-red-500 text-white font-bold px-2 py-0.5 rounded-full">{page.count}</span>
-                   )}
-                </div>
-              ))}
-           </div>
-        </div>
       </nav>
-
     </aside>
   );
 }

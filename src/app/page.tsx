@@ -1,49 +1,42 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
-import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function Onboarding() {
   return (
     <div className="flex flex-col min-h-screen bg-white px-8 relative overflow-hidden">
-      {/* Cinematic Background Elements */}
-      <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[30%] bg-primary/5 rounded-full blur-[100px] animate-pulse"></div>
-      <div className="absolute bottom-[-5%] left-[-5%] w-[50%] h-[25%] bg-primary-light/5 rounded-full blur-[80px]"></div>
-
-      <div className="flex-1 flex flex-col items-center justify-center text-center gap-8 fade-in relative z-10">
-        <div className="relative">
-          <div className="w-28 h-28 bg-brand-gradient rounded-[32px] flex items-center justify-center shadow-2xl shadow-primary/30 mb-6 rotate-12 hover:rotate-0 transition-transform duration-500 cursor-pointer group">
-            <span className="text-white text-5xl font-black -rotate-12 group-hover:rotate-0 transition-transform duration-500">C</span>
-            <Sparkles className="absolute -top-4 -right-4 text-accent animate-bounce" size={24} />
-          </div>
+      {/* Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[30%] bg-[#E53935]/5 rounded-full blur-[100px]"></div>
+      
+      <div className="flex-1 flex flex-col items-center justify-center text-center gap-8 relative z-10">
+        <div className="relative mb-4">
+           <img src="/images/logo.png" alt="Checkout Logo" className="h-20 w-auto object-contain" />
         </div>
         
         <div>
-          <h1 className="text-5xl font-black  text-text mb-4 leading-none">
-            CHECK<span className="text-primary italic">OUT</span>
-          </h1>
-          <p className="text-text-secondary text-xl max-w-[280px] font-medium leading-tight">
-            The premium network for <span className="text-text font-bold">local commerce.</span>
+          <p className="text-slate-500 text-lg max-w-[280px] font-medium leading-tight">
+            The premium network for <span className="text-slate-900 font-bold">local businesses.</span>
           </p>
         </div>
       </div>
 
-      <div className="pb-16 flex flex-col gap-6 fade-in relative z-10" style={{ animationDelay: '0.2s' }}>
-        <div className="flex flex-col gap-3">
-          <Link href="/auth" className="w-full">
-            <Button className="w-full text-xl py-5 shadow-2xl shadow-primary/20 group">
-              Get Started
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
-            </Button>
+      <div className="pb-12 flex flex-col gap-6 relative z-10">
+        <div className="flex flex-col gap-4">
+          <Link href="/home" className="w-full">
+            <button className="w-full py-4 bg-[#E53935] text-white rounded-xl font-bold text-lg shadow-lg hover:bg-slate-900 transition-all flex items-center justify-center gap-2 group">
+              Join Now
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
           </Link>
-          <p className="text-center text-text-secondary/60 text-xs font-black uppercase ">
-            Join 5,000+ top-tier local businesses
+          <p className="text-center text-slate-400 text-[10px] font-medium uppercase tracking-normal">
+            Approved by 5,000+ business owners
           </p>
         </div>
         
         <div className="flex justify-center gap-2">
            {[1,2,3].map(i => (
-             <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === 1 ? 'w-8 bg-primary' : 'w-2 bg-black/5'}`}></div>
+             <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === 1 ? 'w-8 bg-[#E53935]' : 'w-2 bg-slate-100'}`}></div>
            ))}
         </div>
       </div>

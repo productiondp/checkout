@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { 
   MessageSquare, 
   Heart, 
@@ -21,9 +22,11 @@ import {
   Users,
   MapPin,
   Clock,
-  Briefcase
+  Briefcase,
+  Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import DealEngine from "@/components/modals/DealEngine";
 
 interface Post {
   id: number;
@@ -50,7 +53,7 @@ const INITIAL_POSTS: Post[] = [
     author: "Rahul Sethi",
     time: "45m ago",
     content: "We are looking for a Senior UI/UX Designer to join our team. If you have 4+ years of experience in product design, let's talk!",
-    budget: "$80k - $120k",
+    budget: "₹80k - ₹1.2L",
     role: "Senior UI/UX Designer",
     likes: 42,
     comments: 18,
@@ -60,10 +63,10 @@ const INITIAL_POSTS: Post[] = [
   },
   {
     id: 10,
-    type: "Meetup",
+    type: "Meeting",
     author: "Sana Maryam",
     time: "10m ago",
-    content: "Hosting a quick coffee sync for architects in Trivandrum today!",
+    content: "Hosting a quick coffee meeting for architects in Trivandrum today!",
     loc: "Technopark Ph-III",
     meetTime: "5:00 PM Today",
     likes: 5,
@@ -77,26 +80,28 @@ const INITIAL_POSTS: Post[] = [
     type: "Update",
     author: "Ahmad Nur F.",
     time: "2h ago",
-    content: "CheckOut just reached a new milestone: 100 business connections made this month! Our community is growing every day.",
+    content: "Checkout just reached a new milestone: 100 business connections made this month! Our network is growing every day.",
     likes: 890,
     comments: 45,
     matchScore: 0,
-    images: ["/images/hero-event.jpg"],
+    images: ["https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop"],
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop"
   }
 ];
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
-  const [activeTab, setActiveTab] = useState<"Update" | "Hiring" | "Partnership" | "Meetup">("Update");
+  const [activeTab, setActiveTab] = useState<"Update" | "Hiring" | "Partnership" | "Meeting">("Update");
   const [postData, setPostData] = useState({ content: "", budget: "", role: "", loc: "", time: "", target: "" });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<any>(null);
 
   const handlePost = () => {
     if (!postData.content.trim()) return;
     const newPost = {
       id: Date.now(),
       type: activeTab,
-      author: "Ahmad Nur Fawaid",
+      author: "Ahmad Fawaid",
       time: "Just now",
       content: postData.content,
       budget: postData.budget,
@@ -111,27 +116,28 @@ export default function Home() {
     };
     setPosts([newPost, ...posts]);
     setPostData({ content: "", budget: "", role: "", loc: "", time: "", target: "" });
+    alert("Post shared with the network!");
   };
 
   return (
     <div className="flex flex-1 min-h-0 bg-[#F8FAFB]">
       
-      {/* Column 2: Dashboard Feed */}
+      {/* Main Feed Section */}
       <div className="flex-1 p-8 border-r border-[#EBEFF1] overflow-y-auto no-scrollbar">
          
-         {/* Advanced Composer Terminal */}
+         {/* Share Something Section */}
          <div className="bg-white rounded-[2rem] border border-[#EBEFF1] mb-10 shadow-xl shadow-slate-200/20 overflow-hidden">
-            <div className="flex border-b border-slate-50">
-               {(['Update', 'Hiring', 'Partnership', 'Meetup'] as const).map(tab => (
+            <div className="flex border-b border-slate-50 overflow-x-auto no-scrollbar">
+               {(['Update', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
                  <button 
                    key={tab}
                    onClick={() => setActiveTab(tab)}
                    className={cn(
-                     "flex-1 py-4 text-[11px] font-bold uppercase tracking-widest transition-all relative",
-                     activeTab === tab ? "text-primary bg-slate-50/50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/30"
+                     "flex-1 py-4 px-6 text-[11px] font-bold uppercase tracking-normal transition-all relative cursor-pointer whitespace-nowrap",
+                     activeTab === tab ? "text-[#E53935] bg-slate-50/50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/30"
                    )}
                  >
-                    {activeTab === tab && <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />}
+                    {activeTab === tab && <div className="absolute top-0 left-0 right-0 h-1 bg-[#E53935]" />}
                     {tab}
                  </button>
                ))}
@@ -147,72 +153,72 @@ export default function Home() {
                        value={postData.content}
                        onChange={(e) => setPostData({ ...postData, content: e.target.value })}
                        placeholder={
-                         activeTab === 'Hiring' ? "Describe the role..." : 
-                         activeTab === 'Meetup' ? "What's the plan?" : 
-                         activeTab === 'Partnership' ? "What are you looking for?" : "Share something with the community..."
+                         activeTab === 'Hiring' ? "Who are you looking for?" : 
+                         activeTab === 'Meeting' ? "What's the plan for the meeting?" : 
+                         activeTab === 'Partnership' ? "What kind of partner do you need?" : "Share an update with everyone..."
                        }
                        className="w-full bg-transparent text-[16px] font-medium placeholder:text-slate-300 outline-none resize-none min-h-[60px]"
                      />
 
-                     {/* Dynamic Fields */}
-                     <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                     {/* Extra Fields */}
+                     <div className="grid grid-cols-2 gap-4">
                         {activeTab === 'Hiring' && (
                           <>
                              <div className="relative">
-                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
                                 <input 
                                   type="text" 
                                   value={postData.role}
                                   onChange={(e) => setPostData({ ...postData, role: e.target.value })}
-                                  placeholder="Role Title" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100" 
+                                  placeholder="Job Title" 
+                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
                                 />
                              </div>
                              <div className="relative">
-                                <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
                                 <input 
                                   type="text" 
                                   value={postData.budget}
                                   onChange={(e) => setPostData({ ...postData, budget: e.target.value })}
-                                  placeholder="Budget/Salary" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100" 
+                                  placeholder="Pay / Salary" 
+                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
                                 />
                              </div>
                           </>
                         )}
-                        {activeTab === 'Meetup' && (
+                        {activeTab === 'Meeting' && (
                           <>
                              <div className="relative">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
                                 <input 
                                   type="text" 
                                   value={postData.loc}
                                   onChange={(e) => setPostData({ ...postData, loc: e.target.value })}
-                                  placeholder="Location" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100" 
+                                  placeholder="Area / Location" 
+                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
                                 />
                              </div>
                              <div className="relative">
-                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
                                 <input 
                                   type="text" 
                                   value={postData.time}
                                   onChange={(e) => setPostData({ ...postData, time: e.target.value })}
-                                  placeholder="Time / Date" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100" 
+                                  placeholder="Time and Date" 
+                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
                                 />
                              </div>
                           </>
                         )}
                         {activeTab === 'Partnership' && (
                            <div className="col-span-2 relative">
-                              <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                              <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
                               <input 
                                 type="text" 
                                 value={postData.target}
                                 onChange={(e) => setPostData({ ...postData, target: e.target.value })}
-                                placeholder="Looking for (e.g. Marketing Agency Partner)" 
-                                className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100" 
+                                placeholder="E.g. Distribution Partner, Shop Owner..." 
+                                className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
                               />
                            </div>
                         )}
@@ -222,27 +228,25 @@ export default function Home() {
 
                <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-50">
                   <div className="flex gap-4">
-                     <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors">
+                     <button onClick={() => alert("Upload feature coming soon")} className="flex items-center gap-2 text-slate-400 hover:text-[#E53935] transition-colors">
                         <ImageIcon size={20} />
-                        <span className="text-[12px] font-bold">Media</span>
-                     </button>
-                     <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors">
-                        <Smile size={20} />
-                        <span className="text-[12px] font-bold">Activity</span>
+                        <span className="text-[12px] font-bold">Photos</span>
                      </button>
                   </div>
                   <button 
                     onClick={handlePost}
                     disabled={!postData.content.trim()}
-                    className="px-8 py-3 bg-primary disabled:opacity-50 text-white rounded-xl font-bold text-[13px] shadow-lg shadow-primary/20 hover:bg-black transition-all uppercase tracking-widest"
+                    className="px-8 py-3 bg-[#E53935] disabled:opacity-50 text-white rounded-xl font-bold text-[13px] shadow-lg shadow-red-500/20 hover:bg-slate-900 transition-all uppercase tracking-normal"
                   >
-                     Post Update
+                     {activeTab === 'Update' ? 'Share Now' : 
+                      activeTab === 'Hiring' ? 'Post Job' : 
+                      activeTab === 'Meeting' ? 'Start Meeting' : 'Find Partner'}
                   </button>
                </div>
             </div>
          </div>
 
-         {/* Refined Feed */}
+         {/* Feed Posts */}
          <div className="space-y-8 pb-32">
             {posts.map(post => (
               <div key={post.id} className="bg-white rounded-[2rem] border border-[#EBEFF1] shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden">
@@ -256,9 +260,9 @@ export default function Home() {
                           <div className="flex items-center gap-3">
                              <h4 className="text-[16px] font-bold text-slate-900">{post.author}</h4>
                              <span className={cn(
-                               "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                               "px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-normal",
                                post.type === 'Hiring' ? "bg-orange-50 text-orange-600" : 
-                               post.type === 'Meetup' ? "bg-green-50 text-green-600" : 
+                               post.type === 'Meeting' ? "bg-green-50 text-green-600" : 
                                post.type === 'Partnership' ? "bg-purple-50 text-purple-600" : 
                                "bg-blue-50 text-blue-600"
                              )}>
@@ -278,40 +282,56 @@ export default function Home() {
                        {post.content}
                     </p>
 
-                    {/* Specialized Data Cards */}
+                    {/* Post Cards */}
                     {post.type === 'Hiring' && (
-                      <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100 flex items-center justify-between">
+                      <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                          <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center">
                                <Briefcase size={24} />
                             </div>
                             <div>
-                               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Salary Profile</p>
-                               <p className="text-[15px] font-black text-slate-900">{post.budget}</p>
+                               <p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Pay Details</p>
+                               <p className="text-[15px] font-bold text-slate-900">{post.budget}</p>
                             </div>
                          </div>
-                         <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-[12px] uppercase hover:bg-primary transition-all shadow-lg">Apply Now</button>
+                         <button 
+                           onClick={() => alert(`Applying for role at ${post.author}...`)}
+                           className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-[12px] uppercase hover:bg-[#E53935] transition-all shadow-lg"
+                         >
+                            Apply Now
+                         </button>
                       </div>
                     )}
 
-                    {post.type === 'Meetup' && (
-                      <div className="p-6 bg-green-50 rounded-[1.5rem] border border-green-100 flex items-center justify-between">
+                    {post.type === 'Meeting' && (
+                      <div className="p-6 bg-green-50 rounded-2xl border border-green-100 flex items-center justify-between">
                          <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
                                <MapPin size={24} />
                             </div>
                             <div>
-                               <p className="text-[10px] font-black uppercase text-green-600/60 tracking-widest mb-0.5">{post.loc}</p>
-                               <p className="text-[15px] font-black text-green-700">{post.meetTime}</p>
+                               <p className="text-[10px] font-bold uppercase text-green-600/60 mb-0.5">
+                                 {post.loc}
+                               </p>
+                               <p className="text-[15px] font-bold text-green-700">{post.meetTime}</p>
                             </div>
                          </div>
-                         <button className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold text-[12px] uppercase shadow-lg shadow-green-600/10">I'm Interested</button>
+                         <button 
+                           onClick={(e) => {
+                             const btn = e.currentTarget;
+                             btn.innerHTML = "Joining...";
+                             setTimeout(() => { btn.innerHTML = "You're Going"; btn.classList.replace("bg-green-600", "bg-slate-100"); btn.classList.replace("text-white", "text-slate-400"); }, 1000);
+                           }}
+                           className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold text-[12px] uppercase shadow-lg shadow-green-600/10 transition-all"
+                         >
+                            Go to Meeting
+                         </button>
                       </div>
                     )}
 
                     {post.images && post.images.length > 0 && (
-                      <div className="rounded-[1.5rem] overflow-hidden">
-                         <img src={post.images[0]} alt="Post" className="w-full h-[400px] object-cover" />
+                      <div className="rounded-2xl overflow-hidden mt-4">
+                         <img src={post.images[0]} alt="Post content" className="w-full max-h-[400px] object-cover" />
                       </div>
                     )}
                  </div>
@@ -319,18 +339,29 @@ export default function Home() {
                  {/* Engagement */}
                  <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex gap-10">
-                       <button className="flex items-center gap-2 group">
+                       <button onClick={() => alert("Post liked!")} className="flex items-center gap-2 group">
                           <Heart size={20} className="text-slate-300 group-hover:text-red-500 transition-colors" />
                           <span className="text-[13px] font-bold text-slate-400 group-hover:text-slate-900">{post.likes}</span>
                        </button>
-                       <button className="flex items-center gap-2 group">
-                          <MessageSquare size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
+                       <button onClick={() => alert("Comments section coming soon")} className="flex items-center gap-2 group">
+                          <MessageSquare size={20} className="text-slate-300 group-hover:text-[#E53935] transition-colors" />
                           <span className="text-[13px] font-bold text-slate-400 group-hover:text-slate-900">{post.comments}</span>
                        </button>
                     </div>
-                    <button className="flex items-center gap-2 text-primary group">
+                    <button 
+                      onClick={() => {
+                        setSelectedDeal({
+                          name: post.author,
+                          role: post.role || (post.type === 'Hiring' ? 'Manager' : 'Business Partner'),
+                          match: post.matchScore || 0,
+                          avatar: post.avatar
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 text-[#E53935] group"
+                    >
                        <Rocket size={18} className="translate-y-px transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
-                       <span className="text-[13px] font-black uppercase tracking-widest">Connect</span>
+                       <span className="text-[13px] font-bold uppercase">Connect Now</span>
                     </button>
                  </div>
               </div>
@@ -338,14 +369,20 @@ export default function Home() {
          </div>
       </div>
 
-      {/* Column 3: Network Sidebar */}
+      <DealEngine 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        deal={selectedDeal}
+      />
+
+      {/* Network Sidebar */}
       <div className="w-[380px] hidden xl:block p-10 space-y-10 bg-white overflow-y-auto no-scrollbar border-l border-[#EBEFF1]">
          <div className="space-y-8">
-            <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Network Status</h4>
+            <h4 className="text-[12px] font-bold text-slate-900 uppercase tracking-normal">People You May Know</h4>
             <div className="space-y-6">
                {[
-                 { name: "Rahul Sethi", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100", status: "Active" },
-                 { name: "Sana Maryam", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100", status: "Searching..." }
+                 { name: "Rahul Sethi", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100", status: "Business Owner" },
+                 { name: "Sana Maryam", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100", status: "Looking for partners" }
                ].map(user => (
                  <div key={user.name} className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 overflow-hidden shadow-sm">
@@ -357,15 +394,28 @@ export default function Home() {
                     </div>
                  </div>
                ))}
-               <button className="w-full py-4 bg-slate-50 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-900 hover:text-white transition-all">View All Nodes</button>
+               <button 
+                 onClick={() => alert("Opening Member Directory...")}
+                 className="w-full py-4 bg-slate-50 text-slate-400 text-[11px] font-bold uppercase tracking-normal rounded-2xl hover:bg-slate-900 hover:text-white transition-all"
+               >
+                  See all members
+               </button>
             </div>
          </div>
 
-         <div className="bg-primary/5 rounded-[2.5rem] p-10 border border-primary/10">
-            <Zap size={32} className="text-primary mb-6 animate-pulse" />
-            <h5 className="text-2xl font-black text-slate-900 leading-tight mb-4 uppercase italic">Partner<br />Discovery</h5>
-            <p className="text-[13px] text-slate-500 font-medium leading-relaxed mb-10">We found <span className="text-primary font-bold">12 new matches</span> based on your current project activity.</p>
-            <button className="w-full py-5 bg-primary text-white rounded-2xl font-black text-[12px] uppercase shadow-2xl shadow-primary/20 hover:scale-105 transition-all">Explore Matches</button>
+         <div className="bg-[#E53935]/5 rounded-[2.5rem] p-10 border border-[#E53935]/10">
+            <Zap size={32} className="text-[#E53935] mb-6 animate-pulse" />
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Daily Feed</h2>
+            <p className="text-[13px] text-slate-500 font-medium mt-1">
+              Activity near 
+              <Link href="/explore" className="text-[#E53935] font-bold hover:underline ml-1">
+                Technopark Area
+              </Link>
+            </p>
+            <p className="text-[13px] text-slate-500 font-medium leading-relaxed mb-10 mt-4">We found <span className="text-[#E53935] font-bold">12 new partners</span> based on your current work.</p>
+            <Link href="/match" className="block w-full text-center py-5 bg-[#E53935] text-white rounded-2xl font-bold text-[12px] uppercase shadow-lg shadow-red-500/20 hover:scale-105 transition-all">
+               View My Matches
+            </Link>
          </div>
       </div>
     </div>

@@ -8,12 +8,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#E31D07", /* Precise Logo Highlight */
-        background: "#F2F5F9",
+        primary: {
+          DEFAULT: "#E53935",
+          light: "#FEEBEE",
+          dark: "#B71C1C",
+        },
+        accent: "#F9AB00",
+        background: "#F2F5F7",
         surface: "#FFFFFF",
-        "text-main": "#202124",
-        "text-muted": "#5F6368",
-        border: "#E8EAED",
+        text: {
+          DEFAULT: "#202124",
+          secondary: "#5F6368",
+          muted: "#9AA0A6",
+        },
+        border: "#F2F5F7",
       },
       borderRadius: {
         "3xl": "24px",

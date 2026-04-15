@@ -195,7 +195,7 @@ export const SIM_USERS: User[] = [
     name: ["Anish", "Sana", "Vikram", "Priya", "Jithin", "Leela", "Kiran", "Divya"][i % 8] + " " + (i + 10),
     title: ["UX Designer", "Content Writer", "Web Dev", "Marketing Lead", "Photographer", "Sales Expert"][i % 6],
     skills: [["Figma", "Design"], ["SEO", "Content"], ["React", "Custom Code"], ["Ads", "Strategy"], ["Lenses", "Lighting"]][i % 5],
-    industries: ["startups", "media", "real estate", "education"][i % 4],
+    industries: [["startups", "media", "real estate", "education"][i % 4]],
     location: "Trivandrum",
     intent: ["collaboration", "client work"],
     reputation: {

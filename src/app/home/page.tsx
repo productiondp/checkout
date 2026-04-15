@@ -25,7 +25,25 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const INITIAL_POSTS = [
+interface Post {
+  id: number;
+  type: string;
+  author: string;
+  time: string;
+  content: string;
+  budget?: string;
+  role?: string;
+  loc?: string;
+  meetTime?: string;
+  likes: number;
+  comments: number;
+  matchScore: number;
+  avatar: string;
+  images?: string[];
+  target?: string;
+}
+
+const INITIAL_POSTS: Post[] = [
   {
     id: 1,
     type: "Hiring",
@@ -37,6 +55,7 @@ const INITIAL_POSTS = [
     likes: 42,
     comments: 18,
     matchScore: 94,
+    images: [],
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
   },
   {
@@ -49,6 +68,8 @@ const INITIAL_POSTS = [
     meetTime: "5:00 PM Today",
     likes: 5,
     comments: 2,
+    matchScore: 0,
+    images: [],
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop"
   },
   {
@@ -59,13 +80,14 @@ const INITIAL_POSTS = [
     content: "CheckOut just reached a new milestone: 100 business connections made this month! Our community is growing every day.",
     likes: 890,
     comments: 45,
+    matchScore: 0,
     images: ["/images/hero-event.jpg"],
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop"
   }
 ];
 
 export default function Home() {
-  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
   const [activeTab, setActiveTab] = useState<"Update" | "Hiring" | "Partnership" | "Meetup">("Update");
   const [postData, setPostData] = useState({ content: "", budget: "", role: "", loc: "", time: "", target: "" });
 
@@ -83,6 +105,8 @@ export default function Home() {
       meetTime: postData.time,
       likes: 0,
       comments: 0,
+      matchScore: 0,
+      images: [],
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop"
     };
     setPosts([newPost, ...posts]);

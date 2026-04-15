@@ -93,19 +93,6 @@ export default function DesktopSidebar() {
         </div>
       </nav>
 
-      {/* Pro Upgrade / Help Section */}
-      <div className="p-8 border-t border-[#F2F5F7]">
-         <div className="bg-[#E8F0FE] rounded-2xl p-5 relative overflow-hidden group cursor-pointer">
-            <div className="relative z-10">
-               <div className="bg-primary text-white w-8 h-8 rounded-lg flex items-center justify-center mb-3">
-                  <Zap size={16} className="fill-white" />
-               </div>
-               <p className="text-[13px] font-bold text-slate-900 mb-1">Go Premium</p>
-               <p className="text-[11px] text-[#5F6368] leading-relaxed">Access unlimited business matches.</p>
-            </div>
-            <div className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 w-20 h-20 bg-primary/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-         </div>
-      </div>
     </aside>
   );
 }

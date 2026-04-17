@@ -24,9 +24,7 @@ import {
   X,
   Building,
   MapPin,
-  ShieldCheck,
-  List,
-  LayoutGrid
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_POSTS } from "@/lib/dummyData";
@@ -41,7 +39,6 @@ export default function EliteHomeFeed() {
   const [isPosting, setIsPosting] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [selectedPostType, setSelectedPostType] = useState<string>("Update");
-  const [sortBy, setSortBy] = useState<string>("Latest");
   const [activeCommentPostId, setActiveCommentPostId] = useState<number | null>(null);
   const [newComment, setNewComment] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -120,14 +117,9 @@ export default function EliteHomeFeed() {
   };
 
   const filteredPosts = useMemo(() => {
-    let result = activeTab === "All" ? [...posts] : posts.filter(p => p.type.toLowerCase() === activeTab.toLowerCase());
-    if (sortBy === "Top Match") {
-       result = result.sort((a,b) => b.matchScore - a.matchScore);
-    } else if (sortBy === "Trending") {
-       result = result.sort((a,b) => b.likes - a.likes);
-    }
-    return result;
-  }, [activeTab, posts, sortBy]);
+    if (activeTab === "All") return posts;
+    return posts.filter(p => p.type.toLowerCase() === activeTab.toLowerCase());
+  }, [activeTab, posts]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10 overscroll-none">
@@ -135,59 +127,31 @@ export default function EliteHomeFeed() {
       <main className="flex-1 w-full lg:max-w-[780px] lg:ml-auto lg:mr-0 min-h-screen border-r border-[#292828]/10 bg-white relative">
          
          <div className="bg-white/95 backdrop-blur-xl border-b border-[#292828]/5 px-4 py-3 sticky top-0 z-40">
-            <div className="flex items-center justify-between gap-4 py-1">
-               <div className="flex items-center gap-6 overflow-x-hidden">
-                  {/* CATEGORY DROPDOWN */}
-                  <div className="flex items-center gap-2 shrink-0">
-                     <span className="text-[9px] font-bold text-[#292828]/30 uppercase tracking-widest leading-none">Feed</span>
-                     <select 
-                       value={activeTab}
-                       onChange={(e) => setActiveTab(e.target.value)}
-                       className="bg-transparent text-[10px] font-bold uppercase outline-none cursor-pointer text-[#E53935] hover:text-[#292828] transition-colors"
-                     >
-                        {['All', 'Update', 'Deals', 'Jobs', 'Partners', 'Meets', 'Events'].map(tab => (
-                           <option key={tab} value={tab}>{tab}</option>
-                        ))}
-                     </select>
-                  </div>
-
-                  <div className="h-4 w-[1px] bg-[#292828]/10" />
-
-                  {/* SORT DROPDOWN */}
-                  <div className="flex items-center gap-2 shrink-0">
-                     <span className="text-[9px] font-bold text-[#292828]/30 uppercase tracking-widest leading-none">Sort</span>
-                     <select 
-                       value={sortBy}
-                       onChange={(e) => setSortBy(e.target.value)}
-                       className="bg-transparent text-[10px] font-bold uppercase outline-none cursor-pointer text-[#292828] hover:text-[#E53935] transition-colors"
-                     >
-                        <option>Latest</option>
-                        <option>Trending</option>
-                        <option>Matches</option>
-                     </select>
-                  </div>
-                  
-                  <div className="h-4 w-[1px] bg-[#292828]/10 hidden sm:block" />
-
-                  {/* VIEW SWITCHER */}
-                  <div className="hidden sm:flex items-center gap-2 shrink-0">
-                     <span className="text-[9px] font-bold text-[#292828]/30 uppercase tracking-widest leading-none">View</span>
-                     <div className="flex items-center gap-3">
-                        <button onClick={() => setViewMode("list")} className={cn("text-[10px] font-bold uppercase transition-all", viewMode === "list" ? "text-[#292828]" : "text-[#292828]/30")}>
-                           List
-                        </button>
-                        <button onClick={() => setViewMode("grid")} className={cn("text-[10px] font-bold uppercase transition-all", viewMode === "grid" ? "text-[#292828]" : "text-[#292828]/30")}>
-                           Grid
-                        </button>
-                     </div>
-                  </div>
+            <div className="flex items-center justify-between mb-4">
+               <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
+                  {(['All', 'Update', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
+                    <button 
+                     key={tab} 
+                     onClick={() => setActiveTab(tab)}
+                     className={cn(
+                       "px-2 py-1.5 text-xs font-bold uppercase transition-all shrink-0 relative",
+                       activeTab === tab ? "text-[#E53935]" : "text-[#292828] hover:text-[#292828]"
+                     )}
+                    >
+                       {tab}
+                       {activeTab === tab && <div className="absolute -bottom-1.5 left-2 right-2 h-1 bg-[#E53935] rounded-full shadow-lg shadow-red-500/20" />}
+                    </button>
+                  ))}
                </div>
-
-               <div className="flex items-center gap-3">
-                  <button className="text-[#292828]/40 hover:text-[#E53935] transition-colors">
-                     <SlidersHorizontal size={14} />
-                  </button>
-               </div>
+                <div className="flex items-center gap-2">
+                   <div className="flex bg-[#292828]/10/50 p-1 rounded-xl">
+                      <button onClick={() => setViewMode("list")} className={cn("h-7 px-3 rounded-lg text-xs font-bold uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828] hover:text-[#292828]")}>List</button>
+                      <button onClick={() => setViewMode("grid")} className={cn("h-7 px-3 rounded-lg text-xs font-bold uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828] hover:text-[#292828]")}>Grid</button>
+                   </div>
+                   <button className="h-9 w-9 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828] hover:bg-[#292828] hover:text-white transition-all shadow-sm">
+                      <SlidersHorizontal size={14} />
+                   </button>
+                </div>
             </div>
 
             <div className={cn(
@@ -213,15 +177,15 @@ export default function EliteHomeFeed() {
                               <Plus size={24} />
                            </div>
                            <div>
-                              <h3 className="text-sm font-bold text-[#292828] uppercase leading-none mb-1">New Post</h3>
-                              <p className="text-xs font-bold uppercase text-[#292828]">Sharing with {activeTab === "All" ? "Everyone" : activeTab}</p>
+                              <h3 className="text-sm font-bold text-[#292828] uppercase leading-none mb-1">Create Update</h3>
+                              <p className="text-xs font-bold uppercase text-[#292828]">Post to {activeTab === "All" ? "Everywhere" : activeTab}</p>
                            </div>
                         </div>
                         <button onClick={() => setIsPosting(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-[#292828] hover:bg-slate-200 transition-all"><Plus className="rotate-45" size={18} /></button>
                      </div>
 
                      <div className="flex flex-wrap gap-2 mb-8">
-                        {['Posts', 'Deals', 'Jobs', 'Partners', 'Meets', 'Events'].map(type => (
+                        {['General', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'].map(type => (
                            <button
                               key={type}
                               onClick={() => {
@@ -240,66 +204,54 @@ export default function EliteHomeFeed() {
                         ))}
                      </div>
 
-                      {['Deals', 'Jobs', 'Partners', 'Meets', 'Events'].includes(selectedPostType) ? (
+                      {['Opportunities', 'Hiring', 'Partnership', 'Meeting'].includes(selectedPostType) ? (
                          <div className="space-y-4 mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               {selectedPostType === 'Deals' && (
+                               {selectedPostType === 'Opportunities' && (
                                   <>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Budget</p>
-                                        <input type="text" placeholder="How much is the budget?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Specify budget range..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Deadline</p>
-                                        <input type="text" placeholder="When is the deadline?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Project timeline..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                   </>
                                )}
-                               {selectedPostType === 'Jobs' && (
+                               {selectedPostType === 'Hiring' && (
                                   <>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Role</p>
-                                        <input type="text" placeholder="What is the job title?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Job title..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Location</p>
-                                        <input type="text" placeholder="Where is the role located?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="City or Remote..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                   </>
                                )}
-                               {selectedPostType === 'Partners' && (
+                               {selectedPostType === 'Partnership' && (
                                   <>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Goal</p>
-                                        <input type="text" placeholder="What is the partnership goal?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Collaboration type..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Market</p>
-                                        <input type="text" placeholder="Which industry sector?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Industry sector..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                   </>
                                )}
-                               {selectedPostType === 'Meets' && (
+                               {selectedPostType === 'Meeting' && (
                                   <>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Venue</p>
-                                        <input type="text" placeholder="Where are we meeting?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Location..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                      <div className="space-y-1.5">
                                         <p className="text-xs font-bold uppercase text-[#292828] ml-1">Schedule</p>
-                                        <input type="text" placeholder="When is the meeting?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
-                                     </div>
-                                  </>
-                               )}
-                               {selectedPostType === 'Events' && (
-                                  <>
-                                     <div className="space-y-1.5">
-                                        <p className="text-xs font-bold uppercase text-[#292828] ml-1">Venue</p>
-                                        <input type="text" placeholder="Where is the event?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
-                                     </div>
-                                     <div className="space-y-1.5">
-                                        <p className="text-xs font-bold uppercase text-[#292828] ml-1">Capacity</p>
-                                        <input type="text" placeholder="How many people can attend?" className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
+                                        <input type="text" placeholder="Date and Time..." className="w-full bg-white px-5 py-4 rounded-xl border border-[#292828]/10 text-sm font-bold text-[#292828] outline-none focus:border-slate-900 transition-all" />
                                      </div>
                                   </>
                                )}
@@ -310,7 +262,7 @@ export default function EliteHomeFeed() {
                                  autoFocus
                                  value={postContent}
                                  onChange={(e) => setPostContent(e.target.value)}
-                                 placeholder="Elaborate on the details..."
+                                 placeholder="Elaborate on the broadcast..."
                                  className="w-full bg-white p-6 rounded-[1.5rem] border border-[#292828]/10 text-[15px] font-bold text-[#292828] placeholder:text-[#292828]/20 outline-none resize-none min-h-[120px] shadow-sm focus:border-slate-900 transition-all"
                                />
                             </div>
@@ -320,7 +272,7 @@ export default function EliteHomeFeed() {
                            autoFocus
                            value={postContent}
                            onChange={(e) => setPostContent(e.target.value)}
-                           placeholder="What's on your mind?"
+                           placeholder="Describe your update..."
                            className="w-full bg-white p-6 rounded-[1.5rem] border-2 border-[#292828]/5 text-[15px] font-bold text-[#292828] placeholder:text-[#292828]/20 outline-none resize-none min-h-[140px] shadow-sm focus:border-slate-900 transition-all"
                          />
                       )}
@@ -350,7 +302,7 @@ export default function EliteHomeFeed() {
                            onClick={handlePost}
                            className="px-10 h-14 bg-[#E53935] text-white rounded-2xl text-xs font-bold uppercase shadow-xl hover:shadow-[#E53935]/20 active:scale-95 transition-all"
                          >
-                            Post Now
+                            Broadcast Now
                          </button>
                       </div>
                 </div>
@@ -362,14 +314,14 @@ export default function EliteHomeFeed() {
             
             <div className={cn(
                "pb-40 lg:pb-32",
-               viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" : "space-y-8"
+               viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6" : "space-y-8"
             )}>
                {filteredPosts.map(post => (
                  <div key={post.id} className="group/post relative">
                     {viewMode === "grid" ? (
                       <div className={cn(
                         "bg-white rounded-[2rem] border-2 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(41,40,40,0.12)] flex flex-col h-full overflow-hidden",
-                        post.type === 'Deals' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
+                        post.type === 'Opportunities' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
                       )}>
                         <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                            <Link href={`/profile/${post.authorId}`} className="flex items-center gap-2 group/author">
@@ -386,7 +338,7 @@ export default function EliteHomeFeed() {
                            </Link>
                            <div className={cn(
                               "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
-                              post.type === 'Deals' ? "bg-red-50 text-red-600 border-red-100" : "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
+                              post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
                            )}>
                               {post.type}
                            </div>
@@ -397,7 +349,7 @@ export default function EliteHomeFeed() {
                               {post.content}
                            </p>
 
-                           {post.type === 'Deals' && (
+                           {post.type === 'Opportunities' && (
                               <div className="bg-[#292828]/5 p-3 rounded-xl border border-[#292828]/10 mt-auto">
                                  <div className="flex justify-between items-center mb-1">
                                     <span className="text-[9px] font-bold text-[#292828] uppercase">Current Bid</span>
@@ -409,7 +361,7 @@ export default function EliteHomeFeed() {
                               </div>
                            )}
 
-                           {post.type === 'Meets' && (
+                           {post.type === 'Meeting' && (
                               <div className="bg-green-50 p-3 rounded-xl border border-green-100 mt-auto flex items-center justify-between">
                                  <div className="flex items-center gap-2">
                                     <Calendar size={14} className="text-green-600" />
@@ -419,16 +371,7 @@ export default function EliteHomeFeed() {
                               </div>
                            )}
 
-                           {post.type === 'Events' && (
-                              <div className="bg-indigo-50 p-3 rounded-xl border border-indigo-100 mt-auto flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <Building size={14} className="text-indigo-600" />
-                                    <span className="text-[10px] font-bold text-indigo-700 uppercase">Business Event</span>
-                                 </div>
-                              </div>
-                           )}
-
-                           {!['Deals', 'Meets', 'Events'].includes(post.type) && post.images && (
+                           {!['Opportunities', 'Meeting'].includes(post.type) && post.images && (
                               <div className="h-24 w-full rounded-xl overflow-hidden border border-[#292828]/10 mt-auto">
                                  <img src={post.images[0]} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/post:grayscale-0" alt="" />
                               </div>
@@ -441,7 +384,7 @@ export default function EliteHomeFeed() {
                                 onClick={() => handleLike(post.id)}
                                 className={cn("flex items-center gap-1 transition-all active:scale-125", post.isLiked ? "text-[#E53935]" : "text-slate-400")}
                               >
-                                 <HeartIcon size={14} fill={post.isLiked ? "currentColor" : "none"} />
+                                 <Heart size={14} fill={post.isLiked ? "currentColor" : "none"} />
                               </button>
                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-normal">{post.time}</span>
                            </div>
@@ -458,21 +401,21 @@ export default function EliteHomeFeed() {
                       <div className="bg-white border-slate-100 overflow-hidden transition-all duration-500 rounded-[2rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10">
                          <div className="px-6 pt-6 pb-4 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
-                               <Link href={`/profile/${post.authorId}`} className="relative block">
-                                  <div className="block h-11 w-11 rounded-xl overflow-hidden border border-[#292828]/5 shadow-sm hover:scale-105 active:scale-95 transition-all">
+                               <div className="relative">
+                                  <Link href={`/profile/${post.authorId}`} className="block h-11 w-11 rounded-xl overflow-hidden border border-[#292828]/5 shadow-sm hover:scale-105 active:scale-95 transition-all">
                                      <img src={post.avatar} alt="" className="w-full h-full object-cover" />
-                                  </div>
+                                  </Link>
                                   <div className={cn(
                                      "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm z-10",
                                      post.id % 3 === 0 ? "bg-green-500" : post.id % 3 === 1 ? "bg-amber-500" : "bg-slate-300"
                                   )} />
-                               </Link>
+                               </div>
                                <div>
                                   <div className="flex items-center gap-3">
                                      <Link href={`/profile/${post.authorId}`} className="text-[15px] font-bold text-[#292828] leading-tight hover:text-[#E53935] transition-colors">{post.author}</Link>
                                      <div className={cn(
                                         "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
-                                        post.type === 'Deals' ? "bg-red-50 text-red-600 border-red-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                                        post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                      )}>
                                         {post.type}
                                      </div>
@@ -497,7 +440,7 @@ export default function EliteHomeFeed() {
                                {post.content}
                             </p>
 
-                            {post.type === 'Deals' && (
+                            {post.type === 'Opportunities' && (
                                <div className="mt-4 relative group/post">
                                   <div className="absolute -left-1 top-3 bottom-3 w-1.5 bg-red-600 rounded-full z-10" />
                                   <div className="bg-white rounded-2xl border border-[#292828]/10 overflow-hidden shadow-lg shadow-slate-200/50 flex flex-col transition-all hover:shadow-xl">
@@ -510,7 +453,7 @@ export default function EliteHomeFeed() {
                                      </div>
                                      <div className="p-6 flex flex-col md:flex-row gap-4 items-start">
                                         <div className="flex-1">
-                                           <div className="flex items-center gap-2 mb-1.5 text-[#292828]"><h3 className="text-lg font-bold uppercase leading-tight">{post.title || "Business Opportunity"}</h3><CheckCircle2 size={16} className="text-red-600 ml-2 inline" /></div>
+                                           <div className="flex items-center gap-2 mb-1.5 text-[#292828]"><h3 className="text-lg font-bold uppercase leading-tight">{post.title || "Business Opportunity Kerala"}</h3><CheckCircle2 size={16} className="text-red-600 ml-2 inline" /></div>
                                            <p className="text-[#292828] text-sm font-medium leading-relaxed">{post.content || "Looking for a partner..."}</p>
                                         </div>
                                         <div className="shrink-0 bg-[#292828]/5 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[120px] border border-[#292828]/10">
@@ -520,15 +463,15 @@ export default function EliteHomeFeed() {
                                      </div>
                                      <div className="p-4 border-t border-[#292828]/5">
                                         <div className="grid grid-cols-2 gap-2">
-                                           <button onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }} className="h-11 bg-[#E53935] text-white rounded-xl text-xs font-bold uppercase hover:bg-[#292828] transition-all">I'm Interested</button>
-                                           <button onClick={() => setActiveBidPostId(post.id)} className="h-11 bg-[#292828] text-white rounded-xl text-xs font-bold uppercase hover:bg-black transition-all">Place Bid</button>
+                                           <button onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }} className="h-11 bg-[#E53935] text-white rounded-xl text-xs font-bold uppercase hover:bg-[#292828] transition-all">Accept Deal</button>
+                                           <button onClick={() => setActiveBidPostId(post.id)} className="h-11 bg-[#292828] text-white rounded-xl text-xs font-bold uppercase hover:bg-black transition-all">Place a Bid</button>
                                         </div>
                                      </div>
                                   </div>
                                </div>
                             )}
 
-                            {post.type === 'Meets' && (
+                            {post.type === 'Meeting' && (
                                <div className="mt-6 p-4 rounded-3xl bg-white border-2 border-dashed border-green-200 flex items-center justify-between group/action hover:border-green-500 transition-all shadow-sm">
                                   <div className="flex items-center gap-4">
                                      <div className="h-12 w-12 rounded-2xl bg-[#292828] flex items-center justify-center text-white"><Calendar size={22} /></div>
@@ -544,11 +487,11 @@ export default function EliteHomeFeed() {
                                      }} 
                                      className={cn("h-12 px-8 rounded-2xl text-xs font-bold uppercase transition-all", joinedMeetings.includes(post.id) ? "bg-[#292828] text-white" : "bg-green-600 text-white shadow-lg")}
                                    >
-                                      {joinedMeetings.includes(post.id) ? "Booked" : "Join"}
+                                      {joinedMeetings.includes(post.id) ? "Booked" : "Join Meeting"}
                                    </button>
                                </div>
                             )}
-                             {post.type === 'Jobs' && (
+                             {post.type === 'Hiring' && (
                                 <div className="mt-4 relative overflow-hidden p-4 rounded-2xl bg-[#292828] text-white flex items-center justify-between group/action shadow-xl">
                                    <div className="absolute top-0 right-0 h-full w-24 bg-red-600/10 blur-3xl opacity-50" />
                                    <div className="flex items-center gap-3 relative z-10">
@@ -560,11 +503,11 @@ export default function EliteHomeFeed() {
                                          <p className="text-sm font-bold uppercase">Principal Engineer</p>
                                       </div>
                                    </div>
-                                   <button className="relative z-10 h-10 px-6 bg-red-600 text-white rounded-xl text-xs font-bold uppercase active:scale-95 transition-all shadow-lg shadow-red-500/20">Apply</button>
+                                   <button className="relative z-10 h-10 px-6 bg-red-600 text-white rounded-xl text-xs font-bold uppercase active:scale-95 transition-all shadow-lg shadow-red-500/20">Apply Now</button>
                                 </div>
                              )}
 
-                             {post.type === 'Partners' && (
+                             {post.type === 'Partnership' && (
                                 <div className="mt-6 p-0 rounded-[2rem] bg-white border-2 border-[#292828] flex flex-col overflow-hidden shadow-2xl shadow-[#292828]/5 group/action hover:shadow-[#292828]/10 transition-all">
                                    <div className="bg-[#292828] px-6 py-3 flex items-center justify-between">
                                       <div className="flex items-center gap-2.5">
@@ -602,24 +545,15 @@ export default function EliteHomeFeed() {
                                 </div>
                              )}
 
-                             {post.type === 'Posts' && (
+                             {post.type === 'Update' && (
                                 <div className="mt-6 flex items-center gap-3 py-4 border-t border-[#292828]/5 text-[#292828] text-sm font-medium">
                                    <Activity size={16} className="text-red-500" />
                                    Platform Update Active
                                 </div>
                              )}
 
-                             {post.type === 'Events' && (
-                                <div className="mt-6 p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex flex-col items-start gap-2 shadow-sm">
-                                   <div className="flex items-center gap-2">
-                                      <Building size={14} className="text-indigo-600" />
-                                      <span className="text-[10px] font-bold text-indigo-700 uppercase">Verified Business Event</span>
-                                   </div>
-                                </div>
-                             )}
-
-                            {!['Deals', 'Events'].includes(post.type) && post.images && (
-                               <div className="rounded-2xl overflow-hidden border border-[#292828]/10 shadow-lg lg:grayscale transition-all duration-700 group-hover/post:grayscale-0 mt-4">
+                            {post.images && (
+                               <div className="rounded-2xl overflow-hidden border border-[#292828]/10 shadow-lg lg:grayscale transition-all duration-700 group-hover/post:grayscale-0">
                                   <img src={post.images[0]} alt="" className="w-full h-full object-cover" />
                                </div>
                             )}
@@ -628,7 +562,7 @@ export default function EliteHomeFeed() {
                          <div className="px-6 py-4 bg-[#292828]/5/50 border-t border-[#292828]/5 flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                <button onClick={() => handleLike(post.id)} className={cn("flex items-center gap-1.5 group/btn transition-all active:scale-125", post.isLiked ? "text-[#E53935]" : "text-[#292828]")}>
-                                  <HeartIcon size={22} fill={post.isLiked ? "currentColor" : "none"} />
+                                  <Heart size={22} fill={post.isLiked ? "currentColor" : "none"} />
                                   <span className="font-bold">{post.likes}</span>
                                </button>
                                <button onClick={() => setActiveCommentPostId(activeCommentPostId === post.id ? null : post.id)} className="flex items-center gap-2 group/btn transition-all text-[#292828]">
@@ -685,8 +619,11 @@ export default function EliteHomeFeed() {
 
       <aside className="hidden lg:flex flex-col w-[400px] h-screen sticky top-0 bg-slate-50/50 p-6 lg:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50">
          
+
+         
+         
          <div className="group/hub">
-            <div className="cursor-pointer">
+            <Link href="/explore">
                <div className="flex items-center justify-between mb-6 px-1 cursor-pointer">
                   <div className="flex items-center gap-3">
                      <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-ping" />
@@ -732,10 +669,13 @@ export default function EliteHomeFeed() {
                      </div>
                   </div>
                </div>
-            </div>
+            </Link>
          </div>
 
-         {/* 🔴 RECOMMENDED PEOPLE (RELOCATED TO BOTTOM OF SIDEBAR) */}
+
+
+
+         {/* 🔴 SMART MATCH ENGINE (RELOCATED TO BOTTOM OF SIDEBAR) */}
          <div className="relative group/sync overflow-hidden shrink-0">
             <div className="absolute inset-0 bg-[#E53935] rounded-[2.5rem] blur-3xl opacity-10 group-hover/sync:opacity-20 transition-opacity" />
             <div className="relative p-8 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[2.5rem] shadow-2xl overflow-hidden group">
@@ -746,8 +686,8 @@ export default function EliteHomeFeed() {
                         <Users size={24} />
                      </div>
                      <div>
-                        <h3 className="text-lg font-bold text-white uppercase leading-tight">Recommended People</h3>
-                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-normal">12 New partners found for you</p>
+                        <h3 className="text-lg font-bold text-white uppercase leading-tight">Smart Match Engine</h3>
+                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-normal">12 Strategic MSME matches identified</p>
                      </div>
                   </div>
                   <button 
@@ -821,22 +761,15 @@ export default function EliteHomeFeed() {
                                     </div>
                                  </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                 <Link href={`/profile/${i + 2}`}>
-                                    <button className="h-14 px-8 bg-[#292828] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#E53935] transition-all active:scale-95">
-                                      View Node
-                                    </button>
-                                 </Link>
-                                 <button 
-                                   onClick={() => {
-                                     alert(`Pitch sent to ${partner.name}. They will be notified via the Smart Sync hub.`);
-                                     setIsMatching(false);
-                                   }}
-                                   className="h-14 px-10 bg-[#E53935] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#292828] transition-all active:scale-95"
-                                 >
-                                   Send Pitch
-                                 </button>
-                              </div>
+                              <button 
+                                onClick={() => {
+                                  alert(`Pitch sent to ${partner.name}. They will be notified via the Smart Sync hub.`);
+                                  setIsMatching(false);
+                                }}
+                                className="h-14 px-8 bg-[#E53935] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#292828] transition-all active:scale-95"
+                              >
+                                Send Pitch
+                              </button>
                            </div>
                         ))}
                      </div>

@@ -17,7 +17,8 @@ import {
   User,
   Star,
   Settings,
-  X
+  X,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_CHATS } from "@/lib/dummyData";

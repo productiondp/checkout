@@ -1,6 +1,4 @@
-export const DUMMY_PROFILES = Array.from({ length: 100 }).map((_, i) => ({
-  id: i + 1,
-  name: [
+const names = [
     "Arun Dev", "Rahul Sethi", "Sana Maryam", "Zayan F.", "Anita Nair", "Vikas Menon", "Deepika R.", "Karan Johar", 
     "Meera Das", "Aditya V.", "Sneha P.", "Rohan S.", "Priya M.", "Arjun K.", "Ishaan B.", "Ananya G.", 
     "Sanya V.", "Kabir D.", "Zara H.", "Ayan K.", "Riya S.", "Noah J.", "Mila K.", "Liam P.", "Ava R.",
@@ -13,8 +11,9 @@ export const DUMMY_PROFILES = Array.from({ length: 100 }).map((_, i) => ({
     "Aparna M.", "Madhav P.", "Prisha V.", "Aadiv S.", "Navya G.", "Krish D.", "Shanaya S.", "Rohan K.", "Anjali M.",
     "Sameer P.", "Nisha V.", "Varun S.", "Esha G.", "Dev D.", "Tara S.", "Ayush K.", "Aditi M.", "Pranav P.",
     "Rani V.", "Aakash S.", "Neha G.", "Sumit D.", "Roshni S."
-  ][i % 100],
-  company: [
+  ];
+
+const companies = [
     "TechNode Solutions", "ScaleHub", "HEDGE Logistics", "MSME Kerala", "Global Trade Co.", "Retail Matrix", 
     "Green Pack", "FinStrat", "Alpha Services", "Mega Wholesale", "InnoTech", "Skyline Devi", "Terra Firma",
     "Nexus Corp", "Vivid Media", "Zenith Hub", "Quark Labs", "Pinnacle Group", "Apex Partners", "Summit Solutions",
@@ -28,7 +27,12 @@ export const DUMMY_PROFILES = Array.from({ length: 100 }).map((_, i) => ({
     "Crest Corp", "Draft Drive", "Elite Eng", "First Firm", "Great Group", "Hold Hub", "Icon Inc", "Just Jet",
     "Key Kraft", "Level Lab", "Mind Med", "Nest Net", "Open Org", "Pure Pro", "Quint Que", "Rise Run", "Solid Star",
     "Team Tech", "Urban Unit", "Value Val", "Wild Wise", "Xtra X", "Your Young", "Zone Zen"
-  ][i % 100],
+  ];
+
+export const DUMMY_PROFILES = Array.from({ length: 100 }).map((_, i) => ({
+  id: i + 1,
+  name: names[i % names.length],
+  company: companies[i % companies.length],
   role: ["Founder", "CEO", "Partner", "Operations Lead", "Manager", "Strategist"][i % 6],
   match: Math.floor(Math.random() * 20) + 80, // 80-99
   city: "Trivandrum",
@@ -37,7 +41,7 @@ export const DUMMY_PROFILES = Array.from({ length: 100 }).map((_, i) => ({
 
 export const DUMMY_POSTS = [
   ...Array.from({ length: 150 }).map((_, i) => {
-    const type = ["Update", "Opportunities", "Hiring", "Partnership", "Meeting"][i % 5];
+    const type = ["Update", "Opportunities", "Hiring", "Partnership", "Meeting", "Expo"][i % 6];
     const profile = DUMMY_PROFILES[i % 100];
     
     let content = "";
@@ -77,13 +81,21 @@ export const DUMMY_POSTS = [
         "Partner with us to scale our regional logistics network.",
         "Interest in co-owning a new co-working hub in Pattom?"
       ][i % 5];
-    } else {
+    } else if (type === "Meeting") {
       content = [
         "Founder Mixer starting at the Hub Cafe. Let's talk scale!",
         "Strategy session: Navigating new MSME tax policies.",
         "Technopark Coffee Sync: Networking for early-stage teams.",
         "Design Feedback Circle: Reviewing the new dashboard UI.",
         "Virtual Meetup: Kerala digital trade and exports 2026."
+      ][i % 5];
+    } else {
+      content = [
+        "Join us at the Global Trade Expo 2026! Discover hundreds of MSME innovators at the main convention center.",
+        "Technopark Tech Summit 2026 is kicking off tomorrow. Book your booth to secure your B2B prospects.",
+        "Kerala Logistics Fair 2026: Meet regional supply chain leaders and expand your fleet contracts.",
+        "Startup Sandbox Expo is back! We're hosting 50+ early-stage startups for investor networking.",
+        "Digital Solutions Convention 2026: Hands-on workshops, keynotes, and extensive B2B matching."
       ][i % 5];
     }
 

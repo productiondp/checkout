@@ -127,14 +127,14 @@ export default function BusinessExposPage() {
         <div className="p-6 lg:p-10 border-b border-[#292828]/5 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
-                 <h2 className="text-3xl font-black text-[#292828] tracking-tight">Business Expos</h2>
-                 <p className="text-[12px] font-medium text-[#292828] mt-1">Discover trade shows and showcase your products</p>
+                 <h2 className="text-3xl font-black text-[#292828] tracking-tight">Events</h2>
+                 <p className="text-[12px] font-medium text-[#292828] mt-1">Find events in your city and meet new people.</p>
               </div>
               <button 
-                onClick={() => alert("Expo hosting system is currently in beta. Please contact support.")}
+                onClick={() => alert("Hosting system is coming soon.")}
                 className="px-8 py-4 bg-[#E53935] text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl shadow-red-500/10 hover:bg-[#292828] transition-all flex items-center justify-center gap-2"
               >
-                 <Plus size={18} /> Host An Expo
+                 <Plus size={18} /> Host an Event
               </button>
            </div>
 
@@ -148,7 +148,7 @@ export default function BusinessExposPage() {
                     activeTab === tab ? "text-[#292828]" : "text-[#292828] hover:text-[#292828]"
                   )}
                 >
-                   {tab === "upcoming" ? "Upcoming Events" : tab === "businesses" ? "Showing Businesses" : "Venue Map"}
+                   {tab === "upcoming" ? "Upcoming" : tab === "businesses" ? "Businesses" : "Map"}
                    {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E53935] rounded-full" />}
                 </button>
               ))}
@@ -262,9 +262,9 @@ export default function BusinessExposPage() {
 
          <div className="p-10 bg-[#292828] rounded-[3rem] text-white relative overflow-hidden group">
             <TrendingUp size={120} className="absolute -right-5 -bottom-5 text-white/[0.03] group-hover:scale-110 transition-transform" />
-            <h4 className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Exhibitor Node</h4>
+            <h4 className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">For Businesses</h4>
             <p className="text-2xl font-black leading-tight mb-8">
-               Companies at expos reach <span className="text-[#E53935]">4x more</span> high-scale retail buyers.
+               Meeting people at events helps you find <span className="text-[#E53935]">4x more</span> partners.
             </p>
             <button className="w-full py-5 bg-white text-[#292828] rounded-[2rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all">Download Guide</button>
          </div>
@@ -336,7 +336,7 @@ export default function BusinessExposPage() {
                            registeredList.includes(selectedExpo.id) ? "bg-green-50 text-green-600" : "bg-[#E53935] text-white hover:bg-[#292828] shadow-red-500/10"
                          )}
                        >
-                          {registeredList.includes(selectedExpo.id) ? "Successfully Registered" : "Register For Event Now"}
+                          {registeredList.includes(selectedExpo.id) ? "You're Going!" : "Join Event"}
                        </button>
                        <button className="h-16 px-10 border border-[#292828]/10 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest hover:bg-[#292828]/5">Share</button>
                     </div>

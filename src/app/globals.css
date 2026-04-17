@@ -2,7 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --app-height: 100%;
+  }
+
+  html, body {
+    min-height: 100svh;
+    @apply overscroll-none select-none touch-manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  /* Support for modern browsers */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
 @layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   @keyframes scale-slow {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }

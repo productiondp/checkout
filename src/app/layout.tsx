@@ -9,17 +9,22 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], varia
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
-  themeColor: "#FFFFFF",
+  themeColor: "#292828",
 };
 
 export const metadata = {
-  title: "Checkout Terminal | v.1 Production Build",
-  description: "The premium Business OS for local commerce, trade networking, and commercial growth.",
+  title: "Checkout Terminal",
+  description: "The premium Business OS for local commerce.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Checkout",
+  },
+  formatDetection: {
+     telephone: false,
   },
   manifest: "/manifest.json",
 };

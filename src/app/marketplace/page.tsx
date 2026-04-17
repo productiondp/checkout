@@ -40,11 +40,11 @@ export default function PremiumMarketplacePage() {
          <div className="max-w-4xl relative z-10">
             <div className="flex items-center gap-3 mb-6">
                <span className="h-[1px] w-12 bg-[#E53935]" />
-               <span className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.3em]">Wholesale Asset Hub</span>
+               <span className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.3em]">Marketplace</span>
             </div>
-            <h1 className="text-4xl lg:text-7xl font-black text-white leading-tight mb-8 uppercase italic">Buy & <span className="text-[#E53935]">Sell</span> Units.</h1>
+            <h1 className="text-4xl lg:text-7xl font-black text-white leading-tight mb-8 uppercase">Buy & <span className="text-[#E53935]">Sell</span> Items.</h1>
             <p className="text-white/50 text-xl font-medium max-w-2xl leading-relaxed mb-12">
-               Direct procurement of raw materials, excess logistics capacity, and industrial assets across regional nodes.
+               Buy raw materials and equipment directly from local businesses in your city.
             </p>
          </div>
          <ShoppingBag size={400} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12" />
@@ -74,7 +74,7 @@ export default function PremiumMarketplacePage() {
                  type="text" 
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
-                 placeholder="Search wholesale assets..." 
+                 placeholder="Search for anything..." 
                  className="w-full h-16 bg-white border border-[#292828]/10 rounded-2xl pl-16 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all" 
                />
             </div>
@@ -88,7 +88,7 @@ export default function PremiumMarketplacePage() {
                     <img src={item.image} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" alt="" />
                     <div className="absolute top-6 right-6 px-4 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-[10px] font-black uppercase text-[#E53935] shadow-lg border border-[#292828]/10">{item.category}</div>
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
-                       <button className="w-full py-4 bg-white text-[#292828] rounded-2xl font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">Fast Procurement</button>
+                       <button className="w-full py-4 bg-white text-[#292828] rounded-2xl font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">Buy Now</button>
                     </div>
                  </div>
 
@@ -97,14 +97,14 @@ export default function PremiumMarketplacePage() {
                        <Building2 size={14} className="text-[#292828]/40" />
                        <span className="text-[10px] font-black text-[#292828] uppercase tracking-widest">Verified Industrial Hub</span>
                     </div>
-                    <h3 className="text-xl font-black text-[#292828] leading-tight uppercase italic mb-1 group-hover:text-[#E53935] transition-colors">{item.item}</h3>
-                    <p className="text-[14px] font-bold text-[#292828] mb-6 flex items-center gap-2 italic">
-                       Min Order: <span className="text-[#292828] not-italic uppercase">{item.cap} Units</span>
+                    <h3 className="text-xl font-black text-[#292828] leading-tight uppercase mb-1 group-hover:text-[#E53935] transition-colors">{item.item}</h3>
+                    <p className="text-[14px] font-bold text-[#292828] mb-6 flex items-center gap-2">
+                       Minimum: <span className="text-[#292828] uppercase">{item.cap} Units</span>
                     </p>
 
                     <div className="p-5 bg-[#292828]/5 rounded-2xl border border-[#292828]/10 flex items-center justify-between group-hover:bg-white transition-colors">
                        <div>
-                          <p className="text-[10px] font-black text-[#292828]/40 uppercase leading-none mb-1 text-left">Unit Price</p>
+                          <p className="text-[10px] font-black text-[#292828]/40 uppercase leading-none mb-1 text-left">Price</p>
                           <p className="text-[24px] font-black text-[#292828] leading-none">{item.price}</p>
                        </div>
                        <button className="h-12 w-12 bg-[#292828] text-white rounded-2xl flex items-center justify-center hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
@@ -133,10 +133,10 @@ export default function PremiumMarketplacePage() {
       <div className="mt-20 p-12 bg-[#292828] rounded-[4rem] text-white relative overflow-hidden group mx-6 lg:mx-12 mb-20">
          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
             <div className="max-w-xl">
-               <h3 className="text-3xl lg:text-5xl font-black mb-6 leading-tight uppercase italic">List your <span className="text-[#E53935]">Excess</span> Inventory.</h3>
-               <p className="text-white/50 text-xl font-medium leading-relaxed">Turn your idle machinery or raw material stock into immediate liquidity across the node.</p>
+               <h3 className="text-3xl lg:text-5xl font-black mb-6 leading-tight uppercase">Sell your <span className="text-[#E53935]">Items</span>.</h3>
+               <p className="text-white/50 text-xl font-medium leading-relaxed">Earn money by selling raw materials or equipment you don't use.</p>
             </div>
-            <button className="px-12 py-6 bg-[#E53935] text-white rounded-[2rem] font-black text-[12px] uppercase shadow-4xl animate-pulse hover:animate-none active:scale-95 transition-all">Start Selling Now</button>
+            <button className="px-12 py-6 bg-[#E53935] text-white rounded-[2rem] font-black text-[12px] uppercase shadow-4xl animate-pulse hover:animate-none active:scale-95 transition-all">Start Selling</button>
          </div>
          <Zap size={300} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12 group-hover:scale-110 transition-transform duration-[4s]" />
       </div>

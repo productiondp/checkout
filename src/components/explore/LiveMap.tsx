@@ -20,7 +20,7 @@ import {
   Compass
 } from "lucide-react";
 
-type MarkerType = "Meeting" | "Opportunity" | "Hiring" | "Social";
+type MarkerType = "Meets" | "Deals" | "Jobs" | "Social";
 
 interface Marker {
   id: string;
@@ -34,12 +34,12 @@ interface Marker {
 }
 
 const TRIVANDRUM_MARKERS: Marker[] = [
-  { id: "1", x: 25, y: 30, type: "Hiring", title: "Senior AI Engineer", author: "Technopark Phase III", distance: "0.2km", details: "Major AI startup hiring for core engine development." },
-  { id: "2", x: 45, y: 35, type: "Opportunity", title: "Logistics Framework", author: "Vizhinjam Port Node", distance: "12km", details: "Tendering for local last-mile delivery partners." },
-  { id: "3", x: 55, y: 55, type: "Meeting", title: "Founder Breakfast", author: "Kowdiar Hub", distance: "2.1km", details: "Weekly meetup for tech founders and investors." },
-  { id: "4", x: 40, y: 65, type: "Social", title: "Creative Sprint", author: "Lulu Innovation Lab", distance: "4.5km", details: "Collaborative design session for local students." },
-  { id: "5", x: 65, y: 40, type: "Hiring", title: "Sales Node Lead", author: "Vazhuthacaud Prime", distance: "1.8km", details: "Aggressive growth role for fintech platform." },
-  { id: "6", x: 30, y: 60, type: "Opportunity", title: "Retail Tech Scale", author: "East Fort Matrix", distance: "3.5km", details: "Upgrading local merchant nodes with smart terminals." },
+  { id: "1", x: 25, y: 30, type: "Jobs", title: "AI Engineer", author: "Technopark Phase III", distance: "0.2km", details: "Startup hiring for core engine development." },
+  { id: "2", x: 45, y: 35, type: "Deals", title: "Logistics Project", author: "Vizhinjam Port", distance: "12km", details: "Looking for local delivery partners." },
+  { id: "3", x: 55, y: 55, type: "Meets", title: "Founder Breakfast", author: "Kowdiar Hub", distance: "2.1km", details: "Weekly meeting for founders and investors." },
+  { id: "4", x: 40, y: 65, type: "Social", title: "Creative Sprint", author: "Lulu Innovation Lab", distance: "4.5km", details: "Design session for local students." },
+  { id: "5", x: 65, y: 40, type: "Jobs", title: "Sales Lead", author: "Vazhuthacaud Prime", distance: "1.8km", details: "Growth role for fintech platform." },
+  { id: "6", x: 30, y: 60, type: "Deals", title: "Retail Tech Scale", author: "East Fort", distance: "3.5km", details: "Smart terminals project for local shops." },
 ];
 
 export default function LiveMap() {
@@ -130,17 +130,17 @@ export default function LiveMap() {
               style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
             >
               <div className={`absolute inset-0 -m-6 rounded-full animate-ping opacity-20 duration-[3s] ${
-                marker.type === "Hiring" ? "bg-blue-500" : 
-                marker.type === "Opportunity" ? "bg-red-500" :
-                marker.type === "Meeting" ? "bg-green-500" : "bg-amber-500"
+                marker.type === "Jobs" ? "bg-blue-500" : 
+                marker.type === "Deals" ? "bg-red-500" :
+                marker.type === "Meets" ? "bg-green-500" : "bg-amber-500"
               }`} />
               
               <button 
                 onClick={(e) => { e.stopPropagation(); setSelectedMarker(marker); }}
                 className={`relative z-10 w-6 h-6 rounded-full border-4 border-white shadow-2xl transition-all hover:scale-125 active:scale-90 ${
-                  marker.type === "Hiring" ? "bg-blue-600" : 
-                  marker.type === "Opportunity" ? "bg-red-600" :
-                  marker.type === "Meeting" ? "bg-green-600" : "bg-amber-600"
+                  marker.type === "Jobs" ? "bg-blue-600" : 
+                  marker.type === "Deals" ? "bg-red-600" :
+                  marker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
                 }`}
               >
                  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-pulse" />
@@ -166,13 +166,13 @@ export default function LiveMap() {
                </div>
                <input 
                  type="text" 
-                 placeholder="Locate MSME Nodes..."
+                 placeholder="Find people or deals..."
                  className="w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[1.5rem] py-3 lg:py-5 pl-12 lg:pl-16 pr-6 lg:pr-8 text-[13px] lg:text-[15px] font-bold text-[#292828] outline-none ring-0 focus:border-[#E53935] transition-all"
                />
             </div>
             
             <div className="flex bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[1.5rem] p-1.5 shadow-2xl overflow-x-auto scrollbar-hide no-scrollbar">
-               {(["All", "Hiring", "Opportunity", "Meeting", "Social"] as const).map((t) => (
+               {(["All", "Jobs", "Deals", "Meets", "Social"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setFilter(t)}
@@ -209,13 +209,13 @@ export default function LiveMap() {
                
                <div className="flex items-start gap-5 lg:gap-8 mb-6 lg:mb-10">
                   <div className={`h-14 w-14 lg:h-20 lg:w-20 min-w-[56px] lg:min-w-[80px] rounded-2xl lg:rounded-3xl flex items-center justify-center text-white shadow-xl ${
-                    selectedMarker.type === "Hiring" ? "bg-blue-600" : 
-                    selectedMarker.type === "Opportunity" ? "bg-red-600" :
-                    selectedMarker.type === "Meeting" ? "bg-green-600" : "bg-amber-600"
+                    selectedMarker.type === "Jobs" ? "bg-blue-600" : 
+                    selectedMarker.type === "Deals" ? "bg-red-600" :
+                    selectedMarker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
                   }`}>
-                    {selectedMarker.type === "Hiring" && <Briefcase className="w-6 h-6 lg:w-8 lg:h-8" />}
-                    {selectedMarker.type === "Opportunity" && <Zap className="w-6 h-6 lg:w-8 lg:h-8" />}
-                    {selectedMarker.type === "Meeting" && <MessageSquare className="w-6 h-6 lg:w-8 lg:h-8" />}
+                    {selectedMarker.type === "Jobs" && <Briefcase className="w-6 h-6 lg:w-8 lg:h-8" />}
+                    {selectedMarker.type === "Deals" && <Zap className="w-6 h-6 lg:w-8 lg:h-8" />}
+                    {selectedMarker.type === "Meets" && <MessageSquare className="w-6 h-6 lg:w-8 lg:h-8" />}
                     {selectedMarker.type === "Social" && <User className="w-6 h-6 lg:w-8 lg:h-8" />}
                   </div>
                   <div className="pr-8">
@@ -228,8 +228,8 @@ export default function LiveMap() {
                <p className="text-xs lg:text-base font-medium leading-relaxed text-[#292828] mb-6 lg:mb-10 line-clamp-2 lg:line-clamp-none">{selectedMarker.details}</p>
                
                <div className="flex gap-2 lg:gap-4">
-                  <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#E53935] transition-all">Connect Now</button>
-                  <button className="px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#292828]/5 transition-all">Profile</button>
+                  <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#E53935] transition-all">Connect</button>
+                  <button className="px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#292828]/5 transition-all">View Profile</button>
                </div>
             </div>
          </div>

@@ -4,8 +4,9 @@
   "description": "The premium network for local businesses.",
   "start_url": "/home",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#FFFFFF",
+  "orientation": "portrait",
+  "background_color": "#292828",
+  "theme_color": "#292828",
   "icons": [
     {
       "src": "/images/logo.png",

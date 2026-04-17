@@ -57,7 +57,7 @@ const CATEGORIES = [
   { name: "Finance", icon: DollarSign, color: "bg-green-50 text-green-600" },
   { name: "Legal", icon: ShieldCheck, color: "bg-blue-50 text-blue-600" },
   { name: "Scaling", icon: Rocket, color: "bg-red-50 text-[#E53935]" },
-  { name: "Operations", icon: Target, color: "bg-purple-50 text-purple-600" },
+  { name: "Business Help", icon: Target, color: "bg-purple-50 text-purple-600" },
   { name: "Tech", icon: Zap, color: "bg-orange-50 text-orange-600" }
 ];
 
@@ -66,6 +66,23 @@ export default function EliteAdvisorsPortal() {
   const [activeCategory, setActiveCategory] = useState("Scaling");
   const [search, setSearch] = useState("");
   const [selectedAdv, setSelectedAdv] = useState<any>(null);
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success">("idle");
+
+  const handleBooking = () => {
+    if (!selectedDate || !selectedTime) return;
+    setBookingStatus("loading");
+    setTimeout(() => {
+      setBookingStatus("success");
+      setTimeout(() => {
+        setSelectedAdv(null);
+        setBookingStatus("idle");
+        setSelectedDate(null);
+        setSelectedTime(null);
+      }, 2000);
+    }, 1500);
+  };
 
   const filteredAdvisors = ADVISORS.filter(a => 
     (a.name.toLowerCase().includes(search.toLowerCase()) || a.specialty.toLowerCase().includes(search.toLowerCase())) &&
@@ -75,34 +92,26 @@ export default function EliteAdvisorsPortal() {
   return (
     <div className="flex flex-col min-h-screen bg-white lg:bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10 overscroll-none">
       
-      {/* 1. CINEMATIC DISCOVERY HERO */}
-      <div className="bg-[#292828] px-6 lg:px-12 py-16 lg:py-24 relative overflow-hidden">
-         <div className="max-w-4xl relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-               <span className="h-[1px] w-12 bg-[#E53935]" />
-               <span className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.3em]">Talk to Experts</span>
-            </div>
-            <h1 className="text-4xl lg:text-7xl font-black text-white leading-[1.1] mb-8 uppercase">Talk to <span className="text-[#E53935]">Top</span> Experts.</h1>
-            <p className="text-white/50 text-xl font-medium max-w-2xl leading-relaxed mb-12">
-               Connect directly with verified business owners and regional experts in your city.
-            </p>
-            
-            <div className="flex flex-wrap gap-3">
-               {CATEGORIES.map(cat => (
-                 <button 
-                  key={cat.name}
-                  onClick={() => setActiveCategory(cat.name)}
-                  className={cn(
-                    "px-7 py-4 rounded-2xl font-black text-[10px] uppercase transition-all flex items-center gap-3 border transition-all",
-                    activeCategory === cat.name ? "bg-[#E53935] border-[#E53935] text-white shadow-2xl shadow-red-500/20" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"
-                  )}
-                 >
-                    <cat.icon size={14} /> {cat.name}
-                 </button>
-               ))}
-            </div>
+      <div className="px-6 lg:px-12 pt-12">
+         <div className="mb-8">
+            <h1 className="text-4xl font-black text-[#292828] mb-2 leading-tight uppercase">Expert <span className="text-[#E53935]">Help</span>.</h1>
+            <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-2 block">Get help from verified experts in your city.</p>
          </div>
-         <Activity size={400} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12" />
+         
+         <div className="flex flex-wrap gap-2 mb-10">
+            {CATEGORIES.map(cat => (
+              <button 
+               key={cat.name}
+               onClick={() => setActiveCategory(cat.name)}
+               className={cn(
+                 "px-5 h-12 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border",
+                 activeCategory === cat.name ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/10" : "bg-white border-[#292828]/10 text-[#292828] hover:bg-slate-50"
+               )}
+              >
+                 <cat.icon size={12} /> {cat.name}
+              </button>
+            ))}
+         </div>
       </div>
 
       {/* 2. EXPLORATION HUB */}
@@ -114,7 +123,7 @@ export default function EliteAdvisorsPortal() {
                  type="text" 
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
-                 placeholder="Search by specialty, firm or name..." 
+                 placeholder="Search for help..." 
                  className="w-full h-20 bg-white border border-[#292828]/10 rounded-[2rem] pl-16 pr-8 text-[16px] font-bold text-[#292828] outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all"
                />
             </div>
@@ -202,7 +211,7 @@ export default function EliteAdvisorsPortal() {
                         view === "list" ? "gap-10 border-t-0 pt-0" : ""
                       )}>
                          <div>
-                            <p className="text-[9px] font-black text-[#292828]/40 uppercase leading-none mb-1">Consultation Fee</p>
+                            <p className="text-[9px] font-black text-[#292828]/40 uppercase leading-none mb-1">Price</p>
                             <p className="text-2xl font-black text-[#292828] leading-none">₹{adv.cost}<span className="text-sm font-bold text-[#292828] not-italic">/hr</span></p>
                          </div>
                          <button 
@@ -242,7 +251,7 @@ export default function EliteAdvisorsPortal() {
                     </div>
                     <div className="flex gap-4">
                        <UserCheck size={20} className="text-[#292828]/40" />
-                       <p className="text-[13px] font-bold text-[#292828]">Node-Verified Expert</p>
+                       <p className="text-[13px] font-bold text-[#292828]">Verified Expert</p>
                     </div>
                  </div>
               </div>
@@ -250,28 +259,44 @@ export default function EliteAdvisorsPortal() {
               {/* Booking Engine */}
               <div className="flex-1 p-12 lg:p-16 flex flex-col bg-white overflow-y-auto no-scrollbar">
                  <div className="flex items-center justify-between mb-12">
-                    <h3 className="text-3xl font-black text-[#292828] uppercase">Select <span className="text-[#E53935]">Session</span></h3>
+                    <h3 className="text-3xl font-black text-[#292828] uppercase">Choose a <span className="text-[#E53935]">Time</span></h3>
                     <button onClick={() => setSelectedAdv(null)} className="h-12 w-12 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#292828] hover:text-[#292828] transition-all"><X size={24} /></button>
                  </div>
 
                  <div className="space-y-12 flex-1">
                     <div>
-                       <p className="text-[10px] font-black text-[#292828]/40 uppercase  mb-6">Available Dates</p>
+                       <p className="text-[10px] font-black text-[#292828]/40 uppercase mb-6">Available Dates</p>
                        <div className="grid grid-cols-4 gap-3">
                           {[18, 19, 20, 21, 22, 23, 24, 25].map(day => (
-                            <button key={day} className="h-20 bg-[#292828]/5 border border-[#292828]/10 rounded-2xl flex flex-col items-center justify-center gap-1 hover:border-[#E53935] hover:bg-red-50 group transition-all">
-                               <p className="text-[10px] font-bold text-[#292828] group-hover:text-[#E53935]">OCT</p>
-                               <p className="text-xl font-black text-[#292828] group-hover:text-[#E53935]">{day}</p>
+                            <button 
+                              key={day} 
+                              onClick={() => setSelectedDate(day)}
+                              className={cn(
+                                "h-20 border rounded-2xl flex flex-col items-center justify-center gap-1 transition-all",
+                                selectedDate === day ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-[#292828]/5 border-[#292828]/10 text-[#292828] hover:border-[#E53935]/50"
+                              )}
+                            >
+                               <p className={cn("text-[10px] font-bold", selectedDate === day ? "text-white/80" : "text-[#292828]/60")}>OCT</p>
+                               <p className="text-xl font-black">{day}</p>
                             </button>
                           ))}
                        </div>
                     </div>
 
                     <div>
-                       <p className="text-[10px] font-black text-[#292828]/40 uppercase  mb-6">Available Slots</p>
+                       <p className="text-[10px] font-black text-[#292828]/40 uppercase mb-6">Available Slots</p>
                        <div className="flex flex-wrap gap-3">
                           {["10:00 AM", "11:30 AM", "02:00 PM", "04:30 PM", "06:00 PM"].map(time => (
-                            <button key={time} className="px-6 py-4 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[12px] font-black text-[#292828] hover:border-[#E53935] hover:text-[#E53935] transition-all">{time}</button>
+                            <button 
+                              key={time} 
+                              onClick={() => setSelectedTime(time)}
+                              className={cn(
+                                "px-6 py-4 border rounded-xl text-[12px] font-black transition-all",
+                                selectedTime === time ? "bg-[#292828] border-[#292828] text-white" : "bg-[#292828]/5 border-[#292828]/10 text-[#292828] hover:border-[#E53935]"
+                              )}
+                            >
+                               {time}
+                            </button>
                           ))}
                        </div>
                     </div>
@@ -282,7 +307,19 @@ export default function EliteAdvisorsPortal() {
                        <p className="text-[24px] font-black text-[#292828]">₹{selectedAdv.cost}</p>
                        <p className="text-[10px] font-bold text-[#292828] uppercase ">Total for 1 hour</p>
                     </div>
-                    <button className="px-12 h-16 bg-[#E53935] text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl shadow-red-500/10 active:scale-95 transition-all">Confirm Booking</button>
+                    <button 
+                       onClick={handleBooking}
+                       disabled={!selectedDate || !selectedTime || bookingStatus !== "idle"}
+                       className={cn(
+                         "px-12 h-16 rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3",
+                         bookingStatus === "success" ? "bg-green-500 text-white" : "bg-[#E53935] text-white"
+                       )}
+                     >
+                        {bookingStatus === "loading" && <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                        {bookingStatus === "idle" && "Book Now"}
+                        {bookingStatus === "loading" && "Processing..."}
+                        {bookingStatus === "success" && <><CheckCircle2 size={18} /> Booking Confirmed</>}
+                     </button>
                  </div>
               </div>
            </div>

@@ -1,8 +1,6 @@
-// CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { 
   User, 
   Mail, 
@@ -218,16 +216,16 @@ export default function PremiumProfilePage() {
                      <Plus size={120} strokeWidth={1} />
                   </div>
                   <div className="relative z-10">
-                     <h3 className="text-[10px] font-black uppercase text-white/40 mb-6 tracking-widest leading-none">Quick Actions</h3>
+                     <h3 className="text-[10px] font-black uppercase text-white/40 mb-6 tracking-widest leading-none">Command Hub</h3>
                      <div className="space-y-3">
                         <button onClick={() => setIsAddingDep(true)} className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 group/btn">
-                           <span className="text-[11px] font-bold text-[#E53935]">Post a Need</span>
+                           <span className="text-[11px] font-bold text-[#E53935]">Post a New Need</span>
                            <Plus size={14} className="text-[#E53935] group-hover/btn:rotate-90 transition-transform" />
                         </button>
-                        <Link href="/wallet" className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 group/btn">
-                           <span className="text-[11px] font-bold">My Wallet</span>
+                        <button className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 group/btn">
+                           <span className="text-[11px] font-bold">Check Bank Info</span>
                            <ChevronRight size={14} className="text-white/20 group-hover/btn:translate-x-1 transition-transform" />
-                        </Link>
+                        </button>
                         <button className="w-full mt-6 py-4 bg-[#E53935] rounded-xl font-black text-[10px] uppercase shadow-2xl hover:bg-white hover:text-[#E53935] transition-all">
                            Log Out
                         </button>
@@ -282,7 +280,7 @@ export default function PremiumProfilePage() {
                            onClick={addDependency}
                            className="w-full h-14 bg-[#E53935] text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#292828] transition-all shadow-xl shadow-red-500/10"
                         >
-                           Post Now
+                           Broadcast to Network
                         </button>
                      </div>
                   )}
@@ -325,9 +323,9 @@ export default function PremiumProfilePage() {
                <div className="bg-white rounded-[2.5rem] p-10 border border-[#292828]/10 shadow-xl">
                   <div className="flex items-center justify-between mb-10">
                      <h3 className="text-xs font-black uppercase text-[#292828] flex items-center gap-3">
-                        <Activity size={18} className="text-[#E53935]" /> My History
+                        <Activity size={18} className="text-[#E53935]" /> Activity Log
                      </h3>
-                     <Link href="/history" className="text-[8px] font-black text-slate-400 uppercase hover:text-[#E53935] transition-colors tracking-[0.2em] opacity-60">Full Archive</Link>
+                     <button className="text-[8px] font-black text-slate-400 uppercase hover:text-[#E53935] transition-colors tracking-[0.2em] opacity-60">Full Archive</button>
                   </div>
                   <div className="space-y-8">
                      {[
@@ -377,7 +375,7 @@ export default function PremiumProfilePage() {
                {/* LEVEL UP PROGRESS */}
                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#292828]/10">
                   <h3 className="text-[10px] font-black text-[#292828] uppercase mb-6 flex items-center gap-2 tracking-widest leading-none">
-                     <TrendingUp size={16} className="text-[#E53935]" /> My Progress
+                     <TrendingUp size={16} className="text-[#E53935]" /> Level Up Path
                   </h3>
                   <div className="space-y-5">
                      {[

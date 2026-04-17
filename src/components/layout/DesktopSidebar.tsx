@@ -40,9 +40,9 @@ const NAV_GROUPS = [
     group: "Discovery",
     items: [
       { label: "Business Expos", icon: LayoutGrid, href: "/events" },
-      { label: "Search Places", icon: Search, href: "/explore" },
+      { label: "Checkout Map", icon: Search, href: "/explore" },
       { label: "Groups", icon: Users, href: "/community" },
-      { label: "Talk to Experts", icon: GraduationCap, href: "/advisors" },
+      { label: "Elite Advisors", icon: GraduationCap, href: "/advisors" },
     ]
   },
   {

@@ -248,8 +248,8 @@ export default function BusinessNetworkPage() {
                      <span className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.4em] animate-pulse">420+ Members Online</span>
                   </div>
                   <h1 className="text-4xl lg:text-7xl font-black text-[#292828] tracking-tight uppercase flex items-center gap-4">
-                     Business 
-                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] via-[#E53935] to-[#292828]">Network</span>
+                     Find 
+                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] via-[#E53935] to-[#292828]">People</span>
                   </h1>
                </div>
 
@@ -266,10 +266,10 @@ export default function BusinessNetworkPage() {
                   <Target size={32} />
                </div>
                <div>
-                  <h3 className="text-3xl font-black text-[#292828] uppercase">Suggested for You</h3>
+                  <h3 className="text-3xl font-black text-[#292828] uppercase">People you should meet</h3>
                   <div className="flex items-center gap-2 mt-2">
                      <div className="h-1 w-8 bg-[#E53935] rounded-full" />
-                     <p className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.25em]">AI Recommendations</p>
+                     <p className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.25em]">Top picks for you</p>
                   </div>
                </div>
             </div>
@@ -311,7 +311,7 @@ export default function BusinessNetworkPage() {
 
             {/* VIEW CONTROLS */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 mt-4">
-               <h3 className="text-2xl font-black text-[#292828] uppercase shrink-0">Directory</h3>
+               <h3 className="text-2xl font-black text-[#292828] uppercase shrink-0">Search for anyone</h3>
                
                <div className="flex flex-wrap items-center justify-end gap-4 w-full">
                   {/* Search */}
@@ -321,7 +321,7 @@ export default function BusinessNetworkPage() {
                        type="text" 
                        value={search}
                        onChange={(e) => setSearch(e.target.value)}
-                       placeholder="Search by name..." 
+                       placeholder="Type a name..." 
                        className="w-full h-12 bg-white border border-slate-200/60 rounded-xl pl-10 pr-4 text-[13px] font-bold outline-none focus:border-[#E53935] focus:shadow-sm transition-all text-[#292828]" 
                      />
                   </div>
@@ -388,7 +388,7 @@ export default function BusinessNetworkPage() {
                      className="group relative px-16 py-8 bg-white border border-[#292828]/5 rounded-[2.5rem] overflow-hidden transition-all hover:border-[#E53935] hover:shadow-[0_40px_80px_-20px_rgba(229,57,53,0.15)] active:scale-95"
                   >
                      <div className="absolute inset-0 bg-gradient-to-r from-[#E53935]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                     <span className="relative z-10 text-[12px] font-black text-[#292828] uppercase tracking-[0.4em]">Load More People</span>
+                     <span className="relative z-10 text-[12px] font-black text-[#292828] uppercase tracking-[0.4em]">See More</span>
                   </button>
                </div>
             )}

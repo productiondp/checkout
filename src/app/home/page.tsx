@@ -402,7 +402,7 @@ export default function EliteHomeFeed() {
                            post.type === 'Opportunities' ? "bg-red-500" : post.type === 'Meeting' ? "bg-green-500" : "bg-blue-500"
                          )} />
                          
-                         <div className="relative bg-white/70 backdrop-blur-2xl border border-white hover:border-[#292828]/20 overflow-hidden rounded-[1.2rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-500">
+                         <div className="relative bg-white/70 backdrop-blur-2xl border border-white hover:border-[#292828]/30 overflow-hidden rounded-[1.2rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-500">
                             {/* BRUTALIST STATUS STRIP */}
                             <div className={cn(
                                "h-1 w-full",

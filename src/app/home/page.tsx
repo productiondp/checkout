@@ -372,7 +372,7 @@ export default function EliteHomeFeed() {
                         post.type === 'Deals' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
                       )}>
                         <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-                           <div className="flex items-center gap-2 group/author">
+                           <Link href={`/profile/${post.authorId}`} className="flex items-center gap-2 group/author">
                               <div className="relative">
                                  <div className="h-8 w-8 rounded-lg overflow-hidden border-2 border-transparent group-hover/author:border-[#292828]/10 transition-all">
                                     <img src={post.avatar} className="w-full h-full object-cover" alt="" />
@@ -383,7 +383,7 @@ export default function EliteHomeFeed() {
                                  )} />
                               </div>
                               <span className="text-[10px] font-bold text-[#292828] uppercase group-hover/author:text-[#E53935] transition-colors">{post.author}</span>
-                           </div>
+                           </Link>
                            <div className={cn(
                               "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
                               post.type === 'Deals' ? "bg-red-50 text-red-600 border-red-100" : "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
@@ -458,7 +458,7 @@ export default function EliteHomeFeed() {
                       <div className="bg-white border-slate-100 overflow-hidden transition-all duration-500 rounded-[2rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10">
                          <div className="px-6 pt-6 pb-4 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
-                               <div className="relative">
+                               <Link href={`/profile/${post.authorId}`} className="relative block">
                                   <div className="block h-11 w-11 rounded-xl overflow-hidden border border-[#292828]/5 shadow-sm hover:scale-105 active:scale-95 transition-all">
                                      <img src={post.avatar} alt="" className="w-full h-full object-cover" />
                                   </div>
@@ -466,10 +466,10 @@ export default function EliteHomeFeed() {
                                      "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm z-10",
                                      post.id % 3 === 0 ? "bg-green-500" : post.id % 3 === 1 ? "bg-amber-500" : "bg-slate-300"
                                   )} />
-                               </div>
+                               </Link>
                                <div>
                                   <div className="flex items-center gap-3">
-                                     <span className="text-[15px] font-bold text-[#292828] leading-tight hover:text-[#E53935] transition-colors">{post.author}</span>
+                                     <Link href={`/profile/${post.authorId}`} className="text-[15px] font-bold text-[#292828] leading-tight hover:text-[#E53935] transition-colors">{post.author}</Link>
                                      <div className={cn(
                                         "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
                                         post.type === 'Deals' ? "bg-red-50 text-red-600 border-red-100" : "bg-slate-50 text-slate-500 border-slate-100"
@@ -821,15 +821,22 @@ export default function EliteHomeFeed() {
                                     </div>
                                  </div>
                               </div>
-                              <button 
-                                onClick={() => {
-                                  alert(`Pitch sent to ${partner.name}. They will be notified via the Smart Sync hub.`);
-                                  setIsMatching(false);
-                                }}
-                                className="h-14 px-8 bg-[#E53935] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#292828] transition-all active:scale-95"
-                              >
-                                Send Pitch
-                              </button>
+                              <div className="flex items-center gap-3">
+                                 <Link href={`/profile/${i + 2}`}>
+                                    <button className="h-14 px-8 bg-[#292828] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#E53935] transition-all active:scale-95">
+                                      View Node
+                                    </button>
+                                 </Link>
+                                 <button 
+                                   onClick={() => {
+                                     alert(`Pitch sent to ${partner.name}. They will be notified via the Smart Sync hub.`);
+                                     setIsMatching(false);
+                                   }}
+                                   className="h-14 px-10 bg-[#E53935] text-white rounded-2xl text-[13px] font-bold uppercase shadow-xl hover:bg-[#292828] transition-all active:scale-95"
+                                 >
+                                   Send Pitch
+                                 </button>
+                              </div>
                            </div>
                         ))}
                      </div>

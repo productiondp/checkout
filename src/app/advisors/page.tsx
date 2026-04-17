@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { 
   GraduationCap, 
   Star, 
@@ -151,8 +152,8 @@ export default function EliteAdvisorsPortal() {
                 )}>
                    
                    {/* Visual Section */}
-                   <div className={cn(
-                      "relative overflow-hidden",
+                   <Link href={`/profile/${adv.id}`} className={cn(
+                      "relative overflow-hidden block",
                       view === "grid" ? "h-60 rounded-[1.75rem]" : "h-24 w-24 rounded-2xl shrink-0"
                    )}>
                       <img src={adv.avatar} className="w-full h-full object-cover grayscale transition-all duration-[2s] group-hover/adv:grayscale-0 group-hover/adv:scale-110" alt="" />
@@ -167,7 +168,7 @@ export default function EliteAdvisorsPortal() {
                       <div className="absolute top-5 right-5 h-10 w-10 bg-white/95 backdrop-blur-md rounded-xl flex items-center justify-center text-[#E53935] shadow-xl opacity-0 group-hover/adv:opacity-100 transform translate-y-2 group-hover/adv:translate-y-0 transition-all">
                          <Star size={18} fill="currentColor" />
                       </div>
-                   </div>
+                   </Link>
 
                    {/* Content Section (Home Feed Style) */}
                    <div className={cn("flex-1", view === "grid" ? "p-6" : "pl-10 flex items-center justify-between")}>

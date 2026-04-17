@@ -27,9 +27,9 @@ export default function RightSocialRail() {
       <div className="space-y-6">
          <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-normal">Active Fast</h4>
          <div className="space-y-4">
-            {RECENT_ACTIVITY.map(p => (
+            {RECENT_ACTIVITY.map((p, i) => (
               <div key={p.name} onClick={() => handleClick(p.name)} className="flex items-center gap-3 cursor-pointer group">
-                 <Link href="/profile" className="w-8 h-8 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm block hover:scale-105 transition-transform active:scale-95">
+                 <Link href={`/profile/${i + 1}`} className="w-8 h-8 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm block hover:scale-105 transition-transform active:scale-95" onClick={(e) => e.stopPropagation()}>
                     <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" />
                  </Link>
                  <div className="min-w-0">
@@ -47,15 +47,15 @@ export default function RightSocialRail() {
             <span className="text-[9px] font-bold text-[#E53935] bg-red-50 px-1.5 py-0.5 rounded">NEW</span>
          </div>
          <div className="space-y-4">
-            {CONTACTS.map(f => (
+            {CONTACTS.map((f, i) => (
                <div key={f.name} onClick={() => handleClick(f.name)} className="flex items-center gap-3 cursor-pointer group">
-                  <Link href="/profile" className="w-8 h-8 rounded-xl bg-[#292828]/5 overflow-hidden relative border border-[#292828]/10 shadow-sm block hover:scale-105 transition-transform active:scale-95">
+                  <Link href={`/profile/${i + 5}`} className="w-8 h-8 rounded-xl bg-[#292828]/5 overflow-hidden relative border border-[#292828]/10 shadow-sm block hover:scale-105 transition-transform active:scale-95" onClick={(e) => e.stopPropagation()}>
                      <img src={f.avatar} alt={f.name} className="w-full h-full object-cover" />
                      {f.status === 'online' && (
                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
                      )}
                   </Link>
-                  <span className="text-[13px] font-bold text-slate-700 group-hover:text-[#E53935]">{f.name}</span>
+                  <Link href={`/profile/${i + 5}`} className="text-[13px] font-bold text-slate-700 group-hover:text-[#E53935]" onClick={(e) => e.stopPropagation()}>{f.name}</Link>
                </div>
             ))}
          </div>

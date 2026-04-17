@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Plus, 
   Minus,
@@ -229,7 +230,9 @@ export default function LiveMap() {
                
                <div className="flex gap-2 lg:gap-4">
                   <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#E53935] transition-all">Connect</button>
-                  <button className="px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#292828]/5 transition-all">View Profile</button>
+                  <Link href={`/profile/${parseInt(selectedMarker.id) + 1}`} className="flex-1">
+                     <button className="w-full px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#292828]/5 transition-all">View Profile</button>
+                  </Link>
                </div>
             </div>
          </div>

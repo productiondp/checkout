@@ -59,16 +59,16 @@ export default function DesktopSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[260px] hidden lg:flex flex-col border-r border-slate-100 bg-white h-screen sticky top-0 px-4 py-8 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10">
+    <aside className="w-[260px] hidden lg:flex flex-col border-r border-[#292828]/10 bg-white h-screen sticky top-0 px-4 py-8 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10">
       
       {/* NAVIGATION SECTIONS */}
       <div className="flex-1 space-y-5">
         {NAV_GROUPS.map((group) => (
           <div key={group.group} className="space-y-1">
-            <h4 className="px-6 text-[11px] font-semibold uppercase  text-slate-400">
+            <h4 className="px-6 text-[11px] font-semibold uppercase  text-[#292828]">
               {group.group}
             </h4>
-            <nav className="space-y-1 text-slate-600">
+            <nav className="space-y-1 text-[#292828]">
               {group.items.map((item) => {
                 if (item.label === "My Profile") return null;
                 const isActive = pathname === item.href;
@@ -80,13 +80,13 @@ export default function DesktopSidebar() {
                       "group flex items-center justify-between px-5 py-2 rounded-xl transition-all duration-300",
                       isActive 
                         ? "bg-[#E53935]/5 text-[#E53935]" 
-                        : "hover:bg-slate-50 hover:text-slate-900"
+                        : "hover:bg-[#292828]/5 hover:text-[#292828]"
                     )}
                   >
                     <div className="flex items-center gap-3.5">
                       <div className={cn(
                         "transition-transform",
-                        isActive ? "text-[#E53935]" : "text-slate-400 group-hover:text-slate-600"
+                        isActive ? "text-[#E53935]" : "text-[#292828] group-hover:text-[#292828]"
                       )}>
                         <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                       </div>
@@ -106,14 +106,14 @@ export default function DesktopSidebar() {
       </div>
 
       {/* FOOTER WIDGET */}
-      <div className="mt-12 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+      <div className="mt-12 p-6 bg-[#292828]/5 rounded-[2rem] border border-[#292828]/10">
          <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm">
                <TrendingUp size={18} />
             </div>
             <div>
-               <p className="text-[12px] font-bold text-slate-900">Elite Level</p>
-               <p className="text-[9px] font-bold text-slate-400 uppercase">32 Credits Left</p>
+               <p className="text-[12px] font-bold text-[#292828]">Elite Level</p>
+               <p className="text-[9px] font-bold text-[#292828] uppercase">32 Credits Left</p>
             </div>
          </div>
          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden">

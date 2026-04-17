@@ -125,7 +125,7 @@ export const DUMMY_MARKET = Array.from({ length: 40 }).map((_, i) => ({
   ][i % 5]}?q=80&w=300`
 }));
 
-export const DUMMY_CHATS = DUMMY_PROFILES.slice(0, 15).map((p, i) => ({
+export const DUMMY_CHATS = DUMMY_PROFILES.slice(0, 40).map((p, i) => ({
   id: p.id,
   name: p.name,
   last: [
@@ -133,8 +133,17 @@ export const DUMMY_CHATS = DUMMY_PROFILES.slice(0, 15).map((p, i) => ({
     "Sent you the proposal.", "Can we call at 3?", "Got the shipment.", 
     "Thanks for the match!", "Will check and get back.", "Price seems okay.", 
     "Let's finalize.", "Sent the payment.", "Checking for leads.", 
-    "Any updates?", "Awesome work!", "Let's catch up."
-  ][i % 15],
+    "Any updates?", "Awesome work!", "Let's catch up.",
+    "Drafted the contract.", "Reviewing the feedback.", "Team call tomorrow.",
+    "Shared the folder.", "Signature pending.", "New lead found.",
+    "Discussing expansion.", "Marketing plan ready.", "Financial audit done.",
+    "Product demo next week.", "Feedback on build.", "New partnership idea.",
+    "Scale report sent.", "Quarterly goals set.", "Investor meeting info.",
+    "Budget approved.", "Hiring updates.", "Legal review complete.",
+    "Onboarding docs ready.", "Sync the repo.", "Design system update.",
+    "New feature request.", "Performance tuning.", "Testing the engine.",
+    "Ready for launch!"
+  ][i % 40],
   time: `${i + 1}m`,
   online: i % 3 === 0,
   avatar: p.avatar

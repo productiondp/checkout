@@ -29,7 +29,7 @@ export default function MatchCard({
     <div className="bg-white rounded-3xl p-8 shadow-soft border border-white/60 hover:shadow-premium transition-all duration-300 group">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-3xl font-bold text-primary shadow-sm overflow-hidden">
+          <div className="w-16 h-16 rounded-2xl bg-[#292828]/5 border border-[#292828]/10 flex items-center justify-center text-3xl font-bold text-primary shadow-sm overflow-hidden">
             {avatar ? avatar : title[0]}
           </div>
           <div>
@@ -57,7 +57,7 @@ export default function MatchCard({
         </div>
       </div>
 
-      <div className="bg-slate-50/50 rounded-2xl p-5 mb-8 border border-slate-50">
+      <div className="bg-[#292828]/5/50 rounded-2xl p-5 mb-8 border border-[#292828]/5">
         <p className="text-[14px] text-text-main leading-relaxed italic">
           "{reason}"
         </p>

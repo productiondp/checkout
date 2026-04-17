@@ -73,18 +73,18 @@ export default function MeetupPage() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       
       {/* 1. MEETING FEED (LEFT) */}
-      <div className="flex-1 flex flex-col min-h-screen border-r border-slate-100 pb-40 lg:pb-12">
+      <div className="flex-1 flex flex-col min-h-screen border-r border-[#292828]/10 pb-40 lg:pb-12">
         
         {/* Header Section */}
-        <div className="p-6 lg:p-10 border-b border-slate-50 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
+        <div className="p-6 lg:p-10 border-b border-[#292828]/5 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
-                 <h1 className="text-3xl font-black text-slate-900 leading-tight">Live Meetings</h1>
-                 <p className="text-[12px] font-medium text-slate-500 mt-1">Connecting with business people near you</p>
+                 <h1 className="text-3xl font-black text-[#292828] leading-tight">Live Meetings</h1>
+                 <p className="text-[12px] font-medium text-[#292828] mt-1">Connecting with business people near you</p>
               </div>
               <button 
                 onClick={() => setShowHostModal(true)}
-                className="px-8 py-4 bg-slate-950 text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-[#292828] text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                  <Plus size={18} /> Start a Meeting
               </button>
@@ -97,7 +97,7 @@ export default function MeetupPage() {
                   onClick={() => setActiveTopic(t)}
                   className={cn(
                     "px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase transition-all whitespace-nowrap border",
-                    activeTopic === t ? "bg-[#E53935] text-white border-[#E53935] shadow-lg shadow-red-500/10" : "bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100"
+                    activeTopic === t ? "bg-[#E53935] text-white border-[#E53935] shadow-lg shadow-red-500/10" : "bg-[#292828]/5 text-[#292828] border-transparent hover:bg-[#292828]/10"
                   )}
                 >
                    {t}
@@ -113,43 +113,43 @@ export default function MeetupPage() {
               {filteredMeetups.map(m => (
                 <div key={m.id} className={cn(
                   "bg-white rounded-[2.5rem] border transition-all overflow-hidden flex flex-col group",
-                  m.joined ? "border-[#E53935] shadow-2xl shadow-red-500/5 scale-[1.02]" : "border-slate-100 shadow-sm hover:border-[#E53935]/20 hover:shadow-xl"
+                  m.joined ? "border-[#E53935] shadow-2xl shadow-red-500/5 scale-[1.02]" : "border-[#292828]/10 shadow-sm hover:border-[#E53935]/20 hover:shadow-xl"
                 )}>
                    <div className="p-8 pb-4">
                       <div className="flex justify-between items-center mb-6">
                          <div className="flex items-center gap-2">
                             <span className={cn("h-2 w-2 rounded-full", m.time === "Live now" ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{m.topic}</span>
+                            <span className="text-[10px] font-bold text-[#292828] uppercase tracking-widest">{m.topic}</span>
                          </div>
                          <span className="text-[10px] font-bold text-[#E53935] uppercase tracking-widest">{m.time}</span>
                       </div>
 
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 leading-tight group-hover:text-[#E53935] transition-colors">{m.title}</h3>
-                      <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 mb-6">
-                         <MapPin size={14} className="text-slate-300" />
-                         <span>{m.loc} • <span className="text-slate-400">{m.address}</span></span>
+                      <h3 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors">{m.title}</h3>
+                      <div className="flex items-center gap-2 text-[12px] font-medium text-[#292828] mb-6">
+                         <MapPin size={14} className="text-[#292828]/40" />
+                         <span>{m.loc} • <span className="text-[#292828]">{m.address}</span></span>
                       </div>
 
-                      <div className="bg-slate-50 rounded-2xl p-4 flex gap-4 items-center">
-                         <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 text-xl">💡</div>
-                         <p className="text-[13px] font-medium text-slate-600 leading-snug">{m.advice}</p>
+                      <div className="bg-[#292828]/5 rounded-2xl p-4 flex gap-4 items-center">
+                         <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-[#292828]/10 text-xl">💡</div>
+                         <p className="text-[13px] font-medium text-[#292828] leading-snug">{m.advice}</p>
                       </div>
                    </div>
 
-                   <div className="p-8 pt-4 mt-auto flex items-center justify-between border-t border-slate-50">
+                   <div className="p-8 pt-4 mt-auto flex items-center justify-between border-t border-[#292828]/5">
                       <div className="flex items-center gap-3">
                          <div className="flex -space-x-2">
                             {[1, 2, 3].map(i => (
                               <img key={i} src={`https://i.pravatar.cc/150?u=meet${m.id}${i}`} className="h-8 w-8 rounded-full border-2 border-white shadow-sm" alt="" />
                             ))}
                          </div>
-                         <span className="text-[11px] font-bold text-slate-400">{m.count}+ People Joining</span>
+                         <span className="text-[11px] font-bold text-[#292828]">{m.count}+ People Joining</span>
                       </div>
                       <button 
                         onClick={() => handleJoin(m.id)}
                         className={cn(
                           "px-6 py-3 rounded-xl text-[11px] font-bold uppercase transition-all shadow-lg active:scale-95",
-                          m.joined ? "bg-slate-100 text-slate-400" : "bg-slate-950 text-white hover:bg-[#E53935]"
+                          m.joined ? "bg-[#292828]/10 text-[#292828]" : "bg-[#292828] text-white hover:bg-[#E53935]"
                         )}
                       >
                          {m.joined ? "Joined" : "Join Now"}
@@ -162,10 +162,10 @@ export default function MeetupPage() {
       </div>
 
       {/* 2. AREA ANALYTICS (RIGHT) */}
-      <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-white border-l border-slate-100 p-10 gap-10">
+      <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-white border-l border-[#292828]/10 p-10 gap-10">
          <div>
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-6">Local Traffic</p>
-            <div className="p-8 bg-slate-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <p className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest mb-6">Local Traffic</p>
+            <div className="p-8 bg-[#292828] rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                <div className="relative z-10 flex items-center gap-5">
                   <div className="h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-2xl shadow-lg border border-white/10">📡</div>
                   <div>
@@ -176,7 +176,7 @@ export default function MeetupPage() {
             </div>
          </div>
 
-         <div className="flex-1 bg-slate-50 rounded-[3rem] border-4 border-white shadow-2xl relative overflow-hidden group">
+         <div className="flex-1 bg-[#292828]/5 rounded-[3rem] border-4 border-white shadow-2xl relative overflow-hidden group">
             <Image src="/images/trivandrum-map.png" alt="" fill className="object-cover opacity-50 grayscale transition-all duration-[20s] group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
             
@@ -187,15 +187,15 @@ export default function MeetupPage() {
             </div>
 
             <Link href="/explore" className="absolute bottom-8 left-8 right-8">
-               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-3xl hover:border-[#E53935]/20 flex items-center justify-between group/link transition-all translate-y-0 hover:-translate-y-2">
+               <div className="bg-white p-6 rounded-[2rem] border border-[#292828]/10 shadow-3xl hover:border-[#E53935]/20 flex items-center justify-between group/link transition-all translate-y-0 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
-                     <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-xl">🏙️</div>
+                     <div className="h-12 w-12 bg-[#292828]/5 rounded-xl flex items-center justify-center text-xl">🏙️</div>
                      <div>
-                        <p className="text-[13px] font-bold text-slate-900">Explore Hubs</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">View nearby nodes</p>
+                        <p className="text-[13px] font-bold text-[#292828]">Explore Hubs</p>
+                        <p className="text-[10px] font-bold text-[#292828] uppercase">View nearby nodes</p>
                      </div>
                   </div>
-                  <ArrowRight size={20} className="text-slate-300 group-hover/link:text-[#E53935] transition-colors" />
+                  <ArrowRight size={20} className="text-[#292828]/40 group-hover/link:text-[#E53935] transition-colors" />
                </div>
             </Link>
          </div>
@@ -204,30 +204,30 @@ export default function MeetupPage() {
       {/* START MEETING MODAL */}
       {showHostModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHostModal(false)} />
+           <div className="absolute inset-0 bg-[#292828]/40 backdrop-blur-sm" onClick={() => setShowHostModal(false)} />
            <div className="relative w-full max-w-lg bg-white rounded-[3rem] p-12 shadow-4xl animate-in zoom-in-95 duration-200">
-              <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">Start a <span className="text-[#E53935]">Meeting</span></h2>
-              <p className="text-slate-500 font-medium mb-10">Broadcast your location to nearby business partners.</p>
+              <h2 className="text-3xl font-black text-[#292828] mb-2 leading-tight">Start a <span className="text-[#E53935]">Meeting</span></h2>
+              <p className="text-[#292828] font-medium mb-10">Broadcast your location to nearby business partners.</p>
               
               <div className="space-y-6">
                  <div>
-                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Meeting Name</label>
+                    <label className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest ml-1 mb-2 block">Meeting Name</label>
                     <input 
                       type="text" 
                       value={hostData.title}
                       onChange={(e) => setHostData({ ...hostData, title: e.target.value })}
                       placeholder="e.g. Real Estate Coffee Talk" 
-                      className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none focus:bg-white focus:border-[#E53935]/20 transition-all" 
+                      className="w-full h-14 bg-[#292828]/5 border border-[#292828]/10 rounded-2xl px-6 text-[14px] font-medium outline-none focus:bg-white focus:border-[#E53935]/20 transition-all" 
                     />
                  </div>
                  
                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                       <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Location</label>
+                       <label className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest ml-1 mb-2 block">Location</label>
                        <select 
                          value={hostData.loc}
                          onChange={(e) => setHostData({ ...hostData, loc: e.target.value })}
-                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
+                         className="w-full h-14 bg-[#292828]/5 border border-[#292828]/10 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
                        >
                           <option value="">Select...</option>
                           <option value="Technopark">Technopark</option>
@@ -236,11 +236,11 @@ export default function MeetupPage() {
                        </select>
                     </div>
                     <div>
-                       <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Category</label>
+                       <label className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest ml-1 mb-2 block">Category</label>
                        <select 
                          value={hostData.topic}
                          onChange={(e) => setHostData({ ...hostData, topic: e.target.value })}
-                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
+                         className="w-full h-14 bg-[#292828]/5 border border-[#292828]/10 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
                        >
                           {TOPICS.slice(1).map(t => (
                             <option key={t} value={t}>{t}</option>
@@ -252,7 +252,7 @@ export default function MeetupPage() {
                  <button 
                    onClick={handleStartMeeting}
                    disabled={!hostData.title || !hostData.loc}
-                   className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+                   className="w-full h-16 bg-[#292828] text-white rounded-[1.5rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] disabled:opacity-40 transition-all flex items-center justify-center gap-2"
                  >
                     Launch Meeting Now <ArrowRight size={18} />
                  </button>

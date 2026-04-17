@@ -76,7 +76,7 @@ export default function EliteAdvisorsPortal() {
     <div className="flex flex-col min-h-screen bg-white lg:bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10 overscroll-none">
       
       {/* 1. CINEMATIC DISCOVERY HERO */}
-      <div className="bg-slate-950 px-6 lg:px-12 py-16 lg:py-24 relative overflow-hidden">
+      <div className="bg-[#292828] px-6 lg:px-12 py-16 lg:py-24 relative overflow-hidden">
          <div className="max-w-4xl relative z-10">
             <div className="flex items-center gap-3 mb-6">
                <span className="h-[1px] w-12 bg-[#E53935]" />
@@ -109,21 +109,21 @@ export default function EliteAdvisorsPortal() {
       <div className="px-6 lg:px-12 py-12">
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
             <div className="relative w-full md:max-w-xl">
-               <Search size={22} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" />
+               <Search size={22} className="absolute left-6 top-1/2 -translate-y-1/2 text-[#292828]/40" />
                <input 
                  type="text" 
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
                  placeholder="Search by specialty, firm or name..." 
-                 className="w-full h-20 bg-white border border-slate-100 rounded-[2rem] pl-16 pr-8 text-[16px] font-bold text-slate-900 outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all"
+                 className="w-full h-20 bg-white border border-[#292828]/10 rounded-[2rem] pl-16 pr-8 text-[16px] font-bold text-[#292828] outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all"
                />
             </div>
 
-            <div className="flex bg-slate-100/50 p-1.5 rounded-2xl border border-slate-100">
-               <button onClick={() => setView("grid")} className={cn("h-12 px-6 flex items-center gap-2 rounded-xl transition-all font-black text-[10px] uppercase", view === "grid" ? "bg-white text-slate-900 shadow-md" : "text-slate-400 hover:text-slate-600")}>
+            <div className="flex bg-[#292828]/10/50 p-1.5 rounded-2xl border border-[#292828]/10">
+               <button onClick={() => setView("grid")} className={cn("h-12 px-6 flex items-center gap-2 rounded-xl transition-all font-black text-[10px] uppercase", view === "grid" ? "bg-white text-[#292828] shadow-md" : "text-[#292828] hover:text-[#292828]")}>
                   <LayoutGrid size={16} /> Grid
                </button>
-               <button onClick={() => setView("list")} className={cn("h-12 px-6 flex items-center gap-2 rounded-xl transition-all font-black text-[10px] uppercase", view === "list" ? "bg-white text-slate-900 shadow-md" : "text-slate-400 hover:text-slate-600")}>
+               <button onClick={() => setView("list")} className={cn("h-12 px-6 flex items-center gap-2 rounded-xl transition-all font-black text-[10px] uppercase", view === "list" ? "bg-white text-[#292828] shadow-md" : "text-[#292828] hover:text-[#292828]")}>
                   <List size={16} /> List
                </button>
             </div>
@@ -166,7 +166,7 @@ export default function EliteAdvisorsPortal() {
                          <div className="mb-6">
                             <div className="flex items-center justify-between mb-4">
                                <div className="flex items-center gap-1.5">
-                                  <h3 className="text-xl font-black text-slate-900 uppercase group-hover/adv:text-[#E53935] transition-colors">{adv.name}</h3>
+                                  <h3 className="text-xl font-black text-[#292828] uppercase group-hover/adv:text-[#E53935] transition-colors">{adv.name}</h3>
                                   <CheckCircle2 size={18} className="text-[#E53935]" />
                                </div>
                                <div className="px-2 py-0.5 bg-green-50 text-green-600 rounded-lg text-[8px] font-black uppercase border border-green-100 shadow-sm">
@@ -174,40 +174,40 @@ export default function EliteAdvisorsPortal() {
                                </div>
                             </div>
                             
-                            <p className="text-[11px] font-bold text-slate-400 capitalize flex items-center gap-2 mb-6">
+                            <p className="text-[11px] font-bold text-[#292828] capitalize flex items-center gap-2 mb-6">
                                <MapPin size={12} className="text-[#E53935]" /> {adv.firm} • {adv.firm.includes('Kerala') ? 'Kerala' : 'Main City'}
                             </p>
 
                             <div className="flex flex-wrap gap-2">
-                               <span className="px-3 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black uppercase border border-slate-100">{adv.specialty}</span>
+                               <span className="px-3 py-1 bg-[#292828]/5 text-[#292828] rounded-lg text-[9px] font-black uppercase border border-[#292828]/10">{adv.specialty}</span>
                                <span className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-lg text-[9px] font-black uppercase border border-[#E53935]/10">{adv.rank}</span>
                             </div>
                          </div>
 
                          {/* Excellence Highlight Panel */}
-                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4 mb-8 group-hover/adv:bg-white transition-colors">
-                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-300 group-hover/adv:text-[#E53935] transition-colors shadow-sm">
+                         <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10 flex items-center gap-4 mb-8 group-hover/adv:bg-white transition-colors">
+                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#292828]/40 group-hover/adv:text-[#E53935] transition-colors shadow-sm">
                                <Award size={20} />
                             </div>
                             <div>
-                               <p className="text-[11px] font-black text-slate-900 leading-none mb-1">{adv.rating} Excellence Score</p>
-                               <p className="text-[10px] font-bold text-slate-400 capitalize">{adv.highlights}</p>
+                               <p className="text-[11px] font-black text-[#292828] leading-none mb-1">{adv.rating} Excellence Score</p>
+                               <p className="text-[10px] font-bold text-[#292828] capitalize">{adv.highlights}</p>
                             </div>
                          </div>
                       </div>
 
                       {/* Footer Actions (Home Feed Style) */}
                       <div className={cn(
-                        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-50",
+                        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-[#292828]/5",
                         view === "list" ? "gap-10 border-t-0 pt-0" : ""
                       )}>
                          <div>
-                            <p className="text-[9px] font-black text-slate-300 uppercase leading-none mb-1">Consultation Fee</p>
-                            <p className="text-2xl font-black text-slate-900 leading-none">₹{adv.cost}<span className="text-sm font-bold text-slate-400 not-italic">/hr</span></p>
+                            <p className="text-[9px] font-black text-[#292828]/40 uppercase leading-none mb-1">Consultation Fee</p>
+                            <p className="text-2xl font-black text-[#292828] leading-none">₹{adv.cost}<span className="text-sm font-bold text-[#292828] not-italic">/hr</span></p>
                          </div>
                          <button 
                            onClick={() => setSelectedAdv(adv)}
-                           className="w-full sm:w-auto px-8 h-14 bg-slate-950 text-white rounded-2xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-3 group/btn"
+                           className="w-full sm:w-auto px-8 h-14 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-3 group/btn"
                          >
                             Book Now <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                          </button>
@@ -221,28 +221,28 @@ export default function EliteAdvisorsPortal() {
 
       {/* 3. BOOKING ENGINE MODAL (UNCHANGED LOGIC, POLISHED UI) */}
       {selectedAdv && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/40 backdrop-blur-md animate-in fade-in duration-300">
            <div className="relative w-full max-w-4xl bg-white rounded-[4rem] overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500 flex flex-col lg:flex-row h-[80vh]">
               
               {/* Profile Bar */}
-              <div className="w-full lg:w-[320px] bg-slate-50 p-12 flex flex-col items-center text-center">
+              <div className="w-full lg:w-[320px] bg-[#292828]/5 p-12 flex flex-col items-center text-center">
                  <div className="h-32 w-32 rounded-[2.5rem] overflow-hidden shadow-2xl mb-8 border-4 border-white">
                     <img src={selectedAdv.avatar} className="w-full h-full object-cover" alt="" />
                  </div>
-                 <h2 className="text-2xl font-black text-slate-900 mb-1 uppercase">{selectedAdv.name}</h2>
+                 <h2 className="text-2xl font-black text-[#292828] mb-1 uppercase">{selectedAdv.name}</h2>
                  <p className="text-[11px] font-black text-[#E53935] uppercase ">{selectedAdv.rank}</p>
                  <div className="mt-12 space-y-6 w-full text-left">
                     <div className="flex gap-4">
-                       <Video size={20} className="text-slate-300" />
-                       <p className="text-[13px] font-bold text-slate-500">Video Call Session</p>
+                       <Video size={20} className="text-[#292828]/40" />
+                       <p className="text-[13px] font-bold text-[#292828]">Video Call Session</p>
                     </div>
                     <div className="flex gap-4">
-                       <FileText size={20} className="text-slate-300" />
-                       <p className="text-[13px] font-bold text-slate-500">Follow-up Strategy Report</p>
+                       <FileText size={20} className="text-[#292828]/40" />
+                       <p className="text-[13px] font-bold text-[#292828]">Follow-up Strategy Report</p>
                     </div>
                     <div className="flex gap-4">
-                       <UserCheck size={20} className="text-slate-300" />
-                       <p className="text-[13px] font-bold text-slate-500">Node-Verified Expert</p>
+                       <UserCheck size={20} className="text-[#292828]/40" />
+                       <p className="text-[13px] font-bold text-[#292828]">Node-Verified Expert</p>
                     </div>
                  </div>
               </div>
@@ -250,37 +250,37 @@ export default function EliteAdvisorsPortal() {
               {/* Booking Engine */}
               <div className="flex-1 p-12 lg:p-16 flex flex-col bg-white overflow-y-auto no-scrollbar">
                  <div className="flex items-center justify-between mb-12">
-                    <h3 className="text-3xl font-black text-slate-900 uppercase">Select <span className="text-[#E53935]">Session</span></h3>
-                    <button onClick={() => setSelectedAdv(null)} className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"><X size={24} /></button>
+                    <h3 className="text-3xl font-black text-[#292828] uppercase">Select <span className="text-[#E53935]">Session</span></h3>
+                    <button onClick={() => setSelectedAdv(null)} className="h-12 w-12 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#292828] hover:text-[#292828] transition-all"><X size={24} /></button>
                  </div>
 
                  <div className="space-y-12 flex-1">
                     <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase  mb-6">Available Dates</p>
+                       <p className="text-[10px] font-black text-[#292828]/40 uppercase  mb-6">Available Dates</p>
                        <div className="grid grid-cols-4 gap-3">
                           {[18, 19, 20, 21, 22, 23, 24, 25].map(day => (
-                            <button key={day} className="h-20 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col items-center justify-center gap-1 hover:border-[#E53935] hover:bg-red-50 group transition-all">
-                               <p className="text-[10px] font-bold text-slate-400 group-hover:text-[#E53935]">OCT</p>
-                               <p className="text-xl font-black text-slate-900 group-hover:text-[#E53935]">{day}</p>
+                            <button key={day} className="h-20 bg-[#292828]/5 border border-[#292828]/10 rounded-2xl flex flex-col items-center justify-center gap-1 hover:border-[#E53935] hover:bg-red-50 group transition-all">
+                               <p className="text-[10px] font-bold text-[#292828] group-hover:text-[#E53935]">OCT</p>
+                               <p className="text-xl font-black text-[#292828] group-hover:text-[#E53935]">{day}</p>
                             </button>
                           ))}
                        </div>
                     </div>
 
                     <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase  mb-6">Available Slots</p>
+                       <p className="text-[10px] font-black text-[#292828]/40 uppercase  mb-6">Available Slots</p>
                        <div className="flex flex-wrap gap-3">
                           {["10:00 AM", "11:30 AM", "02:00 PM", "04:30 PM", "06:00 PM"].map(time => (
-                            <button key={time} className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-black text-slate-500 hover:border-[#E53935] hover:text-[#E53935] transition-all">{time}</button>
+                            <button key={time} className="px-6 py-4 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[12px] font-black text-[#292828] hover:border-[#E53935] hover:text-[#E53935] transition-all">{time}</button>
                           ))}
                        </div>
                     </div>
                  </div>
 
-                 <div className="mt-auto pt-10 border-t border-slate-100 flex items-center justify-between">
+                 <div className="mt-auto pt-10 border-t border-[#292828]/10 flex items-center justify-between">
                     <div>
-                       <p className="text-[24px] font-black text-slate-900">₹{selectedAdv.cost}</p>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase ">Total for 1 hour</p>
+                       <p className="text-[24px] font-black text-[#292828]">₹{selectedAdv.cost}</p>
+                       <p className="text-[10px] font-bold text-[#292828] uppercase ">Total for 1 hour</p>
                     </div>
                     <button className="px-12 h-16 bg-[#E53935] text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl shadow-red-500/10 active:scale-95 transition-all">Confirm Booking</button>
                  </div>

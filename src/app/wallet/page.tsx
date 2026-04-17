@@ -23,39 +23,39 @@ export default function WalletPage() {
                      <h1 className="text-6xl font-black mb-12 tracking-tighter">₹8,42,500.00</h1>
                   </div>
                   <div className="flex items-center gap-6">
-                     <button className="flex-1 h-14 bg-white text-slate-950 rounded-2xl font-bold text-[12px] uppercase shadow-2xl hover:scale-105 transition-all">Add Credits</button>
-                     <button className="flex-1 h-14 bg-slate-950 border border-white/10 text-white rounded-2xl font-bold text-[12px] uppercase hover:bg-white hover:text-slate-900 transition-all">Withdraw</button>
+                     <button className="flex-1 h-14 bg-white text-[#292828] rounded-2xl font-bold text-[12px] uppercase shadow-2xl hover:scale-105 transition-all">Add Credits</button>
+                     <button className="flex-1 h-14 bg-[#292828] border border-white/10 text-white rounded-2xl font-bold text-[12px] uppercase hover:bg-white hover:text-[#292828] transition-all">Withdraw</button>
                   </div>
                </div>
             </div>
 
             {/* QUICK STATS */}
-            <div className="bg-white rounded-[3.5rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/20 flex flex-col justify-between">
+            <div className="bg-white rounded-[3.5rem] p-10 border border-[#292828]/10 shadow-xl shadow-slate-200/20 flex flex-col justify-between">
                <div className="space-y-8">
                   <div className="flex items-center gap-4">
                      <div className="h-14 w-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-500"><TrendingUp size={24} /></div>
                      <div>
-                        <p className="text-[12px] font-bold text-slate-400 capitalize mb-1">Weekly Profit</p>
-                        <p className="text-[20px] font-black text-slate-900">+ ₹12,400</p>
+                        <p className="text-[12px] font-bold text-[#292828] capitalize mb-1">Weekly Profit</p>
+                        <p className="text-[20px] font-black text-[#292828]">+ ₹12,400</p>
                      </div>
                   </div>
                   <div className="flex items-center gap-4">
                      <div className="h-14 w-14 bg-red-50 rounded-2xl flex items-center justify-center text-[#E53935]"><ArrowDownLeft size={24} /></div>
                      <div>
-                        <p className="text-[12px] font-bold text-slate-400 capitalize mb-1">Expenses</p>
-                        <p className="text-[20px] font-black text-slate-900">- ₹4,200</p>
+                        <p className="text-[12px] font-bold text-[#292828] capitalize mb-1">Expenses</p>
+                        <p className="text-[20px] font-black text-[#292828]">- ₹4,200</p>
                      </div>
                   </div>
                </div>
-               <button className="w-full h-14 bg-slate-50 text-slate-400 rounded-2xl text-[12px] font-bold uppercase border border-slate-100 hover:text-slate-900">View Detailed Analytics</button>
+               <button className="w-full h-14 bg-[#292828]/5 text-[#292828] rounded-2xl text-[12px] font-bold uppercase border border-[#292828]/10 hover:text-[#292828]">View Detailed Analytics</button>
             </div>
          </div>
 
-         <div className="bg-white rounded-[3.5rem] p-12 border border-slate-100 shadow-sm overflow-hidden pb-20">
+         <div className="bg-white rounded-[3.5rem] p-12 border border-[#292828]/10 shadow-sm overflow-hidden pb-20">
             <div className="flex items-center justify-between mb-12">
                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-slate-950 text-white rounded-xl flex items-center justify-center"><History size={20} /></div>
-                  <h3 className="text-[22px] font-black text-slate-900">Recent Ledger</h3>
+                  <div className="h-12 w-12 bg-[#292828] text-white rounded-xl flex items-center justify-center"><History size={20} /></div>
+                  <h3 className="text-[22px] font-black text-[#292828]">Recent Ledger</h3>
                </div>
                <button className="text-[12px] font-bold text-[#E53935] uppercase underline underline-offset-4">Download Statements</button>
             </div>
@@ -66,7 +66,7 @@ export default function WalletPage() {
                  { title: "Partner Fee - Rahul Sethi", type: "Debit", amount: "₹1,500", date: "Yesterday, 10:30 AM" },
                  { title: "Logistics Payment", type: "Debit", amount: "₹8,400", date: "15 Apr 2026" },
                ].map((tx, i) => (
-                 <div key={i} className="flex items-center justify-between p-6 rounded-3xl bg-slate-50/50 hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                 <div key={i} className="flex items-center justify-between p-6 rounded-3xl bg-[#292828]/5/50 hover:bg-[#292828]/5 transition-all border border-transparent hover:border-[#292828]/10 group">
                     <div className="flex items-center gap-6">
                        <div className={cn(
                          "h-12 w-12 rounded-xl flex items-center justify-center",
@@ -75,13 +75,13 @@ export default function WalletPage() {
                           {tx.type === "Credit" ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
                        </div>
                        <div>
-                          <h4 className="text-[15px] font-bold text-slate-900 mb-1">{tx.title}</h4>
-                          <p className="text-[11px] font-bold text-slate-400 uppercase">{tx.date}</p>
+                          <h4 className="text-[15px] font-bold text-[#292828] mb-1">{tx.title}</h4>
+                          <p className="text-[11px] font-bold text-[#292828] uppercase">{tx.date}</p>
                        </div>
                     </div>
                     <p className={cn(
                       "text-[18px] font-black",
-                      tx.type === "Credit" ? "text-green-600" : "text-slate-900"
+                      tx.type === "Credit" ? "text-green-600" : "text-[#292828]"
                     )}>{tx.type === "Credit" ? "+" : "-"}{tx.amount}</p>
                  </div>
                ))}

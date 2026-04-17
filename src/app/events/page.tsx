@@ -121,18 +121,18 @@ export default function BusinessExposPage() {
     <div className="flex flex-col xl:flex-row min-h-screen bg-white">
       
       {/* 1. EXPO HUB (LEFT) */}
-      <div className="flex-1 flex flex-col min-h-screen border-r border-slate-100 pb-40 lg:pb-12">
+      <div className="flex-1 flex flex-col min-h-screen border-r border-[#292828]/10 pb-40 lg:pb-12">
         
         {/* Header Section */}
-        <div className="p-6 lg:p-10 border-b border-slate-50 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
+        <div className="p-6 lg:p-10 border-b border-[#292828]/5 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
-                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">Business Expos</h2>
-                 <p className="text-[12px] font-medium text-slate-500 mt-1">Discover trade shows and showcase your products</p>
+                 <h2 className="text-3xl font-black text-[#292828] tracking-tight">Business Expos</h2>
+                 <p className="text-[12px] font-medium text-[#292828] mt-1">Discover trade shows and showcase your products</p>
               </div>
               <button 
                 onClick={() => alert("Expo hosting system is currently in beta. Please contact support.")}
-                className="px-8 py-4 bg-[#E53935] text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl shadow-red-500/10 hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-[#E53935] text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl shadow-red-500/10 hover:bg-[#292828] transition-all flex items-center justify-center gap-2"
               >
                  <Plus size={18} /> Host An Expo
               </button>
@@ -145,7 +145,7 @@ export default function BusinessExposPage() {
                   onClick={() => setActiveTab(tab)}
                   className={cn(
                     "pb-4 text-[11px] font-bold uppercase tracking-widest transition-all relative",
-                    activeTab === tab ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                    activeTab === tab ? "text-[#292828]" : "text-[#292828] hover:text-[#292828]"
                   )}
                 >
                    {tab === "upcoming" ? "Upcoming Events" : tab === "businesses" ? "Showing Businesses" : "Venue Map"}
@@ -162,7 +162,7 @@ export default function BusinessExposPage() {
                {/* MAIN FEATURED EXPO */}
                <div 
                  onClick={() => setSelectedExpo(EXPOS[0])}
-                 className="group bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/20 cursor-pointer"
+                 className="group bg-white rounded-[3rem] overflow-hidden border border-[#292828]/10 shadow-2xl shadow-slate-200/20 cursor-pointer"
                >
                   <div className="h-80 relative overflow-hidden">
                      <img src={EXPOS[0].banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" alt="" />
@@ -186,19 +186,19 @@ export default function BusinessExposPage() {
                     <div 
                       key={expo.id} 
                       onClick={() => setSelectedExpo(expo)}
-                      className="group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
+                      className="group bg-white border border-[#292828]/10 rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
                     >
                        <div className="h-48 relative overflow-hidden">
                           <img src={expo.banner} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                           <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] no-italic tracking-normal">{expo.category}</div>
                        </div>
                        <div className="p-8">
-                          <h4 className="text-xl font-bold text-slate-900 mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic tracking-normal">{expo.title}</h4>
-                          <div className="flex items-center justify-between pt-6 border-t border-slate-50">
-                             <div className="flex items-center gap-2 text-[12px] font-bold text-slate-400 capitalize no-italic tracking-normal">
-                                <Calendar size={14} className="text-slate-300" /> {expo.date}
+                          <h4 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic tracking-normal">{expo.title}</h4>
+                          <div className="flex items-center justify-between pt-6 border-t border-[#292828]/5">
+                             <div className="flex items-center gap-2 text-[12px] font-bold text-[#292828] capitalize no-italic tracking-normal">
+                                <Calendar size={14} className="text-[#292828]/40" /> {expo.date}
                              </div>
-                             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-900 rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-slate-950 hover:text-white no-italic tracking-normal">
+                             <div className="flex items-center gap-2 px-4 py-2 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white no-italic tracking-normal">
                                 View <ChevronRight size={14} />
                              </div>
                           </div>
@@ -212,13 +212,13 @@ export default function BusinessExposPage() {
            {activeTab === "businesses" && (
              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:border-[#E53935]/20 hover:shadow-2xl transition-all group">
-                     <div className="h-20 w-20 bg-slate-50 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center text-slate-300 group-hover:text-[#E53935] transition-colors border border-slate-100">
+                  <div key={i} className="p-8 bg-white border border-[#292828]/10 rounded-[2.5rem] text-center hover:border-[#E53935]/20 hover:shadow-2xl transition-all group">
+                     <div className="h-20 w-20 bg-[#292828]/5 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center text-[#292828]/40 group-hover:text-[#E53935] transition-colors border border-[#292828]/10">
                         <Building2 size={32} />
                      </div>
-                     <h5 className="text-[15px] font-bold text-slate-900 mb-1 leading-tight">Elite Business Hub {i + 1}</h5>
-                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Manufacturing Node</p>
-                     <button className="text-[11px] font-bold text-slate-400 hover:text-[#E53935] transition-all flex items-center justify-center gap-2 mx-auto">
+                     <h5 className="text-[15px] font-bold text-[#292828] mb-1 leading-tight">Elite Business Hub {i + 1}</h5>
+                     <p className="text-[10px] font-bold text-[#292828] uppercase tracking-widest mb-6">Manufacturing Node</p>
+                     <button className="text-[11px] font-bold text-[#292828] hover:text-[#E53935] transition-all flex items-center justify-center gap-2 mx-auto">
                         View Booth <ArrowRight size={14} />
                      </button>
                   </div>
@@ -227,52 +227,52 @@ export default function BusinessExposPage() {
            )}
 
            {activeTab === "map" && (
-              <div className="p-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100 text-center">
-                 <LayoutGrid size={48} className="mx-auto mb-6 text-slate-200" />
-                 <h4 className="text-xl font-bold text-slate-900 mb-2">Venue Floor Plans</h4>
-                 <p className="text-[13px] font-medium text-slate-400 max-w-xs mx-auto">Interactive maps for the Convention Center and Technopark are launching next week.</p>
+              <div className="p-20 bg-[#292828]/5 rounded-[3rem] border-2 border-dashed border-[#292828]/10 text-center">
+                 <LayoutGrid size={48} className="mx-auto mb-6 text-[#292828]/20" />
+                 <h4 className="text-xl font-bold text-[#292828] mb-2">Venue Floor Plans</h4>
+                 <p className="text-[13px] font-medium text-[#292828] max-w-xs mx-auto">Interactive maps for the Convention Center and Technopark are launching next week.</p>
               </div>
            )}
         </div>
       </div>
 
       {/* 2. ANALYTICS (RIGHT) */}
-      <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-slate-50/50 p-10 gap-10 overflow-y-auto no-scrollbar">
-         <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-200/10">
-            <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-8">My Registrations</h4>
+      <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-[#292828]/5/50 p-10 gap-10 overflow-y-auto no-scrollbar">
+         <div className="p-10 bg-white border border-[#292828]/10 rounded-[3rem] shadow-xl shadow-slate-200/10">
+            <h4 className="text-[10px] font-black text-[#292828]/40 uppercase tracking-widest mb-8">My Registrations</h4>
             {registeredList.length > 0 ? (
               <div className="space-y-6">
                  {registeredList.map(rid => {
                    const expo = EXPOS.find(e => e.id === rid);
                    return (
-                     <div key={rid} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                     <div key={rid} className="flex gap-4 p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10">
                         <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm"><Ticket size={24} /></div>
                         <div>
-                           <p className="text-[13px] font-bold text-slate-900 truncate">{expo?.title}</p>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">{expo?.date}</p>
+                           <p className="text-[13px] font-bold text-[#292828] truncate">{expo?.title}</p>
+                           <p className="text-[10px] font-bold text-[#292828] uppercase">{expo?.date}</p>
                         </div>
                      </div>
                    );
                  })}
               </div>
             ) : (
-              <p className="text-[13px] font-medium text-slate-400 text-center italic">No confirmed registrations yet.</p>
+              <p className="text-[13px] font-medium text-[#292828] text-center italic">No confirmed registrations yet.</p>
             )}
          </div>
 
-         <div className="p-10 bg-slate-950 rounded-[3rem] text-white relative overflow-hidden group">
+         <div className="p-10 bg-[#292828] rounded-[3rem] text-white relative overflow-hidden group">
             <TrendingUp size={120} className="absolute -right-5 -bottom-5 text-white/[0.03] group-hover:scale-110 transition-transform" />
             <h4 className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Exhibitor Node</h4>
             <p className="text-2xl font-black leading-tight mb-8">
                Companies at expos reach <span className="text-[#E53935]">4x more</span> high-scale retail buyers.
             </p>
-            <button className="w-full py-5 bg-white text-slate-900 rounded-[2rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all">Download Guide</button>
+            <button className="w-full py-5 bg-white text-[#292828] rounded-[2rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all">Download Guide</button>
          </div>
       </aside>
 
       {/* EXPO DETAILS MODAL */}
       {selectedExpo && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/40 backdrop-blur-sm animate-in fade-in duration-300">
            <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-[4rem] flex flex-col lg:flex-row overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500">
               
               {/* IMAGE SIDE */}
@@ -295,15 +295,15 @@ export default function BusinessExposPage() {
                           <span className="px-4 py-1.5 bg-red-50 text-[#E53935] text-[10px] font-black uppercase rounded-lg tracking-widest">{selectedExpo.category}</span>
                           <span className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-lg"><ShieldCheck size={14} /> Verified Venue</span>
                        </div>
-                       <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight mb-4 uppercase">{selectedExpo.title}</h2>
+                       <h2 className="text-4xl lg:text-5xl font-black text-[#292828] leading-tight mb-4 uppercase">{selectedExpo.title}</h2>
                        <div className="flex flex-wrap gap-8">
-                          <div className="flex items-center gap-3 text-[14px] font-bold text-slate-400 capitalize"><Calendar size={18} className="text-[#E53935]" /> {selectedExpo.date}</div>
-                          <div className="flex items-center gap-3 text-[14px] font-bold text-slate-400 capitalize"><MapPin size={18} className="text-[#E53935]" /> {selectedExpo.loc}, {selectedExpo.city}</div>
+                          <div className="flex items-center gap-3 text-[14px] font-bold text-[#292828] capitalize"><Calendar size={18} className="text-[#E53935]" /> {selectedExpo.date}</div>
+                          <div className="flex items-center gap-3 text-[14px] font-bold text-[#292828] capitalize"><MapPin size={18} className="text-[#E53935]" /> {selectedExpo.loc}, {selectedExpo.city}</div>
                        </div>
                     </div>
                     <button 
                       onClick={() => setSelectedExpo(null)}
-                      className="hidden lg:flex h-14 w-14 bg-slate-50 text-slate-400 rounded-[1.5rem] items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
+                      className="hidden lg:flex h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-[1.5rem] items-center justify-center hover:bg-[#292828]/10 hover:text-[#292828] transition-all"
                     >
                        <X size={24} />
                     </button>
@@ -311,17 +311,17 @@ export default function BusinessExposPage() {
 
                  <div className="px-10 lg:p-14 pt-8 space-y-12 flex-1">
                     <section>
-                       <h4 className="text-[11px] font-black text-slate-300 uppercase tracking-widest mb-4">Expo Description</h4>
-                       <p className="text-lg lg:text-xl font-medium text-slate-600 leading-relaxed max-w-2xl">{selectedExpo.description}</p>
+                       <h4 className="text-[11px] font-black text-[#292828]/40 uppercase tracking-widest mb-4">Expo Description</h4>
+                       <p className="text-lg lg:text-xl font-medium text-[#292828] leading-relaxed max-w-2xl">{selectedExpo.description}</p>
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        {selectedExpo.features.map((feat: string, i: number) => (
-                         <div key={i} className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 text-center group">
+                         <div key={i} className="p-6 bg-[#292828]/5 rounded-[2rem] border border-[#292828]/10 text-center group">
                             <div className="h-12 w-12 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center text-[#E53935] shadow-sm animate-pulse-slow">
                                <Check size={20} />
                             </div>
-                            <p className="text-[13px] font-bold text-slate-900">{feat}</p>
+                            <p className="text-[13px] font-bold text-[#292828]">{feat}</p>
                          </div>
                        ))}
                     </section>
@@ -333,12 +333,12 @@ export default function BusinessExposPage() {
                          onClick={() => { toggleRegister(selectedExpo.id); setSelectedExpo(null); }}
                          className={cn(
                            "flex-1 h-16 rounded-[2rem] font-black text-[11px] uppercase tracking-widest transition-all shadow-4xl active:scale-95",
-                           registeredList.includes(selectedExpo.id) ? "bg-green-50 text-green-600" : "bg-[#E53935] text-white hover:bg-slate-900 shadow-red-500/10"
+                           registeredList.includes(selectedExpo.id) ? "bg-green-50 text-green-600" : "bg-[#E53935] text-white hover:bg-[#292828] shadow-red-500/10"
                          )}
                        >
                           {registeredList.includes(selectedExpo.id) ? "Successfully Registered" : "Register For Event Now"}
                        </button>
-                       <button className="h-16 px-10 border border-slate-100 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest hover:bg-slate-50">Share</button>
+                       <button className="h-16 px-10 border border-[#292828]/10 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest hover:bg-[#292828]/5">Share</button>
                     </div>
                  </footer>
               </div>

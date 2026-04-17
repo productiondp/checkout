@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Zap, ShieldCheck, Check } from "lucide-react";
+import { X, Zap, ShieldCheck, Check, MessageSquare, ArrowRight, Shield, BadgeCheck, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DealEngineProps {
@@ -26,87 +26,100 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
       
-      <div className="relative w-full max-w-[500px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        
-        {/* Header */}
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-           <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
-                 <Zap size={20} />
-              </div>
-              <div>
-                 <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-widest">Connect</h3>
-                 <p className="text-[10px] font-bold text-[#5F6368] uppercase">Secure Channel</p>
-              </div>
-           </div>
-           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
-              <X size={20} className="text-slate-400" />
-           </button>
-        </div>
+      <div className="relative w-full max-w-[500px] bg-white rounded-[3.5rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
+         
+         {/* HEADER */}
+         <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white relative">
+            <div className="flex items-center gap-4">
+               <div className="h-12 w-12 bg-red-50 text-[#E53935] rounded-2xl flex items-center justify-center shadow-sm">
+                  <Zap size={22} className="animate-pulse-slow" />
+               </div>
+               <div>
+                  <h3 className="text-[14px] font-black text-slate-900 uppercase  leading-none mb-1">Secure Move</h3>
+                  <div className="flex items-center gap-1.5">
+                     <Lock size={10} className="text-slate-300" />
+                     <p className="text-[9px] font-black text-slate-400 uppercase ">P2P Encryption Active</p>
+                  </div>
+               </div>
+            </div>
+            <button onClick={onClose} className="h-10 w-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all">
+               <X size={20} />
+            </button>
+         </div>
 
-        {/* Content */}
-        <div className="p-10">
-           {success ? (
-             <div className="py-6 flex flex-col items-center text-center animate-in fade-in scale-in-95 duration-500">
-                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-6 shadow-xl shadow-green-500/20">
-                   <Check size={32} strokeWidth={3} />
-                </div>
-                <h4 className="text-xl font-black text-slate-900 mb-3 uppercase">Success!</h4>
-                <p className="text-[14px] text-[#5F6368] font-medium max-w-xs">
-                   You are now connected with <strong>{deal.name}</strong>.
-                </p>
-                <button onClick={onClose} className="w-full mt-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-[12px] uppercase tracking-widest">Done</button>
-             </div>
-           ) : (
-             <div className="space-y-8">
-                <div className="flex items-center gap-5 p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm overflow-hidden border-2 border-white">
-                       <img src={deal.avatar || `https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop`} alt="User" className="w-full h-full object-cover" />
+         {/* BODY */}
+         <div className="p-10">
+            {success ? (
+              <div className="py-10 flex flex-col items-center text-center animate-in fade-in scale-in-95 duration-500">
+                 <div className="h-20 w-20 bg-green-500 text-white rounded-full flex items-center justify-center mb-8 shadow-2xl shadow-green-500/20">
+                    <Check size={40} strokeWidth={3} />
+                 </div>
+                 <h2 className="text-3xl font-black text-slate-900 mb-2 uppercase leading-none">Connect Success</h2>
+                 <p className="text-[15px] text-slate-500 font-medium max-w-sm mb-10 leading-relaxed">
+                    You are now connected with <strong>{deal.author || deal.name}</strong>. Check your Messages to start.
+                 </p>
+                 <button onClick={onClose} className="w-full h-16 bg-slate-900 text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl hover:bg-[#E53935] transition-all">Open Chats</button>
+              </div>
+            ) : (
+              <div className="space-y-10">
+                 <div className="relative">
+                    <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 relative z-10">
+                       <div className="flex items-center gap-5 mb-8">
+                          <div className="h-16 w-16 rounded-2xl border-4 border-white shadow-xl overflow-hidden ring-2 ring-slate-50">
+                             <img src={deal.avatar} className="w-full h-full object-cover" alt="" />
+                          </div>
+                          <div>
+                             <h4 className="text-xl font-black text-slate-900 uppercase leading-none mb-1">{deal.author || deal.name}</h4>
+                             <p className="text-[10px] font-black text-[#E53935] uppercase ">{deal.type || "Verified Node Partner"}</p>
+                          </div>
+                       </div>
+                       
+                       <div className="space-y-4">
+                          <div className="flex justify-between items-center px-2">
+                             <span className="text-[12px] font-black text-slate-300 uppercase ">Match Score</span>
+                             <span className="text-[18px] font-black text-slate-900">{deal.matchScore || 100}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden">
+                             <div className="h-full bg-[#E53935] rounded-full" style={{ width: `${deal.matchScore || 100}%` }} />
+                          </div>
+                          <div className="flex items-center gap-2 px-2 pt-2">
+                             <ShieldCheck size={14} className="text-blue-500" />
+                             <span className="text-[11px] font-bold text-slate-400 uppercase">Vetted Hub Identity</span>
+                          </div>
+                       </div>
                     </div>
-                   <div>
-                      <h4 className="text-lg font-bold text-slate-900 leading-tight">{deal.name}</h4>
-                      <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">{deal.role}</p>
-                      <div className="flex items-center gap-1.5">
-                         <ShieldCheck size={12} className="text-primary" />
-                         <span className="text-[10px] font-bold text-[#5F6368] uppercase">Verified Business</span>
-                      </div>
-                   </div>
-                </div>
+                    <div className="absolute -inset-1 bg-gradient-to-tr from-[#E53935]/20 to-transparent blur-2xl opacity-50" />
+                 </div>
 
-                <div className="space-y-3">
-                   <div className="p-5 bg-white border border-slate-100 rounded-2xl space-y-3">
-                      <div className="flex justify-between items-center text-[12px]">
-                         <span className="font-bold text-[#5F6368]">Match Score</span>
-                         <span className="font-black text-primary">{deal.match}%</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[12px]">
-                         <span className="font-bold text-[#5F6368]">Estimated Response</span>
-                         <span className="font-black text-slate-900">2 Hours</span>
-                      </div>
-                   </div>
-                </div>
+                 <div className="flex gap-4">
+                    <button 
+                      onClick={handleConfirm}
+                      disabled={loading}
+                      className={cn(
+                        "flex-1 h-18 py-5 bg-[#E53935] text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-4xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-3",
+                        loading && "bg-slate-900 opacity-90"
+                      )}
+                    >
+                       {loading ? (
+                         <>
+                            <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            Sending...
+                         </>
+                       ) : (
+                         <>Connect Now <ArrowRight size={18} /></>
+                       )}
+                    </button>
+                 </div>
+              </div>
+            )}
+         </div>
 
-                <button 
-                  onClick={handleConfirm}
-                  disabled={loading}
-                  className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-[13px] uppercase tracking-widest shadow-2xl shadow-primary/20 hover:bg-black transition-all flex items-center justify-center gap-3"
-                >
-                   {loading ? (
-                     <>
-                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                        Connecting...
-                     </>
-                   ) : "Send Request"}
-                </button>
-             </div>
-           )}
-        </div>
-
-        <div className="px-10 py-6 bg-slate-50/50 border-t border-slate-50 text-center">
-           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-normal">Checkout Professional Network</p>
-        </div>
+         {/* FOOTER */}
+         <div className="px-10 py-6 bg-slate-50/50 border-t border-slate-50 text-center">
+            <p className="text-[10px] font-black text-slate-300 uppercase ">Technopark Business Node Security Protocol</p>
+         </div>
       </div>
     </div>
   );

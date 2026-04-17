@@ -2,68 +2,56 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { MapPin, Users, Calendar, ArrowRight, Star, Shield, Plus, MessageSquare, Clock, LayoutGrid } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const INITIAL_MEETUPS = [
-  { 
-    id: 101, 
-    title: "SaaS Business Coffee", 
-    topic: "Work", 
-    count: 14, 
-    time: "Live now", 
-    loc: "Technopark Ph-III", 
-    address: "Park Centre Lounge",
-    joined: false,
-    aiSpeaker: { name: "GrowthBot AI", advice: "Idea: Helping local businesses online" }
-  },
-  { 
-    id: 102, 
-    title: "Website Design Feedback", 
-    topic: "Design", 
-    count: 8, 
-    time: "Starting in 15m", 
-    loc: "Kazhakkoottam", 
-    address: "Brew & Bytes Coffee",
-    joined: false,
-    aiSpeaker: { name: "Design AI", advice: "Idea: Using dark colors for better looks" }
-  },
-  { 
-    id: 103, 
-    title: "General Business Talk", 
-    topic: "Business", 
-    count: 24, 
-    time: "Active Now", 
-    loc: "Pattom", 
-    address: "The Hub Coworking",
-    joined: false,
-    aiSpeaker: { name: "Strategy AI", advice: "Idea: Finding big investors in Kerala" }
-  },
-];
+const INITIAL_MEETUPS = Array.from({ length: 25 }).map((_, i) => ({
+  id: 101 + i,
+  title: [
+    "SaaS Business Coffee", "UI Design Workshop", "SME Growth Talk", "Startup Hub Meet", "Technopark Mixer",
+    "Digital Marketing Sync", "Founder Mastermind", "Tech Lead Circle", "MSME Strategy Hub", "Kerala Trade Coffee",
+    "Investor Pitch Prep", "Product Management Chat", "E-commerce Logistics", "Security Node Sync", "Financial Hub Talk",
+    "Women in Tech Mixer", "Regional Sales Meet", "Brand Identity Session", "Cloud Infra Group", "App Dev Meetup",
+    "Business Scaling Forum", "HR Tech Discussion", "Supply Chain Hub", "Cyber Security Talk", "Future Founders Meet"
+  ][i],
+  topic: ["Business", "Design", "Tech", "Startup", "Work"][i % 5],
+  count: Math.floor(Math.random() * 20) + 5,
+  time: i % 3 === 0 ? "Live now" : `Starting in ${i * 5}m`,
+  loc: ["Technopark", "Pattom", "Kazhakkoottam", "Vellayambalam", "Palayam"][i % 5],
+  address: ["Park Centre", "The Hub", "Brew & Bytes", "Sector 7", "Central Plaza"][i % 5],
+  joined: false,
+  advice: [
+    "Finding local partners is key to scaling fast in Kerala.",
+    "Dark mode interfaces are seeing higher retention in current apps.",
+    "Technopark Ph-III is becoming the focal point for B2B growth.",
+    "Focus on supply chain transparency to build trust with MSMEs.",
+    "Networking with regional leads can unlock hidden tender opportunities."
+  ][i % 5]
+}));
 
-const TOPICS = ["All", "Work", "Design", "Business", "Tech", "Startup"];
+const TOPICS = ["All", "Business", "Design", "Tech", "Startup", "Work"];
 
-export default function Meetup() {
+export default function MeetupPage() {
   const [meetups, setMeetups] = useState(INITIAL_MEETUPS);
   const [showHostModal, setShowHostModal] = useState(false);
-  const [hostData, setHostData] = useState({ title: "", loc: "", topic: "Work" });
+  const [hostData, setHostData] = useState({ title: "", loc: "", topic: "Business" });
   const [activeTopic, setActiveTopic] = useState("All");
 
   const filteredMeetups = useMemo(() => {
     return meetups.filter(m => activeTopic === "All" || m.topic === activeTopic);
   }, [meetups, activeTopic]);
 
-  const handleJoinHub = (id: number) => {
+  const handleJoin = (id: number) => {
     setMeetups(meetups.map(m => {
       if (m.id === id) {
-        if (!m.joined) {
-           alert(`You have successfully joined the "${m.title}" meeting!`);
-        }
         return { ...m, joined: !m.joined, count: m.joined ? m.count - 1 : m.count + 1 };
       }
       return m;
     }));
   };
 
-  const handleHostSync = () => {
+  const handleStartMeeting = () => {
     if (!hostData.title || !hostData.loc) return;
     const newMeetup = {
       id: Date.now(),
@@ -72,129 +60,100 @@ export default function Meetup() {
       count: 1,
       time: "Live Now",
       loc: hostData.loc,
-      address: "At your current place",
+      address: "Your Location",
       joined: true,
-      aiSpeaker: { name: "Local AI", advice: "Idea: Working together today" }
+      advice: "Welcome to the network! Start by introducing your business."
     };
     setMeetups([newMeetup, ...meetups]);
     setShowHostModal(false);
-    alert(`Your meeting "${hostData.title}" is now live for everyone!`);
+    setHostData({ title: "", loc: "", topic: "Business" });
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-white overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col h-full border-r border-slate-100 overflow-hidden relative">
+      {/* 1. MEETING FEED (LEFT) */}
+      <div className="flex-1 flex flex-col min-h-screen border-r border-slate-100 pb-40 lg:pb-12">
         
-        {/* Header */}
-        <div className="p-8 pb-4 bg-white/80 backdrop-blur-md z-30 space-y-6 sticky top-0 border-b border-slate-50">
-           <div className="flex justify-between items-center">
+        {/* Header Section */}
+        <div className="p-6 lg:p-10 border-b border-slate-50 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
-                 <h2 className="text-3xl font-bold text-slate-900 tracking-normal leading-tight mb-1">Live <span className="text-[#E53935]">Meetings</span></h2>
-                 <p className="text-[12px] font-normal text-slate-500 tracking-normal">Connecting 142 nearby business people</p>
+                 <h1 className="text-3xl font-black text-slate-900 leading-tight">Live Meetings</h1>
+                 <p className="text-[12px] font-medium text-slate-500 mt-1">Connecting with business people near you</p>
               </div>
               <button 
                 onClick={() => setShowHostModal(true)}
-                className="px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold text-[13px] tracking-normal shadow-lg hover:bg-[#E53935] active:scale-95 transition-all"
+                className="px-8 py-4 bg-slate-950 text-white rounded-2xl font-bold text-[11px] uppercase shadow-xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                 + Start a Meeting
+                 <Plus size={18} /> Start a Meeting
               </button>
            </div>
 
            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              {TOPICS.map(topic => (
+              {TOPICS.map(t => (
                 <button 
-                  key={topic} 
-                  onClick={() => setActiveTopic(topic)}
-                  className={`px-5 py-2 rounded-lg text-xs font-medium tracking-normal border transition-all whitespace-nowrap ${
-                    activeTopic === topic ? "bg-[#E53935] text-white border-[#E53935]" : "bg-white border-slate-100 text-slate-500 hover:border-slate-300"
-                  }`}
+                  key={t} 
+                  onClick={() => setActiveTopic(t)}
+                  className={cn(
+                    "px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase transition-all whitespace-nowrap border",
+                    activeTopic === t ? "bg-[#E53935] text-white border-[#E53935] shadow-lg shadow-red-500/10" : "bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100"
+                  )}
                 >
-                  {topic}
+                   {t}
                 </button>
               ))}
            </div>
         </div>
 
-        {/* Scrollable List */}
-        <div className="flex-1 overflow-y-auto p-8 no-scrollbar bg-slate-50/10">
+        {/* Meeting Grid */}
+        <div className="p-6 lg:p-10 space-y-8">
            
-           {/* Advisor Invite */}
-           <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden mb-10 border border-slate-800 shadow-xl">
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                 <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 rounded-2xl bg-white p-1 shrink-0 overflow-hidden">
-                       <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop" className="w-full h-full rounded-xl object-cover" />
-                    </div>
-                    <div>
-                       <p className="text-[11px] font-medium text-[#E53935] mb-1">Direct Invite</p>
-                       <h4 className="text-xl font-bold text-white leading-tight">Dr. Sarah Chen</h4>
-                       <p className="text-[13px] text-slate-400 font-normal">Wants to talk about business growth in Kerala</p>
-                    </div>
-                 </div>
-                 <div className="flex gap-3 w-full md:w-auto">
-                    <button onClick={() => alert("Connecting with Sarah...")} className="flex-1 md:flex-none px-6 py-3 bg-[#E53935] text-white rounded-xl font-semibold text-xs tracking-normal transition-all">Accept</button>
-                    <button onClick={() => alert("Invitation hidden")} className="flex-1 md:flex-none px-6 py-3 bg-white/5 text-slate-400 rounded-xl font-semibold text-xs tracking-normal transition-all">Skip</button>
-                 </div>
-              </div>
-           </div>
-
-           {/* Cards Grid */}
            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              {filteredMeetups.map(meetup => (
-                <div key={meetup.id} className={`bg-white rounded-3xl border transition-all relative overflow-hidden flex flex-col ${
-                  meetup.joined ? "border-[#E53935] shadow-lg" : "border-slate-100 shadow-sm"
-                }`}>
-                   <div className="p-8 flex-1 flex flex-col">
-                      <div className="flex justify-between items-center mb-5">
+              {filteredMeetups.map(m => (
+                <div key={m.id} className={cn(
+                  "bg-white rounded-[2.5rem] border transition-all overflow-hidden flex flex-col group",
+                  m.joined ? "border-[#E53935] shadow-2xl shadow-red-500/5 scale-[1.02]" : "border-slate-100 shadow-sm hover:border-[#E53935]/20 hover:shadow-xl"
+                )}>
+                   <div className="p-8 pb-4">
+                      <div className="flex justify-between items-center mb-6">
                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                            <span className="text-[11px] font-normal text-slate-400 tracking-normal">{meetup.topic}</span>
+                            <span className={cn("h-2 w-2 rounded-full", m.time === "Live now" ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{m.topic}</span>
                          </div>
-                         <span className="text-[11px] font-medium text-[#E53935] tracking-normal">{meetup.time}</span>
+                         <span className="text-[10px] font-bold text-[#E53935] uppercase tracking-widest">{m.time}</span>
                       </div>
 
-                      <h3 className="text-2xl font-bold text-slate-900 mb-2 leading-snug tracking-normal">{meetup.title}</h3>
-                      <div className="flex items-center gap-2 text-xs font-normal text-slate-500 mb-6">
-                         <span>📍</span>
-                         <span>{meetup.loc} • <span className="text-slate-400">{meetup.address}</span></span>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 leading-tight group-hover:text-[#E53935] transition-colors">{m.title}</h3>
+                      <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 mb-6">
+                         <MapPin size={14} className="text-slate-300" />
+                         <span>{m.loc} • <span className="text-slate-400">{m.address}</span></span>
                       </div>
 
-                      {/* AI Helped Insight */}
-                      <div className="bg-slate-900 rounded-2xl p-6 relative overflow-hidden mb-6 border border-slate-800 shadow-lg">
-                         <div className="relative z-10 flex items-center gap-4">
-                            <div className="w-11 h-11 bg-[#E53935] rounded-xl flex items-center justify-center text-xl shrink-0">
-                               🤖
-                            </div>
-                            <div className="flex-1">
-                               <p className="text-[10px] font-medium text-[#E53935] mb-1">AI Help</p>
-                               <p className="text-[13px] font-semibold text-white leading-tight tracking-normal">{meetup.aiSpeaker.advice}</p>
-                            </div>
-                         </div>
+                      <div className="bg-slate-50 rounded-2xl p-4 flex gap-4 items-center">
+                         <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 text-xl">💡</div>
+                         <p className="text-[13px] font-medium text-slate-600 leading-snug">{m.advice}</p>
                       </div>
+                   </div>
 
-                      {/* Bottom Controls */}
-                      <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-slate-50 mt-auto">
-                         <div className="flex items-center gap-3 shrink-0">
-                            <div className="flex -space-x-2">
-                               {[1, 2, 3].map(i => (
-                                 <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden">
-                                    <img src={`https://images.unsplash.com/photo-${1500000000000 + (meetup.id*i)%1000}?q=80&w=64&auto=format&fit=crop`} alt="Member" />
-                                 </div>
-                               ))}
-                            </div>
-                            <span className="text-[11px] font-normal text-slate-500">{meetup.count} People joining</span>
+                   <div className="p-8 pt-4 mt-auto flex items-center justify-between border-t border-slate-50">
+                      <div className="flex items-center gap-3">
+                         <div className="flex -space-x-2">
+                            {[1, 2, 3].map(i => (
+                              <img key={i} src={`https://i.pravatar.cc/150?u=meet${m.id}${i}`} className="h-8 w-8 rounded-full border-2 border-white shadow-sm" alt="" />
+                            ))}
                          </div>
-                         <button 
-                           onClick={() => handleJoinHub(meetup.id)}
-                           className={`flex-1 sm:flex-none px-6 py-3 rounded-lg text-xs font-semibold tracking-normal transition-all whitespace-nowrap ${
-                             meetup.joined ? "bg-slate-50 text-slate-400 cursor-default" : "bg-slate-900 text-white shadow-md hover:bg-[#E53935]"
-                           }`}
-                         >
-                            {meetup.joined ? "You are going" : "Join Meeting"}
-                         </button>
+                         <span className="text-[11px] font-bold text-slate-400">{m.count}+ People Joining</span>
                       </div>
+                      <button 
+                        onClick={() => handleJoin(m.id)}
+                        className={cn(
+                          "px-6 py-3 rounded-xl text-[11px] font-bold uppercase transition-all shadow-lg active:scale-95",
+                          m.joined ? "bg-slate-100 text-slate-400" : "bg-slate-950 text-white hover:bg-[#E53935]"
+                        )}
+                      >
+                         {m.joined ? "Joined" : "Join Now"}
+                      </button>
                    </div>
                 </div>
               ))}
@@ -202,88 +161,106 @@ export default function Meetup() {
         </div>
       </div>
 
-      {/* RIGHT AREA */}
-      <div className="w-full lg:w-[400px] flex flex-col bg-white h-full relative z-20 border-l border-slate-100">
-         <div className="p-8 pb-4">
-            <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-normal mb-6">Nearby People</h4>
-            <div className="bg-slate-900 rounded-2xl p-6 relative overflow-hidden shadow-lg border border-slate-800">
-               <div className="flex items-center gap-5 relative z-10">
-                  <div className="w-12 h-12 bg-[#E53935] rounded-xl flex items-center justify-center text-2xl shadow-lg border border-white/10">
-                     📡
-                  </div>
+      {/* 2. AREA ANALYTICS (RIGHT) */}
+      <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-white border-l border-slate-100 p-10 gap-10">
+         <div>
+            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-6">Local Traffic</p>
+            <div className="p-8 bg-slate-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+               <div className="relative z-10 flex items-center gap-5">
+                  <div className="h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-2xl shadow-lg border border-white/10">📡</div>
                   <div>
-                     <p className="text-[14px] font-bold text-white leading-none mb-1">Your Hub Online</p>
-                     <p className="text-[11px] font-normal text-[#E53935]">Radius: 2.4km</p>
+                     <p className="text-lg font-bold text-white">Hub Scanner</p>
+                     <p className="text-[11px] font-bold text-[#E53935] uppercase">Radius: 2.5km Citywide</p>
                   </div>
                </div>
             </div>
          </div>
 
-         <div className="flex-1 m-8 mt-2 bg-slate-50 rounded-[2.5rem] border-4 border-white shadow-xl relative overflow-hidden">
-            <div className="absolute inset-0 grayscale opacity-30 brightness-110">
-               <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200" className="w-full h-full object-cover" />
+         <div className="flex-1 bg-slate-50 rounded-[3rem] border-4 border-white shadow-2xl relative overflow-hidden group">
+            <Image src="/images/trivandrum-map.png" alt="" fill className="object-cover opacity-50 grayscale transition-all duration-[20s] group-hover:scale-110" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+            
+            <div className="absolute top-[40%] left-[30%]">
+               <div className="h-12 w-12 bg-[#E53935] rounded-2xl border-4 border-white shadow-xl flex items-center justify-center text-white animate-bounce-subtle">
+                  🏢
+               </div>
             </div>
 
-            <div className="absolute top-[45%] left-[40%]">
-               <div className="w-10 h-10 bg-[#E53935] rounded-xl border-[3px] border-white shadow-lg flex items-center justify-center text-white">🏢</div>
-            </div>
-
-            <Link href="/explore" className="absolute bottom-6 left-6 right-6">
-               <div className="bg-slate-900 p-6 rounded-2xl flex items-center justify-between text-white shadow-xl border border-white/5 hover:border-[#E53935]/40 transition-all">
+            <Link href="/explore" className="absolute bottom-8 left-8 right-8">
+               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-3xl hover:border-[#E53935]/20 flex items-center justify-between group/link transition-all translate-y-0 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
-                     <span className="text-xl">🏙️</span>
+                     <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-xl">🏙️</div>
                      <div>
-                        <p className="text-xs font-bold">See all businesses</p>
-                        <p className="text-[10px] text-slate-500">512 places available</p>
+                        <p className="text-[13px] font-bold text-slate-900">Explore Hubs</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">View nearby nodes</p>
                      </div>
                   </div>
-                  <span className="text-slate-500">→</span>
+                  <ArrowRight size={20} className="text-slate-300 group-hover/link:text-[#E53935] transition-colors" />
                </div>
             </Link>
          </div>
-      </div>
+      </aside>
 
-      {/* CREATE MEETING MODAL */}
+      {/* START MEETING MODAL */}
       {showHostModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHostModal(false)} />
-           <div className="relative w-full max-w-md bg-white rounded-3xl p-10 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
-              <h3 className="text-3xl font-bold text-slate-900 mb-8 leading-tight">Start a local <span className="text-[#E53935]">Meeting</span></h3>
+           <div className="relative w-full max-w-lg bg-white rounded-[3rem] p-12 shadow-4xl animate-in zoom-in-95 duration-200">
+              <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">Start a <span className="text-[#E53935]">Meeting</span></h2>
+              <p className="text-slate-500 font-medium mb-10">Broadcast your location to nearby business partners.</p>
+              
               <div className="space-y-6">
                  <div>
-                    <label className="text-[11px] font-semibold text-slate-400 uppercase mb-2 block ml-1">Meeting Name</label>
+                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Meeting Name</label>
                     <input 
                       type="text" 
-                      value={hostData.title} 
-                      onChange={(e) => setHostData({ ...hostData, title: e.target.value })} 
-                      placeholder="e.g. Kerala Business Coffee" 
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-5 py-4 text-sm font-medium outline-none transition-all placeholder:text-slate-300 shadow-sm" 
+                      value={hostData.title}
+                      onChange={(e) => setHostData({ ...hostData, title: e.target.value })}
+                      placeholder="e.g. Real Estate Coffee Talk" 
+                      className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none focus:bg-white focus:border-[#E53935]/20 transition-all" 
                     />
                  </div>
-                 <div>
-                    <label className="text-[11px] font-semibold text-slate-400 uppercase mb-2 block ml-1">City Area</label>
-                    <select 
-                      value={hostData.loc} 
-                      onChange={(e) => setHostData({ ...hostData, loc: e.target.value })} 
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-5 py-4 text-sm font-medium outline-none appearance-none cursor-pointer"
-                    >
-                       <option value="">Select Area...</option>
-                       <option value="Technopark">Technopark</option>
-                       <option value="Kazhakkoottam">Kazhakkoottam</option>
-                       <option value="Pattom">Pattom</option>
-                    </select>
+                 
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                       <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Location</label>
+                       <select 
+                         value={hostData.loc}
+                         onChange={(e) => setHostData({ ...hostData, loc: e.target.value })}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
+                       >
+                          <option value="">Select...</option>
+                          <option value="Technopark">Technopark</option>
+                          <option value="Pattom">Pattom</option>
+                          <option value="Kazhakkoottam">Kazhakk.</option>
+                       </select>
+                    </div>
+                    <div>
+                       <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest ml-1 mb-2 block">Category</label>
+                       <select 
+                         value={hostData.topic}
+                         onChange={(e) => setHostData({ ...hostData, topic: e.target.value })}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[14px] font-medium outline-none appearance-none cursor-pointer"
+                       >
+                          {TOPICS.slice(1).map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                       </select>
+                    </div>
                  </div>
+
                  <button 
-                   onClick={handleHostSync} 
-                   disabled={!hostData.title || !hostData.loc} 
-                   className="w-full py-4 bg-slate-900 disabled:opacity-50 text-white rounded-xl font-bold text-sm tracking-normal shadow-lg hover:bg-[#E53935] transition-all"
+                   onClick={handleStartMeeting}
+                   disabled={!hostData.title || !hostData.loc}
+                   className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] disabled:opacity-40 transition-all flex items-center justify-center gap-2"
                  >
-                    Start Now
+                    Launch Meeting Now <ArrowRight size={18} />
                  </button>
               </div>
            </div>
         </div>
       )}
+
     </div>
   );
 }

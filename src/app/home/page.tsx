@@ -1,480 +1,551 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   MessageSquare, 
   Heart, 
   Share2, 
-  Bookmark, 
-  Image as ImageIcon, 
-  MoreHorizontal, 
+  ImageIcon, 
   Plus, 
-  Smile, 
-  Paperclip, 
   ChevronRight,
+  ArrowRight,
   Calendar,
   ShoppingBag,
   Zap,
   Target,
   Rocket,
-  PlusSquare,
   Users,
   MapPin,
   Clock,
   Briefcase,
-  Globe
+  Globe,
+  Search,
+  LayoutGrid,
+  TrendingUp,
+  Award,
+  Activity,
+  SlidersHorizontal,
+  DollarSign,
+  MoreHorizontal,
+  Bookmark,
+  CheckCircle2,
+  Lock,
+  ArrowUpRight,
+  Coffee
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DUMMY_POSTS } from "@/lib/dummyData";
 import DealEngine from "@/components/modals/DealEngine";
 
-interface Post {
-  id: number;
-  type: string;
-  author: string;
-  time: string;
-  content: string;
-  budget?: string;
-  role?: string;
-  loc?: string;
-  meetTime?: string;
-  likes: number;
-  comments: number;
-  matchScore: number;
-  avatar: string;
-  images?: string[];
-  target?: string;
-}
-
-const INITIAL_POSTS: Post[] = [
-  {
-    id: 1,
-    type: "Hiring",
-    author: "Rahul Sethi",
-    time: "45m ago",
-    content: "We are looking for a Senior UI/UX Designer to join our team. If you have 4+ years of experience in product design, let's talk!",
-    budget: "₹80k - ₹1.2L",
-    role: "Senior UI/UX Designer",
-    likes: 42,
-    comments: 18,
-    matchScore: 94,
-    images: [],
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
-  },
-  {
-    id: 10,
-    type: "Meeting",
-    author: "Sana Maryam",
-    time: "10m ago",
-    content: "Hosting a quick coffee meeting for architects in Trivandrum today!",
-    loc: "Technopark Ph-III",
-    meetTime: "5:00 PM Today",
-    likes: 5,
-    comments: 2,
-    matchScore: 0,
-    images: [],
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop"
-  },
-  {
-    id: 2,
-    type: "Update",
-    author: "Ahmad Nur F.",
-    time: "2h ago",
-    content: "Checkout just reached a new milestone: 100 business connections made this month! Our network is growing every day.",
-    likes: 890,
-    comments: 45,
-    matchScore: 0,
-    images: ["https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop"],
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop"
-  }
-];
-
-export default function Home() {
-  const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
-  const [activeTab, setActiveTab] = useState<"Update" | "Hiring" | "Partnership" | "Meeting">("Update");
-  const [postData, setPostData] = useState({ content: "", budget: "", role: "", loc: "", time: "", target: "" });
+export default function EliteHomeFeed() {
+  const [posts, setPosts] = useState(DUMMY_POSTS);
+  const [activeTab, setActiveTab] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [isPosting, setIsPosting] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [selectedPostType, setSelectedPostType] = useState<string>("Update");
+  const [activeCommentPostId, setActiveCommentPostId] = useState<number | null>(null);
+  const [newComment, setNewComment] = useState("");
 
-  const handlePost = () => {
-    if (!postData.content.trim()) return;
-    const newPost = {
-      id: Date.now(),
-      type: activeTab,
-      author: "Ahmad Fawaid",
-      time: "Just now",
-      content: postData.content,
-      budget: postData.budget,
-      role: postData.role,
-      loc: postData.loc,
-      meetTime: postData.time,
-      likes: 0,
-      comments: 0,
-      matchScore: 0,
-      images: [],
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop"
-    };
-    setPosts([newPost, ...posts]);
-    setPostData({ content: "", budget: "", role: "", loc: "", time: "", target: "" });
-    alert("Post shared with the network!");
+  const handleLike = (postId: number) => {
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          isLiked: !post.isLiked,
+          likes: post.isLiked ? post.likes - 1 : post.likes + 1
+        };
+      }
+      return post;
+    }));
   };
 
+  const handleAddComment = (postId: number) => {
+    if (!newComment.trim()) return;
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [
+            ...post.comments,
+            {
+              id: Date.now(),
+              user: "You",
+              text: newComment,
+              time: "Just now"
+            }
+          ]
+        };
+      }
+      return post;
+    }));
+    setNewComment("");
+  };
+
+  const filteredPosts = useMemo(() => {
+    if (activeTab === "All") return posts;
+    return posts.filter(p => p.type.toLowerCase() === activeTab.toLowerCase());
+  }, [activeTab, posts]);
+
   return (
-    <div className="max-w-[700px] mx-auto min-h-screen">
-      {/* Mobile-Only Stories Rail */}
-      <div className="lg:hidden flex gap-4 overflow-x-auto no-scrollbar px-5 py-6 border-b border-slate-50 bg-white">
-        {[
-          { name: "You", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop", add: true },
-          { name: "Events", img: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=100&auto=format&fit=crop" },
-          { name: "Invest", img: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=100&auto=format&fit=crop" },
-          { name: "Legal", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=100&auto=format&fit=crop" },
-          { name: "Tech", img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=100&auto=format&fit=crop" },
-        ].map((story, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className={`w-16 h-16 rounded-full p-1 border-2 ${i === 0 ? 'border-red-500' : 'border-slate-100'}`}>
-              <div className="w-full h-full rounded-full overflow-hidden relative">
-                <img src={story.img} className="w-full h-full object-cover" alt={story.name} />
-                {story.add && (
-                  <div className="absolute bottom-0 right-0 h-5 w-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
-                    <Plus size={10} className="text-white" />
-                  </div>
-                )}
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{story.name}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Hyper-Local Category Grid (Mobile Only) */}
-      <div className="lg:hidden p-5 pt-2 grid grid-cols-4 gap-4">
-        {[
-          { label: "Our Apps", icon: Rocket, color: "bg-red-50 text-red-500" },
-          { label: "Places", icon: MapPin, color: "bg-blue-50 text-blue-500" },
-          { label: "Experts", icon: Target, color: "bg-orange-50 text-orange-500" },
-          { label: "Groups", icon: Users, color: "bg-pink-50 text-pink-500" },
-          { label: "Liquidation", icon: ShoppingBag, color: "bg-green-50 text-green-500" },
-          { label: "Events", icon: Calendar, color: "bg-indigo-50 text-indigo-500" },
-          { label: "Logistics", icon: Globe, color: "bg-slate-50 text-slate-500" },
-          { label: "Flash Deals", icon: Zap, color: "bg-amber-50 text-amber-500" },
-        ].map((cat, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5">
-            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm active:scale-90 transition-all", cat.color)}>
-              <cat.icon size={22} />
-            </div>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter text-center">{cat.label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="p-4 lg:p-10 space-y-6">
-        {/* Live Now Nearby Section (Mobile Only) */}
-        <div className="lg:hidden bg-slate-900 rounded-[2rem] p-6 text-white overflow-hidden relative group">
-           <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Live Now Nearby</span>
-              </div>
-              <h4 className="text-lg font-bold mb-1">Mobile Expo @ Phase 1</h4>
-              <p className="text-[11px] text-slate-400 font-medium mb-4">32 Businesses are exhibiting right now. Join them!</p>
-              <button className="px-5 py-2.5 bg-white text-slate-900 rounded-xl font-bold text-[10px] uppercase tracking-normal active:scale-95 transition-all">Check In</button>
-           </div>
-           <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-        </div>
-
-         {/* Share Something Section */}
-         <div className="bg-white rounded-[2rem] border border-[#EBEFF1] mb-10 shadow-xl shadow-slate-200/20 overflow-hidden">
-            <div className="flex border-b border-slate-50 overflow-x-auto no-scrollbar">
-               {(['Update', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
-                 <button 
-                   key={tab}
-                   onClick={() => setActiveTab(tab)}
-                   className={cn(
-                     "flex-1 py-4 px-6 text-[11px] font-bold uppercase tracking-normal transition-all relative cursor-pointer whitespace-nowrap",
-                     activeTab === tab ? "text-[#E53935] bg-slate-50/50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/30"
-                   )}
-                 >
-                    {activeTab === tab && <div className="absolute top-0 left-0 right-0 h-1 bg-[#E53935]" />}
-                    {tab}
-                 </button>
-               ))}
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10 overscroll-none">
+      
+      {/* 1. CINEMATIC HOME FEED (CENTER) */}
+      <main className="flex-1 w-full lg:max-w-[780px] lg:ml-auto lg:mr-0 min-h-screen border-r border-slate-100 bg-white relative">
+         
+         {/* TOP NAVIGATION HUB */}
+         <div className="bg-white/95 backdrop-blur-xl border-b border-slate-50 px-4 py-3 sticky top-0 z-40">
+            <div className="flex items-center justify-between mb-4">
+               <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
+                  {(['All', 'Update', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
+                    <button 
+                     key={tab} 
+                     onClick={() => setActiveTab(tab)}
+                     className={cn(
+                       "px-2 py-1.5 text-[11px] font-black uppercase  transition-all shrink-0 relative",
+                       activeTab === tab ? "text-[#E53935]" : "text-slate-400 hover:text-slate-900"
+                     )}
+                    >
+                       {tab}
+                       {activeTab === tab && <div className="absolute -bottom-1.5 left-2 right-2 h-1 bg-[#E53935] rounded-full shadow-lg shadow-red-500/20" />}
+                    </button>
+                  ))}
+               </div>
+                <div className="flex items-center gap-2">
+                   <div className="flex bg-slate-100/50 p-1 rounded-xl">
+                      <button onClick={() => setViewMode("list")} className={cn("h-7 px-3 rounded-lg text-[10px] font-black uppercase transition-all", viewMode === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600")}>List</button>
+                      <button onClick={() => setViewMode("grid")} className={cn("h-7 px-3 rounded-lg text-[10px] font-black uppercase transition-all", viewMode === "grid" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600")}>Grid</button>
+                   </div>
+                   <button className="h-9 w-9 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-950 hover:text-white transition-all shadow-sm">
+                      <SlidersHorizontal size={14} />
+                   </button>
+                </div>
             </div>
 
-            <div className="p-8">
-               <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
-                     <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop" alt="Self" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 space-y-4">
+            {/* INTEGRATED POST COMPOSER */}
+            <div className={cn(
+               "bg-slate-50 border border-slate-100/50 rounded-2xl transition-all duration-500 overflow-hidden",
+               isPosting ? "p-5" : "h-12 flex items-center gap-4 pl-5 pr-1.5"
+            )}>
+               {!isPosting ? (
+                 <>
+                    <div className="h-7 w-7 rounded-lg overflow-hidden border border-white shadow-sm shrink-0">
+                       <img src="https://i.pravatar.cc/150?u=me" className="w-full h-full object-cover" alt="" />
+                    </div>
+                    <button onClick={() => setIsPosting(true)} className="flex-1 text-left text-[14px] font-bold text-slate-300">Share a business update...</button>
+                    <div className="flex items-center gap-1.5">
+                       <button onClick={() => setIsPosting(true)} className="h-9 w-9 bg-white text-slate-400 rounded-lg flex items-center justify-center hover:text-[#E53935] transition-all"><ImageIcon size={16} /></button>
+                       <button onClick={() => setIsPosting(true)} className="h-9 px-4 bg-slate-950 text-white rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase shadow-lg active:scale-95 transition-all">Post <Plus size={14} /></button>
+                    </div>
+                 </>
+               ) : (
+                <div className="mt-8 p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 shadow-inner group/composer animate-in fade-in slide-in-from-top-4 duration-500">
+                   <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-4">
+                           <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-[#E53935] border border-slate-100 shadow-sm">
+                              <Plus size={24} />
+                           </div>
+                           <div>
+                              <h3 className="text-sm font-black text-slate-900 uppercase leading-none mb-1">Create Post</h3>
+                              <p className="text-[10px] font-black uppercase text-slate-400">Post to {activeTab === "All" ? "Everywhere" : activeTab}</p>
+                           </div>
+                        </div>
+                        <button onClick={() => setIsPosting(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all"><Plus className="rotate-45" size={18} /></button>
+                     </div>
+
+                     {/* Post Category Chips */}
+                     <div className="flex flex-wrap gap-2 mb-8">
+                        {['Opportunities', 'Hiring', 'Partnership', 'Meeting'].map(type => (
+                           <button
+                              key={type}
+                              onClick={() => {
+                                setSelectedPostType(type);
+                                const templates: any = {
+                                   'Hiring': 'Role: \nPackage: \nLocation: \nRequirements: ',
+                                   'Opportunities': 'Budget: \nDeadline: \nOpportunity Detail: ',
+                                   'Partnership': 'Collaboration Goal: \nIndustry: \nExpectations: ',
+                                   'Meeting': 'Time: \nVenue: \nAgenda: '
+                                };
+                                setPostContent(templates[type] || "");
+                              }}
+                              className={cn(
+                                "px-5 h-10 rounded-xl text-[10px] font-black uppercase transition-all border",
+                                selectedPostType === type 
+                                   ? "bg-[#E53935] text-white border-transparent shadow-lg shadow-red-500/20" 
+                                   : "bg-white text-slate-400 border-slate-100 hover:text-slate-900"
+                              )}
+                           >
+                              {type}
+                           </button>
+                        ))}
+                     </div>
+
                      <textarea 
-                       value={postData.content}
-                       onChange={(e) => setPostData({ ...postData, content: e.target.value })}
-                       placeholder={
-                         activeTab === 'Hiring' ? "Who are you looking for?" : 
-                         activeTab === 'Meeting' ? "What's the plan for the meeting?" : 
-                         activeTab === 'Partnership' ? "What kind of partner do you need?" : "Share an update with everyone..."
-                       }
-                       className="w-full bg-transparent text-[16px] font-medium placeholder:text-slate-300 outline-none resize-none min-h-[60px]"
+                       autoFocus
+                       value={postContent}
+                       onChange={(e) => setPostContent(e.target.value)}
+                       placeholder="Describe your post..."
+                       className="w-full bg-white p-6 rounded-[1.5rem] border border-slate-100 text-[16px] font-bold text-slate-900 placeholder:text-slate-300 outline-none resize-none min-h-[160px] shadow-sm focus:border-[#E53935]/20 transition-all"
                      />
 
-                     {/* Extra Fields */}
-                     <div className="grid grid-cols-2 gap-4">
-                        {activeTab === 'Hiring' && (
-                          <>
-                             <div className="relative">
-                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
-                                <input 
-                                  type="text" 
-                                  value={postData.role}
-                                  onChange={(e) => setPostData({ ...postData, role: e.target.value })}
-                                  placeholder="Job Title" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
-                                />
-                             </div>
-                             <div className="relative">
-                                <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
-                                <input 
-                                  type="text" 
-                                  value={postData.budget}
-                                  onChange={(e) => setPostData({ ...postData, budget: e.target.value })}
-                                  placeholder="Pay / Salary" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
-                                />
-                             </div>
-                          </>
-                        )}
-                        {activeTab === 'Meeting' && (
-                          <>
-                             <div className="relative">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
-                                <input 
-                                  type="text" 
-                                  value={postData.loc}
-                                  onChange={(e) => setPostData({ ...postData, loc: e.target.value })}
-                                  placeholder="Area / Location" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
-                                />
-                             </div>
-                             <div className="relative">
-                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
-                                <input 
-                                  type="text" 
-                                  value={postData.time}
-                                  onChange={(e) => setPostData({ ...postData, time: e.target.value })}
-                                  placeholder="Time and Date" 
-                                  className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
-                                />
-                             </div>
-                          </>
-                        )}
-                        {activeTab === 'Partnership' && (
-                           <div className="col-span-2 relative">
-                              <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E53935]" size={16} />
-                              <input 
-                                type="text" 
-                                value={postData.target}
-                                onChange={(e) => setPostData({ ...postData, target: e.target.value })}
-                                placeholder="E.g. Distribution Partner, Shop Owner..." 
-                                className="w-full bg-slate-50 rounded-xl pl-12 pr-4 py-3 text-[13px] font-bold outline-none border border-slate-100 placeholder:font-medium" 
-                              />
-                           </div>
-                        )}
+                     <div className="flex items-center justify-between mt-8">
+                        <div className="flex gap-2">
+                           <button className="h-12 px-6 bg-white border border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black text-slate-500 hover:text-slate-950 transition-all uppercase"><ImageIcon size={18} /> Add Photo</button>
+                        </div>
+                        <button 
+                          onClick={() => { setIsPosting(false); setPostContent(""); }}
+                          className="px-10 h-14 bg-slate-950 text-white rounded-2xl text-[12px] font-black uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all"
+                        >
+                           Post Now
+                        </button>
                      </div>
+                </div>
+               )}
+            </div>
+         </div>
+
+         {/* MAIN FEED STREAM */}
+         <div className="px-3 lg:px-4 py-6">
+            
+            <div className={cn(
+               "pb-40 lg:pb-32",
+               viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6" : "space-y-8"
+            )}>
+               {filteredPosts.map(post => (
+                 <div key={post.id} className="group/post relative">
+                    <div className={cn(
+                       "bg-white border-[#F2F4F7] overflow-hidden transition-all duration-500",
+                       viewMode === "grid" 
+                         ? "rounded-[2rem] border-2 shadow-xl hover:shadow-2xl hover:border-[#E53935]/10 h-full flex flex-col" 
+                         : "rounded-[2rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10"
+                    )}>
+                       
+                       {/* Header: Identity & Context */}
+                       <div className={cn(
+                          "flex items-center justify-between",
+                          viewMode === "grid" ? "px-5 pt-5 pb-3" : "px-6 pt-6 pb-4"
+                       )}>
+                          <div className="flex items-center gap-2.5">
+                             <Link 
+                                href={`/profile/${post.authorId}`}
+                                className={cn(
+                                   "rounded-xl overflow-hidden border border-slate-50 shadow-sm hover:scale-105 active:scale-95 transition-all",
+                                   viewMode === "grid" ? "h-8 w-8" : "h-11 w-11"
+                                )}
+                             >
+                                <img src={post.avatar} alt="" className="w-full h-full object-cover" />
+                             </Link>
+                             <div>
+                                <Link 
+                                   href={`/profile/${post.authorId}`}
+                                   className={cn(
+                                      "font-black text-slate-900 leading-tight flex items-center gap-1 hover:text-[#E53935] transition-colors",
+                                      viewMode === "grid" ? "text-[12px]" : "text-[15px]"
+                                   )}
+                                >
+                                   {post.author.split(' ')[0]}
+                                   {post.verified && <CheckCircle2 size={viewMode === "grid" ? 10 : 14} className="text-[#E53935]" />}
+                                </Link>
+                                {viewMode !== "grid" && (
+                                  <p className="text-[11px] font-bold text-slate-400 uppercase ">
+                                     {post.time}
+                                  </p>
+                                )}
+                             </div>
+                          </div>
+                          
+                          <div className={cn(
+                             "px-2 py-0.5 rounded-lg text-[8px] font-black uppercase  border",
+                             post.type === 'Opportunities' ? "bg-red-50 text-[#E53935] border-red-100" :
+                             post.type === 'Hiring' ? "bg-blue-50 text-blue-600 border-blue-100" :
+                             "bg-slate-50 text-slate-600 border-slate-100"
+                          )}>
+                             {post.type === 'Opportunities' ? 'DEAL' : post.type.slice(0, 4).toUpperCase()}
+                          </div>
+                       </div>
+
+                       {/* Body: Content & Media */}
+                       <div className={cn(
+                          "space-y-4 flex-1",
+                          viewMode === "grid" ? "px-5 pb-4" : "px-6 pb-6"
+                       )}>
+                          <p className={cn(
+                             "text-slate-700 leading-relaxed font-medium line-clamp-3 group-hover/post:line-clamp-none transition-all",
+                             viewMode === "grid" ? "text-[13px]" : "text-[16px]"
+                          )}>
+                             {post.content}
+                          </p>
+
+                          {post.budget && viewMode !== "grid" && (
+                            <div className="p-1 bg-[#E53935] rounded-3xl flex items-center justify-between pr-8 shadow-xl shadow-red-500/10 group-hover/post:scale-[1.01] transition-transform">
+                               <div className="flex items-center gap-4">
+                                  <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white">
+                                     <Award size={20} />
+                                  </div>
+                                  <div>
+                                     <p className="text-[10px] font-black text-white/60 uppercase leading-none mb-1">Project Budget</p>
+                                     <p className="text-[18px] font-black text-white">{post.budget}</p>
+                                  </div>
+                               </div>
+                               <button 
+                                 onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+                                 className="px-6 h-10 bg-white text-[#E53935] rounded-xl text-[10px] font-black uppercase active:scale-95 transition-all"
+                               >
+                                  See Details
+                               </button>
+                            </div>
+                          )}
+
+                          {post.images && (
+                            <div className={cn(
+                               "rounded-2xl overflow-hidden border border-slate-100 shadow-lg lg:grayscale transition-all duration-700 group-hover/post:grayscale-0",
+                               viewMode === "grid" ? "h-32" : "h-auto"
+                            )}>
+                               <img src={post.images[0]} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                       </div>
+
+                       {/* Footer: Social Actions */}
+                       <div className={cn(
+                          "bg-slate-50/50 border-t border-slate-50 transition-colors mt-auto",
+                          viewMode === "grid" ? "px-4 py-3" : "px-6 py-4"
+                       )}>
+                          <div className="flex items-center justify-between mb-0">
+                             <div className={cn(
+                                "flex items-center gap-4",
+                                viewMode === "grid" ? "gap-2" : "gap-6"
+                             )}>
+                                <button 
+                                  onClick={() => handleLike(post.id)}
+                                  className={cn(
+                                    "flex items-center gap-1.5 group/btn transition-all active:scale-125",
+                                    post.isLiked ? "text-[#E53935]" : "text-slate-400"
+                                  )}
+                                >
+                                   <div className={cn(
+                                      "flex items-center justify-center transition-all",
+                                      viewMode === "grid" ? "h-6 w-6" : "h-9 w-9",
+                                      post.isLiked ? "text-[#E53935]" : "text-slate-300 group-hover/btn:text-[#E53935]"
+                                   )}>
+                                      <Heart size={viewMode === "grid" ? 14 : 18} fill={post.isLiked ? "currentColor" : "none"} />
+                                   </div>
+                                   <span className={cn("font-black", viewMode === "grid" ? "text-[11px]" : "text-[14px]")}>{post.likes}</span>
+                                </button>
+                                {viewMode !== "grid" && (
+                                  <button 
+                                    onClick={() => setActiveCommentPostId(activeCommentPostId === post.id ? null : post.id)}
+                                    className={cn(
+                                      "flex items-center gap-2 group/btn transition-all",
+                                      activeCommentPostId === post.id ? "text-slate-900" : "text-slate-400"
+                                    )}
+                                  >
+                                     <div className="h-9 w-9 rounded-xl flex items-center justify-center group-hover/btn:bg-slate-100 transition-all">
+                                        <MessageSquare size={18} />
+                                     </div>
+                                     <span className="text-[14px] font-black">{post.comments?.length || 0}</span>
+                                  </button>
+                                )}
+                             </div>
+                             
+                             <button 
+                               onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+                               className={cn(
+                                  "bg-slate-950 text-white rounded-xl font-black uppercase flex items-center gap-2 hover:bg-[#E53935] transition-all group/apply shadow-lg shadow-black/5",
+                                  viewMode === "grid" ? "px-3 h-8 text-[8px]" : "px-6 h-10 text-[10px]"
+                               )}
+                             >
+                                Connect <ArrowUpRight size={viewMode === "grid" ? 10 : 14} />
+                             </button>
+                          </div>
+
+                          {/* Expandable Comment Section */}
+                          {activeCommentPostId === post.id && (
+                             <div className="mt-6 pt-6 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="space-y-4 max-h-[300px] overflow-y-auto no-scrollbar">
+                                   {post.comments?.map((comment: any) => (
+                                      <div key={comment.id} className="flex gap-4">
+                                         <div className="h-8 w-8 bg-slate-100 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-black text-slate-400">
+                                            {comment.user[0]}
+                                         </div>
+                                         <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                               <p className="text-[12px] font-black text-slate-900">{comment.user}</p>
+                                               <p className="text-[10px] font-bold text-slate-400">{comment.time}</p>
+                                            </div>
+                                            <p className="text-[13px] text-slate-600 font-medium leading-relaxed">{comment.text}</p>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+                                
+                                <div className="flex items-center gap-3 pt-4">
+                                   <div className="h-9 w-9 bg-slate-100 rounded-xl shrink-0 border border-white shadow-sm flex items-center justify-center text-[12px] font-black text-[#E53935]">Y</div>
+                                   <div className="flex-1 relative">
+                                      <input 
+                                        type="text"
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                                        placeholder="Write a comment..."
+                                        className="w-full h-10 bg-white border border-slate-100 rounded-xl px-4 text-[13px] font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-[#E53935]/20 shadow-inner"
+                                      />
+                                      <button 
+                                        onClick={() => handleAddComment(post.id)}
+                                        className="absolute right-1 top-1 h-8 px-3 bg-[#E53935] text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                                      >
+                                         Send
+                                      </button>
+                                   </div>
+                                </div>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </main>
+
+      {/* 2. AREA ANALYTICS SIDEBAR (RIGHT) - HYPER PROMINENT REDESIGN */}
+      <aside className="hidden lg:flex flex-col w-[400px] h-screen sticky top-0 bg-[#FDFDFF] p-6 lg:p-8 gap-10 overflow-y-auto no-scrollbar">
+         
+         {/* 1. CINEMATIC LIVE NODE HUB */}
+         <div className="group/hub">
+            <div className="flex items-center justify-between mb-6 px-1">
+               <div className="flex items-center gap-3">
+                  <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-ping" />
+                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em]">Live Map</h4>
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-100 rounded-xl shadow-sm">
+                  <span className="h-1.5 w-1.5 bg-green-500 rounded-full" />
+                  <span className="text-[10px] font-black text-slate-900 uppercase">Active Now</span>
+               </div>
+            </div>
+            
+            <div className="relative h-[320px] bg-slate-900 rounded-[3.5rem] overflow-hidden shadow-4xl group transition-all duration-700 ring-4 ring-white">
+               {/* Map Background with High-Intensity Filter */}
+               <Image 
+                 src="/images/trivandrum-map.png" 
+                 alt="" 
+                 fill 
+                 className="object-cover opacity-40 grayscale-0 invert transition-all duration-[10s] group-hover/hub:scale-110 group-hover/hub:opacity-60" 
+               />
+               
+               {/* High-Velocity Pulse Markers */}
+               <div className="absolute inset-0 z-10 pointer-events-none">
+                  {/* Business Node */}
+                  <div className="absolute top-[25%] left-[30%] h-12 w-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white shadow-2xl animate-pulse cursor-pointer pointer-events-auto hover:bg-[#E53935] hover:scale-110 transition-all">
+                     <Users size={20} />
+                  </div>
+                  {/* Coffee Node */}
+                  <div className="absolute top-[50%] left-[65%] h-12 w-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white shadow-2xl animate-pulse cursor-pointer pointer-events-auto hover:bg-[#E53935] hover:scale-110 transition-all [animation-delay:1s]">
+                     <Coffee size={20} />
+                  </div>
+                  {/* Deal Node (Hyper Pulse) */}
+                  <div className="absolute top-[18%] left-[78%] h-14 w-14 bg-[#E53935] border-2 border-white rounded-[1.25rem] flex items-center justify-center text-white shadow-[0_0_40px_rgba(229,57,53,0.4)] animate-bounce cursor-pointer pointer-events-auto [animation-duration:2s]">
+                     <Zap size={24} fill="currentColor" />
+                  </div>
+                  {/* Asset Node */}
+                  <div className="absolute top-[75%] left-[20%] h-12 w-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white shadow-2xl animate-pulse cursor-pointer pointer-events-auto hover:bg-[#E53935] hover:scale-110 transition-all [animation-delay:1.5s]">
+                     <ShoppingBag size={20} />
                   </div>
                </div>
 
-               <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-50">
-                  <div className="flex gap-4">
-                     <button onClick={() => alert("Upload feature coming soon")} className="flex items-center gap-2 text-slate-400 hover:text-[#E53935] transition-colors">
-                        <ImageIcon size={20} />
-                        <span className="text-[12px] font-bold">Photos</span>
-                     </button>
+               {/* Map Footer Overlay */}
+               <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent z-20">
+                  <div className="flex items-end justify-between">
+                     <div>
+                        <p className="text-3xl font-black text-white mb-1 uppercase ">Trivandrum</p>
+                        <p className="text-[10px] font-black text-[#E53935] uppercase ">Main City Area</p>
+                     </div>
+                     <div className="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-right">
+                        <p className="text-2xl font-black text-white leading-none mb-1">1,482</p>
+                        <p className="text-[8px] font-black uppercase text-white/40">Users</p>
+                     </div>
                   </div>
-                  <button 
-                    onClick={handlePost}
-                    disabled={!postData.content.trim()}
-                    className="px-8 py-3 bg-[#E53935] disabled:opacity-50 text-white rounded-xl font-bold text-[13px] shadow-lg shadow-red-500/20 hover:bg-slate-900 transition-all uppercase tracking-normal"
-                  >
-                     {activeTab === 'Update' ? 'Share Now' : 
-                      activeTab === 'Hiring' ? 'Post Job' : 
-                      activeTab === 'Meeting' ? 'Start Meeting' : 'Find Partner'}
+               </div>
+            </div>
+         </div>
+
+         {/* 2. HYPER-PROMINENT PARTNER SYNC (HIGH INTENSITY RED) */}
+         <div className="relative group/sync">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[4rem] blur-2xl opacity-20 group-hover/sync:opacity-40 transition-opacity" />
+            <div className="relative p-10 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[3.5rem] shadow-4xl overflow-hidden group hover:scale-[1.03] transition-all duration-700">
+               <TrendingUp size={160} className="absolute -right-10 -bottom-10 text-white/10 group-hover/sync:rotate-12 transition-transform duration-[3s]" />
+               <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-8">
+                     <div className="h-14 w-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-[1.5rem] flex items-center justify-center text-white">
+                        <Users size={28} />
+                     </div>
+                     <div>
+                        <h3 className="text-2xl font-black text-white uppercase leading-none">Find <span className="text-white/40 font-medium not-italic">Partners</span></h3>
+                        <p className="text-[10px] font-black text-white/50 uppercase  mt-2">Smart Match Engine</p>
+                     </div>
+                  </div>
+                  
+                  <div className="space-y-6 mb-12">
+                     <p className="text-white text-[17px] font-bold leading-relaxed">
+                        We found <span className="underline decoration-white/30 underline-offset-4 decoration-2">12 business owners</span> near you who match your logistics needs.
+                     </p>
+                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-white rounded-full animate-progress-slow" style={{ width: '94%' }} />
+                     </div>
+                  </div>
+
+                  <button className="w-full py-6 bg-white text-[#E53935] rounded-[2rem] font-black text-[12px] uppercase shadow-2xl hover:bg-slate-900 hover:text-white transition-all transform active:scale-95 flex items-center justify-center gap-3">
+                     Connect Now <ArrowRight size={18} />
                   </button>
                </div>
             </div>
          </div>
 
-         {/* Feed Posts */}
-         <div className="space-y-8 pb-32">
-            {posts.map(post => (
-              <div key={post.id} className="bg-white rounded-[2rem] border border-[#EBEFF1] shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden">
-                 {/* Post Header */}
-                 <div className="p-8 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-2xl bg-slate-50 overflow-hidden shadow-sm">
-                          <img src={post.avatar} alt="Author" className="w-full h-full object-cover" />
-                       </div>
-                       <div>
-                          <div className="flex items-center gap-3">
-                             <h4 className="text-[16px] font-bold text-slate-900">{post.author}</h4>
-                             <span className={cn(
-                               "px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-normal",
-                               post.type === 'Hiring' ? "bg-orange-50 text-orange-600" : 
-                               post.type === 'Meeting' ? "bg-green-50 text-green-600" : 
-                               post.type === 'Partnership' ? "bg-purple-50 text-purple-600" : 
-                               "bg-blue-50 text-blue-600"
-                             )}>
-                               {post.type}
-                             </span>
-                          </div>
-                          <p className="text-[12px] text-slate-400 font-medium mt-0.5">{post.time}</p>
-                       </div>
-                    </div>
-                    <button className="p-2 text-slate-300 hover:text-slate-600">
-                       <MoreHorizontal size={20} />
-                    </button>
-                 </div>
-
-                 <div className="px-8 pb-8">
-                    <p className="text-[16px] text-slate-800 leading-relaxed mb-6 font-medium">
-                       {post.content}
-                    </p>
-
-                    {/* Post Cards */}
-                    {post.type === 'Hiring' && (
-                      <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
-                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center">
-                               <Briefcase size={24} />
-                            </div>
-                            <div>
-                               <p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Pay Details</p>
-                               <p className="text-[15px] font-bold text-slate-900">{post.budget}</p>
-                            </div>
-                         </div>
-                         <button 
-                           onClick={() => alert(`Applying for role at ${post.author}...`)}
-                           className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-[12px] uppercase hover:bg-[#E53935] transition-all shadow-lg"
-                         >
-                            Apply Now
-                         </button>
-                      </div>
-                    )}
-
-                    {post.type === 'Meeting' && (
-                      <div className="p-6 bg-green-50 rounded-2xl border border-green-100 flex items-center justify-between">
-                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
-                               <MapPin size={24} />
-                            </div>
-                            <div>
-                               <p className="text-[10px] font-bold uppercase text-green-600/60 mb-0.5">
-                                 {post.loc}
-                               </p>
-                               <p className="text-[15px] font-bold text-green-700">{post.meetTime}</p>
-                            </div>
-                         </div>
-                         <button 
-                           onClick={(e) => {
-                             const btn = e.currentTarget;
-                             btn.innerHTML = "Joining...";
-                             setTimeout(() => { btn.innerHTML = "You're Going"; btn.classList.replace("bg-green-600", "bg-slate-100"); btn.classList.replace("text-white", "text-slate-400"); }, 1000);
-                           }}
-                           className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold text-[12px] uppercase shadow-lg shadow-green-600/10 transition-all"
-                         >
-                            Go to Meeting
-                         </button>
-                      </div>
-                    )}
-
-                    {post.images && post.images.length > 0 && (
-                      <div className="rounded-2xl overflow-hidden mt-4">
-                         <img src={post.images[0]} alt="Post content" className="w-full max-h-[400px] object-cover" />
-                      </div>
-                    )}
-                 </div>
-
-                 {/* Engagement */}
-                 <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between">
-                    <div className="flex gap-10">
-                       <button onClick={() => alert("Post liked!")} className="flex items-center gap-2 group">
-                          <Heart size={20} className="text-slate-300 group-hover:text-red-500 transition-colors" />
-                          <span className="text-[13px] font-bold text-slate-400 group-hover:text-slate-900">{post.likes}</span>
-                       </button>
-                       <button onClick={() => alert("Comments section coming soon")} className="flex items-center gap-2 group">
-                          <MessageSquare size={20} className="text-slate-300 group-hover:text-[#E53935] transition-colors" />
-                          <span className="text-[13px] font-bold text-slate-400 group-hover:text-slate-900">{post.comments}</span>
-                       </button>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setSelectedDeal({
-                          name: post.author,
-                          role: post.role || (post.type === 'Hiring' ? 'Manager' : 'Business Partner'),
-                          match: post.matchScore || 0,
-                          avatar: post.avatar
-                        });
-                        setIsModalOpen(true);
-                      }}
-                      className="flex items-center gap-2 text-[#E53935] group"
-                    >
-                       <Rocket size={18} className="translate-y-px transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
-                       <span className="text-[13px] font-bold uppercase">Connect Now</span>
-                    </button>
-                 </div>
-              </div>
-            ))}
-         </div>
-      </div>
-
-      <DealEngine 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        deal={selectedDeal}
-      />
-
-      {/* Network Sidebar */}
-      <div className="w-[380px] hidden xl:block p-10 space-y-10 bg-white overflow-y-auto no-scrollbar border-l border-[#EBEFF1]">
-         <div className="space-y-8">
-            <h4 className="text-[12px] font-bold text-slate-900 uppercase tracking-normal">People You May Know</h4>
+         {/* 3. IMMERSIVE ACTIVITY RADAR */}
+         <div className="p-10 bg-white border-2 border-slate-50 rounded-[3.5rem] shadow-2xl shadow-slate-200/20 relative overflow-hidden group/radar">
+            <div className="flex items-center justify-between mb-10">
+               <div className="flex flex-col">
+                  <h3 className="text-[11px] font-black text-slate-300 uppercase  mb-1">Activity Radar</h3>
+                  <p className="text-[15px] font-black text-slate-950 uppercase group-hover/radar:text-[#E53935] transition-colors">Trending Now</p>
+               </div>
+               <div className="h-10 px-4 bg-red-50 text-[#E53935] rounded-xl flex items-center gap-2 text-[10px] font-black uppercase">
+                  <Activity size={14} className="animate-pulse" /> Peak Cycle
+               </div>
+            </div>
+            
             <div className="space-y-6">
                {[
-                 { name: "Rahul Sethi", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100", status: "Business Owner" },
-                 { name: "Sana Maryam", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100", status: "Looking for partners" }
-               ].map(user => (
-                 <div key={user.name} className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 overflow-hidden shadow-sm">
-                       <img src={user.avatar} className="w-full h-full object-cover" />
+                 { tag: "#msme_kerala", count: "142 posts", color: "text-blue-500", trend: "+24%", text: "Wholesale Expansion" },
+                 { tag: "#technopark_hire", count: "84 leads", color: "text-[#E53935]", trend: "Hot", text: "Senior Ops Required" },
+                 { tag: "#logistics_sync", count: "12 tenders", color: "text-green-500", trend: "Active", text: "Route Acquisition" }
+               ].map((t, i) => (
+                 <div key={i} className="group/item p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                    <div className="flex justify-between items-start mb-4">
+                       <div>
+                          <p className={cn("text-[16px] font-black transition-colors mb-1", t.color)}>{t.tag}</p>
+                          <p className="text-[12px] font-bold text-slate-950">{t.text}</p>
+                       </div>
+                       <span className="text-[10px] font-black text-slate-300 uppercase">{t.trend}</span>
                     </div>
-                    <div className="flex-1">
-                       <p className="text-[14px] font-bold text-slate-900 leading-tight">{user.name}</p>
-                       <p className="text-[11px] text-slate-400 font-medium">{user.status}</p>
+                    <div className="flex items-center justify-between">
+                       <p className="text-[10px] font-black text-slate-400 uppercase ">{t.count} • 2h avg</p>
+                       <ArrowUpRight size={18} className="text-slate-100 group-hover/item:text-[#E53935] group-hover/item:translate-x-0.5 group-hover/item:-translate-y-0.5 transition-all" />
                     </div>
                  </div>
                ))}
-               <button 
-                 onClick={() => alert("Opening Member Directory...")}
-                 className="w-full py-4 bg-slate-50 text-slate-400 text-[11px] font-bold uppercase tracking-normal rounded-2xl hover:bg-slate-900 hover:text-white transition-all"
-               >
-                  See all members
-               </button>
             </div>
-         </div>
 
-         <div className="bg-[#E53935]/5 rounded-[2.5rem] p-10 border border-[#E53935]/10">
-            <Zap size={32} className="text-[#E53935] mb-6 animate-pulse" />
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Daily Feed</h2>
-            <p className="text-[13px] text-slate-500 font-medium mt-1">
-              Activity near 
-              <Link href="/explore" className="text-[#E53935] font-bold hover:underline ml-1">
-                Technopark Area
-              </Link>
-            </p>
-            <p className="text-[13px] text-slate-500 font-medium leading-relaxed mb-10 mt-4">We found <span className="text-[#E53935] font-bold">12 new partners</span> based on your current work.</p>
-            <Link href="/match" className="block w-full text-center py-5 bg-[#E53935] text-white rounded-2xl font-bold text-[12px] uppercase shadow-lg shadow-red-500/20 hover:scale-105 transition-all">
-               View My Matches
-            </Link>
+            <button className="w-full mt-10 py-5 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-[1.5rem] text-[11px] font-black uppercase transition-all flex items-center justify-center gap-3 border border-transparent hover:border-slate-100">
+               Explore Full Radar <ChevronRight size={16} />
+            </button>
          </div>
-      </div>
+      </aside>
+
+      <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />
     </div>
   );
 }

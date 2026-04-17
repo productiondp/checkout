@@ -1,236 +1,279 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { 
-  Send, 
   Search, 
-  MoreVertical, 
+  MoreHorizontal, 
+  Send, 
   Phone, 
   Video, 
   Plus, 
-  Smile, 
+  ChevronLeft, 
+  Image as ImageIcon, 
+  FileText, 
   Paperclip, 
-  ChevronRight,
-  ShieldCheck,
   CheckCheck,
-  Zap,
-  Clock
+  Info,
+  User,
+  Star,
+  Settings,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DUMMY_CHATS } from "@/lib/dummyData";
 
-const INITIAL_CHATS = [
-  { id: 1, name: "Rahul Sethi", role: "Designer", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100", lastMsg: "Let's check the designs tomorrow.", time: "10:45 AM", online: true, unread: 2 },
-  { id: 2, name: "Sana Maryam", role: "Cafe Owner", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100", lastMsg: "The meeting was good!", time: "9:30 AM", online: true, unread: 0 },
-  { id: 3, name: "Kiran Raj", role: "Tech Help", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=100", lastMsg: "All fixed now.", time: "Yesterday", online: false, unread: 0 },
-];
-
-const INITIAL_MESSAGES = [
-  { id: 1, sender: "them", text: "Hey Ahmad! Can we talk for a minute?", time: "10:30 AM" },
-  { id: 2, sender: "me", text: "Hi! Yes, I just finished the work. Sending it now.", time: "10:32 AM" },
-  { id: 3, sender: "them", text: "Great! Let's check it tomorrow.", time: "10:45 AM" },
-];
-
-export default function Chat() {
-  const [activeChat, setActiveChat] = useState(INITIAL_CHATS[0]);
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
-  const [inputText, setInputText] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const newMessage = {
-      id: Date.now(),
-      sender: "me",
-      text: inputText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([...messages, newMessage]);
-    setInputText("");
-
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        sender: "them",
-        text: "Okay, I will check it and tell you.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, reply]);
-    }, 1500);
-  };
+export default function PremiumMessagesPage() {
+  const [selectedChat, setSelectedChat] = useState<any>(DUMMY_CHATS[0]);
+  const [message, setMessage] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
       
-      {/* Sidebar List */}
-      <div className="w-[380px] border-r border-slate-50 bg-white flex flex-col h-full">
-         <div className="p-8 pb-4">
-            <div className="flex items-center justify-between mb-8">
-               <h2 className="text-2xl font-bold uppercase tracking-normal">Messages</h2>
-               <button onClick={() => alert("Starting new chat...")} className="w-10 h-10 bg-[#E53935]/10 text-[#E53935] rounded-xl hover:bg-[#E53935] hover:text-white transition-all">
-                  <Plus size={20} />
-               </button>
-            </div>
-            <div className="relative mb-6">
-               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-               <input 
-                 type="text" 
-                 placeholder="Search people..." 
-                 className="w-full bg-slate-50 rounded-2xl pl-12 pr-6 py-4 text-[14px] outline-none font-medium border border-transparent focus:border-[#E53935]/10"
-               />
-            </div>
-         </div>
+      {/* 1. THREAD LIST SIDEBAR */}
+      <aside className={cn(
+        "w-full md:w-[380px] border-r border-slate-100 flex flex-col bg-white transition-all",
+        selectedChat && "hidden md:flex"
+      )}>
+        <div className="p-8 pb-6 bg-white/100 z-10 sticky top-0">
+           <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-black text-slate-900 leading-none">Chats</h1>
+              <button className="h-10 w-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all">
+                 <Settings size={18} />
+              </button>
+           </div>
+           
+           <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search conversations..." 
+                className="w-full h-12 bg-slate-50 border border-transparent rounded-2xl pl-12 pr-4 text-[13px] font-medium outline-none focus:bg-white focus:border-slate-100 focus:shadow-sm" 
+              />
+           </div>
+        </div>
 
-         <div className="flex-1 overflow-y-auto no-scrollbar">
-            {INITIAL_CHATS.map(chat => (
-              <div 
-                key={chat.id}
-                onClick={() => setActiveChat(chat)}
-                className={cn(
-                  "px-8 py-5 flex items-center gap-4 cursor-pointer transition-all border-l-4",
-                  activeChat.id === chat.id ? "bg-red-50/50 border-[#E53935]" : "hover:bg-slate-50 border-transparent"
-                )}
-              >
-                 <div className="relative">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 shadow-sm">
-                       <img src={chat.avatar} alt="User" className="w-full h-full object-cover" />
-                    </div>
-                    {chat.online && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>}
-                 </div>
-                 <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                       <h4 className="text-[15px] font-bold text-slate-900 truncate">{chat.name}</h4>
-                       <span className="text-[10px] text-slate-400 font-bold">{chat.time}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                       <p className="text-[12px] text-slate-500 truncate pr-4">{chat.lastMsg}</p>
-                       {chat.unread > 0 && (
-                         <span className="bg-[#E53935] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md min-w-[18px] text-center">{chat.unread}</span>
-                       )}
-                    </div>
-                 </div>
-              </div>
-            ))}
-         </div>
-      </div>
+        <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
+           <div className="px-5 mb-4 mt-2">
+              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Recent Discussions</p>
+           </div>
+           {DUMMY_CHATS.map((chat) => (
+             <button 
+               key={chat.id} 
+               onClick={() => setSelectedChat(chat)}
+               className={cn(
+                 "w-full flex items-center gap-4 p-4 rounded-3xl transition-all group",
+                 selectedChat?.id === chat.id ? "bg-slate-900 shadow-2xl shadow-slate-900/10" : "hover:bg-slate-50"
+               )}
+             >
+                <div className="relative shrink-0">
+                   <div className="h-14 w-14 rounded-2xl overflow-hidden border-2 border-transparent group-hover:border-slate-100 transition-all">
+                      <img src={chat.avatar} className="w-full h-full object-cover" alt="" />
+                   </div>
+                   {chat.online && <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                   <div className="flex justify-between items-center mb-1">
+                      <h4 className={cn("text-[15px] font-bold truncate", selectedChat?.id === chat.id ? "text-white" : "text-slate-900")}>
+                         {chat.name}
+                      </h4>
+                      <span className={cn("text-[10px] font-bold", selectedChat?.id === chat.id ? "text-white/40" : "text-slate-400")}>
+                         {chat.time}
+                      </span>
+                   </div>
+                   <p className={cn("text-[13px] font-medium truncate", selectedChat?.id === chat.id ? "text-white/60" : "text-slate-500")}>
+                      {chat.last}
+                   </p>
+                </div>
+             </button>
+           ))}
+        </div>
+      </aside>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white h-full relative border-r border-slate-50">
-         
-         {/* Chat Head */}
-         <div className="h-24 px-10 border-b border-slate-50 flex items-center justify-between">
-            <div className="flex items-center gap-5">
-               <div className="w-12 h-12 rounded-2xl bg-slate-50 overflow-hidden shadow-sm border border-slate-100">
-                  <img src={activeChat.avatar} alt="Active" className="w-full h-full object-cover" />
-               </div>
-               <div>
-                  <div className="flex items-center gap-2">
-                     <h3 className="text-[16px] font-bold text-slate-900">{activeChat.name}</h3>
-                     <ShieldCheck size={14} className="text-[#E53935]" />
-                  </div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-normal">{activeChat.role}</p>
-               </div>
-            </div>
-            <div className="flex items-center gap-4">
-               <button onClick={() => alert("Calling...")} className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#E53935] transition-all"><Phone size={20} /></button>
-               <button onClick={() => alert("Starting video...")} className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#E53935] transition-all"><Video size={20} /></button>
-            </div>
-         </div>
-
-         {/* Message List */}
-         <div ref={scrollRef} className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar scroll-smooth bg-slate-50/20">
-            <div className="text-center py-4">
-               <span className="text-[11px] font-bold uppercase text-slate-300 tracking-normal">Conversation Start</span>
-            </div>
-            {messages.map(msg => (
-              <div key={msg.id} className={cn(
-                "flex flex-col max-w-[70%]",
-                msg.sender === 'me' ? "ml-auto items-end" : "items-start"
-              )}>
-                 <div className={cn(
-                   "p-5 rounded-2xl shadow-sm text-[15px] font-medium leading-relaxed",
-                   msg.sender === 'me' 
-                    ? "bg-slate-900 text-white rounded-tr-none" 
-                    : "bg-white text-slate-900 border border-slate-100 rounded-tl-none"
-                 )}>
-                    {msg.text}
-                 </div>
-                 <div className="flex items-center gap-2 mt-2 px-1">
-                    <span className="text-[10px] text-slate-400 font-bold">{msg.time}</span>
-                    {msg.sender === 'me' && <CheckCheck size={12} className="text-[#E53935]" />}
-                 </div>
-              </div>
-            ))}
-         </div>
-
-         {/* Type Area */}
-         <div className="p-8 bg-white border-t border-slate-50">
-            <div className="bg-slate-50 rounded-2xl p-2 flex items-center gap-2">
-               <button onClick={() => alert("Opening emoji...")} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-[#E53935] transition-all"><Smile size={22} /></button>
-               <button onClick={() => alert("Attach file...")} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-[#E53935] transition-all"><Paperclip size={22} /></button>
-               <input 
-                 type="text" 
-                 value={inputText}
-                 onChange={(e) => setInputText(e.target.value)}
-                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                 placeholder="Type your message..." 
-                 className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium px-2"
-               />
-               <button 
-                 onClick={handleSend}
-                 disabled={!inputText.trim()}
-                 className="w-12 h-12 bg-[#E53935] text-white rounded-xl flex items-center justify-center shadow-lg shadow-red-500/10 hover:bg-slate-900 transition-all"
-               >
-                  <Send size={20} className="translate-x-0.5" />
-               </button>
-            </div>
-         </div>
-      </div>
-
-      {/* Profile Sidebar */}
-      <div className="w-[360px] hidden xl:flex flex-col bg-white h-full overflow-y-auto no-scrollbar">
-         <div className="p-10 text-center">
-            <div className="w-24 h-24 rounded-3xl bg-slate-50 mx-auto overflow-hidden shadow-xl mb-6 border border-slate-100 p-1">
-               <img src={activeChat.avatar} className="w-full h-full object-cover rounded-2xl" alt="Profile" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 leading-tight mb-2 uppercase">{activeChat.name}</h3>
-            <p className="text-[11px] font-bold text-[#E53935] uppercase tracking-normal">{activeChat.role}</p>
-         </div>
-
-         <div className="px-10 space-y-10 pb-10">
-            <div className="grid grid-cols-2 gap-4">
-               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                  <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">Response</p>
-                  <p className="text-lg font-bold text-slate-900">14m</p>
-               </div>
-               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                  <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">Rating</p>
-                  <p className="text-lg font-bold text-slate-900">4.9</p>
-               </div>
-            </div>
-
-            <div>
-               <h4 className="text-[11px] font-bold uppercase tracking-normal text-slate-400 mb-6">Past Projects</h4>
-               <div className="space-y-4">
-                  <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center gap-4 group cursor-pointer hover:border-[#E53935] transition-all">
-                     <div className="w-10 h-10 bg-red-50 text-[#E53935] rounded-xl flex items-center justify-center"><Zap size={20} /></div>
-                     <div className="flex-1">
-                        <p className="text-[13px] font-bold text-slate-900 leading-tight">Project Delta</p>
-                        <p className="text-[10px] text-slate-500 font-medium">Design Work</p>
+      {/* 2. CONVERSATION VIEW (CENTER) */}
+      <main className={cn(
+        "flex-1 flex flex-col bg-white overflow-hidden relative",
+        !selectedChat && "hidden md:flex"
+      )}>
+        {selectedChat ? (
+          <>
+            {/* Thread Header */}
+            <header className="h-20 lg:h-24 px-6 lg:px-10 flex items-center justify-between bg-white border-b border-slate-50 sticky top-0 z-20">
+               <div className="flex items-center gap-4">
+                  <button onClick={() => setSelectedChat(null)} className="md:hidden h-10 w-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900">
+                     <ChevronLeft size={20} />
+                  </button>
+                  <div className="flex items-center gap-4">
+                     <div className="h-12 w-12 rounded-2xl overflow-hidden shadow-md">
+                        <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
                      </div>
-                     <ChevronRight size={16} className="text-slate-300" />
+                     <div>
+                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{selectedChat.name}</h2>
+                        <div className="flex items-center gap-2">
+                           <span className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-green-500" : "bg-slate-300")} />
+                           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{selectedChat.online ? "Online Now" : "Inactive"}</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               <div className="flex items-center gap-2">
+                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+                     <Phone size={20} />
+                  </button>
+                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+                     <Video size={20} />
+                  </button>
+                  <button 
+                    onClick={() => setShowProfile(!showProfile)}
+                    className="h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                  >
+                     <Info size={22} />
+                  </button>
+               </div>
+            </header>
+
+            {/* MESSAGE STREAM */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#FDFDFF] no-scrollbar">
+               <div className="flex justify-center">
+                  <span className="px-4 py-1.5 bg-slate-100 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">Session Encryption Active</span>
+               </div>
+
+               {/* Mock Messages */}
+               <div className="space-y-8">
+                  <div className="flex flex-col items-start max-w-[80%]">
+                     <div className="bg-white border border-slate-100 p-5 rounded-[2rem] rounded-tl-lg shadow-sm">
+                        <p className="text-[15px] font-medium text-slate-700 leading-relaxed">Hey Ahmad! I saw your recent post about the MSME logistics collective. Do you have a deck I could review?</p>
+                     </div>
+                     <span className="text-[10px] font-bold text-slate-300 mt-2 ml-4">10:42 AM</span>
+                  </div>
+
+                  <div className="flex flex-col items-end w-full">
+                     <div className="bg-[#E53935] p-5 rounded-[2rem] rounded-tr-lg shadow-xl shadow-red-500/10 max-w-[80%]">
+                        <p className="text-[15px] font-medium text-white leading-relaxed">Hey {selectedChat.name.split(' ')[0]}! Yes, we just finalized the regional strategy. Attaching the summary PDF here.</p>
+                     </div>
+                     <div className="flex items-center gap-2 mt-2 mr-4">
+                        <span className="text-[10px] font-bold text-slate-300">10:45 AM</span>
+                        <CheckCheck size={14} className="text-[#E53935]" />
+                     </div>
+                  </div>
+
+                  <div className="flex flex-col items-end w-full">
+                     <div className="bg-white border border-slate-100 p-4 rounded-[2rem] rounded-tr-lg shadow-sm flex items-center gap-4 max-w-[80%]">
+                        <div className="h-12 w-12 bg-red-50 text-[#E53935] rounded-xl flex items-center justify-center shrink-0">
+                           <FileText size={20} />
+                        </div>
+                        <div className="flex-1 min-w-0 pr-12">
+                           <p className="text-[14px] font-bold text-slate-900 truncate">Logistics_Synergy_2026.pdf</p>
+                           <p className="text-[11px] font-medium text-slate-400">4.2 MB • PDF Document</p>
+                        </div>
+                     </div>
                   </div>
                </div>
             </div>
 
-            <button onClick={() => alert("User blocked.")} className="w-full py-4 border border-slate-100 text-slate-400 rounded-xl font-bold text-[11px] uppercase hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all">Report / Block</button>
-         </div>
-      </div>
+            {/* COMPOSER (BOTTOM) */}
+            <div className="p-6 lg:p-8 bg-white border-t border-slate-50 pb-24 lg:pb-8">
+               <div className="flex items-center gap-4 bg-slate-50 rounded-[2.5rem] p-2 pl-6 shadow-sm border border-slate-100/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
+                  <button className="text-slate-300 hover:text-slate-900 transition-colors">
+                     <Plus size={24} />
+                  </button>
+                  <input 
+                    type="text" 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type your message..." 
+                    className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium text-slate-900 py-4"
+                  />
+                  <div className="flex items-center gap-2 pr-2">
+                     <button className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-colors">
+                        <ImageIcon size={20} />
+                     </button>
+                     <button 
+                       className={cn(
+                        "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
+                        message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-slate-400 grayscale"
+                       )}
+                     >
+                        <Send size={20} />
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#FDFDFF]">
+             <div className="h-24 w-24 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
+                <MessageSquare size={40} />
+             </div>
+             <h2 className="text-2xl font-black text-slate-900 leading-tight">Your Communication Hub</h2>
+             <p className="text-slate-500 max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start exploring potential business synergies and contract details.</p>
+          </div>
+        )}
+      </main>
+
+      {/* 3. PROFILE / CONTEXT DRAWER (RIGHT) */}
+      {selectedChat && showProfile && (
+        <aside className="hidden lg:flex flex-col w-[380px] border-l border-slate-100 bg-white animate-in slide-in-from-right duration-300">
+           <div className="p-8 h-full overflow-y-auto no-scrollbar">
+              <div className="flex justify-between items-center mb-10">
+                 <h3 className="text-[12px] font-bold text-slate-300 uppercase tracking-widest">Partner Identity</h3>
+                 <button onClick={() => setShowProfile(false)} className="h-8 w-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-100">
+                    <X size={16} />
+                 </button>
+              </div>
+
+              <div className="text-center mb-12">
+                 <div className="h-32 w-32 mx-auto rounded-[2.5rem] overflow-hidden shadow-2xl mb-6 ring-4 ring-slate-50">
+                    <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
+                 </div>
+                 <h2 className="text-2xl font-black text-slate-900 leading-tight mb-1">{selectedChat.name}</h2>
+                 <p className="text-[11px] font-bold text-[#E53935] uppercase tracking-widest mb-6">Verified Business Founder</p>
+                 
+                 <div className="flex justify-center gap-3">
+                    <button className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase hover:bg-[#E53935] shadow-lg transition-all">View Profile</button>
+                    <button className="h-10 w-10 flex items-center justify-center bg-slate-50 text-slate-900 rounded-xl hover:bg-slate-100"><Star size={18} /></button>
+                 </div>
+              </div>
+
+              <div className="space-y-8">
+                 <div>
+                    <h4 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-4">Shared Synergy</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                       <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
+                          <p className="text-[18px] font-bold text-slate-900">12</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Documents</p>
+                       </div>
+                       <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
+                          <p className="text-[18px] font-bold text-slate-900">4</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Contracts</p>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div>
+                    <h4 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-4">Shared Files</h4>
+                    <div className="space-y-3">
+                       {[
+                         { icon: FileText, name: "Proposal_Final.pdf", size: "1.2MB" },
+                         { icon: ImageIcon, name: "Asset_Photos.zip", size: "145MB" },
+                       ].map((f, i) => (
+                         <div key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-slate-50 hover:bg-slate-50 cursor-pointer transition-all">
+                            <div className="h-10 w-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-slate-400">
+                               <f.icon size={18} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                               <p className="text-[13px] font-bold text-slate-900 truncate">{f.name}</p>
+                               <p className="text-[10px] font-bold text-slate-400">{f.size}</p>
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </aside>
+      )}
     </div>
   );
 }

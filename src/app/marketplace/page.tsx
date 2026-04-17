@@ -1,185 +1,146 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Search, ShoppingBag, Tag, MapPin, ArrowRight, TrendingUp, Filter, LayoutGrid, List } from "lucide-react";
+import React, { useState } from "react";
+import { 
+  ShoppingBag, 
+  Search, 
+  Tag, 
+  ArrowRight, 
+  Zap, 
+  Target, 
+  Plus, 
+  CheckCircle2, 
+  Filter, 
+  LayoutGrid, 
+  TrendingUp, 
+  BadgeCheck,
+  Package,
+  Truck,
+  Building2,
+  ChevronRight,
+  MoreHorizontal
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DUMMY_MARKET } from "@/lib/dummyData";
 
-const MARKET_ITEMS = [
-  { id: 1, name: "Coffee Machine", price: "₹85,000", category: "Shop Gear", loc: "Trivandrum", condition: "Like New", image: "https://images.unsplash.com/photo-1510520434124-5bc7e642b61d?q=80&w=400&auto=format&fit=crop" },
-  { id: 2, name: "Office Desk & Chair", price: "₹12,400", category: "Furniture", loc: "Technopark", condition: "Used", image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=400&auto=format&fit=crop" },
-  { id: 3, name: "Web Agency Website", price: "₹2,50,000", category: "Digital", loc: "Remote", condition: "Active", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=400&auto=format&fit=crop" },
-  { id: 4, name: "Laptop Apple Pro", price: "₹1,45,000", category: "Electronics", loc: "Kochi", condition: "Used", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=400&auto=format&fit=crop" },
-];
+export default function PremiumMarketplacePage() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [search, setSearch] = useState("");
 
-export default function Marketplace() {
-  const [activeCat, setActiveCat] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showPostForm, setShowPostForm] = useState(false);
-  const [requestedIds, setRequestedIds] = useState<number[]>([]);
-
-  const filteredItems = useMemo(() => {
-    return MARKET_ITEMS.filter(item => {
-      const matchesCat = activeCat === "All" || item.category === activeCat;
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCat && matchesSearch;
-    });
-  }, [activeCat, searchQuery]);
+  const filteredItems = DUMMY_MARKET.filter(item => 
+    (activeCategory === "All" || item.category === activeCategory) &&
+    (item.item.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
-    <div className="flex flex-col xl:flex-row min-h-screen bg-white">
-      <div className="flex-1 p-8 border-r border-slate-50">
-         {showPostForm && (
-           <div className="mb-10 p-8 bg-slate-900 text-white rounded-[2.5rem] animate-in fade-in slide-in-from-top-4 duration-500 relative overflow-hidden group">
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                 <div className="w-20 h-20 bg-red-500/20 rounded-3xl flex items-center justify-center text-[#E53935] shrink-0">
-                    <ShoppingBag size={40} />
-                 </div>
-                 <div className="flex-1">
-                    <h3 className="text-xl font-bold uppercase mb-2">Create New Ad</h3>
-                    <p className="text-[12px] font-medium text-slate-400 mb-6 uppercase tracking-normal leading-relaxed">Sell your office gear or business assets to other people in the network.</p>
-                    <div className="flex gap-3">
-                       <button onClick={() => { setShowPostForm(false); alert("Listing features coming soon!"); }} className="px-6 py-3 bg-[#E53935] text-white rounded-xl font-bold text-[11px] uppercase tracking-normal shadow-lg transition-all">Publish Ad</button>
-                       <button onClick={() => setShowPostForm(false)} className="px-6 py-3 bg-white/10 text-white rounded-xl font-bold text-[11px] uppercase tracking-normal transition-all">Cancel</button>
-                    </div>
-                 </div>
-              </div>
-           </div>
-         )}
-         <div className="flex items-center justify-between px-2 mb-10">
-            <div>
-               <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Buy and <span className="text-[#E53935]">Sell</span></h2>
-               <p className="text-[13px] text-slate-500 font-medium mt-1">Founders selling business items and tools</p>
+    <div className="flex flex-col min-h-screen bg-white lg:bg-[#FDFDFF] selection:bg-[#E53935]/10 overscroll-none">
+      
+      {/* 1. CINEMATIC HEADER */}
+      <div className="bg-slate-950 px-6 lg:px-12 py-12 lg:py-20 relative overflow-hidden">
+         <div className="max-w-4xl relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+               <span className="h-[1px] w-12 bg-[#E53935]" />
+               <span className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.3em]">Wholesale Asset Hub</span>
             </div>
-            
-            <div className="flex items-center gap-3">
-               <div className="flex items-center bg-slate-50 p-1 rounded-xl">
-                  <button onClick={() => setViewMode("grid")} className={cn("p-2 rounded-lg transition-all", viewMode === "grid" ? "bg-white shadow-sm text-[#E53935]" : "text-slate-400")}>
-                    <LayoutGrid size={18} />
-                  </button>
-                  <button onClick={() => setViewMode("list")} className={cn("p-2 rounded-lg transition-all", viewMode === "list" ? "bg-white shadow-sm text-[#E53935]" : "text-slate-400")}>
-                    <List size={18} />
-                  </button>
-               </div>
-            </div>
+            <h1 className="text-4xl lg:text-7xl font-black text-white leading-tight mb-8 uppercase italic">Buy & <span className="text-[#E53935]">Sell</span> Units.</h1>
+            <p className="text-white/50 text-xl font-medium max-w-2xl leading-relaxed mb-12">
+               Direct procurement of raw materials, excess logistics capacity, and industrial assets across regional nodes.
+            </p>
          </div>
+         <ShoppingBag size={400} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12" />
+      </div>
 
-         {/* Filters */}
-         <div className="space-y-8 mb-10">
-            <div className="relative">
-               <input 
-                 type="text" 
-                 placeholder="Search for tools, furniture or gear..." 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 className="w-full bg-slate-50 rounded-2xl px-12 py-4 text-[14px] outline-none border border-transparent focus:border-[#E53935]/20 transition-all font-medium"
-               />
-               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-               {["All", "Shop Gear", "Furniture", "Digital", "Electronics"].map(cat => (
+      {/* 2. EXPLORATION HUB */}
+      <div className="px-6 lg:px-12 py-10">
+         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+            <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
+               {["All", "Industrial", "Logistics", "Tech", "Supply"].map(cat => (
                  <button 
-                   key={cat}
-                   onClick={() => setActiveCat(cat)}
-                   className={cn(
-                     "px-6 py-2.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap",
-                     activeCat === cat 
-                       ? "bg-[#E53935] text-white shadow-lg shadow-red-500/10" 
-                       : "bg-white border border-slate-100 text-slate-500"
-                   )}
+                  key={cat} 
+                  onClick={() => setActiveCategory(cat)}
+                  className={cn(
+                    "px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border",
+                    activeCategory === cat ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white border-slate-100 text-slate-400 hover:text-slate-900"
+                  )}
                  >
-                   {cat}
+                    {cat}
                  </button>
                ))}
             </div>
+
+            <div className="relative w-full lg:max-w-md">
+               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+               <input 
+                 type="text" 
+                 value={search}
+                 onChange={(e) => setSearch(e.target.value)}
+                 placeholder="Search wholesale assets..." 
+                 className="w-full h-16 bg-white border border-slate-100 rounded-2xl pl-16 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all" 
+               />
+            </div>
          </div>
 
-         {/* Items List */}
-         <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col")}>
+         {/* WHOLESALE GRID */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-40">
             {filteredItems.map(item => (
-              <div key={item.id} className={cn("bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500 group", viewMode === "list" ? "flex items-center gap-8 pr-10" : "flex flex-col")}>
-                 <div className={cn("relative overflow-hidden bg-slate-100", viewMode === "list" ? "w-40 h-40 flex-shrink-0 rounded-2xl m-4" : "h-56")}>
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute top-4 left-4">
-                       <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[10px] font-bold shadow-sm">
-                          {item.category}
-                       </div>
+              <div key={item.id} className="group bg-white border border-slate-100 rounded-[3.5rem] p-1.5 transition-all hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] hover:border-[#E53935]/10 overflow-hidden">
+                 <div className="h-64 relative rounded-[3rem] overflow-hidden">
+                    <img src={item.image} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" alt="" />
+                    <div className="absolute top-6 right-6 px-4 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-[10px] font-black uppercase text-[#E53935] shadow-lg border border-slate-100">{item.category}</div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
+                       <button className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">Fast Procurement</button>
                     </div>
                  </div>
 
-                 <div className="p-8 flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                       <h3 className="text-[17px] font-bold text-slate-900 group-hover:text-[#E53935] transition-colors">{item.name}</h3>
-                       <p className="text-lg font-bold text-[#E53935]">{item.price}</p>
+                 <div className="p-8 pb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                       <Building2 size={14} className="text-slate-300" />
+                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Verified Industrial Hub</span>
                     </div>
-                    
-                    <div className="space-y-3 mb-8">
-                       <div className="flex items-center gap-3 text-slate-500">
-                          <MapPin size={16} />
-                          <span className="text-[13px] font-medium">{item.loc}</span>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-400">
-                             {item.condition}
-                          </span>
-                       </div>
-                    </div>
+                    <h3 className="text-xl font-black text-slate-900 leading-tight uppercase italic mb-1 group-hover:text-[#E53935] transition-colors">{item.item}</h3>
+                    <p className="text-[14px] font-bold text-slate-500 mb-6 flex items-center gap-2 italic">
+                       Min Order: <span className="text-slate-900 not-italic uppercase">{item.cap} Units</span>
+                    </p>
 
-                    <button 
-                      onClick={() => {
-                        if (requestedIds.includes(item.id)) {
-                           setRequestedIds(requestedIds.filter(id => id !== item.id));
-                           alert("Interest removed.");
-                        } else {
-                           setRequestedIds([...requestedIds, item.id]);
-                           alert(`Request sent for ${item.name}! The owner will get back to you.`);
-                        }
-                      }}
-                      className={cn(
-                        "w-full py-4 rounded-xl font-bold text-[11px] uppercase transition-all flex items-center justify-center gap-2",
-                        requestedIds.includes(item.id)
-                          ? "bg-green-100 text-green-600 shadow-none"
-                          : "bg-slate-900 text-white hover:bg-[#E53935] shadow-lg shadow-slate-900/10"
-                      )}
-                    >
-                       {requestedIds.includes(item.id) ? "Request Sent" : "Send Interest"} <ArrowRight size={16} />
-                    </button>
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group-hover:bg-white transition-colors">
+                       <div>
+                          <p className="text-[10px] font-black text-slate-300 uppercase leading-none mb-1 text-left">Unit Price</p>
+                          <p className="text-[24px] font-black text-slate-900 leading-none">{item.price}</p>
+                       </div>
+                       <button className="h-12 w-12 bg-slate-950 text-white rounded-2xl flex items-center justify-center hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
+                          <Plus size={24} />
+                       </button>
+                    </div>
+                 </div>
+
+                 <div className="px-8 pb-8 flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                       <Truck size={14} className="text-[#E53935]" />
+                       <span className="text-[10px] font-black text-slate-400 uppercase">Hub Delivery</span>
+                    </div>
+                    <div className="h-1 w-1 bg-slate-200 rounded-full" />
+                    <div className="flex items-center gap-2">
+                       <BadgeCheck size={14} className="text-blue-500" />
+                       <span className="text-[10px] font-black text-slate-400 uppercase">Certified</span>
+                    </div>
                  </div>
               </div>
             ))}
          </div>
       </div>
 
-      {/* Market Panel */}
-      <div className="w-full xl:w-[400px] p-10 space-y-10 bg-slate-50/50">
-         <div className="bg-white rounded-[2rem] p-8 border border-slate-100 text-center shadow-sm">
-            <div className="w-16 h-16 bg-red-50 text-[#E53935] rounded-3xl flex items-center justify-center mx-auto mb-6">
-               <ShoppingBag size={32} />
+      {/* 3. PROMOTION FOOTER */}
+      <div className="mt-20 p-12 bg-slate-950 rounded-[4rem] text-white relative overflow-hidden group mx-6 lg:mx-12 mb-20">
+         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+            <div className="max-w-xl">
+               <h3 className="text-3xl lg:text-5xl font-black mb-6 leading-tight uppercase italic">List your <span className="text-[#E53935]">Excess</span> Inventory.</h3>
+               <p className="text-white/50 text-xl font-medium leading-relaxed">Turn your idle machinery or raw material stock into immediate liquidity across the node.</p>
             </div>
-            <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-2">Have a listing?</h4>
-            <h5 className="text-xl font-bold text-slate-900 mb-6 leading-tight">Post your own business tools for sale</h5>
-            <button 
-              onClick={() => setShowPostForm(true)}
-              className="w-full py-4 border border-[#E53935] text-[#E53935] hover:bg-[#E53935] hover:text-white rounded-2xl font-bold text-[11px] uppercase transition-all"
-            >
-               Place An Ad Now
-            </button>
+            <button className="px-12 py-6 bg-[#E53935] text-white rounded-[2rem] font-black text-[12px] uppercase shadow-4xl animate-pulse hover:animate-none active:scale-95 transition-all">Start Selling Now</button>
          </div>
-
-         <div className="bg-slate-900 rounded-[2rem] p-10 text-white shadow-xl relative overflow-hidden">
-            <div className="flex items-center gap-3 text-[#E53935] mb-8">
-               <TrendingUp size={20} />
-               <span className="text-[11px] font-bold uppercase tracking-normal">What's Selling</span>
-            </div>
-            <p className="text-2xl font-bold leading-tight mb-8">
-               Notice: <span className="text-[#E53935]">Office Desks</span> are selling fast this week!
-            </p>
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-               <div className="h-full bg-[#E53935]" style={{ width: '80%' }}></div>
-            </div>
-         </div>
+         <Zap size={300} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12 group-hover:scale-110 transition-transform duration-[4s]" />
       </div>
+
     </div>
   );
 }

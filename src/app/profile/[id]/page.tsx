@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { 
   User, 
   Mail, 
@@ -25,21 +26,30 @@ import {
   Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DUMMY_PROFILES } from "@/lib/dummyData";
 
-export default function PremiumProfilePage() {
+export default function DynamicProfilePage() {
+  const params = useParams();
+  const profileId = parseInt(params.id as string);
+  
+  // Find the profile based on ID
+  const profile = useMemo(() => {
+    return DUMMY_PROFILES.find(p => p.id === profileId) || DUMMY_PROFILES[0];
+  }, [profileId]);
+
   const [activeTab, setActiveTab] = useState("Overview");
 
   const performanceMetrics = [
-    { label: "Network Trust", value: 98, color: "bg-green-500", icon: ShieldCheck },
-    { label: "Business Affinity", value: 84, color: "bg-[#E53935]", icon: Target },
+    { label: "Network Trust", value: profile.match + 2, color: "bg-green-500", icon: ShieldCheck },
+    { label: "Business Affinity", value: profile.match, color: "bg-[#E53935]", icon: Target },
     { label: "Financial Credit", value: 92, color: "bg-blue-600", icon: CreditCard },
     { label: "Operational Speed", value: 76, color: "bg-violet-600", icon: Zap },
   ];
 
   const contactInfo = [
-    { label: "Email", value: "ahmad@zenithtech.com", icon: Mail },
+    { label: "Email", value: `${profile.name.toLowerCase().replace(" ", ".")}@${profile.company.toLowerCase().replace(" ", "")}.com`, icon: Mail },
     { label: "Phone", value: "+91 9XX XXXXXXX", icon: Phone },
-    { label: "Website", value: "zenithtech.io", icon: Globe, link: true },
+    { label: "Website", value: `${profile.company.toLowerCase().replace(" ", "")}.io`, icon: Globe, link: true },
   ];
 
   return (
@@ -57,7 +67,7 @@ export default function PremiumProfilePage() {
                {/* Avatar Hub */}
                <div className="relative shrink-0">
                   <div className="h-48 w-48 rounded-[3.5rem] bg-white p-3 shadow-4xl relative z-10 overflow-hidden border border-white/20">
-                     <img src="https://i.pravatar.cc/300?u=me" className="w-full h-full object-cover rounded-[2.8rem]" alt="Profile" />
+                     <img src={profile.avatar} className="w-full h-full object-cover rounded-[2.8rem]" alt="Profile" />
                   </div>
                   <div className="absolute -bottom-3 -right-3 h-14 w-14 bg-[#E53935] border-4 border-[#0F172A] rounded-2xl flex items-center justify-center text-white shadow-2xl z-20">
                      <CheckCircle2 size={28} />
@@ -66,21 +76,21 @@ export default function PremiumProfilePage() {
 
                <div className="text-center md:text-left flex-1 pb-2">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
-                     <h1 className="text-5xl font-black text-white leading-none no-italic">Ahmad Nur F</h1>
+                     <h1 className="text-5xl font-black text-white leading-none no-italic">{profile.name}</h1>
                      <div className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[10px] font-black uppercase text-white tracking-widest">
                         Elite Partner
                      </div>
                   </div>
                   <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/60 text-[13px] font-bold uppercase tracking-normal">
-                     <span className="flex items-center gap-2"><Building size={16} className="text-[#E53935]" /> CEO, Zenith Tech Solutions</span>
-                     <span className="flex items-center gap-2"><MapPin size={16} className="text-[#E53935]" /> Trivandrum Node, Kerala</span>
+                     <span className="flex items-center gap-2"><Building size={16} className="text-[#E53935]" /> {profile.role}, {profile.company}</span>
+                     <span className="flex items-center gap-2"><MapPin size={16} className="text-[#E53935]" /> {profile.city} Node, Kerala</span>
                   </div>
                </div>
 
                <div className="flex items-center gap-4 pb-2">
-                  <button className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-white hover:text-[#E53935] transition-all active:scale-95">Edit Profile</button>
+                  <button className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-white hover:text-[#E53935] transition-all active:scale-95">Send Message</button>
                   <button className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all">
-                     <Settings size={22} />
+                     <Plus size={22} />
                   </button>
                </div>
             </div>
@@ -101,7 +111,7 @@ export default function PremiumProfilePage() {
                      Professional Summary
                   </h3>
                   <p className="text-[17px] text-slate-600 font-medium leading-[1.8] no-italic">
-                     Leading executive in regional supply chain optimization. Transforming MSME logistics through 
+                     Leading executive in regional supply chain optimization at {profile.company}. Transforming MSME logistics through 
                      high-affinity partner coordination and innovative digital infrastructure in South India.
                   </p>
                   
@@ -143,11 +153,11 @@ export default function PremiumProfilePage() {
                      <div className="grid grid-cols-2 gap-4 mb-8">
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Global Rank</p>
-                           <p className="text-xl font-black text-slate-900">#124</p>
+                           <p className="text-xl font-black text-slate-900">#{100 + profile.id}</p>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">State Rank</p>
-                           <p className="text-xl font-black text-slate-900">#08</p>
+                           <p className="text-xl font-black text-slate-900">#{profile.id % 20 + 1}</p>
                         </div>
                      </div>
 
@@ -156,9 +166,9 @@ export default function PremiumProfilePage() {
                            <TrendingUp size={14} className="text-[#E53935]" /> Promotion Parameters
                         </p>
                         {[
-                           { label: "Total Completed Projects", val: "42/50", progress: 84 },
+                           { label: "Total Completed Projects", val: `${30 + (profile.id % 20)}/50`, progress: 60 + (profile.id % 40) },
                            { label: "Network Growth Velocity", val: "High", progress: 92 },
-                           { label: "Successful Match Rate", val: "96%", progress: 96 },
+                           { label: "Successful Match Rate", val: `${profile.match}%`, progress: profile.match },
                         ].map((param, i) => (
                            <div key={i} className="space-y-1.5">
                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
@@ -170,29 +180,6 @@ export default function PremiumProfilePage() {
                               </div>
                            </div>
                         ))}
-                     </div>
-                  </div>
-               </div>
-
-               {/* QUICK ACTIONS DOCK */}
-               <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-8 text-white/5 -rotate-12 group-hover:rotate-0 transition-transform duration-700">
-                     <Plus size={160} strokeWidth={1} />
-                  </div>
-                  <div className="relative z-10">
-                     <h3 className="text-[11px] font-black uppercase text-white/40 mb-8">Executive Controls</h3>
-                     <div className="space-y-3">
-                        <button className="w-full flex items-center justify-between p-5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 group/btn">
-                           <span className="text-[12px] font-bold">Launch Connection Request</span>
-                           <ChevronRight size={16} className="text-white/20 group-hover/btn:translate-x-1 transition-transform" />
-                        </button>
-                        <button className="w-full flex items-center justify-between p-5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 group/btn">
-                           <span className="text-[12px] font-bold">Review Financial Nodes</span>
-                           <ChevronRight size={16} className="text-white/20 group-hover/btn:translate-x-1 transition-transform" />
-                        </button>
-                        <button className="w-full mt-8 py-5 bg-[#E53935] rounded-2xl font-black text-[11px] uppercase shadow-2xl hover:bg-white hover:text-[#E53935] transition-all">
-                           Terminate Session
-                        </button>
                      </div>
                   </div>
                </div>
@@ -251,9 +238,9 @@ export default function PremiumProfilePage() {
                   
                   <div className="space-y-10">
                      {[
-                        { title: "Secured Strategic Partnership with Kerala Transit", time: "2 hours ago", node: "Logistics Node" },
+                        { title: `Successfully completed strategic project regarding ${profile.company} node.`, time: "2 hours ago", node: "Logistics Node" },
                         { title: "Financial Verification Complete: Tier 1 Elite", time: "1 day ago", node: "Financial Hub" },
-                        { title: "Profile Integrity Update Successful", time: "3 days ago", node: "System" },
+                        { title: "Network Integrity Update Successful", time: "3 days ago", node: "System" },
                      ].map((item, i) => (
                         <div key={i} className="flex gap-6 relative group">
                            {i !== 2 && <div className="absolute left-1.5 top-8 bottom-[-24px] w-0.5 bg-slate-100" />}
@@ -269,20 +256,6 @@ export default function PremiumProfilePage() {
                         </div>
                      ))}
                   </div>
-               </div>
-
-               {/* EXECUTIVE FOOTNOTE */}
-               <div className="p-10 bg-red-50/50 border border-red-100/50 rounded-[2.5rem] flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                     <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-[#E53935] shadow-sm shadow-red-500/10">
-                        <Award size={24} />
-                     </div>
-                     <div>
-                        <p className="text-[11px] font-black text-slate-900 uppercase">Top 12% Business Rank</p>
-                        <p className="text-[13px] font-medium text-slate-500 no-italic">Your profile is currently in the elite high-performance bracket.</p>
-                     </div>
-                  </div>
-                  <TrendingUp className="text-[#E53935] hidden md:block" size={32} />
                </div>
 
             </div>

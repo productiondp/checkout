@@ -1,232 +1,137 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { 
   Users, 
-  MapPin, 
+  Star, 
+  ArrowRight, 
   TrendingUp, 
-  Sparkles, 
-  ArrowUpRight, 
   ShieldCheck, 
-  Zap,
-  LayoutGrid,
-  List,
-  ChevronDown,
-  BrainCircuit,
-  RefreshCcw,
-  Search,
-  MessageSquare,
-  MessageCircle,
-  Lightbulb
+  MapPin, 
+  MessageSquare, 
+  Zap, 
+  Search, 
+  SlidersHorizontal,
+  ChevronRight,
+  Target,
+  Rocket,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import DealEngine from "@/components/modals/DealEngine";
+import { DUMMY_PROFILES } from "@/lib/dummyData";
 
-const INITIAL_MATCHES = [
-  { 
-    id: 1, 
-    name: "Kiran Raj", 
-    role: "Software Architect", 
-    loc: "Trivandrum", 
-    match: 98, 
-    needs: ["Marketing", "Funding"],
-    offers: ["Tech Help", "Developer Team"],
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop", 
-    type: "Professional",
-    aiReason: "Perfect match for your Tech Help needs."
-  },
-  { 
-    id: 2, 
-    name: "Sana Maryam", 
-    role: "Business Strategist", 
-    loc: "Bangalore", 
-    match: 94, 
-    needs: ["Tech Help", "Hiring"],
-    offers: ["Marketing", "Strategy"],
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop", 
-    type: "Professional",
-    aiReason: "Good at Marketing which you need now."
-  },
-  { 
-    id: 3, 
-    name: "Alex Johnson", 
-    role: "Legal Consultant", 
-    loc: "Remote", 
-    match: 82, 
-    needs: ["Social Networking"],
-    offers: ["Legal Help", "Contract Review"],
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop", 
-    type: "Professional",
-    aiReason: "Provides legal help for your new project."
-  },
-];
+export default function PremiumPartnersPage() {
+  const [activeTab, setActiveTab] = useState("All");
+  const [search, setSearch] = useState("");
 
-export default function Match() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [myNeed, setMyNeed] = useState("");
-  const [isMatching, setIsMatching] = useState(false);
-
-  const matchedPeople = useMemo(() => {
-    if (!myNeed) return INITIAL_MATCHES;
-    return INITIAL_MATCHES.filter(m => 
-      m.offers.some(offer => offer.toLowerCase().includes(myNeed.toLowerCase())) ||
-      m.role.toLowerCase().includes(myNeed.toLowerCase())
-    );
-  }, [myNeed]);
-
-  const handleAIMatch = () => {
-    setIsMatching(true);
-    setTimeout(() => setIsMatching(false), 1500);
-  };
+  const filtered = DUMMY_PROFILES.slice(0, 40).filter(p => 
+    p.name.toLowerCase().includes(search.toLowerCase()) || 
+    p.company.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="flex flex-col xl:flex-row min-h-full bg-[#F8FAFB]">
+    <div className="flex flex-col min-h-screen bg-white lg:bg-[#FDFDFF] selection:bg-[#E53935]/10 overscroll-none">
       
-      {/* Sidebar Area */}
-      <div className="w-full xl:w-[400px] p-10 border-r border-[#EBEFF1] bg-white flex flex-col h-full overflow-y-auto no-scrollbar">
-         <div className="mb-12">
-            <div className="flex items-center gap-3 text-[#E53935] mb-4">
-               <Sparkles size={24} className="fill-current" />
-               <span className="text-[12px] font-bold uppercase tracking-normal">Networking</span>
+      {/* 1. CINEMATIC HERO */}
+      <div className="bg-slate-950 px-6 lg:px-12 py-12 lg:py-20 relative overflow-hidden">
+         <div className="max-w-4xl relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+               <span className="h-[1px] w-12 bg-[#E53935]" />
+               <span className="text-[11px] font-black text-[#E53935] uppercase tracking-[0.3em]">Find Partners</span>
             </div>
-            <h2 className="text-3xl font-bold uppercase leading-tight mb-4 tracking-normal">Search For<br />What You Need</h2>
-            <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-               Type what you need, and we'll find people to help you.
+            <h1 className="text-4xl lg:text-7xl font-black text-white leading-tight mb-8 uppercase">Top <span className="text-[#E53935]">Matches</span>.</h1>
+            <p className="text-white/50 text-xl font-medium max-w-2xl leading-relaxed mb-12">
+               Connect with business leaders near you that match your needs.
             </p>
          </div>
-
-         <div className="space-y-8">
-            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 shadow-inner">
-               <label className="text-[11px] font-bold uppercase text-slate-400 block mb-4 tracking-normal">What help do you need?</label>
-               <textarea 
-                 value={myNeed}
-                 onChange={(e) => setMyNeed(e.target.value)}
-                 placeholder="E.g. I need marketing help for my shop" 
-                 className="w-full bg-transparent text-[16px] font-bold placeholder:text-slate-300 outline-none resize-none min-h-[120px]"
-               />
-               <button 
-                 onClick={handleAIMatch}
-                 className="w-full mt-6 py-4 bg-[#E53935] text-white rounded-xl font-bold text-[12px] uppercase shadow-lg shadow-red-500/10 hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
-               >
-                  {isMatching ? <RefreshCcw size={18} className="animate-spin" /> : <BrainCircuit size={18} />}
-                  {isMatching ? "Finding Matches..." : "Find Best Partners"}
-               </button>
-            </div>
-
-            <div className="space-y-4">
-               <p className="text-[11px] font-bold uppercase text-slate-400 tracking-normal">Common Needs</p>
-               <div className="flex flex-wrap gap-2">
-                  {["Marketing", "Tech Help", "Money", "Hiring", "Legal"].map(tag => (
-                    <button 
-                      key={tag}
-                      onClick={() => setMyNeed(tag)}
-                      className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 hover:border-[#E53935] hover:text-[#E53935] transition-all shadow-sm"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-               </div>
-            </div>
-         </div>
-
-         <div className="mt-auto pt-10">
-            <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
-               <div className="relative z-10">
-                  <Lightbulb size={32} className="text-[#E53935] mb-6" />
-                  <h5 className="text-[20px] font-bold leading-tight mb-4 uppercase">How it works</h5>
-                  <p className="text-[12px] text-slate-400 font-medium leading-relaxed mb-0">We look at what you need and find the best people in our network to help you grow.</p>
-               </div>
-            </div>
-         </div>
+         <Rocket size={400} className="absolute -right-20 -bottom-20 text-white/[0.03] rotate-12" />
       </div>
 
-      {/* Main Results Section */}
-      <div className="flex-1 p-10 overflow-y-auto no-scrollbar">
-         <div className="flex items-center justify-between mb-10 px-2">
-            <div>
-               <h4 className="text-[14px] font-bold text-slate-900 uppercase tracking-normal">Suggested Partners</h4>
-               <p className="text-[12px] text-slate-400 font-medium">{matchedPeople.length} people can help you right now</p>
+      {/* 2. EXPLORATION HUB */}
+      <div className="px-6 lg:px-12 py-10">
+         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+            <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
+               {["All", "Founders", "Logistics", "MSME", "Tech Leads"].map(tab => (
+                 <button 
+                  key={tab} 
+                  onClick={() => setActiveTab(tab)}
+                  className={cn(
+                    "px-6 py-3 rounded-xl text-[11px] font-black uppercase  transition-all whitespace-nowrap border",
+                    activeTab === tab ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white border-slate-100 text-slate-400 hover:text-slate-900"
+                  )}
+                 >
+                    {tab}
+                 </button>
+               ))}
             </div>
-            <div className="flex items-center gap-4">
-               <div className="flex items-center bg-slate-200/50 p-1 rounded-xl">
-                  <button onClick={() => setViewMode("grid")} className={cn("p-2 rounded-lg transition-all", viewMode === "grid" ? "bg-white text-[#E53935] shadow-sm" : "text-slate-400")}>
-                    <LayoutGrid size={18} />
-                  </button>
-                  <button onClick={() => setViewMode("list")} className={cn("p-2 rounded-lg transition-all", viewMode === "list" ? "bg-white text-[#E53935] shadow-sm" : "text-slate-400")}>
-                    <List size={18} />
-                  </button>
-               </div>
+
+            <div className="relative w-full lg:max-w-md">
+               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+               <input 
+                 type="text" 
+                 value={search}
+                 onChange={(e) => setSearch(e.target.value)}
+                 placeholder="Search partners by firm or name..." 
+                 className="w-full h-16 bg-white border border-slate-100 rounded-2xl pl-16 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all" 
+               />
             </div>
          </div>
 
-         <div className={cn(
-           "gap-8 pb-32",
-           viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2" : "flex flex-col"
-         )}>
-            {matchedPeople.map(person => (
-              <div key={person.id} className="bg-white rounded-[2rem] border border-[#EBEFF1] p-8 hover:shadow-xl transition-all duration-500 group relative">
-                  <div className="flex items-start gap-6 mb-8">
-                     <div className="w-16 h-16 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 shadow-sm">
-                        <img src={person.avatar} className="w-full h-full object-cover" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                        <h3 className="text-[20px] font-bold text-slate-900 leading-tight tracking-normal">{person.name}</h3>
-                        <div className="flex items-center gap-2 mt-2">
-                           <p className="text-[11px] font-bold text-[#E53935] uppercase tracking-normal">{person.role}</p>
-                           <span className="w-1 h-1 rounded-full bg-slate-300" />
-                           <div className="px-2 py-0.5 bg-red-50 rounded-md">
-                              <p className="text-[10px] font-bold text-[#E53935] uppercase tracking-normal">{person.match}% Match</p>
-                           </div>
-                        </div>
-                        <p className="text-[12px] text-slate-400 font-medium mt-3 flex items-center gap-1.5 ">
-                           <MapPin size={14} className="text-slate-300" /> {person.loc}
-                        </p>
-                     </div>
-                  </div>
-
-                 <div className="space-y-6 mb-10">
-                    <div>
-                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-normal mb-3">Skills for you</p>
-                       <div className="flex flex-wrap gap-2">
-                          {person.offers.map(offer => (
-                            <span key={offer} className="px-3 py-1 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-100">{offer}</span>
-                          ))}
+         {/* PARTNERS GRID */}
+         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-40">
+            {filtered.map(p => (
+              <div key={p.id} className="group bg-white border border-slate-100 rounded-[3.5rem] p-1.5 transition-all hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] hover:border-[#E53935]/10 overflow-hidden">
+                 <div className="p-8 pb-4">
+                    <div className="flex justify-between items-start mb-8">
+                       <div className="h-20 w-20 rounded-[1.5rem] overflow-hidden border-4 border-slate-50 shadow-xl group-hover:scale-105 transition-transform">
+                          <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                       </div>
+                       <div className="px-4 py-2 bg-green-50 text-green-600 rounded-xl text-[11px] font-black uppercase  flex items-center gap-2 shadow-sm">
+                          <TrendingUp size={14} /> {p.match}% Match
                        </div>
                     </div>
-                    <div className="p-5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-4">
-                       <div className="w-10 h-10 bg-red-50 text-[#E53935] rounded-xl flex items-center justify-center shrink-0">
-                          <Sparkles size={20} />
+
+                    <div className="mb-8">
+                       <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-2xl font-black text-slate-900 uppercase group-hover:text-[#E53935] transition-colors">{p.name}</h3>
+                          <ShieldCheck size={18} className="text-blue-500" />
                        </div>
-                       <div>
-                          <p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Why we picked them</p>
-                          <p className="text-[13px] font-bold text-slate-700 leading-tight">{person.aiReason}</p>
+                       <p className="text-[11px] font-black text-slate-300 uppercase  leading-none mb-6">{p.role} @ {p.company}</p>
+                       
+                       <div className="flex items-center gap-2 text-[13px] font-bold text-slate-400">
+                          <MapPin size={14} className="text-[#E53935]" /> {p.city} • Active Now
                        </div>
                     </div>
-                 </div>
 
-                 <div className="flex gap-4">
-                    <button 
-                       onClick={() => { setSelectedDeal(person); setIsModalOpen(true); }}
-                       className="flex-1 py-4 bg-slate-900 text-white rounded-xl font-bold text-[11px] uppercase tracking-normal shadow-lg transition-all hover:bg-[#E53935]"
-                    >
-                       Connect
-                    </button>
-                    <button onClick={() => alert(`Starting a chat with ${person.name}...`)} className="w-14 h-14 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-[#E53935] transition-all">
-                       <MessageCircle size={24} />
-                    </button>
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-50 mb-8 group-hover:bg-white transition-colors">
+                       <p className="text-[10px] font-black text-slate-300 uppercase  mb-3">About</p>
+                       <p className="text-[15px] font-medium text-slate-700 leading-relaxed">
+                          Interested in regional logistics and high-scale business partnerships in {p.city}.
+                       </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                       <button className="flex-1 py-5 bg-slate-950 text-white rounded-2xl font-black text-[11px] uppercase  shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all">Connect Now</button>
+                       <button className="h-14 w-14 flex items-center justify-center bg-slate-50 rounded-2xl text-slate-900 hover:bg-slate-100 transition-all"><MessageSquare size={20} /></button>
+                    </div>
                  </div>
               </div>
             ))}
          </div>
       </div>
 
-      <DealEngine 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        deal={selectedDeal}
-      />
+      {/* 3. PROMOTION FOOTER */}
+      <div className="mt-20 p-12 bg-[#E53935] rounded-[4rem] text-white relative overflow-hidden group mx-6 lg:mx-12 mb-20 shadow-2xl shadow-red-500/20">
+         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+            <div className="max-w-xl">
+               <h3 className="text-3xl lg:text-5xl font-black mb-6 leading-tight uppercase">Scale your <span className="text-white/40">Connections</span>.</h3>
+               <p className="text-white/80 text-xl font-medium leading-relaxed">Let our algorithmic engine find your next high-capacity business partner across the global node.</p>
+            </div>
+            <button className="px-12 py-6 bg-white text-[#E53935] rounded-[2rem] font-black text-[12px] uppercase shadow-4xl hover:bg-slate-900 hover:text-white transition-all transform hover:-translate-y-2">Optimize Profile</button>
+         </div>
+         <Zap size={300} className="absolute -right-20 -bottom-20 text-white/5 rotate-12 group-hover:scale-110 transition-transform duration-[4s]" />
+      </div>
+
     </div>
   );
 }

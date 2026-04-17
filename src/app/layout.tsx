@@ -1,6 +1,10 @@
 import React from "react";
 import "./globals.css";
 import ClientLayout from "../components/layout/ClientLayout";
+import { Inter, Outfit } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-inter" });
+const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-outfit" });
 
 export const viewport = {
   width: "device-width",
@@ -26,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full overflow-hidden">
-      <body className="bg-white h-full overscroll-none">
+    <html lang="en" className={`${inter.variable} ${outfit.variable} h-full overflow-hidden`}>
+      <body className="font-sans bg-white h-full overscroll-none">
         <ClientLayout>
           {children}
         </ClientLayout>

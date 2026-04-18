@@ -191,9 +191,13 @@ export default function EliteHomeFeed() {
                      onClick={() => setActiveTab(tab)}
                      className={cn(
                        "px-2 py-1.5 text-xs font-bold uppercase transition-all shrink-0 relative",
-                       activeTab === tab ? "text-[#E53935]" : "text-[#292828] hover:text-[#292828]"
+                       activeTab === tab ? "text-[#E53935]" : "text-[#292828] hover:text-[#292828]",
+                       tab === "Business Leads" && "text-red-600 font-extrabold"
                      )}
                     >
+                       {tab === "Business Leads" && (
+                         <div className="absolute -top-1 right-0 h-1.5 w-1.5 bg-red-600 rounded-full animate-pulse z-10" />
+                       )}
                        {tab}
                        {activeTab === tab && <div className="absolute -bottom-1.5 left-2 right-2 h-1 bg-[#E53935] rounded-full shadow-lg shadow-red-500/20" />}
                     </button>
@@ -434,44 +438,66 @@ export default function EliteHomeFeed() {
                            )}
 
                             {post.type === 'Business Leads' && (
-                                <div className="space-y-4 flex-1 flex flex-col">
-                                   <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-2">
-                                         <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight group-hover:text-[#E53935] transition-colors line-clamp-1">{post.title || "Project Business Lead"}</h3>
-                                         {post.isUrgent && <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse shrink-0" />}
+                                <div className="space-y-4 flex-1 flex flex-col pt-2 pb-1">
+                                   <div className="flex-1 relative">
+                                      {/* Editorial Content Layout */}
+                                      <div className="flex items-start justify-between gap-4 mb-4">
+                                         <div className="space-y-1.5 flex-1">
+                                            <div className="flex items-center gap-1.5 ">
+                                               <span className="h-1 w-1 bg-red-600 rounded-full animate-ping" />
+                                               <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{post.requirement}</span>
+                                            </div>
+                                            <h3 className="text-xl font-black text-[#292828] uppercase leading-[1.1] tracking-tight group-hover:text-[#E53935] transition-colors">{post.title || "Project Business Lead"}</h3>
+                                         </div>
+                                         {post.isUrgent && (
+                                            <div className="shrink-0 h-10 w-10 bg-red-50 rounded-2xl flex items-center justify-center border border-red-100 shadow-sm animate-pulse">
+                                               <Zap size={18} className="text-red-600 fill-red-600" />
+                                            </div>
+                                         )}
                                       </div>
                                       
-                                      <div className="flex flex-wrap gap-1.5 mb-3">
-                                         <span className="px-2 py-0.5 bg-red-50 text-red-600 text-[8px] font-black uppercase rounded border border-red-100">{post.requirement}</span>
-                                         <span className="px-2 py-0.5 bg-[#292828]/5 text-[#292828] text-[8px] font-black uppercase rounded border border-[#292828]/10">{post.taskType}</span>
-                                         {post.isNDA && <span className="px-2 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase rounded flex items-center gap-1"><ShieldCheck size={8} /> NDA</span>}
+                                      <div className="flex flex-wrap gap-1.5 mb-5">
+                                         <div className="px-3 py-1 bg-slate-900 rounded-lg flex items-center gap-1.5 border border-slate-800 shadow-xl">
+                                            <div className="h-1.5 w-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+                                            <span className="text-[9px] font-black text-white/90 uppercase tracking-wider">{post.taskType}</span>
+                                         </div>
+                                         {post.isNDA && (
+                                            <div className="px-3 py-1 bg-white border border-slate-200 rounded-lg flex items-center gap-1.5 shadow-sm">
+                                               <ShieldCheck size={12} className="text-red-600" />
+                                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">SECURED</span>
+                                            </div>
+                                         )}
                                       </div>
-                                      <p className="text-xs font-bold text-slate-500 leading-relaxed mb-4 line-clamp-2 italic opacity-80">
+
+                                      <p className="text-[13px] font-medium text-slate-500 leading-relaxed mb-6 border-l-2 border-slate-100 pl-4 py-1 italic opacity-90 transition-all group-hover:border-red-600/30">
                                          "{post.content}"
                                       </p>
                                    </div>
 
-                                   <div className="bg-[#292828] p-5 rounded-[1.3rem] border border-[#292828] mt-auto relative overflow-hidden group/deal-node shadow-2xl transition-all hover:scale-[1.02]">
-                                      <div className="absolute top-0 right-0 w-24 h-24 bg-[#E53935]/15 blur-[40px] pointer-events-none" />
-                                      <div className="relative z-10">
-                                         <div className="flex justify-between items-center mb-4">
-                                            <div className="flex items-center gap-2">
-                                               <Target size={12} className="text-[#E53935]" />
-                                               <span className="text-[9px] font-black text-white/40 uppercase ">Business Valuation</span>
+                                   {/* Instrumented Valuation Node */}
+                                   <div className="relative p-6 rounded-[2rem] bg-[#292828] border-2 border-[#292828] shadow-[0_32px_80px_rgba(0,0,0,0.1)] group/valuation transition-all hover:border-[#E53935]/30">
+                                      <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[50px] pointer-events-none transition-all group-hover/valuation:bg-red-600/20" />
+                                      <div className="absolute bottom-0 left-0 w-32 h-32 bg-red-600/5 blur-[50px] pointer-events-none" />
+                                      
+                                      <div className="relative z-10 space-y-4">
+                                         <div className="flex items-center justify-between">
+                                            <div className="space-y-0.5">
+                                               <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Market Valuation</p>
+                                               <p className="text-2xl font-black text-white ">{post.budget}</p>
                                             </div>
-                                            <span className="text-[18px] font-black text-white ">{post.budget || "₹TBA"}</span>
-                                         </div>
-                                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
-                                            <div className="h-full bg-[#E53935] rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)]" style={{ width: post.budget ? '100%' : '20%' }} />
-                                         </div>
-                                         <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-1.5 ">
-                                               <span className="text-[8px] font-black text-white/20 uppercase ">Strategic Alignment</span>
-                                               <div className="flex gap-0.5">
-                                                  {[1,2,3].map(i => <div key={i} className={`h-1 w-2 rounded-full ${i <= 2 ? 'bg-[#E53935]' : 'bg-white/10'}`} />)}
-                                               </div>
+                                            <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover/valuation:border-red-600/30 transition-all">
+                                               <TrendingUp size={20} className="text-red-600" />
                                             </div>
-                                            <p className="text-[8px] font-black text-green-500 uppercase ">Verified Lead</p>
+                                         </div>
+
+                                         <div className="space-y-2">
+                                            <div className="flex justify-between items-end">
+                                               <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Confidence Index</span>
+                                               <span className="text-[10px] font-black text-green-500 uppercase">Master Verified</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-white/5 rounded-full p-[2px] border border-white/5">
+                                               <div className="h-full bg-gradient-to-r from-red-600 via-red-500 to-red-400 rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)]" style={{ width: '92%' }} />
+                                            </div>
                                          </div>
                                       </div>
                                    </div>
@@ -595,72 +621,88 @@ export default function EliteHomeFeed() {
                                   {post.content}
                                </p>
                              )}
-
                             {post.type === 'Business Leads' && (
                                <div className="mt-8 relative group/opp-terminal">
-                                  <div className="relative bg-[#292828] rounded-[1.95rem] overflow-hidden border border-[#292828] shadow-[0_48px_120px_rgba(0,0,0,0.15)] transition-all duration-700">
-                                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#E53935]/10 blur-[100px] pointer-events-none" />
+                                  {/* terminal background with grain and glow */}
+                                  <div className="relative bg-[#292828] rounded-[2.5rem] overflow-hidden border border-[#292828] shadow-[0_64px_160px_rgba(0,0,0,0.25)] transition-all duration-700">
+                                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                     <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-[#E53935]/15 blur-[120px] pointer-events-none animate-pulse" />
+                                     <div className="absolute -bottom-40 -left-20 w-[30rem] h-[30rem] bg-slate-900/40 blur-[100px] pointer-events-none" />
                                      
-                                     <div className="px-10 py-4 bg-black/30 border-b border-white/5 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                           <div className="flex gap-2">
-                                              <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase rounded-lg shadow-lg shadow-red-500/20">{post.requirement || "Business Lead"}</span>
-                                              <span className="px-3 py-1 bg-white/5 text-white/40 text-[9px] font-black uppercase rounded-lg border border-white/10">{post.taskType || "System Entry"}</span>
+                                     {/* Terminal Title Bar */}
+                                     <div className="px-10 py-5 bg-black/40 border-b border-white/5 flex items-center justify-between backdrop-blur-md">
+                                        <div className="flex items-center gap-6">
+                                           <div className="flex items-center gap-2.5">
+                                              <span className="h-3 w-3 rounded-full bg-red-600 animate-pulse" />
+                                              <span className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Lead Stream v2.4</span>
                                            </div>
-                                           {post.isNDA && (
-                                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
-                                                <ShieldCheck size={10} className="text-[#E53935]" />
-                                                <span className="text-[9px] font-black text-white/30 uppercase">NDA</span>
-                                             </div>
-                                           )}
+                                           <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
+                                           <div className="flex gap-3">
+                                              <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase rounded-lg shadow-[0_0_20px_rgba(229,57,53,0.3)] tracking-widest">{post.requirement}</span>
+                                              <span className="px-3 py-1 bg-white/5 text-white/50 text-[9px] font-black uppercase rounded-lg border border-white/10 tracking-widest">{post.taskType}</span>
+                                           </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5 grayscale opacity-50">
-                                           <div className={`h-1.5 w-1.5 rounded-full ${post.isUrgent ? 'bg-red-500 animate-pulse' : 'bg-white/20'}`} />
-                                           <span className="text-[10px] font-black text-white/50 uppercase ">{post.isUrgent ? 'High Urgency' : 'Neutral State'}</span>
+                                        <div className="hidden md:flex items-center gap-4 text-white/20">
+                                           <div className="flex gap-1.5">
+                                              {[1,2,3].map(i => <div key={i} className="h-1.5 w-1.5 rounded-full bg-current" />)}
+                                           </div>
                                         </div>
                                      </div>
 
-                                     <div className="px-10 py-10 flex flex-col md:flex-row gap-8 items-center">
-                                        <div className="flex-1 space-y-6">
-                                           <div className="space-y-3">
-                                              <div className="flex items-center gap-3">
-                                                 <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase  rounded-lg">Top-Tier</span>
-                                                 <h3 className="text-2xl font-black text-white uppercase  leading-none">{post.title || "Business Lead"}</h3>
+                                     <div className="px-12 py-14 flex flex-col xl:flex-row gap-16 items-start">
+                                        <div className="flex-1 space-y-10">
+                                           <div className="space-y-6">
+                                              <div className="space-y-4">
+                                                 <div className="flex items-center gap-3">
+                                                    <div className="px-2.5 py-1 bg-white/10 border border-white/10 rounded text-[9px] font-black text-[#E53935] uppercase tracking-widest">Priority Node</div>
+                                                    {post.isNDA && <span className="flex items-center gap-1.5 text-[9px] font-black text-white/40 uppercase tracking-widest"><ShieldCheck size={10} className="text-green-500" /> Secure Protocol</span>}
+                                                 </div>
+                                                 <h3 className="text-4xl xl:text-5xl font-black text-white uppercase leading-[0.9] tracking-tighter">
+                                                    {post.title || "Business Lead"}
+                                                 </h3>
                                               </div>
-                                              <p className="text-white/70 text-base font-medium leading-relaxed italic line-clamp-2">
-                                                 "{post.content || "Interested in scaling our operations via strategic partnership."}"
+                                              <p className="text-xl xl:text-2xl font-medium text-white/60 leading-relaxed italic border-l-4 border-[#E53935]/40 pl-8 transition-colors group-hover/opp-terminal:border-[#E53935]">
+                                                 "{post.content || "Strategic operation mandate focusing on sustainable growth nodes."}"
                                               </p>
                                            </div>
                                            
-                                           <div className="flex gap-10 items-end">
-                                              <div>
-                                                 <p className="text-[9px] font-black text-white/40 uppercase mb-2 flex items-center justify-between">
-                                                    <span>Trust Score</span>
-                                                    <span className="text-[#E53935] ml-4">92 / 100</span>
-                                                 </p>
-                                                 <div className="flex gap-1">
-                                                    {[1,2,3,4,5,6,7,8].map(i => (
-                                                       <div key={i} className={cn("h-1 w-5 rounded-full transition-colors", i <= 6 ? "bg-[#E53935]" : "bg-white/10")} />
+                                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 pt-4">
+                                              <div className="space-y-4">
+                                                 <div className="flex items-center justify-between group/metric">
+                                                    <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] group-hover/metric:text-white/50 transition-colors">Strategic Alignment</p>
+                                                    <span className="text-[11px] font-black text-[#E53935]">97.4%</span>
+                                                 </div>
+                                                 <div className="flex gap-1.5">
+                                                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
+                                                       <div key={i} className={cn("h-1.5 flex-1 rounded-full transition-all duration-700", i <= 10 ? "bg-[#E53935] shadow-[0_0_10px_rgba(229,57,53,0.4)]" : "bg-white/5")} />
                                                     ))}
                                                  </div>
                                               </div>
                                               {post.dueDate && (
-                                                 <div className="flex flex-col gap-1.5 ">
-                                                    <p className="text-[9px] font-black text-white/40 uppercase leading-none">Decision Date</p>
-                                                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
-                                                       <Calendar size={12} className="text-[#E53935]" />
-                                                       <span className="text-[10px] font-black text-white uppercase">{post.dueDate}</span>
+                                                 <div className="flex items-center gap-6">
+                                                    <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#E53935]">
+                                                       <Calendar size={28} />
+                                                    </div>
+                                                    <div>
+                                                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Decision Deadline</p>
+                                                       <p className="text-lg font-black text-white uppercase tracking-tight">{post.dueDate}</p>
                                                     </div>
                                                  </div>
                                               )}
                                            </div>
                                         </div>
 
-                                        <div className="shrink-0 relative group/value sm:mr-6">
-                                           <div className="absolute -inset-4 bg-[#E53935]/15 rounded-full blur-2xl animate-pulse" />
-                                           <div className="relative w-[13.5rem] py-11 rounded-[1.625rem] border border-white/20 bg-white/5 flex flex-col items-center justify-center p-6 backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.4)] transition-transform group-hover/opp-terminal:scale-105">
-                                              <p className="text-[10px] font-black text-white/50 uppercase  mb-3">Bid Amount</p>
-                                              <p className="text-3xl lg:text-4xl font-black text-white  leading-none">{post.budget}</p>
+                                        <div className="shrink-0 relative">
+                                           <div className="absolute -inset-10 bg-[#E53935]/20 rounded-full blur-[60px] animate-pulse pointer-events-none" />
+                                           <div className="relative w-full xl:w-[22rem] bg-white/5 p-10 rounded-[2.5rem] border border-white/10 backdrop-blur-2xl shadow-[0_48px_120px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center text-center group/bid transition-all hover:border-[#E53935]/40">
+                                              <div className="absolute top-6 right-6 h-3 w-3 rounded-full border border-white/10 flex items-center justify-center">
+                                                 <div className="h-1 w-1 bg-[#E53935] rounded-full" />
+                                              </div>
+                                              <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.3em] mb-6">Commercial Scope</p>
+                                              <p className="text-5xl xl:text-6xl font-black text-white tracking-tighter mb-4">{post.budget}</p>
+                                              <div className="px-6 py-2 bg-green-500/10 border border-green-500/20 rounded-full">
+                                                 <p className="text-[9px] font-black text-green-500 uppercase tracking-widest leading-none">Capital Ready</p>
+                                              </div>
                                            </div>
                                         </div>
                                      </div>
@@ -668,22 +710,24 @@ export default function EliteHomeFeed() {
                                      <div className="grid grid-cols-2">
                                         <button 
                                            onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }}
-                                           className="h-16 bg-white/5 hover:bg-white/10 text-white border-t border-r border-white/10 text-xs font-black uppercase  transition-all flex items-center justify-center gap-4"
+                                           className="h-20 bg-white/5 hover:bg-white/10 text-white border-t border-r border-white/10 text-[11px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-4 group/btn"
                                         >
-                                           View Project
-                                           <ArrowUpRight size={16} className="text-[#E53935]" />
+                                           Analyze Project
+                                           <ArrowUpRight size={18} className="text-[#E53935] group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                                         </button>
                                         <button 
                                            onClick={() => setActiveBidPostId(post.id)}
-                                           className="h-16 bg-[#E53935] text-white text-xs font-black uppercase  transition-all hover:bg-white hover:text-[#292828] shadow-2xl flex items-center justify-center gap-4"
+                                           className="h-20 bg-[#E53935] text-white text-[11px] font-black uppercase tracking-[0.3em] transition-all hover:bg-white hover:text-[#292828] shadow-2xl flex items-center justify-center gap-4 relative overflow-hidden group/offer"
                                         >
-                                           Send Offer
-                                           <Zap size={16} />
+                                           <div className="absolute inset-0 bg-white translate-x-[-100%] group-hover/offer:translate-x-0 transition-transform duration-500 ease-out" />
+                                           <span className="relative z-10">Initiate Connect</span>
+                                           <MessageSquare size={18} className="relative z-10" />
                                         </button>
                                      </div>
                                   </div>
                                </div>
                             )}
+
 
                             {post.type === 'Meeting' && (
                                <div className="mt-6 group/meeting-card relative overflow-hidden rounded-[1.625rem] border border-[#292828]/8 bg-white shadow-[0_8px_40px_rgba(41,40,40,0.06)] hover:shadow-[0_20px_60px_rgba(41,40,40,0.12)] transition-all duration-500 hover:-translate-y-0.5">

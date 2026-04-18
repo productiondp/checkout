@@ -43,7 +43,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
 
         <div className="flex-1 p-6 overflow-y-auto no-scrollbar space-y-8">
           <div className="flex flex-wrap gap-2">
-            {["Update", "Deal", "Job", "Partner", "Meet", "Event"].map((t) => (
+            {["Update", "Opportunity", "Job", "Partner", "Meet", "Event"].map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}

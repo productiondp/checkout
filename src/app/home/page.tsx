@@ -326,7 +326,7 @@ export default function EliteHomeFeed() {
                                      <div className="flex justify-between items-center mb-3">
                                         <div className="flex items-center gap-2">
                                            <div className="h-1.5 w-1.5 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[8px] font-black text-white/40 uppercase ">Deal Active</span>
+                                           <span className="text-[8px] font-black text-white/40 uppercase ">Opportunity Active</span>
                                         </div>
                                         <span className="text-[14px] font-black text-[#E53935] ">{post.budget}</span>
                                      </div>
@@ -467,7 +467,7 @@ export default function EliteHomeFeed() {
                                      <div className="px-10 py-4 bg-black/30 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                            <div className="h-2 w-2 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[10px] font-black text-white/50 uppercase ">Deal Opportunity</span>
+                                           <span className="text-[10px] font-black text-white/50 uppercase ">Business Opportunity</span>
                                         </div>
                                      </div>
 
@@ -476,7 +476,7 @@ export default function EliteHomeFeed() {
                                            <div className="space-y-3">
                                               <div className="flex items-center gap-3">
                                                  <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase  rounded-lg">Top-Tier</span>
-                                                 <h3 className="text-2xl font-black text-white uppercase  leading-none">{post.title || "Business Deal"}</h3>
+                                                 <h3 className="text-2xl font-black text-white uppercase  leading-none">{post.title || "Opportunity"}</h3>
                                               </div>
                                               <p className="text-white/70 text-base font-medium leading-relaxed italic line-clamp-2">
                                                  "{post.content || "Interested in scaling our operations via strategic partnership."}"

@@ -51,7 +51,7 @@ export default function MatchCard({
             <div className="flex items-center gap-1">
               <Star size={12} className="text-yellow-500 fill-yellow-500" />
               <span className="text-[11px] font-bold text-text-main">{reputation.rating}</span>
-              <span className="text-[10px] text-text-muted">({reputation.projectsCompleted} deals)</span>
+              <span className="text-[10px] text-text-muted">({reputation.projectsCompleted} projects)</span>
             </div>
           )}
         </div>
@@ -79,7 +79,7 @@ export default function MatchCard({
         className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
       >
         <Zap size={18} fill="white" />
-        Initiate Deal Engine
+        Initiate Opportunity Engine
       </button>
     </div>
   );

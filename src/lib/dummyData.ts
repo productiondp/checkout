@@ -1,10 +1,11 @@
-/* 
-  PRODUCTION DATA CLEARANCE
-  All placeholder assets and dummy arrays have been neutralized.
-  Ready for live backend integration.
-*/
+// ── PROFILES / ADVISORS ──────────────────────────────────────────
+export const DUMMY_PROFILES: any[] = [];
 
-export const DUMMY_PROFILES = [];
-export const DUMMY_POSTS = [];
-export const DUMMY_MARKET = [];
-export const DUMMY_CHATS = [];
+// ── MARKETPLACE ──────────────────────────────────────────────────
+export const DUMMY_MARKET: any[] = [];
+
+// ── CHATS / MESSAGES ─────────────────────────────────────────────
+export const DUMMY_CHATS: any[] = [];
+
+// ── POSTS (HOME FEED) ────────────────────────────────────────────
+export const DUMMY_POSTS: any[] = [];

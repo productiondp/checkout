@@ -1,19 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { 
+import {
   X,
-  ArrowRight, 
-  Mail, 
-  Lock, 
-  User, 
-  Briefcase, 
-  GraduationCap, 
-  ShieldCheck,
+  ArrowRight,
+  Mail,
+  Lock,
+  User,
+  Briefcase,
+  GraduationCap,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Chrome
 } from "lucide-react";
 
 type AuthMode = "signin" | "signup";
@@ -64,161 +63,201 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // For development: Skip validation and allow instant access
-    setIsSuccess(true);
+
+    // Simulating API call
     setTimeout(() => {
-      router.push("/home");
-      onClose();
-    }, 400);
+      setIsSuccess(true);
+      setTimeout(() => {
+        router.push("/home");
+        onClose();
+      }, 800);
+    }, 1200);
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-[#292828]/80 backdrop-blur-md animate-in fade-in duration-500" 
+      {/* Cinematic Backdrop */}
+      <div
+        className="absolute inset-0 bg-[#0a0a0a]/90 backdrop-blur-xl animate-in fade-in duration-700"
         onClick={onClose}
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[500px] bg-[#FDFDFF] rounded-[1.625rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        
+      <div className="relative w-full max-w-[480px] bg-[#1a1a1a] rounded-[2.5rem] shadow-[0_0_100px_-20px_rgba(229,57,53,0.3)] border border-white/5 overflow-hidden animate-in zoom-in-95 fade-in duration-500">
+
+        {/* Subtle Ambient Glow */}
+        <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#E53935]/10 rounded-full blur-[80px]" />
+
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
-          className="absolute top-8 right-8 text-[#292828]/40 hover:text-[#292828] transition-colors z-30"
+          className="absolute top-8 right-8 text-white/40 hover:text-white transition-all hover:rotate-90 z-30 p-2 rounded-full hover:bg-white/5"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
         {/* Content Container */}
-        <div className="p-8 lg:p-10 space-y-6">
-          
+        <div className="p-10 lg:p-12 space-y-8 relative z-10">
+
           {/* Header */}
-          <div className="space-y-1 pt-2 text-center">
-            <h2 className="text-3xl font-black text-[#292828]">
-              {mode === "signin" ? "Welcome Back." : "Join Network."}
+          <div className="space-y-2 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53935]/10 border border-[#E53935]/20 text-[#E53935] text-[9px] font-black uppercase tracking-widest mb-2">
+              Join the Network
+            </div>
+            <h2 className="text-4xl font-black text-white tracking-tighter">
+              {mode === "signin" ? "Welcome Back" : "Create Account"}
             </h2>
-            <p className="text-[#292828] font-bold text-[13px]">
-              {mode === "signin" 
-                ? "Access your city's local commerce node." 
-                : "Enter details to start building locally."
+            <p className="text-white/40 font-bold text-[13px]">
+              {mode === "signin"
+                ? "Sign in to your local account."
+                : "Join the local business network."
               }
             </p>
           </div>
 
-          {/* Role Switcher */}
-          <div className="flex p-1.5 bg-[#292828]/10 rounded-2xl border border-slate-200/50">
-             {(["Business", "Professional", "Student"] as const).map((r) => (
-                <button
-                   key={r}
-                   onClick={() => setRole(r)}
-                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all ${
-                      role === r ? "bg-white text-[#292828] shadow-lg" : "text-[#292828] hover:text-[#292828]"
-                   }`}
-                >
-                   {r === "Business" && <Briefcase size={12} />}
-                   {r === "Professional" && <User size={12} />}
-                   {r === "Student" && <GraduationCap size={12} />}
-                   {r}
-                </button>
-             ))}
+          {/* Role Switcher - Premium Style */}
+          <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5">
+            {(["Business", "Professional", "Student"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRole(r)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase transition-all duration-500 ${role === r
+                    ? "bg-[#E53935] text-white shadow-[0_0_20px_-5px_#E53935]"
+                    : "text-white/40 hover:text-white/70"
+                  }`}
+              >
+                {r === "Business" && <Briefcase size={12} />}
+                {r === "Professional" && <User size={12} />}
+                {r === "Student" && <GraduationCap size={12} />}
+                <span className={role === r ? "block" : "hidden sm:block"}>{r}</span>
+              </button>
+            ))}
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-               {error && (
-                 <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
-                   <AlertCircle size={16} />
-                   {error}
-                 </div>
-               )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
 
-               {isSuccess && (
-                 <div className="p-4 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-600 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
-                   <CheckCircle2 size={16} />
-                   Success. Redirecting...
-                 </div>
-               )}
+            {isSuccess && (
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-3 text-green-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
+                <CheckCircle2 size={16} />
+                Login successful. Redirecting...
+              </div>
+            )}
 
-               <div className="space-y-2.5">
-                 {mode === "signup" && (
-                   <div className="relative group">
-                      <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                         <User size={16} />
-                      </div>
-                      <input 
-                         type="text" 
-                         name="fullName"
-                         value={formData.fullName}
-                         onChange={handleInputChange}
-                         placeholder="Full Name"
-                         className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-6 text-[14px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
-                      />
-                   </div>
-                 )}
+            <div className="space-y-3">
+              {mode === "signup" && (
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-5 flex items-center text-white/20 group-focus-within:text-[#E53935] transition-colors">
+                    <User size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    name="fullName"
+                    required
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    placeholder="Full Name"
+                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                  />
+                </div>
+              )}
 
-                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                       <Mail size={16} />
-                    </div>
-                    <input 
-                       type="email" 
-                       name="email"
-                       value={formData.email}
-                       onChange={handleInputChange}
-                       placeholder="Email Address"
-                       className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-6 text-[14px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
-                    />
-                 </div>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center text-white/20 group-focus-within:text-[#E53935] transition-colors">
+                  <Mail size={18} />
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Email Address"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                />
+              </div>
 
-                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                       <Lock size={16} />
-                    </div>
-                    <input 
-                       type="password" 
-                       name="password"
-                       value={formData.password}
-                       onChange={handleInputChange}
-                       placeholder="Password"
-                       className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-6 text-[14px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
-                    />
-                 </div>
-               </div>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center text-white/20 group-focus-within:text-[#E53935] transition-colors">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Password"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                />
+              </div>
+            </div>
 
-               {/* CTA */}
-               <button 
-                 type="submit"
-                 disabled={isLoading || isSuccess}
-                 className={`w-full py-4 rounded-xl font-black text-[12px] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-2 ${
-                   isLoading ? "bg-slate-800 text-white cursor-wait" : "bg-[#292828] text-white hover:bg-[#E53935]"
-                 }`}
-               >
-                {isLoading ? "Entering..." : (mode === "signin" ? "Sign In" : "Join Now")}
-                  {!isLoading && <ArrowRight size={16} />}
-               </button>
+            {/* CTA */}
+            <button
+              type="submit"
+              disabled={isLoading || isSuccess}
+              className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 mt-4 overflow-hidden relative group ${isLoading || isSuccess ? "bg-white/10 text-white/30 cursor-wait" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
+                }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span>Loading</span>
+                </div>
+              ) : (
+                <>
+                  <span>{mode === "signin" ? "Sign In" : "Join Now"}</span>
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
           </form>
 
-          {/* Alternative */}
-          <div className="pt-4 text-center">
-             <button 
-               onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-               className="text-[11px] font-black uppercase text-[#292828] hover:text-[#E53935] transition-colors"
-             >
-               {mode === "signin" ? "New here? Create Account" : "Registered? Sign In Instead"}
-             </button>
+          {/* Social Access */}
+          <div className="relative pt-2">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-white/5"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] font-black uppercase">
+              <span className="px-4 bg-[#1a1a1a] text-white/20 tracking-widest">Or continue with</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 pt-2">
-             <button className="py-3.5 border border-slate-200 bg-white rounded-xl hover:border-[#E53935]/20 transition-all text-[10px] font-black uppercase flex items-center justify-center gap-3">
-                <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google" className="h-4 w-4" />
-                Google Access
-             </button>
+          <div className="grid grid-cols-1 gap-3">
+            <button className="py-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 hover:border-white/10 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3 text-white">
+              <Chrome size={16} className="text-[#E53935]" />
+              Google
+            </button>
+          </div>
+
+          {/* Toggle Mode */}
+          <div className="text-center">
+            <button
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="text-[11px] font-black uppercase text-white/30 hover:text-[#E53935] transition-all"
+            >
+              {mode === "signin" ? "No account? Start Building" : "Registered? Sign In Instead"}
+            </button>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+        .group:hover .group-hover\:animate-shimmer {
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
     </div>
   );
 }

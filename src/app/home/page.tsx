@@ -26,7 +26,8 @@ import {
   MapPin,
   ShieldCheck,
   Globe,
-  Navigation
+  Navigation,
+  Clock, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_POSTS } from "@/lib/dummyData";
@@ -78,13 +79,13 @@ export default function EliteHomeFeed() {
         : undefined,
       budget: selectedPostType === 'Opportunities' ? budget : undefined,
       dueDate: selectedPostType === 'Opportunities' ? dueDate : undefined,
-      author: "Arun Dev",
+      author: "User",
       authorId: 1,
       time: "Just now",
       content: postContent,
       images: attachment ? [URL.createObjectURL(attachment)] : undefined,
       matchScore: 100,
-      avatar: "https://i.pravatar.cc/150?u=user1",
+      avatar: "/placeholder-user.jpg",
       verified: true,
       likes: 0,
       isLiked: false,
@@ -150,14 +151,14 @@ export default function EliteHomeFeed() {
   }, [activeTab, posts]);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10 overscroll-none">
+    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-white font-sans overflow-x-hidden">
       
-      <main className="flex-1 w-full lg:max-w-[780px] lg:ml-auto lg:mr-0 min-h-screen border-r border-[#292828]/10 bg-white relative">
+      <main className="flex-1 w-full min-h-screen border-r border-[#292828]/10 bg-white relative">
          
          <div className="bg-white/95 backdrop-blur-xl border-b border-[#292828]/5 px-4 py-3 sticky top-0 z-40">
             <div className="flex items-center justify-between mb-4">
                <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
-                  {(['All', 'Update', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
+                   {(['All', 'Update', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
                     <button 
                      key={tab} 
                      onClick={() => setActiveTab(tab)}
@@ -183,15 +184,15 @@ export default function EliteHomeFeed() {
             </div>
          </div>
 
-         <div className="px-3 lg:px-4 py-6">
+         <div className="px-4 lg:px-8 py-6">
             <div className={cn(
                 "relative transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                isPosting ? "mb-12" : "mb-8 px-4 lg:px-0"
+                isPosting ? "mb-12" : "mb-8"
             )}>
                 {!isPosting ? (
                   <div className="group/composer relative bg-white border border-[#292828]/10 rounded-[1.43rem] p-2 pr-2.5 flex items-center gap-4 transition-all hover:bg-[#FDFDFF] hover:border-[#292828]/30 hover:shadow-[0_20px_50px_rgba(41,40,40,0.06)] hover:-translate-y-0.5">
-                     <div className="h-11 w-11 rounded-[0.845rem] overflow-hidden border-2 border-white shadow-xl shrink-0 ml-1">
-                        <img src="https://i.pravatar.cc/150?u=me" className="w-full h-full object-cover" alt="" />
+                     <div className="h-11 w-11 rounded-[0.845rem] overflow-hidden border-2 border-white shadow-xl shrink-0 ml-1 bg-[#292828]/10 flex items-center justify-center">
+                        <Users size={20} className="text-[#292828]/20" />
                      </div>
                      <button 
                         onClick={() => setIsPosting(true)} 
@@ -392,26 +393,45 @@ export default function EliteHomeFeed() {
                            )}
 
                             {post.type === 'Opportunities' && (
-                               <div className="bg-[#292828] p-4 rounded-[0.975rem] border border-[#292828] mt-auto relative overflow-hidden group/deal-node shadow-xl">
-                                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#E53935]/15 blur-[40px] pointer-events-none" />
-                                  <div className="relative z-10">
-                                     <div className="flex justify-between items-center mb-3">
-                                        <div className="flex items-center gap-2">
-                                           <div className="h-1.5 w-1.5 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[8px] font-black text-white/40 uppercase ">Opportunity Active</span>
-                                        </div>
-                                        <span className="text-[14px] font-black text-[#E53935] ">{post.budget}</span>
-                                     </div>
-                                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-gradient-to-r from-[#E53935] to-[#E53935]/60 rounded-full" style={{ width: '75%' }} />
-                                     </div>
-                                     <div className="mt-2.5 flex justify-between items-center">
-                                        <p className="text-[7px] font-bold text-white/20 uppercase ">Ref ID: {post.id}88</p>
-                                        <p className="text-[7px] font-bold text-green-500 uppercase ">+12.4% Match</p>
-                                     </div>
-                                  </div>
-                               </div>
-                            )}
+                                <div className="space-y-4 flex-1 flex flex-col">
+                                   <div className="flex-1">
+                                      <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight mb-2 group-hover:text-[#E53935] transition-colors line-clamp-2">{post.title || "Project Opportunity"}</h3>
+                                      <div className="flex flex-wrap gap-2 mb-3">
+                                         {post.tags?.split(",").map((tag, i) => (
+                                            <span key={i} className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase rounded border border-slate-100">{tag.trim()}</span>
+                                         ))}
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-500 leading-relaxed mb-4 line-clamp-3 italic opacity-80">
+                                         "{post.content}"
+                                      </p>
+                                   </div>
+
+                                   <div className="bg-[#292828] p-5 rounded-[1.3rem] border border-[#292828] mt-auto relative overflow-hidden group/deal-node shadow-2xl transition-all hover:scale-[1.02]">
+                                      <div className="absolute top-0 right-0 w-24 h-24 bg-[#E53935]/15 blur-[40px] pointer-events-none" />
+                                      <div className="relative z-10">
+                                         <div className="flex justify-between items-center mb-4">
+                                            <div className="flex items-center gap-2">
+                                               <div className="h-1.5 w-1.5 bg-[#E53935] rounded-full animate-ping" />
+                                               <span className="text-[9px] font-black text-white/40 uppercase ">Market Valuation</span>
+                                            </div>
+                                            <span className="text-[18px] font-black text-white  ">{post.value || post.budget || "₹TBA"}</span>
+                                         </div>
+                                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
+                                            <div className="h-full bg-[#E53935] rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)]" style={{ width: '85%' }} />
+                                         </div>
+                                         <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-1.5 ">
+                                               <span className="text-[8px] font-black text-white/20 uppercase ">Strategic Nodes</span>
+                                               <div className="flex gap-0.5">
+                                                  {[1,2,3].map(i => <div key={i} className="h-1 w-2 bg-[#E53935] rounded-full" />)}
+                                               </div>
+                                            </div>
+                                            <p className="text-[8px] font-black text-green-500 uppercase ">Trusted Deal</p>
+                                         </div>
+                                      </div>
+                                   </div>
+                                </div>
+                             )}
 
                            {post.type === 'Meeting' && (
                               <div className="bg-green-50 p-3 rounded-xl border border-green-100 mt-auto flex items-center justify-between">
@@ -609,28 +629,115 @@ export default function EliteHomeFeed() {
                             )}
 
                             {post.type === 'Meeting' && (
-                               <div className="mt-6 p-4 rounded-3xl bg-white border-2 border-dashed border-green-200 flex items-center justify-between group/action hover:border-green-500 transition-all shadow-sm">
-                                  <div className="flex items-center gap-4">
-                                     <div className="h-12 w-12 rounded-2xl bg-[#292828] flex items-center justify-center text-white"><Calendar size={22} /></div>
-                                     <div className="space-y-3">
-                                        <div className="grid grid-cols-2 gap-4">
-                                           <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Venue</p><p className="text-sm font-bold text-[#292828]">Hub Cafe</p></div>
-                                           <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Status</p><p className="text-sm font-bold text-green-600 flex items-center gap-1.5">Live <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" /></p></div>
+                               <div className="mt-6 group/meeting-card relative overflow-hidden rounded-[1.625rem] border border-[#292828]/8 bg-white shadow-[0_8px_40px_rgba(41,40,40,0.06)] hover:shadow-[0_20px_60px_rgba(41,40,40,0.12)] transition-all duration-500 hover:-translate-y-0.5">
+                                  {/* Top accent bar */}
+                                  <div className="h-1.5 w-full bg-gradient-to-r from-[#E53935] via-[#FF6B35] to-[#E53935]" />
+                                  <div className="p-5 sm:p-6 flex flex-col gap-5">
+                                     {/* Row 1: Format badge + expand btn */}
+                                     <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                           <span className={cn(
+                                             "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
+                                             post.meetingType === 'Physical'
+                                               ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                               : "bg-blue-50 text-blue-700 border border-blue-100"
+                                           )}>
+                                             <span className={cn(
+                                               "h-1.5 w-1.5 rounded-full",
+                                               post.meetingType === 'Physical' ? "bg-emerald-500" : "bg-blue-500 animate-pulse"
+                                             )} />
+                                             {post.meetingType === 'Physical' ? 'In-Person' : 'Online'}
+                                           </span>
+                                           {post.category && (
+                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#292828]/5 text-[#292828]/60 border border-[#292828]/8">
+                                               {post.category}
+                                             </span>
+                                           )}
                                         </div>
-                                        <p className="text-[11px] font-medium text-[#292828]/60 leading-tight line-clamp-1">
-                                           {post.content}
-                                        </p>
+                                        <button
+                                          onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+                                          className="h-8 w-8 rounded-xl bg-[#292828]/5 hover:bg-[#E53935] hover:text-white text-[#292828]/40 flex items-center justify-center transition-all duration-300 shrink-0"
+                                        >
+                                          <ArrowUpRight size={14} strokeWidth={2.5} />
+                                        </button>
+                                     </div>
+                                     {/* Row 2: Title + description */}
+                                     <div>
+                                        <h3 className="text-xl sm:text-2xl font-black text-[#292828] leading-tight tracking-tight group-hover/meeting-card:text-[#E53935] transition-colors duration-300">
+                                           {post.topic || "Open Meeting"}
+                                        </h3>
+                                        {post.content && (
+                                          <p className="text-sm text-[#292828]/60 font-medium leading-relaxed mt-1.5 line-clamp-2">
+                                             {post.content}
+                                          </p>
+                                        )}
+                                     </div>
+                                     {/* Row 3: Date + Time + Location chips */}
+                                     <div className="flex flex-wrap gap-2.5">
+                                        {post.meetingTime && (
+                                          <div className="flex items-center gap-2 bg-[#E53935]/5 border border-[#E53935]/10 rounded-xl px-3 py-2">
+                                             <div className="h-8 w-8 bg-[#E53935] rounded-lg flex flex-col items-center justify-center shrink-0 shadow-md">
+                                               <span className="text-[7px] font-black uppercase text-white/70 leading-none">{new Date(post.meetingTime).toLocaleString([], { month: 'short' })}</span>
+                                               <span className="text-base font-black text-white leading-none">{new Date(post.meetingTime).getDate()}</span>
+                                             </div>
+                                             <div>
+                                               <p className="text-[8px] font-black uppercase text-[#292828]/40 leading-none mb-0.5">Date</p>
+                                               <p className="text-xs font-bold text-[#292828] leading-none">{new Date(post.meetingTime).toLocaleString([], { weekday: 'short' })}, {new Date(post.meetingTime).toLocaleString([], { month: 'short' })} {new Date(post.meetingTime).getDate()}</p>
+                                             </div>
+                                          </div>
+                                        )}
+                                        {post.meetingTime && (
+                                          <div className="flex items-center gap-2 bg-[#292828]/5 border border-[#292828]/8 rounded-xl px-3 py-2">
+                                             <div className="h-8 w-8 bg-[#292828] rounded-lg flex items-center justify-center shrink-0">
+                                               <Clock size={14} className="text-white" />
+                                             </div>
+                                             <div>
+                                               <p className="text-[8px] font-black uppercase text-[#292828]/40 leading-none mb-0.5">Time</p>
+                                               <p className="text-xs font-bold text-[#292828] leading-none">{new Date(post.meetingTime).toLocaleString([], { timeStyle: 'short' })}</p>
+                                             </div>
+                                          </div>
+                                        )}
+                                        {post.location && (
+                                          <div className="flex items-center gap-2 bg-[#292828]/5 border border-[#292828]/8 rounded-xl px-3 py-2 min-w-0 max-w-full">
+                                             <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", post.meetingType === 'Physical' ? "bg-emerald-500" : "bg-blue-500")}>
+                                               <MapPin size={14} className="text-white" />
+                                             </div>
+                                             <div className="min-w-0">
+                                               <p className="text-[8px] font-black uppercase text-[#292828]/40 leading-none mb-0.5">{post.meetingType === 'Physical' ? 'Venue' : 'Link'}</p>
+                                               <p className="text-xs font-bold text-[#292828] truncate max-w-[200px]">{post.location}</p>
+                                             </div>
+                                          </div>
+                                        )}
+                                     </div>
+                                     {/* Row 4: Attendees + RSVP */}
+                                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#292828]/6">
+                                        <div className="flex items-center gap-2">
+                                           <div className="flex -space-x-2">
+                                             {[1,2,3].map(i => (
+                                               <div key={i} className="h-7 w-7 rounded-full border-2 border-white overflow-hidden bg-slate-100 shadow-sm flex items-center justify-center">
+                                                 <User size={12} className="text-[#292828]/20" />
+                                               </div>
+                                             ))}
+                                           </div>
+                                           <span className="text-[10px] font-bold text-[#292828]/40 uppercase">{post.likes || 0}+ going</span>
+                                        </div>
+                                        <button
+                                          onClick={() => setJoinedMeetings(prev => prev.includes(post.id) ? prev.filter(id => id !== post.id) : [...prev, post.id])}
+                                          className={cn(
+                                            "h-10 px-6 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 active:scale-95",
+                                            joinedMeetings.includes(post.id)
+                                              ? "bg-emerald-500 text-white shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:bg-emerald-600"
+                                              : "bg-[#292828] text-white shadow-[0_4px_20px_rgba(41,40,40,0.2)] hover:bg-[#E53935] hover:shadow-[0_4px_20px_rgba(229,57,53,0.3)]"
+                                          )}
+                                        >
+                                          {joinedMeetings.includes(post.id) ? (
+                                            <><CheckCircle2 size={13} /> RSVP'd</>
+                                          ) : (
+                                            <><Calendar size={13} /> RSVP Now</>
+                                          )}
+                                        </button>
                                      </div>
                                   </div>
-                                   <button 
-                                     onClick={() => {
-                                       setJoinedMeetings(prev => [...prev, post.id]);
-                                       alert(`Meeting Access Secured. ID: MSME-${post.id}-SYNC. Joining link sent to your broadcast hub.`);
-                                     }} 
-                                     className={cn("h-12 px-8 rounded-2xl text-xs font-bold uppercase transition-all", joinedMeetings.includes(post.id) ? "bg-[#292828] text-white" : "bg-green-600 text-white shadow-lg")}
-                                   >
-                                      {joinedMeetings.includes(post.id) ? "Booked" : "Join Meeting"}
-                                   </button>
                                </div>
                             )}
                              {post.type === 'Hiring' && (
@@ -777,7 +884,7 @@ export default function EliteHomeFeed() {
          </div>
       </main>
 
-      <aside className="hidden lg:flex flex-col w-[400px] h-screen sticky top-0 bg-slate-50/50 p-6 lg:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50">
+      <aside className="hidden lg:flex flex-col w-[450px] h-screen sticky top-0 bg-slate-50/50 p-6 lg:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50 shrink-0">
          <div className="group/hub">
             <div onClick={() => setIsMapExpanded(true)}>
                <div className="flex items-center justify-between mb-6 px-1 cursor-pointer">

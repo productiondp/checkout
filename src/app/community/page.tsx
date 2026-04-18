@@ -5,43 +5,7 @@ import { DUMMY_PROFILES } from "@/lib/dummyData";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-const NETWORK_GROUPS = [
-   { 
-     id: 1, name: "Technopark Logistics Node", members: "1.2k", topic: "Last-mile optimization", color: "bg-blue-500", 
-     threadTitle: "How are we handling the new interstate shipping tariffs in the logistics sector?", 
-     tags: ["Supply Chain", "Tax", "Trivandrum"],
-     replies: [
-        { id: 101, user: DUMMY_PROFILES[0], text: "We're routing via the new MSME corridor to avoid the 4% hike.", time: "2h ago" },
-        { id: 102, user: DUMMY_PROFILES[3], text: "Has anyone tried consolidating freights with other local hubs? Might save up to 15%.", time: "1h ago" }
-     ],
-     suggestions: DUMMY_PROFILES.slice(10, 14)
-   },
-   { 
-     id: 2, name: "MSME Scale Hub", members: "4.8k", topic: "Growth capital & tenders", color: "bg-orange-500", 
-     threadTitle: "Are the new government backing scheme limits for 2026 realistic?", 
-     tags: ["Funding", "Policy", "Scaling"],
-     replies: [
-        { id: 201, user: DUMMY_PROFILES[5], text: "The capital cap is fine, but the audit requirements are extremely aggressive for seed-stage.", time: "5h ago" }
-     ],
-     suggestions: DUMMY_PROFILES.slice(20, 24)
-   },
-   { 
-     id: 3, name: "Manufacturing Matrix", members: "842", topic: "Raw material bulk buy", color: "bg-[#E53935]", 
-     threadTitle: "Supplier fallback plan for Q3 aluminum shortage?", 
-     tags: ["Manufacturing", "Procurement"],
-     replies: [],
-     suggestions: DUMMY_PROFILES.slice(30, 34)
-   },
-   { 
-     id: 4, name: "Creative Industries Cluster", members: "2.1k", topic: "UI/UX & Branding", color: "bg-purple-500", 
-     threadTitle: "Integrating native 3D objects in standard Next.js marketing pages.", 
-     tags: ["Engineering", "Design", "Tech"],
-     replies: [
-        { id: 401, user: DUMMY_PROFILES[8], text: "Three.js with React Three Fiber is the only stable way right now. Don't use raw WebGL.", time: "10m ago" }
-     ],
-     suggestions: DUMMY_PROFILES.slice(40, 44)
-   }
-];
+const NETWORK_GROUPS: any[] = [];
 
 export default function CommunityPage() {
   const [activeGroup, setActiveGroup] = useState<typeof NETWORK_GROUPS[0] | null>(null);

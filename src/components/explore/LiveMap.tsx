@@ -34,12 +34,7 @@ interface Marker {
   details: string;
 }
 
-const TRIVANDRUM_MARKERS: Marker[] = [
-  { id: "1", x: 25, y: 30, type: "Hiring", title: "Lead Strategist", author: "Technopark Node", distance: "0.2km", details: "Core strategic hiring for regional expansion." },
-  { id: "2", x: 45, y: 35, type: "Opportunities", title: "Logistics Contract", author: "Vizhinjam Hub", distance: "12km", details: "Seeking tier-1 fulfillment partners." },
-  { id: "3", x: 55, y: 55, type: "Meeting", title: "Executive Mixer", author: "Kowdiar Cluster", distance: "2.1km", details: "Monthly sync for high-authority stakeholders." },
-  { id: "4", x: 40, y: 65, type: "Meeting", title: "Policy Review", author: "Secretariat Node", distance: "4.5km", details: "Critical session on new digital trade laws." },
-];
+const TRIVANDRUM_MARKERS: Marker[] = [];
 
 export default function LiveMap({ posts }: { posts?: any[] }) {
   const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);

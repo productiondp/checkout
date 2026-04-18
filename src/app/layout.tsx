@@ -27,6 +27,10 @@ export const metadata = {
      telephone: false,
   },
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

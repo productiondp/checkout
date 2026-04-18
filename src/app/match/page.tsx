@@ -181,8 +181,8 @@ const PartnerCard = ({ p, viewMode }: { p: any, viewMode?: "grid" | "list" }) =>
 const CompactSuggestedCard = ({ p }: { p: any }) => (
   <div className="min-w-[85vw] md:min-w-[400px] lg:min-w-[calc(33.333%-1.5rem)] bg-white border border-[#292828]/10 rounded-[1.625rem] p-6 transition-all hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:border-[#E53935]/30 snap-start flex gap-6 items-center group relative overflow-hidden cursor-pointer">
      <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#E53935] opacity-0 group-hover:opacity-100 transition-opacity rounded-l-[1.625rem]" />
-     <div className="h-20 w-20 rounded-3xl overflow-hidden border-2 border-[#292828]/5 shrink-0 shadow-lg group-hover:rotate-6 transition-transform">
-        <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+     <div className="h-20 w-20 rounded-3xl overflow-hidden border-2 border-[#292828]/5 shrink-0 shadow-lg group-hover:rotate-6 transition-transform bg-[#292828]/5 flex items-center justify-center">
+        <Users size={32} className="text-[#292828]/10" />
      </div>
      <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
@@ -240,8 +240,8 @@ export default function BusinessNetworkPage() {
                   <div className="flex items-center gap-3">
                      <div className="flex -space-x-3">
                         {[1, 2, 3].map(i => (
-                          <div key={i} className="h-9 w-9 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-2xl">
-                             <img src={`https://i.pravatar.cc/150?u=${i+30}`} alt="" className="w-full h-full object-cover" />
+                          <div key={i} className="h-9 w-9 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-2xl flex items-center justify-center">
+                             <Users size={14} className="text-[#292828]/20" />
                           </div>
                         ))}
                      </div>

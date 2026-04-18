@@ -5,9 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { 
   ArrowRight, 
-  Cpu, 
-  Globe,
-  Zap
+  Zap,
+  Users,
+  MapPin,
+  Rocket,
+  ShieldCheck,
+  Search
 } from "lucide-react";
 import AuthModal from "../components/auth/AuthModal";
 
@@ -55,7 +58,7 @@ export default function BalancedGlobalLanding() {
               onClick={() => openAuth("signup")}
               className="px-5 lg:px-8 py-2.5 lg:py-3 bg-[#E53935] text-white rounded-full text-[9px] lg:text-[10px] font-black uppercase hover:scale-105 transition-all active:scale-95 shadow-lg shadow-red-500/20"
             >
-               Join
+               Join Now
             </button>
          </div>
       </header>
@@ -85,13 +88,13 @@ export default function BalancedGlobalLanding() {
                >
                   <div className="absolute inset-0 bg-[#E53935] blur-2xl opacity-10 group-hover/btn:opacity-30 transition-opacity" />
                   <div className="relative w-full sm:px-10 py-5 bg-[#E53935] text-white rounded-2xl font-black text-lg shadow-2xl flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all border-b-4 border-red-800">
-                     🚀 Get Started
+                     <Zap size={22} fill="currentColor" /> Get Started
                   </div>
                </button>
 
                <Link href="/explore" className="group/btn relative w-full sm:w-auto">
                   <button className="relative w-full sm:px-10 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black text-lg shadow-2xl flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all border border-white/10 backdrop-blur-sm">
-                     🔍 Explore
+                     <Search size={20} /> Explore
                   </button>
                </Link>
             </div>
@@ -111,19 +114,26 @@ export default function BalancedGlobalLanding() {
                   
                   <div className="space-y-4 lg:space-y-6">
                     {[
-                      "Real work for real people",
-                      "Focus on your city, not the world",
-                      "Get things done instantly",
-                      "Zero social noise"
+                      { text: "Real work for real people", icon: Users },
+                      { text: "Focus on your city, not the world", icon: MapPin },
+                      { text: "Get things done instantly", icon: Rocket },
+                      { text: "Zero social noise", icon: ShieldCheck }
                     ].map((point, i) => (
-                      <div key={i} className="flex items-start gap-4">
-                        <div className="h-5 w-5 rounded-full bg-[#E53935]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <div className="h-2 w-2 rounded-full bg-[#E53935]" />
+                      <div key={i} className="flex items-start gap-4 group/point">
+                        <div className="h-8 w-8 rounded-xl bg-[#E53935]/10 border border-[#E53935]/20 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover/point:bg-[#E53935] group-hover/point:text-white transition-all duration-300">
+                          <point.icon size={16} className="text-[#E53935] group-hover/point:text-white" />
                         </div>
-                        <p className="text-white/70 text-[13px] lg:text-sm font-bold leading-tight uppercase">{point}</p>
+                        <p className="text-white/70 text-[13px] lg:text-sm font-bold leading-tight uppercase pt-1">{point.text}</p>
                       </div>
                     ))}
                   </div>
+
+                  <button 
+                    onClick={() => openAuth("signup")}
+                    className="w-full mt-10 py-4 bg-[#E53935] text-white rounded-xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-red-500/10 flex items-center justify-center gap-3 border border-red-500/20"
+                  >
+                     Join Now <ArrowRight size={14} />
+                  </button>
                </div>
 
                {/* Soft Red Ambient Glow */}

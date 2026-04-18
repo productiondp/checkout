@@ -53,46 +53,22 @@ export default function PremiumProfilePage() {
   ];
 
   const roleDefaults = {
-    "SEO": [
-      { id: 101, type: "Hiring", title: "Content Writer (Tech)", priority: "High", node: "Marketing" },
-      { id: 102, type: "Partnership", title: "Guest Post Network", priority: "Strategic", node: "Backlinks" },
-    ],
-    "IT": [
-      { id: 101, type: "Hiring", title: "DevOps Engineer", priority: "High", node: "Engine" },
-      { id: 102, type: "Technology", title: "Cloud Security Audit", priority: "Urgent", node: "Infrastructure" },
-    ],
-    "Sales": [
-      { id: 101, type: "Hiring", title: "Lead Closer", priority: "High", node: "Growth" },
-      { id: 102, type: "Marketing", title: "B2B Lead List", priority: "Strategic", node: "Outreach" },
-    ],
-    "Doctor": [
-      { id: 101, type: "Hiring", title: "Nurse Manager", priority: "High", node: "Medical" },
-      { id: 102, type: "Procurement", title: "MRI Spare Parts", priority: "Urgent", node: "Supplies" },
-    ],
-    "Advocate": [
-      { id: 101, type: "Hiring", title: "Junior Associate", priority: "High", node: "Case Work" },
-      { id: 102, type: "Legal", title: "Digital Evidence Vault", priority: "Strategic", node: "Compliance" },
-    ],
-    "Business": [
-      { id: 101, type: "Investment", title: "Series A Extension", priority: "High", node: "Funding" },
-      { id: 102, type: "Partnership", title: "Export License Partner", priority: "Strategic", node: "Trade" },
-    ],
-    "Student": [
-      { id: 101, type: "Hiring", title: "Product Internship", priority: "High", node: "Career" },
-      { id: 102, type: "Technology", title: "Coding Bootcamp Access", priority: "Strategic", node: "Education" },
-    ],
-    "CEO": [
-      { id: 101, type: "Partnership", title: "Regional Joint Venture", priority: "High", node: "Equity" },
-      { id: 102, type: "Hiring", title: "Operations Director", priority: "Urgent", node: "Strategy" },
-    ]
+    "SEO": [],
+    "IT": [],
+    "Sales": [],
+    "Doctor": [],
+    "Advocate": [],
+    "Business": [],
+    "Student": [],
+    "CEO": []
   };
 
   const [userData, setUserData] = useState({
-     name: "Ahmad Nur F",
-     role: "SEO",
-     company: "Zenith Tech Solutions",
-     bio: "I help businesses transport goods across South India. I use digital tools to find the best partners and help companies grow faster together.",
-     checkoutRank: "#24"
+     name: "User",
+     role: "Founder",
+     company: "Business Name",
+     bio: "Professional profile description goes here.",
+     checkoutRank: "--"
   });
 
   const [dependencyList, setDependencyList] = useState(
@@ -130,8 +106,8 @@ export default function PremiumProfilePage() {
             <div className="flex flex-col md:flex-row items-center gap-12">
                {/* Cinematic Avatar Hub */}
                <div className="relative shrink-0">
-                  <div className="h-52 w-52 rounded-full bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-2xl p-2 shadow-4xl relative z-10 border border-white/20 ring-4 ring-white/10 ring-offset-8 ring-offset-[#292828]">
-                     <img src="https://i.pravatar.cc/300?u=me" className="w-full h-full object-cover rounded-full" alt="Profile" />
+                  <div className="h-52 w-52 rounded-full bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-2xl p-2 shadow-4xl relative z-10 border border-white/20 ring-4 ring-white/10 ring-offset-8 ring-offset-[#292828] flex items-center justify-center">
+                     <User size={80} className="text-white/20" />
                   </div>
                   <div className="absolute top-4 right-4 h-10 w-10 bg-white border-2 border-[#E53935] rounded-full flex items-center justify-center text-[#E53935] shadow-2xl z-20 animate-bounce-slow">
                      <Award size={20} />

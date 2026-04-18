@@ -140,20 +140,20 @@ export default function PremiumProfilePage() {
 
                <div className="text-center md:text-left flex-1">
                   <div className="flex flex-col gap-5 mb-2">
-                     <h1 className="text-6xl font-black text-white leading-none -tracking-wider">{userData.name}</h1>
+                     <h1 className="text-6xl font-black text-white leading-none -">{userData.name}</h1>
                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                        <div className="px-4 py-1.5 bg-[#E53935] rounded-full text-[9px] font-black uppercase text-white shadow-lg tracking-[0.1em]">
+                        <div className="px-4 py-1.5 bg-[#E53935] rounded-full text-[9px] font-black uppercase text-white shadow-lg">
                            {userData.role}
                         </div>
-                        <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[9px] font-black uppercase text-white tracking-[0.1em]">
+                        <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[9px] font-black uppercase text-white">
                            Checkout Rank {userData.checkoutRank}
                         </div>
-                        <div className="px-4 py-1.5 border border-white/20 rounded-full text-[9px] font-black uppercase text-white/60 tracking-[0.1em]">
+                        <div className="px-4 py-1.5 border border-white/20 rounded-full text-[9px] font-black uppercase text-white/60">
                            Elite Partner
                         </div>
                      </div>
                   </div>
-                  <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/40 text-[11px] font-bold uppercase tracking-widest pt-2">
+                  <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/40 text-[11px] font-bold uppercase pt-2">
                      <span className="flex items-center gap-2"> <Building size={14} className="text-[#E53935]" /> {userData.company}</span>
                      <span className="flex items-center gap-2"> <MapPin size={14} className="text-[#E53935]" /> Trivandrum, Kerala</span>
                   </div>
@@ -185,7 +185,7 @@ export default function PremiumProfilePage() {
             <div className="lg:col-span-3 space-y-8 animate-in fade-in slide-in-from-left-6 duration-700">
                
                {/* ABOUT CARD */}
-               <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#292828]/10 hover:shadow-2xl transition-shadow">
+               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10 hover:shadow-2xl transition-shadow">
                   <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-5 flex items-center gap-2">
                      <div className="h-1 w-3 bg-[#E53935] rounded-full" />
                      About Me
@@ -213,12 +213,12 @@ export default function PremiumProfilePage() {
                </div>
 
                {/* QUICK ACTIONS DOCK */}
-               <div className="bg-[#292828] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+               <div className="bg-[#292828] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-6 text-white/5 -rotate-12 group-hover:rotate-0 transition-transform duration-700">
                      <Plus size={120} strokeWidth={1} />
                   </div>
                   <div className="relative z-10">
-                     <h3 className="text-[10px] font-black uppercase text-white/40 mb-6 tracking-widest leading-none">Quick Actions</h3>
+                     <h3 className="text-[10px] font-black uppercase text-white/40 mb-6 leading-none">Quick Actions</h3>
                      <div className="space-y-3">
                         <button onClick={() => setIsAddingDep(true)} className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 group/btn">
                            <span className="text-[11px] font-bold text-[#E53935]">Post a Need</span>
@@ -240,13 +240,13 @@ export default function PremiumProfilePage() {
             <div className="lg:col-span-6 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
                
                {/* NEEDS LIST (PRIMARY ACTION) */}
-               <div className="bg-white rounded-[2.5rem] p-10 border border-[#292828]/10 shadow-xl relative overflow-hidden">
+               <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-xl relative overflow-hidden">
                   <div className="flex items-center justify-between mb-8">
                      <div>
                         <h3 className="text-xs font-black uppercase text-[#292828] flex items-center gap-3">
                            <Target size={18} className="text-[#E53935]" /> Current Needs
                         </h3>
-                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-[0.2em] leading-none opacity-60">Broadcasting to your network</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none opacity-60">Broadcasting to your network</p>
                      </div>
                      <button 
                        onClick={() => setIsAddingDep(!isAddingDep)}
@@ -301,12 +301,12 @@ export default function PremiumProfilePage() {
                               <div>
                                  <div className="flex items-center gap-2 mb-1">
                                     <span className="px-1.5 py-0.5 bg-[#292828] text-white text-[7px] font-black uppercase rounded-sm">{dep.type}</span>
-                                    <h4 className="text-[14px] font-black text-[#292828] tracking-tight">{dep.title}</h4>
+                                    <h4 className="text-[14px] font-black text-[#292828]">{dep.title}</h4>
                                  </div>
                                  <div className="flex items-center gap-3">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{dep.node} Node</p>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase">{dep.node} Node</p>
                                     <div className="h-1 w-1 bg-slate-200 rounded-full" />
-                                    <p className="text-[9px] font-black text-[#E53935] uppercase tracking-widest">{dep.priority} Priority</p>
+                                    <p className="text-[9px] font-black text-[#E53935] uppercase">{dep.priority} Priority</p>
                                  </div>
                               </div>
                            </div>
@@ -322,12 +322,12 @@ export default function PremiumProfilePage() {
                </div>
 
                {/* RECENT HISTORY TIMELINE */}
-               <div className="bg-white rounded-[2.5rem] p-10 border border-[#292828]/10 shadow-xl">
+               <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-xl">
                   <div className="flex items-center justify-between mb-10">
                      <h3 className="text-xs font-black uppercase text-[#292828] flex items-center gap-3">
                         <Activity size={18} className="text-[#E53935]" /> My History
                      </h3>
-                     <Link href="/history" className="text-[8px] font-black text-slate-400 uppercase hover:text-[#E53935] transition-colors tracking-[0.2em] opacity-60">Full Archive</Link>
+                     <Link href="/history" className="text-[8px] font-black text-slate-400 uppercase hover:text-[#E53935] transition-colors opacity-60">Full Archive</Link>
                   </div>
                   <div className="space-y-8">
                      {[
@@ -341,9 +341,9 @@ export default function PremiumProfilePage() {
                            <div className="flex-1">
                               <p className="text-[14px] font-black text-[#292828] leading-tight group-hover:text-[#E53935] transition-colors">{item.title}</p>
                               <div className="flex items-center gap-3 mt-2">
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.time}</span>
+                                 <span className="text-[9px] font-black text-slate-400 uppercase">{item.time}</span>
                                  <div className="h-1 w-1 bg-slate-200 rounded-full" />
-                                 <span className="text-[9px] font-black text-[#E53935]/60 uppercase tracking-widest">{item.node}</span>
+                                 <span className="text-[9px] font-black text-[#E53935]/60 uppercase">{item.node}</span>
                               </div>
                            </div>
                         </div>
@@ -359,14 +359,14 @@ export default function PremiumProfilePage() {
                {/* PERFORMANCE STATS */}
                <div className="space-y-4">
                   {performanceMetrics.map((met, i) => (
-                     <div key={i} className="bg-white p-6 rounded-[2rem] border border-[#292828]/10 shadow-lg group hover:bg-[#292828] transition-all duration-500 cursor-default">
+                     <div key={i} className="bg-white p-6 rounded-[1.3rem] border border-[#292828]/10 shadow-lg group hover:bg-[#292828] transition-all duration-500 cursor-default">
                         <div className="flex items-center justify-between mb-4">
                            <div className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#E53935] group-hover:bg-white/10 transition-all">
                               <met.icon size={18} />
                            </div>
                            <span className="text-xl font-black text-[#292828] group-hover:text-white transition-colors">{met.value}%</span>
                         </div>
-                        <p className="text-[9px] font-black text-[#292828]/40 uppercase group-hover:text-white/40 tracking-[0.2em] transition-colors">{met.label}</p>
+                        <p className="text-[9px] font-black text-[#292828]/40 uppercase group-hover:text-white/40 transition-colors">{met.label}</p>
                         <div className="h-1 w-full bg-[#292828]/5 group-hover:bg-white/10 rounded-full mt-3 overflow-hidden transition-colors">
                            <div className={cn("h-full rounded-full transition-all duration-1000", met.color)} style={{ width: `${met.value}%` }} />
                         </div>
@@ -375,8 +375,8 @@ export default function PremiumProfilePage() {
                </div>
 
                {/* LEVEL UP PROGRESS */}
-               <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#292828]/10">
-                  <h3 className="text-[10px] font-black text-[#292828] uppercase mb-6 flex items-center gap-2 tracking-widest leading-none">
+               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
+                  <h3 className="text-[10px] font-black text-[#292828] uppercase mb-6 flex items-center gap-2 leading-none">
                      <TrendingUp size={16} className="text-[#E53935]" /> My Progress
                   </h3>
                   <div className="space-y-5">
@@ -386,7 +386,7 @@ export default function PremiumProfilePage() {
                         { label: "Velocity", val: "Elite", progress: 95 },
                      ].map((param, i) => (
                         <div key={i} className="space-y-2">
-                           <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                           <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
                               <span>{param.label}</span>
                               <span className="text-[#292828]">{param.val}</span>
                            </div>
@@ -402,12 +402,12 @@ export default function PremiumProfilePage() {
                </div>
 
                {/* FOOTNOTE ACHIEVEMENTS */}
-               <div className="bg-[#E53935] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500 cursor-pointer">
+               <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500 cursor-pointer">
                   <div className="absolute -right-4 -bottom-4 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700">
                      <Award size={120} />
                   </div>
-                  <p className="text-[9px] font-black uppercase text-white/60 mb-1 tracking-widest">Merit Rank</p>
-                  <h4 className="text-xl font-black uppercase leading-tight mb-4 tracking-tight">Elite Tier Achievement</h4>
+                  <p className="text-[9px] font-black uppercase text-white/60 mb-1">Merit Rank</p>
+                  <h4 className="text-xl font-black uppercase leading-tight mb-4">Elite Tier Achievement</h4>
                   <p className="text-[11px] font-medium text-white/80 leading-[1.6]">You are performing in the top 12% of professional partners in this region.</p>
                </div>
 
@@ -419,7 +419,7 @@ export default function PremiumProfilePage() {
       {/* MODALS */}
       {showEditModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="w-full max-w-xl bg-white rounded-[3rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
+           <div className="w-full max-w-xl bg-white rounded-[1.95rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
               <div className="flex items-center justify-between mb-10">
                  <h2 className="text-2xl font-black text-[#292828] uppercase">Edit <span className="text-[#E53935]">Profile</span></h2>
                  <button onClick={() => setShowEditModal(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-[#292828] hover:bg-[#E53935] hover:text-white transition-all"><X size={20} /></button>
@@ -505,7 +505,7 @@ export default function PremiumProfilePage() {
 
       {showSettingsModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="w-full max-w-xl bg-white rounded-[3rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500">
+           <div className="w-full max-w-xl bg-white rounded-[1.95rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-10">
                  <h2 className="text-2xl font-black text-[#292828] uppercase">Account <span className="text-[#E53935]">Settings</span></h2>
                  <button onClick={() => setShowSettingsModal(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-[#292828] hover:bg-[#E53935] hover:text-white transition-all"><X size={20} /></button>
@@ -520,7 +520,7 @@ export default function PremiumProfilePage() {
                     <button key={i} className="w-full p-6 bg-slate-50 hover:bg-[#292828]/5 rounded-2xl border border-slate-100 transition-all flex items-center justify-between group">
                        <div className="text-left">
                           <p className="text-sm font-black text-[#292828]">{opt.label}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{opt.desc}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">{opt.desc}</p>
                        </div>
                        <ChevronRight size={18} className="text-slate-300 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
                     </button>

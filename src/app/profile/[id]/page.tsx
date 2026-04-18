@@ -23,7 +23,13 @@ import {
   Zap,
   Activity,
   Award,
-  Plus
+  Plus,
+  Play,
+  FileText,
+  Image as ImageIcon,
+  Compass,
+  Layout,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_PROFILES } from "@/lib/dummyData";
@@ -66,8 +72,8 @@ export default function DynamicProfilePage() {
             <div className="flex flex-col md:flex-row items-center gap-12 w-full pt-10">
                {/* Avatar Hub */}
                <div className="relative shrink-0">
-                  <div className="h-44 w-44 lg:h-52 lg:w-52 rounded-[3rem] bg-white p-3 shadow-4xl relative z-10 overflow-hidden border border-white/20">
-                     <img src={profile.avatar} className="w-full h-full object-cover rounded-[2.5rem]" alt="Profile" />
+                  <div className="h-44 w-44 lg:h-52 lg:w-52 rounded-[1.95rem] bg-white p-3 shadow-4xl relative z-10 overflow-hidden border border-white/20">
+                     <img src={profile.avatar} className="w-full h-full object-cover rounded-[1.625rem]" alt="Profile" />
                   </div>
                   <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-[#E53935] border-4 border-white rounded-2xl flex items-center justify-center text-white shadow-2xl z-20">
                      <CheckCircle2 size={24} />
@@ -77,11 +83,11 @@ export default function DynamicProfilePage() {
                <div className="text-center md:text-left flex-1 min-w-0">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-5">
                      <h1 className="text-4xl lg:text-6xl font-black text-white leading-none uppercase">{profile.name}</h1>
-                     <div className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[10px] font-black uppercase text-white tracking-widest">
+                     <div className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[10px] font-black uppercase text-white">
                         Verified
                      </div>
                   </div>
-                  <div className="flex flex-wrap justify-center md:justify-start gap-8 text-white/60 text-[11px] font-black uppercase tracking-widest">
+                  <div className="flex flex-wrap justify-center md:justify-start gap-8 text-white/60 text-[11px] font-black uppercase">
                      <span className="flex items-center gap-2 decoration-[#E53935] underline-offset-4 underline decoration-2"><Building size={14} className="text-[#E53935]" /> {profile.role}</span>
                      <span className="flex items-center gap-2"><Globe size={14} className="text-[#E53935]" /> {profile.company}</span>
                      <span className="flex items-center gap-2"><MapPin size={14} className="text-[#E53935]" /> {profile.city}</span>
@@ -106,8 +112,8 @@ export default function DynamicProfilePage() {
             <div className="lg:col-span-4 space-y-10">
                
                {/* ABOUT CARD */}
-               <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-50">
-                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-8 tracking-[0.2em] flex items-center gap-2">
+               <div className="bg-white rounded-[1.625rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-50">
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-8 flex items-center gap-2">
                      <div className="h-1 w-4 bg-[#E53935] rounded-full" />
                      About
                   </h3>
@@ -135,7 +141,7 @@ export default function DynamicProfilePage() {
                </div>
 
                {/* CHECKOUT RANK CARD */}
-               <div className="bg-[#292828] rounded-[2.5rem] p-10 shadow-4xl relative overflow-hidden group border border-white/10">
+               <div className="bg-[#292828] rounded-[1.625rem] p-10 shadow-4xl relative overflow-hidden group border border-white/10">
                   <div className="absolute -bottom-10 -right-10 p-8 text-white opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
                      <TrendingUp size={240} />
                   </div>
@@ -146,19 +152,19 @@ export default function DynamicProfilePage() {
                            <Zap size={28} />
                         </div>
                         <div>
-                           <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Authority Status</p>
-                           <h4 className="text-xl font-black text-white uppercase tracking-tighter">Checkout Rank</h4>
+                           <p className="text-[10px] font-black text-white/30 uppercase">Authority Status</p>
+                           <h4 className="text-xl font-black text-white uppercase">Checkout Rank</h4>
                         </div>
                      </div>
 
                      <div className="grid grid-cols-2 gap-4 mb-10 text-center">
                         <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">Global</p>
-                           <p className="text-2xl font-black text-white tracking-tighter">#{100 + profile.id}</p>
+                           <p className="text-2xl font-black text-white">#{100 + profile.id}</p>
                         </div>
                         <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">State</p>
-                           <p className="text-2xl font-black text-[#E53935] tracking-tighter">#{profile.id % 20 + 1}</p>
+                           <p className="text-2xl font-black text-[#E53935]">#{profile.id % 20 + 1}</p>
                         </div>
                      </div>
 
@@ -196,7 +202,7 @@ export default function DynamicProfilePage() {
                       key={tab}
                       onClick={() => setActiveTab(tab)}
                       className={cn(
-                        "pb-4 text-[10px] font-black uppercase transition-all relative tracking-[0.2em]",
+                        "pb-4 text-[10px] font-black uppercase transition-all relative",
                         activeTab === tab ? "text-[#E53935]" : "text-[#292828]/30 hover:text-[#292828]"
                       )}
                     >
@@ -206,17 +212,31 @@ export default function DynamicProfilePage() {
                   ))}
                </div>
 
-                {/* SCORE GRID */}
+               {/* A. INTRO VIDEO HUB */}
+               <div className="bg-[#292828] rounded-[2rem] overflow-hidden relative group aspect-video shadow-4xl border border-white/5">
+                  <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1200" className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-1000" alt="Video Placeholder" />
+                  <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-[#292828] via-[#292828]/60 to-transparent flex items-end justify-between">
+                     <div className="space-y-2">
+                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">Introduction</p>
+                        <h3 className="text-3xl font-black text-white uppercase leading-none">Perspective 2026</h3>
+                     </div>
+                     <button className="h-16 w-16 bg-[#E53935] text-white rounded-full flex items-center justify-center shadow-2xl animate-pulse hover:animate-none active:scale-90 transition-all">
+                        <Play fill="currentColor" size={28} />
+                     </button>
+                  </div>
+               </div>
+
+               {/* B. EXPERTISE BREAKDOWN (Detailed Score) */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {performanceMetrics.map((met, i) => (
-                    <div key={i} className="bg-white p-10 rounded-[2.5rem] border border-[#292828]/5 shadow-xl group hover:border-[#E53935]/20 transition-all duration-500">
+                    <div key={i} className="bg-white p-10 rounded-[1.625rem] border border-[#292828]/5 shadow-xl group hover:border-[#E53935]/20 transition-all duration-500">
                        <div className="flex items-center justify-between mb-10">
                           <div className="h-16 w-16 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#E53935] group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500 shadow-sm">
                              <met.icon size={24} />
                           </div>
-                          <span className="text-4xl font-black text-[#292828] tracking-tighter">{met.value}%</span>
+                          <span className="text-4xl font-black text-[#292828]">{met.value}%</span>
                        </div>
-                       <p className="text-[10px] font-black text-[#292828]/30 uppercase mb-5 tracking-widest">{met.label}</p>
+                       <p className="text-[10px] font-black text-[#292828]/30 uppercase mb-5">{met.label}</p>
                        <div className="h-2 w-full bg-[#292828]/5 rounded-full overflow-hidden border border-[#292828]/5 p-0.5">
                           <div 
                              className={cn("h-full rounded-full transition-all duration-1000", met.color)} 
@@ -227,10 +247,57 @@ export default function DynamicProfilePage() {
                   ))}
                </div>
 
+               {/* C. MEDIA GALLERY & INSIGHTS */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {/* Articles / Insights */}
+                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
+                     <div className="flex items-center justify-between mb-10">
+                        <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
+                           <BookOpen size={18} className="text-[#E53935]" /> Articles
+                        </h3>
+                     </div>
+                     <div className="space-y-8">
+                        {[
+                           "The Future of Logistics in Kerala",
+                           "Scale-up Strategies for MSMEs",
+                           "Digital Transformation Guide 2026"
+                        ].map((art, i) => (
+                           <div key={i} className="group/art cursor-pointer space-y-2">
+                              <p className="text-[13px] font-black text-[#292828] uppercase group-hover/art:text-[#E53935] transition-colors">{art}</p>
+                              <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400">
+                                 <span>8 min read</span>
+                                 <span className="h-1 w-1 bg-slate-200 rounded-full" />
+                                 <span>12.4k Views</span>
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  {/* Visual Portfolio */}
+                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50 flex flex-col">
+                     <div className="flex items-center justify-between mb-10">
+                        <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
+                           <ImageIcon size={18} className="text-[#E53935]" /> Media Portfolio
+                        </h3>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4 flex-1">
+                        {[1, 2, 3, 4].map(i => (
+                           <div key={i} className="relative rounded-[1rem] overflow-hidden group/img cursor-pointer">
+                              <img src={`https://images.unsplash.com/photo-${[
+                                 "1556761175-5973dc0f32e7", "1486406146926-c627a92ad1ab", 
+                                 "1554224155-169746991c99", "1542744173-05336fcc7ad4"
+                              ][i-1]}?q=80&w=500`} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/img:grayscale-0 group-hover/img:scale-110" alt="" />
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+
                {/* RECENT BUSINESS HISTORY */}
-               <div className="bg-white rounded-[2.5rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
+               <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
                   <div className="flex items-center justify-between mb-12">
-                     <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2 tracking-[0.2em]">
+                     <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
                         <Activity size={18} className="text-[#E53935]" /> History
                      </h3>
                      <button className="text-[10px] font-black text-[#292828]/40 uppercase hover:text-[#E53935] transition-colors">See All</button>

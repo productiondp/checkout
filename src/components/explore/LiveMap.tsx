@@ -21,7 +21,7 @@ import {
   Compass
 } from "lucide-react";
 
-type MarkerType = "Meets" | "Deals" | "Jobs" | "Social";
+type MarkerType = "Meeting" | "Hiring" | "Opportunities" | "Partnership" | "Expo" | "Update";
 
 interface Marker {
   id: string;
@@ -35,15 +35,13 @@ interface Marker {
 }
 
 const TRIVANDRUM_MARKERS: Marker[] = [
-  { id: "1", x: 25, y: 30, type: "Jobs", title: "AI Engineer", author: "Technopark Phase III", distance: "0.2km", details: "Startup hiring for core engine development." },
-  { id: "2", x: 45, y: 35, type: "Deals", title: "Logistics Project", author: "Vizhinjam Port", distance: "12km", details: "Looking for local delivery partners." },
-  { id: "3", x: 55, y: 55, type: "Meets", title: "Founder Breakfast", author: "Kowdiar Hub", distance: "2.1km", details: "Weekly meeting for founders and investors." },
-  { id: "4", x: 40, y: 65, type: "Social", title: "Creative Sprint", author: "Lulu Innovation Lab", distance: "4.5km", details: "Design session for local students." },
-  { id: "5", x: 65, y: 40, type: "Jobs", title: "Sales Lead", author: "Vazhuthacaud Prime", distance: "1.8km", details: "Growth role for fintech platform." },
-  { id: "6", x: 30, y: 60, type: "Deals", title: "Retail Tech Scale", author: "East Fort", distance: "3.5km", details: "Smart terminals project for local shops." },
+  { id: "1", x: 25, y: 30, type: "Hiring", title: "Lead Strategist", author: "Technopark Node", distance: "0.2km", details: "Core strategic hiring for regional expansion." },
+  { id: "2", x: 45, y: 35, type: "Opportunities", title: "Logistics Contract", author: "Vizhinjam Hub", distance: "12km", details: "Seeking tier-1 fulfillment partners." },
+  { id: "3", x: 55, y: 55, type: "Meeting", title: "Executive Mixer", author: "Kowdiar Cluster", distance: "2.1km", details: "Monthly sync for high-authority stakeholders." },
+  { id: "4", x: 40, y: 65, type: "Meeting", title: "Policy Review", author: "Secretariat Node", distance: "4.5km", details: "Critical session on new digital trade laws." },
 ];
 
-export default function LiveMap() {
+export default function LiveMap({ posts }: { posts?: any[] }) {
   const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);
   const [filter, setFilter] = useState<MarkerType | "All">("All");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -87,9 +85,21 @@ export default function LiveMap() {
 
   const handleMouseUp = () => setIsDragging(false);
 
+  const markers = posts ? posts.map((post, i) => ({
+    id: post.id.toString(),
+    type: post.type as MarkerType,
+    title: post.type === 'Opportunities' ? 'Project Prospect' : 
+           post.type === 'Hiring' ? 'Open Mandate' : post.content.substring(0, 20) + "...",
+    author: post.author,
+    details: post.content,
+    distance: `${(i * 1.2).toFixed(1)}km`,
+    x: 25 + (i * 14.5) % 60,
+    y: 30 + (i * 11.2) % 50
+  })) : TRIVANDRUM_MARKERS;
+
   const filteredMarkers = filter === "All" 
-    ? TRIVANDRUM_MARKERS 
-    : TRIVANDRUM_MARKERS.filter(m => m.type === filter);
+    ? markers 
+    : (markers as Marker[]).filter(m => m.type === filter);
 
   return (
     <div 
@@ -147,7 +157,7 @@ export default function LiveMap() {
                  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-pulse" />
               </button>
 
-              <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 px-3 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest whitespace-nowrap shadow-xl text-[#292828]">
+              <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 px-3 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black uppercase whitespace-nowrap shadow-xl text-[#292828]">
                 {marker.author}
               </div>
             </div>
@@ -157,32 +167,32 @@ export default function LiveMap() {
 
       {/* 3. RESPONSIVE FLOATING UI */}
       
-      {/* Search & Filter Hub (Top) */}
-      <div className="absolute top-4 lg:top-10 left-4 right-4 lg:left-10 lg:right-10 flex flex-col gap-3 lg:gap-5 z-50 pointer-events-none">
+      {/* Search & Filter Hub (Bottom) */}
+      <div className="absolute bottom-4 lg:bottom-10 left-4 right-4 lg:left-10 lg:right-10 flex flex-col gap-3 lg:gap-5 z-50 pointer-events-none">
          <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto pointer-events-auto">
             <div className="relative group w-full lg:w-96 shadow-2xl">
-               <div className="absolute left-4 lg:left-5 top-1/2 -translate-y-1/2 flex items-center gap-2 lg:gap-3">
-                  <Search className="text-[#292828]" size={18} />
+               <div className="absolute left-6 inset-y-0 flex items-center gap-3 pointer-events-none">
+                  <Search className="text-[#292828]/40" size={18} />
                   <div className="h-4 w-[1px] bg-slate-200" />
                </div>
                <input 
                  type="text" 
                  placeholder="Find people or deals..."
-                 className="w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[1.5rem] py-3 lg:py-5 pl-12 lg:pl-16 pr-6 lg:pr-8 text-[13px] lg:text-[15px] font-bold text-[#292828] outline-none ring-0 focus:border-[#E53935] transition-all"
+                 className="w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] py-3 lg:py-5 pl-12 lg:pl-16 pr-6 lg:pr-8 text-[13px] lg:text-[15px] font-bold text-[#292828] outline-none ring-0 focus:border-[#E53935] transition-all"
                />
             </div>
             
-            <div className="flex bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[1.5rem] p-1.5 shadow-2xl overflow-x-auto scrollbar-hide no-scrollbar">
-               {(["All", "Jobs", "Deals", "Meets", "Social"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setFilter(t)}
-                    className={`px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl text-[9px] lg:text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                       filter === t ? "bg-[#292828] text-white shadow-xl" : "text-[#292828] hover:text-[#292828]"
-                    }`}
-                  >
-                    {t}
-                  </button>
+            <div className="flex bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] p-1.5 shadow-2xl overflow-x-auto scrollbar-hide no-scrollbar">
+               {["All", "Meeting", "Hiring", "Opportunities", "Partnership", "Expo"].map(cat => (
+                 <button 
+                   key={cat}
+                   onClick={() => setFilter(cat as any)}
+                   className={`px-6 h-12 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${
+                     filter === cat ? "bg-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white border border-[#292828]/10 text-[#292828] hover:bg-slate-50"
+                   }`}
+                 >
+                    {cat}
+                 </button>
                ))}
             </div>
          </div>
@@ -196,7 +206,7 @@ export default function LiveMap() {
          </div>
          <button 
            onClick={() => { setZoom(1); setOffset({x:0, y:0}); }}
-           className="h-12 w-12 lg:h-16 lg:w-16 bg-[#E53935] text-white rounded-2xl lg:rounded-[1.5rem] flex items-center justify-center shadow-4xl hover:scale-105 active:scale-95 transition-all"
+           className="h-12 w-12 lg:h-16 lg:w-16 bg-[#E53935] text-white rounded-2xl lg:rounded-[0.975rem] flex items-center justify-center shadow-4xl hover:scale-105 active:scale-95 transition-all"
          >
            <Navigation size={24} fill="currentColor" className="rotate-45" />
          </button>
@@ -205,7 +215,7 @@ export default function LiveMap() {
       {/* 4. DETAIL OVERLAY / BOTTOM SHEET */}
       {selectedMarker && (
          <div className="absolute inset-x-4 bottom-4 lg:inset-x-auto lg:bottom-10 lg:right-10 lg:w-[440px] z-[60] animate-in slide-in-from-bottom-5 lg:slide-in-from-right-10 duration-500">
-            <div className="bg-white/95 border-2 border-[#292828]/10 rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.15)] relative overflow-hidden backdrop-blur-2xl">
+            <div className="bg-white/95 border-2 border-[#292828]/10 rounded-[1.3rem] lg:rounded-[1.95rem] p-6 lg:p-10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.15)] relative overflow-hidden backdrop-blur-2xl">
                <button onClick={() => setSelectedMarker(null)} className="absolute top-6 lg:top-10 right-6 lg:right-10 text-[#292828] hover:text-[#E53935]"><X className="w-5 h-5 lg:w-6 lg:h-6" /></button>
                
                <div className="flex items-start gap-5 lg:gap-8 mb-6 lg:mb-10">
@@ -220,18 +230,18 @@ export default function LiveMap() {
                     {selectedMarker.type === "Social" && <User className="w-6 h-6 lg:w-8 lg:h-8" />}
                   </div>
                   <div className="pr-8">
-                    <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-[#E53935]">{selectedMarker.type}</span>
-                    <h3 className="text-xl lg:text-3xl font-black text-[#292828] leading-tight tracking-tight mt-1">{selectedMarker.title}</h3>
-                    <p className="text-[#292828] font-bold text-xs lg:text-sm tracking-tight mt-1">{selectedMarker.author}</p>
+                    <span className="text-[9px] lg:text-[10px] font-black uppercase text-[#E53935]">{selectedMarker.type}</span>
+                    <h3 className="text-xl lg:text-3xl font-black text-[#292828] leading-tight mt-1">{selectedMarker.title}</h3>
+                    <p className="text-[#292828] font-bold text-xs lg:text-sm mt-1">{selectedMarker.author}</p>
                   </div>
                </div>
                
                <p className="text-xs lg:text-base font-medium leading-relaxed text-[#292828] mb-6 lg:mb-10 line-clamp-2 lg:line-clamp-none">{selectedMarker.details}</p>
                
                <div className="flex gap-2 lg:gap-4">
-                  <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#E53935] transition-all">Connect</button>
+                  <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[0.975rem] font-black text-[11px] lg:text-[13px] uppercase hover:bg-[#E53935] transition-all">Connect</button>
                   <Link href={`/profile/${parseInt(selectedMarker.id) + 1}`} className="flex-1">
-                     <button className="w-full px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[1.5rem] font-black text-[11px] lg:text-[13px] uppercase tracking-widest hover:bg-[#292828]/5 transition-all">View Profile</button>
+                     <button className="w-full px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[0.975rem] font-black text-[11px] lg:text-[13px] uppercase hover:bg-[#292828]/5 transition-all">View Profile</button>
                   </Link>
                </div>
             </div>

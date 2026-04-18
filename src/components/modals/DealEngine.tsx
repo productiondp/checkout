@@ -35,7 +35,7 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#292828]/40 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
       
-      <div className="relative w-full max-w-[500px] bg-white rounded-[3.5rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
+      <div className="relative w-full max-w-[500px] bg-white rounded-[2.275rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
          
          {/* HEADER */}
          <div className="p-8 border-b border-[#292828]/5 flex items-center justify-between bg-white relative">
@@ -67,12 +67,12 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
                  <p className="text-[15px] text-[#292828] font-medium max-w-sm mb-10 leading-relaxed">
                     You are now connected with <strong>{deal.author || deal.name}</strong>. Check your Messages to start.
                  </p>
-                 <button onClick={handleOpenChats} className="w-full h-16 bg-[#292828] text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl hover:bg-[#E53935] transition-all">Open Chats</button>
+                 <button onClick={handleOpenChats} className="w-full h-16 bg-[#292828] text-white rounded-[0.975rem] font-black text-[12px] uppercase shadow-2xl hover:bg-[#E53935] transition-all">Open Chats</button>
               </div>
             ) : (
               <div className="space-y-10">
                  <div className="relative">
-                    <div className="p-8 bg-[#292828]/5 rounded-[2.5rem] border border-[#292828]/10 relative z-10">
+                    <div className="p-8 bg-[#292828]/5 rounded-[1.625rem] border border-[#292828]/10 relative z-10">
                        <div className="flex items-center gap-5 mb-8">
                           <div className="h-16 w-16 rounded-2xl border-4 border-white shadow-xl overflow-hidden ring-2 ring-slate-50">
                              <img src={deal.avatar} className="w-full h-full object-cover" alt="" />
@@ -105,7 +105,7 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
                       onClick={handleConfirm}
                       disabled={loading}
                       className={cn(
-                        "flex-1 h-18 py-5 bg-[#E53935] text-white rounded-[1.5rem] font-black text-[12px] uppercase shadow-4xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-3",
+                        "flex-1 h-18 py-5 bg-[#E53935] text-white rounded-[0.975rem] font-black text-[12px] uppercase shadow-4xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-3",
                         loading && "bg-[#292828] opacity-90"
                       )}
                     >

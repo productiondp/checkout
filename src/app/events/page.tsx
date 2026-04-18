@@ -127,7 +127,7 @@ export default function BusinessExposPage() {
         <div className="p-6 lg:p-10 border-b border-[#292828]/5 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
-                 <h2 className="text-3xl font-black text-[#292828] tracking-tight">Events</h2>
+                 <h2 className="text-3xl font-black text-[#292828]">Events</h2>
                  <p className="text-[12px] font-medium text-[#292828] mt-1">Find events in your city and meet new people.</p>
               </div>
               <button 
@@ -144,7 +144,7 @@ export default function BusinessExposPage() {
                   key={tab} 
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "pb-4 text-[11px] font-bold uppercase tracking-widest transition-all relative",
+                    "pb-4 text-[11px] font-bold uppercase transition-all relative",
                     activeTab === tab ? "text-[#292828]" : "text-[#292828] hover:text-[#292828]"
                   )}
                 >
@@ -162,19 +162,19 @@ export default function BusinessExposPage() {
                {/* MAIN FEATURED EXPO */}
                <div 
                  onClick={() => setSelectedExpo(EXPOS[0])}
-                 className="group bg-white rounded-[3rem] overflow-hidden border border-[#292828]/10 shadow-2xl shadow-slate-200/20 cursor-pointer"
+                 className="group bg-white rounded-[1.95rem] overflow-hidden border border-[#292828]/10 shadow-2xl shadow-slate-200/20 cursor-pointer"
                >
                   <div className="h-80 relative overflow-hidden">
                      <img src={EXPOS[0].banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" alt="" />
                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
                      <div className="absolute top-8 left-8">
-                        <span className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-bold rounded-xl uppercase shadow-lg no-italic tracking-normal">Popular Event</span>
+                        <span className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-bold rounded-xl uppercase shadow-lg no-italic">Popular Event</span>
                      </div>
                      <div className="absolute bottom-10 left-10">
-                        <h3 className="text-4xl font-black text-white mb-2 leading-tight uppercase no-italic tracking-normal">{EXPOS[0].title}</h3>
+                        <h3 className="text-4xl font-black text-white mb-2 leading-tight uppercase no-italic">{EXPOS[0].title}</h3>
                         <div className="flex items-center gap-6 text-white/80">
-                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic tracking-normal"><MapPin size={16} /> {EXPOS[0].loc}, {EXPOS[0].city}</div>
-                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic tracking-normal"><Users size={16} /> {EXPOS[0].exhibitors} Companies</div>
+                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><MapPin size={16} /> {EXPOS[0].loc}, {EXPOS[0].city}</div>
+                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><Users size={16} /> {EXPOS[0].exhibitors} Companies</div>
                         </div>
                      </div>
                   </div>
@@ -186,19 +186,19 @@ export default function BusinessExposPage() {
                     <div 
                       key={expo.id} 
                       onClick={() => setSelectedExpo(expo)}
-                      className="group bg-white border border-[#292828]/10 rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
+                      className="group bg-white border border-[#292828]/10 rounded-[1.625rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
                     >
                        <div className="h-48 relative overflow-hidden">
                           <img src={expo.banner} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                          <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] no-italic tracking-normal">{expo.category}</div>
+                          <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] no-italic">{expo.category}</div>
                        </div>
                        <div className="p-8">
-                          <h4 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic tracking-normal">{expo.title}</h4>
+                          <h4 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic">{expo.title}</h4>
                           <div className="flex items-center justify-between pt-6 border-t border-[#292828]/5">
-                             <div className="flex items-center gap-2 text-[12px] font-bold text-[#292828] capitalize no-italic tracking-normal">
+                             <div className="flex items-center gap-2 text-[12px] font-bold text-[#292828] capitalize no-italic">
                                 <Calendar size={14} className="text-[#292828]/40" /> {expo.date}
                              </div>
-                             <div className="flex items-center gap-2 px-4 py-2 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white no-italic tracking-normal">
+                             <div className="flex items-center gap-2 px-4 py-2 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white no-italic">
                                 View <ChevronRight size={14} />
                              </div>
                           </div>
@@ -212,12 +212,12 @@ export default function BusinessExposPage() {
            {activeTab === "businesses" && (
              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="p-8 bg-white border border-[#292828]/10 rounded-[2.5rem] text-center hover:border-[#E53935]/20 hover:shadow-2xl transition-all group">
-                     <div className="h-20 w-20 bg-[#292828]/5 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center text-[#292828]/40 group-hover:text-[#E53935] transition-colors border border-[#292828]/10">
+                  <div key={i} className="p-8 bg-white border border-[#292828]/10 rounded-[1.625rem] text-center hover:border-[#E53935]/20 hover:shadow-2xl transition-all group">
+                     <div className="h-20 w-20 bg-[#292828]/5 rounded-[0.975rem] mx-auto mb-6 flex items-center justify-center text-[#292828]/40 group-hover:text-[#E53935] transition-colors border border-[#292828]/10">
                         <Building2 size={32} />
                      </div>
                      <h5 className="text-[15px] font-bold text-[#292828] mb-1 leading-tight">Elite Business Hub {i + 1}</h5>
-                     <p className="text-[10px] font-bold text-[#292828] uppercase tracking-widest mb-6">Manufacturing Node</p>
+                     <p className="text-[10px] font-bold text-[#292828] uppercase mb-6">Manufacturing Node</p>
                      <button className="text-[11px] font-bold text-[#292828] hover:text-[#E53935] transition-all flex items-center justify-center gap-2 mx-auto">
                         View Booth <ArrowRight size={14} />
                      </button>
@@ -227,7 +227,7 @@ export default function BusinessExposPage() {
            )}
 
            {activeTab === "map" && (
-              <div className="p-20 bg-[#292828]/5 rounded-[3rem] border-2 border-dashed border-[#292828]/10 text-center">
+              <div className="p-20 bg-[#292828]/5 rounded-[1.95rem] border-2 border-dashed border-[#292828]/10 text-center">
                  <LayoutGrid size={48} className="mx-auto mb-6 text-[#292828]/20" />
                  <h4 className="text-xl font-bold text-[#292828] mb-2">Venue Floor Plans</h4>
                  <p className="text-[13px] font-medium text-[#292828] max-w-xs mx-auto">Interactive maps for the Convention Center and Technopark are launching next week.</p>
@@ -238,8 +238,8 @@ export default function BusinessExposPage() {
 
       {/* 2. ANALYTICS (RIGHT) */}
       <aside className="hidden xl:flex flex-col w-[400px] h-screen sticky top-0 bg-[#292828]/5/50 p-10 gap-10 overflow-y-auto no-scrollbar">
-         <div className="p-10 bg-white border border-[#292828]/10 rounded-[3rem] shadow-xl shadow-slate-200/10">
-            <h4 className="text-[10px] font-black text-[#292828]/40 uppercase tracking-widest mb-8">My Registrations</h4>
+         <div className="p-10 bg-white border border-[#292828]/10 rounded-[1.95rem] shadow-xl shadow-slate-200/10">
+            <h4 className="text-[10px] font-black text-[#292828]/40 uppercase mb-8">My Registrations</h4>
             {registeredList.length > 0 ? (
               <div className="space-y-6">
                  {registeredList.map(rid => {
@@ -260,20 +260,20 @@ export default function BusinessExposPage() {
             )}
          </div>
 
-         <div className="p-10 bg-[#292828] rounded-[3rem] text-white relative overflow-hidden group">
+         <div className="p-10 bg-[#292828] rounded-[1.95rem] text-white relative overflow-hidden group">
             <TrendingUp size={120} className="absolute -right-5 -bottom-5 text-white/[0.03] group-hover:scale-110 transition-transform" />
-            <h4 className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">For Businesses</h4>
+            <h4 className="text-[10px] font-black text-[#E53935] uppercase mb-6">For Businesses</h4>
             <p className="text-2xl font-black leading-tight mb-8">
                Meeting people at events helps you find <span className="text-[#E53935]">4x more</span> partners.
             </p>
-            <button className="w-full py-5 bg-white text-[#292828] rounded-[2rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all">Download Guide</button>
+            <button className="w-full py-5 bg-white text-[#292828] rounded-[1.3rem] font-bold text-[11px] uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all">Download Guide</button>
          </div>
       </aside>
 
       {/* EXPO DETAILS MODAL */}
       {selectedExpo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/40 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-[4rem] flex flex-col lg:flex-row overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500">
+           <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-[2.6rem] flex flex-col lg:flex-row overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500">
               
               {/* IMAGE SIDE */}
               <div className="w-full lg:w-[45%] h-64 lg:h-full relative overflow-hidden">
@@ -292,8 +292,8 @@ export default function BusinessExposPage() {
                  <header className="p-10 lg:p-14 pb-4 flex justify-between items-start">
                     <div className="flex-1">
                        <div className="flex items-center gap-3 mb-4">
-                          <span className="px-4 py-1.5 bg-red-50 text-[#E53935] text-[10px] font-black uppercase rounded-lg tracking-widest">{selectedExpo.category}</span>
-                          <span className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-lg"><ShieldCheck size={14} /> Verified Venue</span>
+                          <span className="px-4 py-1.5 bg-red-50 text-[#E53935] text-[10px] font-black uppercase rounded-lg">{selectedExpo.category}</span>
+                          <span className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-4 py-1.5 rounded-lg"><ShieldCheck size={14} /> Verified Venue</span>
                        </div>
                        <h2 className="text-4xl lg:text-5xl font-black text-[#292828] leading-tight mb-4 uppercase">{selectedExpo.title}</h2>
                        <div className="flex flex-wrap gap-8">
@@ -303,7 +303,7 @@ export default function BusinessExposPage() {
                     </div>
                     <button 
                       onClick={() => setSelectedExpo(null)}
-                      className="hidden lg:flex h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-[1.5rem] items-center justify-center hover:bg-[#292828]/10 hover:text-[#292828] transition-all"
+                      className="hidden lg:flex h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-[0.975rem] items-center justify-center hover:bg-[#292828]/10 hover:text-[#292828] transition-all"
                     >
                        <X size={24} />
                     </button>
@@ -311,13 +311,13 @@ export default function BusinessExposPage() {
 
                  <div className="px-10 lg:p-14 pt-8 space-y-12 flex-1">
                     <section>
-                       <h4 className="text-[11px] font-black text-[#292828]/40 uppercase tracking-widest mb-4">Expo Description</h4>
+                       <h4 className="text-[11px] font-black text-[#292828]/40 uppercase mb-4">Expo Description</h4>
                        <p className="text-lg lg:text-xl font-medium text-[#292828] leading-relaxed max-w-2xl">{selectedExpo.description}</p>
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        {selectedExpo.features.map((feat: string, i: number) => (
-                         <div key={i} className="p-6 bg-[#292828]/5 rounded-[2rem] border border-[#292828]/10 text-center group">
+                         <div key={i} className="p-6 bg-[#292828]/5 rounded-[1.3rem] border border-[#292828]/10 text-center group">
                             <div className="h-12 w-12 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center text-[#E53935] shadow-sm animate-pulse-slow">
                                <Check size={20} />
                             </div>
@@ -332,13 +332,13 @@ export default function BusinessExposPage() {
                        <button 
                          onClick={() => { toggleRegister(selectedExpo.id); setSelectedExpo(null); }}
                          className={cn(
-                           "flex-1 h-16 rounded-[2rem] font-black text-[11px] uppercase tracking-widest transition-all shadow-4xl active:scale-95",
+                           "flex-1 h-16 rounded-[1.3rem] font-black text-[11px] uppercase transition-all shadow-4xl active:scale-95",
                            registeredList.includes(selectedExpo.id) ? "bg-green-50 text-green-600" : "bg-[#E53935] text-white hover:bg-[#292828] shadow-red-500/10"
                          )}
                        >
                           {registeredList.includes(selectedExpo.id) ? "You're Going!" : "Join Event"}
                        </button>
-                       <button className="h-16 px-10 border border-[#292828]/10 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest hover:bg-[#292828]/5">Share</button>
+                       <button className="h-16 px-10 border border-[#292828]/10 rounded-[1.3rem] font-bold text-[11px] uppercase hover:bg-[#292828]/5">Share</button>
                     </div>
                  </footer>
               </div>

@@ -62,7 +62,7 @@ export default function PremiumMessagesPage() {
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
            <div className="px-5 mb-4 mt-2">
-              <p className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest">Recent Discussions</p>
+              <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Recent Discussions</p>
            </div>
            {DUMMY_CHATS.map((chat) => (
              <button 
@@ -118,7 +118,7 @@ export default function PremiumMessagesPage() {
                         <h2 className="text-[17px] font-black text-[#292828] leading-tight">{selectedChat.name}</h2>
                         <div className="flex items-center gap-2">
                            <span className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-green-500" : "bg-slate-300")} />
-                           <span className="text-[11px] font-bold text-[#292828] uppercase tracking-widest">{selectedChat.online ? "Online Now" : "Inactive"}</span>
+                           <span className="text-[11px] font-bold text-[#292828] uppercase">{selectedChat.online ? "Online Now" : "Inactive"}</span>
                         </div>
                      </div>
                   </div>
@@ -143,20 +143,20 @@ export default function PremiumMessagesPage() {
             {/* MESSAGE STREAM */}
             <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase tracking-widest">Session Encryption Active</span>
+                  <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase">Session Encryption Active</span>
                </div>
 
                {/* Mock Messages */}
                <div className="space-y-8">
                   <div className="flex flex-col items-start max-w-[80%]">
-                     <div className="bg-white border border-[#292828]/10 p-5 rounded-[2rem] rounded-tl-lg shadow-sm">
+                     <div className="bg-white border border-[#292828]/10 p-5 rounded-[1.3rem] rounded-tl-lg shadow-sm">
                         <p className="text-[15px] font-medium text-slate-700 leading-relaxed">Hey Ahmad! I saw your recent post about the MSME logistics collective. Do you have a deck I could review?</p>
                      </div>
                      <span className="text-[10px] font-bold text-[#292828]/40 mt-2 ml-4">10:42 AM</span>
                   </div>
 
                   <div className="flex flex-col items-end w-full">
-                     <div className="bg-[#E53935] p-5 rounded-[2rem] rounded-tr-lg shadow-xl shadow-red-500/10 max-w-[80%]">
+                     <div className="bg-[#E53935] p-5 rounded-[1.3rem] rounded-tr-lg shadow-xl shadow-red-500/10 max-w-[80%]">
                         <p className="text-[15px] font-medium text-white leading-relaxed">Hey {selectedChat.name.split(' ')[0]}! Yes, we just finalized the regional strategy. Attaching the summary PDF here.</p>
                      </div>
                      <div className="flex items-center gap-2 mt-2 mr-4">
@@ -166,7 +166,7 @@ export default function PremiumMessagesPage() {
                   </div>
 
                   <div className="flex flex-col items-end w-full">
-                     <div className="bg-white border border-[#292828]/10 p-4 rounded-[2rem] rounded-tr-lg shadow-sm flex items-center gap-4 max-w-[80%]">
+                     <div className="bg-white border border-[#292828]/10 p-4 rounded-[1.3rem] rounded-tr-lg shadow-sm flex items-center gap-4 max-w-[80%]">
                         <div className="h-12 w-12 bg-red-50 text-[#E53935] rounded-xl flex items-center justify-center shrink-0">
                            <FileText size={20} />
                         </div>
@@ -181,7 +181,7 @@ export default function PremiumMessagesPage() {
 
             {/* COMPOSER (BOTTOM) */}
             <div className="p-6 lg:p-8 bg-white border-t border-[#292828]/5 pb-24 lg:pb-8">
-               <div className="flex items-center gap-4 bg-[#292828]/5 rounded-[2.5rem] p-2 pl-6 shadow-sm border border-[#292828]/10/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
+               <div className="flex items-center gap-4 bg-[#292828]/5 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-[#292828]/10/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
                   <div className="relative">
                      <button 
                        onClick={() => setShowAttachMenu(!showAttachMenu)}
@@ -240,7 +240,7 @@ export default function PremiumMessagesPage() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#FDFDFF]">
-             <div className="h-24 w-24 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
+             <div className="h-24 w-24 bg-white rounded-[1.625rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
                 <MessageSquare size={40} />
              </div>
              <h2 className="text-2xl font-black text-[#292828] leading-tight">Your Communication Hub</h2>
@@ -254,18 +254,18 @@ export default function PremiumMessagesPage() {
         <aside className="hidden lg:flex flex-col w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300">
            <div className="p-8 h-full overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center mb-10">
-                 <h3 className="text-[12px] font-bold text-[#292828]/40 uppercase tracking-widest">Partner Profile</h3>
+                 <h3 className="text-[12px] font-bold text-[#292828]/40 uppercase">Partner Profile</h3>
                  <button onClick={() => setShowProfile(false)} className="h-8 w-8 bg-[#292828]/5 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#292828]/10">
                     <X size={16} />
                  </button>
               </div>
 
               <div className="text-center mb-12">
-                 <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-[2.5rem] overflow-hidden shadow-2xl mb-6 ring-4 ring-slate-50 block hover:scale-105 transition-transform active:scale-95">
+                 <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-[1.625rem] overflow-hidden shadow-2xl mb-6 ring-4 ring-slate-50 block hover:scale-105 transition-transform active:scale-95">
                     <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
                  </Link>
                  <h2 className="text-2xl font-black text-[#292828] leading-tight mb-1">{selectedChat.name}</h2>
-                 <p className="text-[11px] font-bold text-[#E53935] uppercase tracking-widest mb-6">Verified Business Founder</p>
+                 <p className="text-[11px] font-bold text-[#E53935] uppercase mb-6">Verified Business Founder</p>
                  
                  <div className="flex justify-center gap-3">
                     <button className="px-6 py-3 bg-[#292828] text-white rounded-xl text-[10px] font-bold uppercase hover:bg-[#E53935] shadow-lg transition-all">View Profile</button>
@@ -275,7 +275,7 @@ export default function PremiumMessagesPage() {
 
               <div className="space-y-8">
                  <div>
-                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase tracking-widest mb-4">Collaboration History</h4>
+                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase mb-4">Collaboration History</h4>
                     <div className="grid grid-cols-2 gap-3">
                        <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10/50">
                           <p className="text-[18px] font-bold text-[#292828]">12</p>
@@ -289,7 +289,7 @@ export default function PremiumMessagesPage() {
                  </div>
 
                  <div>
-                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase tracking-widest mb-4">Shared Files</h4>
+                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase mb-4">Shared Files</h4>
                     <div className="space-y-3">
                        {[
                          { icon: FileText, name: "Proposal_Final.pdf", size: "1.2MB" },
@@ -315,7 +315,7 @@ export default function PremiumMessagesPage() {
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
            <div className="absolute inset-0 bg-[#292828]/40 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowSettings(false)} />
-           <div className="relative w-full max-w-[480px] bg-white rounded-[3rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
+           <div className="relative w-full max-w-[480px] bg-white rounded-[1.95rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
               <div className="p-8 border-b border-[#292828]/5 flex items-center justify-between">
                  <h3 className="text-xl font-black text-[#292828] uppercase">Chat Settings</h3>
                  <button onClick={() => setShowSettings(false)} className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828]">
@@ -324,7 +324,7 @@ export default function PremiumMessagesPage() {
               </div>
               <div className="p-10 space-y-8">
                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold text-[#292828]/40 uppercase tracking-widest">Privacy & Security</p>
+                    <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Privacy & Security</p>
                     <div className="space-y-1">
                        {[
                          { label: "End-to-End Encryption", desc: "Always active for all connections", active: true },

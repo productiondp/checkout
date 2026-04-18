@@ -20,18 +20,18 @@ export default function HistoryPage() {
         </Link>
         
         <div className="flex items-center gap-6 mb-16">
-           <div className="h-16 w-16 bg-[#292828] text-white rounded-[2rem] flex items-center justify-center shadow-2xl transition-transform hover:scale-110">
+           <div className="h-16 w-16 bg-[#292828] text-white rounded-[1.3rem] flex items-center justify-center shadow-2xl transition-transform hover:scale-110">
               <Zap size={32} />
            </div>
            <div>
-              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase tracking-tight">My History</h1>
-              <p className="text-[12px] font-black text-[#E53935] uppercase tracking-[0.2em] mt-2">Personal Business Activity</p>
+              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase">My History</h1>
+              <p className="text-[12px] font-black text-[#E53935] uppercase mt-2">Personal Business Activity</p>
            </div>
         </div>
 
         <div className="space-y-6">
            {activities.map((a, i) => (
-             <div key={i} className="bg-white border border-[#292828]/5 rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-[#E53935]/10 transition-all shadow-sm hover:shadow-xl hover:shadow-slate-200/20">
+             <div key={i} className="bg-white border border-[#292828]/5 rounded-[1.625rem] p-8 flex items-center justify-between group hover:border-[#E53935]/10 transition-all shadow-sm hover:shadow-xl hover:shadow-slate-200/20">
                 <div className="flex items-center gap-6">
                    <div className={`h-14 w-14 rounded-2xl flex items-center justify-center ${a.bg} ${a.color} transition-transform group-hover:rotate-6`}>
                       <a.icon size={24} />
@@ -47,7 +47,7 @@ export default function HistoryPage() {
                 </div>
                 <div className="text-right hidden sm:block">
                    <p className="text-xl font-black text-[#292828] uppercase leading-none">{a.value}</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Status</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase mt-1">Status</p>
                 </div>
              </div>
            ))}

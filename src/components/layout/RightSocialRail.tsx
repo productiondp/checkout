@@ -25,7 +25,7 @@ export default function RightSocialRail() {
   return (
     <aside className="w-[220px] hidden 2xl:block p-8 space-y-10 overflow-y-auto no-scrollbar border-l border-[#292828]/5">
       <div className="space-y-6">
-         <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-normal">Active Fast</h4>
+         <h4 className="text-[10px] font-bold text-[#292828] uppercase">Active Fast</h4>
          <div className="space-y-4">
             {RECENT_ACTIVITY.map((p, i) => (
               <div key={p.name} onClick={() => handleClick(p.name)} className="flex items-center gap-3 cursor-pointer group">
@@ -34,7 +34,7 @@ export default function RightSocialRail() {
                  </Link>
                  <div className="min-w-0">
                     <p className="text-[12px] font-bold text-[#292828] group-hover:text-[#E53935] truncate">{p.name}</p>
-                    <p className="text-[9px] font-medium text-[#292828] uppercase tracking-normal">{p.role}</p>
+                    <p className="text-[9px] font-medium text-[#292828] uppercase">{p.role}</p>
                  </div>
               </div>
             ))}
@@ -43,7 +43,7 @@ export default function RightSocialRail() {
 
       <div className="space-y-6">
          <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-normal">My Contacts</h4>
+            <h4 className="text-[10px] font-bold text-[#292828] uppercase">My Contacts</h4>
             <span className="text-[9px] font-bold text-[#E53935] bg-red-50 px-1.5 py-0.5 rounded">NEW</span>
          </div>
          <div className="space-y-4">

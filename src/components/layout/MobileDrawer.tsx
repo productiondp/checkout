@@ -65,7 +65,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               </div>
               <div>
                  <p className="text-lg font-black text-[#292828] leading-tight">Arun Dev</p>
-                 <p className="text-[10px] font-bold text-[#E53935] uppercase tracking-widest">Verified Expert</p>
+                 <p className="text-[10px] font-bold text-[#E53935] uppercase">Verified Expert</p>
               </div>
            </div>
            <div className="grid grid-cols-2 gap-2">
@@ -76,7 +76,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-          <p className="px-4 py-2 text-[10px] font-black text-[#292828]/30 uppercase tracking-[0.2em] mb-2">Main Menu</p>
+          <p className="px-4 py-2 text-[10px] font-black text-[#292828]/30 uppercase mb-2">Main Menu</p>
           {menuItems.map((item) => (
             <Link 
               key={item.label} 

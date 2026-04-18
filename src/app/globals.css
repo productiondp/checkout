@@ -9,7 +9,7 @@
 
   html, body {
     min-height: 100svh;
-    @apply overscroll-none select-none touch-manipulation;
+    @apply overscroll-none select-none touch-manipulation leading-normal text-[#292828];
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
   }

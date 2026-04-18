@@ -33,7 +33,7 @@ export default function FullyActiveGlobalHeader() {
 
   return (
     <>
-      <header className="h-14 lg:h-16 bg-white sticky top-0 z-[100] px-4 lg:px-6 flex items-center justify-between border-b border-[#292828]/10 selection:bg-[#E53935]/10">
+      <header className="h-16 lg:h-20 bg-white sticky top-0 z-[100] px-4 lg:px-6 flex items-center justify-between border-b border-[#292828]/10 selection:bg-[#E53935]/10">
         
         {/* 1. BRAND & LOCATION (LEFT) */}
         <div className="flex items-center gap-4">
@@ -49,41 +49,42 @@ export default function FullyActiveGlobalHeader() {
              <Image 
                src="/images/logo.png" 
                alt="Logo" 
-               width={140} 
-               height={32} 
+               width={180} 
+               height={40} 
                priority 
-               className="h-8 lg:h-8 w-auto object-contain" 
+               className="h-11 lg:h-14 w-auto object-contain" 
              />
           </Link>
-          
-          {/* SIMPLE LOCATION SWITCHER */}
-          <div className="relative border-l border-[#292828]/10 pl-4 lg:pl-6 ml-0 lg:ml-1 hidden sm:block">
-             <button 
-               onClick={() => setIsLocationOpen(!isLocationOpen)}
-               className="flex items-center gap-1.5 group hover:bg-[#292828]/5 px-2 py-1.5 rounded-xl transition-all"
-             >
-                <MapPin size={12} className="text-[#E53935]" />
-                <span className="text-[9px] lg:text-[10px] font-bold text-[#292828] uppercase">Trivandrum</span>
-                <ChevronDown size={10} className={cn("text-[#292828]/40 transition-transform", isLocationOpen && "rotate-180")} />
-             </button>
 
-             {isLocationOpen && (
-               <div className="absolute top-[130%] left-0 lg:left-6 w-56 bg-white rounded-2xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2">
-                  <p className="px-3 py-2 text-[10px] font-bold text-[#292828] uppercase border-b border-[#292828]/5 mb-2">Location</p>
-                  {["Kochi", "Bangalore", "Chennai"].map(loc => (
-                    <button key={loc} className="w-full text-left p-3 rounded-xl text-[13px] font-medium text-[#292828] hover:bg-[#292828]/5 hover:text-[#E53935] flex items-center justify-between group transition-all">
-                       {loc}
-                       <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                    </button>
-                  ))}
-               </div>
-             )}
-          </div>
         </div>
 
         {/* 2. RIGHT HUB (ACTIVE BUTTONS) */}
         <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-end">
            
+           {/* SIMPLE LOCATION SWITCHER */}
+           <div className="relative hidden sm:block">
+              <button 
+                onClick={() => setIsLocationOpen(!isLocationOpen)}
+                className="flex items-center gap-1.5 px-4 h-9 bg-[#292828]/5 border border-[#292828]/10 rounded-lg hover:bg-white hover:shadow-lg transition-all"
+              >
+                 <MapPin size={12} className="text-[#E53935]" />
+                 <span className="text-[10px] font-black text-[#292828] uppercase">Trivandrum</span>
+                 <ChevronDown size={10} className={cn("text-[#292828]/40 transition-transform", isLocationOpen && "rotate-180")} />
+              </button>
+
+              {isLocationOpen && (
+                <div className="absolute top-[130%] right-0 w-56 bg-white rounded-2xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
+                   <p className="px-3 py-2 text-[10px] font-black text-[#292828]/30 uppercase border-b border-[#292828]/5 mb-2">Select Hub</p>
+                   {["Kochi", "Bangalore", "Chennai"].map(loc => (
+                     <button key={loc} className="w-full text-left p-3 rounded-xl text-[11px] font-black uppercase text-[#292828] hover:bg-[#292828]/5 hover:text-[#E53935] flex items-center justify-between group transition-all">
+                        {loc}
+                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
+                     </button>
+                   ))}
+                </div>
+              )}
+           </div>
+
            {/* SEARCH - HIDDEN ON MOBILE HEADER */}
            <div className="hidden md:flex items-center w-full max-w-[280px] relative group h-9">
               <input 

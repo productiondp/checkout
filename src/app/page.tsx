@@ -22,7 +22,7 @@ export default function BalancedGlobalLanding() {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#292828] text-white font-sans tracking-tight overflow-x-hidden overflow-y-auto relative flex flex-col selection:bg-[#E53935]/40 no-scrollbar">
+    <div className="min-h-screen w-screen bg-[#292828] text-white font-sans overflow-x-hidden overflow-y-auto relative flex flex-col selection:bg-[#E53935]/40 no-scrollbar">
       
       {/* 1. SIMPLE RELATABLE BACKGROUND IMAGE (OPTIMIZED) */}
       <div className="fixed inset-0 z-0 bg-[#292828]">
@@ -47,13 +47,13 @@ export default function BalancedGlobalLanding() {
          <div className="flex items-center gap-4 lg:gap-10">
             <button 
               onClick={() => openAuth("signin")}
-              className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-[#E53935] transition-colors"
+              className="text-[9px] lg:text-[10px] font-black uppercase text-white/70 hover:text-[#E53935] transition-colors"
             >
                Login
             </button>
             <button 
               onClick={() => openAuth("signup")}
-              className="px-5 lg:px-8 py-2.5 lg:py-3 bg-[#E53935] text-white rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all active:scale-95 shadow-lg shadow-red-500/20"
+              className="px-5 lg:px-8 py-2.5 lg:py-3 bg-[#E53935] text-white rounded-full text-[9px] lg:text-[10px] font-black uppercase hover:scale-105 transition-all active:scale-95 shadow-lg shadow-red-500/20"
             >
                Join
             </button>
@@ -65,16 +65,16 @@ export default function BalancedGlobalLanding() {
          
          {/* VALUE DISCOVERY (REBALANCED FONTS) */}
          <div className="lg:col-span-7 space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-left-2 duration-700">
-            <div className="inline-flex items-center gap-2 px-4 lg:px-5 py-1.5 rounded-xl bg-[#E53935]/15 border border-[#E53935]/30 text-[#E53935] text-[8px] lg:text-[9px] font-black uppercase tracking-[0.4em]">
+            <div className="inline-flex items-center gap-2 px-4 lg:px-5 py-1.5 rounded-xl bg-[#E53935]/15 border border-[#E53935]/30 text-[#E53935] text-[8px] lg:text-[9px] font-black uppercase">
                <Zap size={10} className="animate-pulse" /> Where Local Meets Opportunity
             </div>
             
-            <h1 className="text-4xl lg:text-7xl font-black leading-tight tracking-tighter text-white mix-blend-plus-lighter">
+            <h1 className="text-4xl lg:text-7xl font-black leading-tight text-white mix-blend-plus-lighter">
               Stop Networking. <br className="hidden sm:block" />
               <span className="text-[#E53935]">Start Building.</span>
             </h1>
             
-            <p className="text-lg lg:text-3xl text-white/60 font-bold max-w-2xl leading-snug tracking-tight">
+            <p className="text-lg lg:text-3xl text-white/60 font-bold max-w-2xl leading-snug">
                Checkout is a simple way for entrepreneurs and creators in your city to connect and get things done.
             </p>
             
@@ -97,7 +97,7 @@ export default function BalancedGlobalLanding() {
             </div>
 
             <div className="pt-4">
-               <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Built for builders, not browsers.</p>
+               <p className="text-[9px] lg:text-[10px] font-black uppercase text-white/40">Built for builders, not browsers.</p>
             </div>
          </div>
 
@@ -106,8 +106,8 @@ export default function BalancedGlobalLanding() {
             
             <div className="relative w-full max-w-sm">
                {/* Why Checkout Wins Differentiator Card */}
-               <div className="w-full bg-[#292828]/60 p-8 lg:p-10 rounded-[2.5rem] lg:rounded-[3rem] border border-white/10 shadow-3xl hover:border-[#E53935]/30 transition-all duration-700 relative z-20 backdrop-blur-md">
-                  <h3 className="text-3xl lg:text-4xl font-black text-white tracking-tighter mb-6 lg:mb-8 leading-none uppercase">Why <span className="text-[#E53935]">Checkout?</span></h3>
+               <div className="w-full bg-[#292828]/60 p-8 lg:p-10 rounded-[1.625rem] lg:rounded-[1.95rem] border border-white/10 shadow-3xl hover:border-[#E53935]/30 transition-all duration-700 relative z-20 backdrop-blur-md">
+                  <h3 className="text-3xl lg:text-4xl font-black text-white mb-6 lg:mb-8 leading-none uppercase">Why <span className="text-[#E53935]">Checkout?</span></h3>
                   
                   <div className="space-y-4 lg:space-y-6">
                     {[
@@ -136,8 +136,8 @@ export default function BalancedGlobalLanding() {
 
       {/* 4. FOOTER */}
       <footer className="relative z-50 py-8 lg:h-16 flex flex-col lg:flex-row items-center justify-between px-8 lg:px-20 border-t border-white/5 bg-[#292828]/10 backdrop-blur-md gap-6 lg:gap-0">
-         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30 text-center lg:text-left">© 2026 Checkout Protocol. <span className="text-white/50">Hyper-Local Standard.</span></p>
-         <div className="flex gap-8 text-[9px] font-black uppercase tracking-widest text-white/30">
+         <p className="text-[9px] font-black uppercase text-white/30 text-center lg:text-left">© 2026 Checkout Protocol. <span className="text-white/50">Hyper-Local Standard.</span></p>
+         <div className="flex gap-8 text-[9px] font-black uppercase text-white/30">
             {["Privacy", "Safety", "Support"].map(it => (
               <span key={it} className="hover:text-white transition-colors cursor-pointer">{it}</span>
             ))}

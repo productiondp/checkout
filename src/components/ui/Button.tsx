@@ -13,8 +13,8 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const variants = {
     primary: "btn-primary",
-    secondary: "bg-background-soft text-text hover:bg-black/[0.04] rounded-pill px-6 py-4 font-black ",
-    outline: "border-2 border-background-soft text-text hover:bg-background-soft hover:shadow-sm rounded-pill px-6 py-4 font-black ",
+    secondary: "bg-background-soft text-text hover:bg-black/[0.04] rounded-xl px-6 py-4 font-black ",
+    outline: "border-2 border-background-soft text-text hover:bg-background-soft hover:shadow-sm rounded-xl px-6 py-4 font-black ",
     ghost: "text-text-secondary hover:text-primary transition-colors font-black ",
   };
 

@@ -21,18 +21,18 @@ export default function SettingsHub() {
         </Link>
         
         <div className="flex items-center gap-6 mb-16">
-           <div className="h-16 w-16 bg-[#292828] text-white rounded-[2rem] flex items-center justify-center shadow-2xl transition-transform hover:rotate-12">
+           <div className="h-16 w-16 bg-[#292828] text-white rounded-[1.3rem] flex items-center justify-center shadow-2xl transition-transform hover:rotate-12">
               <Settings size={32} />
            </div>
            <div>
-              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase tracking-tight">Settings Hub</h1>
-              <p className="text-[12px] font-black text-[#E53935] uppercase tracking-[0.2em] mt-2">Personalize Your Platform</p>
+              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase">Settings Hub</h1>
+              <p className="text-[12px] font-black text-[#E53935] uppercase mt-2">Personalize Your Platform</p>
            </div>
         </div>
 
         <div className="space-y-4">
            {sections.map(s => (
-             <button key={s.label} className="w-full bg-white border border-[#292828]/5 rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-xl hover:shadow-slate-200/20 transition-all text-left">
+             <button key={s.label} className="w-full bg-white border border-[#292828]/5 rounded-[1.625rem] p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-xl hover:shadow-slate-200/20 transition-all text-left">
                 <div className="flex items-center gap-6">
                    <div className="h-14 w-14 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
                       <s.icon size={24} />

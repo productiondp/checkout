@@ -31,10 +31,13 @@ import {
 import { cn } from "@/lib/utils";
 import { DUMMY_POSTS } from "@/lib/dummyData";
 import DealEngine from "@/components/modals/DealEngine";
+import PostModal from "@/components/modals/PostModal";
+import LiveMap from "@/components/explore/LiveMap";
 
 export default function EliteHomeFeed() {
   const [posts, setPosts] = useState(DUMMY_POSTS);
   const [activeTab, setActiveTab] = useState<string>("All");
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -163,8 +166,8 @@ export default function EliteHomeFeed() {
                 isPosting ? "mb-12" : "mb-8 px-4 lg:px-0"
             )}>
                 {!isPosting ? (
-                  <div className="group/composer relative bg-white border border-[#292828]/10 rounded-[2.2rem] p-2 pr-2.5 flex items-center gap-4 transition-all hover:bg-[#FDFDFF] hover:border-[#292828]/30 hover:shadow-[0_20px_50px_rgba(41,40,40,0.06)] hover:-translate-y-0.5">
-                     <div className="h-11 w-11 rounded-[1.3rem] overflow-hidden border-2 border-white shadow-xl shrink-0 ml-1">
+                  <div className="group/composer relative bg-white border border-[#292828]/10 rounded-[1.43rem] p-2 pr-2.5 flex items-center gap-4 transition-all hover:bg-[#FDFDFF] hover:border-[#292828]/30 hover:shadow-[0_20px_50px_rgba(41,40,40,0.06)] hover:-translate-y-0.5">
+                     <div className="h-11 w-11 rounded-[0.845rem] overflow-hidden border-2 border-white shadow-xl shrink-0 ml-1">
                         <img src="https://i.pravatar.cc/150?u=me" className="w-full h-full object-cover" alt="" />
                      </div>
                      <button 
@@ -174,16 +177,16 @@ export default function EliteHomeFeed() {
                         Share a business update...
                      </button>
                      <div className="flex items-center gap-2">
-                        <button onClick={() => setIsPosting(true)} className="h-11 w-11 text-[#292828]/30 rounded-[1.2rem] flex items-center justify-center hover:text-[#292828] hover:bg-white border border-transparent hover:border-[#292828]/5 transition-all">
+                        <button onClick={() => setIsPosting(true)} className="h-11 w-11 text-[#292828]/30 rounded-[0.78rem] flex items-center justify-center hover:text-[#292828] hover:bg-white border border-transparent hover:border-[#292828]/5 transition-all">
                            <ImageIcon size={22} strokeWidth={2.5} />
                         </button>
-                        <button onClick={() => setIsPosting(true)} className="h-12 px-8 bg-[#292828] text-white rounded-[1.3rem] flex items-center justify-center gap-2 text-[11px] font-black uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all">
+                        <button onClick={() => setIsPosting(true)} className="h-12 px-8 bg-[#292828] text-white rounded-[0.845rem] flex items-center justify-center gap-2 text-[11px] font-black uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all">
                            Post <Plus size={18} strokeWidth={4} />
                         </button>
                      </div>
                   </div>
                 ) : (
-                  <div className="bg-white border border-[#292828]/10 rounded-[3rem] p-6 shadow-[0_48px_120px_rgba(0,0,0,0.12)] animate-in zoom-in-95 duration-500 relative overflow-hidden">
+                  <div className="bg-white border border-[#292828]/10 rounded-[1.95rem] p-6 shadow-[0_48px_120px_rgba(0,0,0,0.12)] animate-in zoom-in-95 duration-500 relative overflow-hidden">
                      <div className="absolute top-0 left-0 w-full h-1 bg-[#E53935]" />
                      
                      <div className="flex items-center justify-between mb-6">
@@ -238,7 +241,7 @@ export default function EliteHomeFeed() {
                              value={postContent}
                              onChange={(e) => setPostContent(e.target.value)}
                              placeholder="Broadcast your mission status..."
-                             className="w-full bg-slate-50 p-6 rounded-[2rem] border-2 border-transparent text-lg font-bold text-[#292828] placeholder:text-slate-200 outline-none resize-none min-h-[160px] transition-all focus:bg-white focus:border-[#292828]/5"
+                             className="w-full bg-slate-50 p-6 rounded-[1.3rem] border-2 border-transparent text-lg font-bold text-[#292828] placeholder:text-slate-200 outline-none resize-none min-h-[160px] transition-all focus:bg-white focus:border-[#292828]/5"
                            />
                            <div className="absolute bottom-6 right-6 flex items-center gap-4">
                               <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => setAttachment(e.target.files?.[0] || null)} />
@@ -272,7 +275,7 @@ export default function EliteHomeFeed() {
                  <div key={post.id} className="group/post relative">
                     {viewMode === "grid" ? (
                       <div className={cn(
-                        "bg-white rounded-[2rem] border-2 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(41,40,40,0.12)] flex flex-col h-full overflow-hidden",
+                        "bg-white rounded-[1.3rem] border-2 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(41,40,40,0.12)] flex flex-col h-full overflow-hidden",
                         post.type === 'Opportunities' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
                       )}>
                         <div className="px-5 pt-5 pb-3 flex items-center justify-between">
@@ -290,7 +293,10 @@ export default function EliteHomeFeed() {
                            </Link>
                            <div className={cn(
                                "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
-                               post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
+                               post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : 
+                               post.type === 'Meeting' ? "bg-green-50 text-green-600 border-green-100" :
+                               post.type === 'Hiring' ? "bg-blue-50 text-blue-600 border-blue-100" :
+                               "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
                            )}>
                               {post.type}
                            </div>
@@ -314,7 +320,7 @@ export default function EliteHomeFeed() {
                            )}
 
                             {post.type === 'Opportunities' && (
-                               <div className="bg-[#292828] p-4 rounded-[1.5rem] border border-[#292828] mt-auto relative overflow-hidden group/deal-node shadow-xl">
+                               <div className="bg-[#292828] p-4 rounded-[0.975rem] border border-[#292828] mt-auto relative overflow-hidden group/deal-node shadow-xl">
                                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#E53935]/15 blur-[40px] pointer-events-none" />
                                   <div className="relative z-10">
                                      <div className="flex justify-between items-center mb-3">
@@ -345,6 +351,19 @@ export default function EliteHomeFeed() {
                               </div>
                            )}
 
+                           {post.type === 'Expo' && (
+                              <div className="relative h-28 w-full rounded-xl overflow-hidden mt-auto border border-[#292828]/10 group/grid-expo">
+                                 <img 
+                                   src="/expo-summit.png" 
+                                   className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/grid-expo:grayscale-0 group-hover/grid-expo:scale-110" 
+                                   alt="Expo" 
+                                 />
+                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2.5">
+                                    <p className="text-[8px] font-black text-white uppercase ">Book Entry</p>
+                                 </div>
+                              </div>
+                           )}
+
                            {!['Opportunities', 'Meeting'].includes(post.type) && post.images && (
                               <div className="h-24 w-full rounded-xl overflow-hidden border border-[#292828]/10 mt-auto">
                                  <img src={post.images[0]} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/post:grayscale-0" alt="" />
@@ -360,7 +379,7 @@ export default function EliteHomeFeed() {
                               >
                                  <Heart size={14} fill={post.isLiked ? "currentColor" : "none"} />
                               </button>
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-normal">{post.time}</span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase">{post.time}</span>
                            </div>
                            
                            <button 
@@ -372,7 +391,16 @@ export default function EliteHomeFeed() {
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-white border-slate-100 overflow-hidden transition-all duration-500 rounded-[2.5rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10 p-1">
+                      <div className="bg-white border-slate-100 overflow-hidden transition-all duration-500 rounded-[1.625rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10 p-1 relative group/list-card">
+                         <div className={cn(
+                            "absolute top-6 right-6 px-4 py-1.5 rounded-lg text-[12px] font-black uppercase border z-20 transition-all",
+                            post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : 
+                            post.type === 'Meeting' ? "bg-green-50 text-green-600 border-green-100" :
+                            post.type === 'Hiring' ? "bg-blue-50 text-blue-600 border-blue-100" :
+                            "bg-slate-50 text-slate-500 border-slate-100"
+                         )}>
+                            {post.type}
+                         </div>
                          <div className="px-6 pt-6 pb-4 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                                <div className="relative">
@@ -387,12 +415,6 @@ export default function EliteHomeFeed() {
                                <div>
                                   <div className="flex items-center gap-3">
                                      <Link href={`/profile/${post.authorId}`} className="text-[15px] font-bold text-[#292828] leading-tight hover:text-[#E53935] transition-colors">{post.author}</Link>
-                                     <div className={cn(
-                                        "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
-                                        post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : "bg-slate-50 text-slate-500 border-slate-100"
-                                     )}>
-                                        {post.type}
-                                     </div>
                                      {post.verified && <CheckCircle2 size={14} className="text-[#E53935]" />}
                                   </div>
                                   <p className="text-xs font-bold text-slate-400 uppercase mt-0.5 whitespace-nowrap flex items-center gap-2">
@@ -416,7 +438,7 @@ export default function EliteHomeFeed() {
                                      <div className="h-8 w-1 bg-red-500 shrink-0" />
                                      <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
-                                           <h4 className="text-[8px] font-black uppercase text-slate-400 ">Executive Insight</h4>
+                                           <h4 className="text-[8px] font-black uppercase text-slate-400 ">Business News</h4>
                                            <div className="flex items-center gap-1.5 grayscale opacity-50">
                                               <div className="h-1 w-1 bg-red-500 rounded-full animate-ping" />
                                               <span className="text-[8px] font-black text-[#292828] uppercase">Signal</span>
@@ -426,26 +448,26 @@ export default function EliteHomeFeed() {
                                            "{post.content}"
                                         </p>
                                         <div className="flex items-center gap-2 text-[8px] font-bold text-slate-400 uppercase">
-                                           <Globe size={10} /> {post.time} • Secure Broadcast
+                                           <Globe size={10} /> {post.time} • Public Post
                                         </div>
                                      </div>
                                   </div>
                                 </div>
-                            ) : post.type !== 'Opportunities' && (
-                              <p className="text-base text-slate-700 leading-relaxed font-medium line-clamp-3 group-hover/post:line-clamp-none transition-all">
-                                 {post.content}
-                              </p>
-                            )}
+                             ) : !['Opportunities', 'Hiring', 'Partnership', 'Meeting', 'Expo'].includes(post.type) && (
+                               <p className="text-base text-slate-700 leading-relaxed font-medium line-clamp-3 group-hover/post:line-clamp-none transition-all">
+                                  {post.content}
+                               </p>
+                             )}
 
                             {post.type === 'Opportunities' && (
                                <div className="mt-8 relative group/opp-terminal">
-                                  <div className="relative bg-[#292828] rounded-[3rem] overflow-hidden border border-[#292828] shadow-[0_48px_120px_rgba(0,0,0,0.15)] transition-all duration-700">
+                                  <div className="relative bg-[#292828] rounded-[1.95rem] overflow-hidden border border-[#292828] shadow-[0_48px_120px_rgba(0,0,0,0.15)] transition-all duration-700">
                                      <div className="absolute top-0 right-0 w-80 h-80 bg-[#E53935]/10 blur-[100px] pointer-events-none" />
                                      
                                      <div className="px-10 py-4 bg-black/30 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                            <div className="h-2 w-2 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[10px] font-black text-white/50 uppercase ">Strategic Marketplace Asset</span>
+                                           <span className="text-[10px] font-black text-white/50 uppercase ">Deal Opportunity</span>
                                         </div>
                                      </div>
 
@@ -463,7 +485,7 @@ export default function EliteHomeFeed() {
                                            
                                            <div className="flex gap-10">
                                               <div>
-                                                 <p className="text-[9px] font-black text-white/40 uppercase  mb-2">Network Authority Score</p>
+                                                 <p className="text-[9px] font-black text-white/40 uppercase  mb-2">Trust Score</p>
                                                  <div className="flex gap-1">
                                                     {[1,2,3,4,5,6,7,8].map(i => (
                                                        <div key={i} className={cn("h-1 w-5 rounded-full transition-colors", i <= 6 ? "bg-[#E53935]" : "bg-white/10")} />
@@ -475,9 +497,9 @@ export default function EliteHomeFeed() {
 
                                         <div className="shrink-0 relative group/value sm:mr-6">
                                            <div className="absolute -inset-4 bg-[#E53935]/15 rounded-full blur-2xl animate-pulse" />
-                                           <div className="relative w-48 py-10 rounded-[2.5rem] border border-white/20 bg-white/5 flex flex-col items-center justify-center p-6 backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.4)] transition-transform group-hover/opp-terminal:scale-105">
-                                              <p className="text-[10px] font-black text-white/50 uppercase  mb-3">Transactable Equity</p>
-                                              <p className="text-4xl font-black text-white  leading-none">{post.budget}</p>
+                                           <div className="relative w-[13.5rem] py-11 rounded-[1.625rem] border border-white/20 bg-white/5 flex flex-col items-center justify-center p-6 backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.4)] transition-transform group-hover/opp-terminal:scale-105">
+                                              <p className="text-[10px] font-black text-white/50 uppercase  mb-3">Bid Amount</p>
+                                              <p className="text-3xl lg:text-4xl font-black text-white  leading-none">{post.budget}</p>
                                            </div>
                                         </div>
                                      </div>
@@ -487,14 +509,14 @@ export default function EliteHomeFeed() {
                                            onClick={() => { setSelectedDeal(post); setIsModalOpen(true); }}
                                            className="h-16 bg-white/5 hover:bg-white/10 text-white border-t border-r border-white/10 text-xs font-black uppercase  transition-all flex items-center justify-center gap-4"
                                         >
-                                           Analyze Intelligence
+                                           View Project
                                            <ArrowUpRight size={16} className="text-[#E53935]" />
                                         </button>
                                         <button 
                                            onClick={() => setActiveBidPostId(post.id)}
                                            className="h-16 bg-[#E53935] text-white text-xs font-black uppercase  transition-all hover:bg-white hover:text-[#292828] shadow-2xl flex items-center justify-center gap-4"
                                         >
-                                           Initiate Bid
+                                           Send Offer
                                            <Zap size={16} />
                                         </button>
                                      </div>
@@ -506,9 +528,14 @@ export default function EliteHomeFeed() {
                                <div className="mt-6 p-4 rounded-3xl bg-white border-2 border-dashed border-green-200 flex items-center justify-between group/action hover:border-green-500 transition-all shadow-sm">
                                   <div className="flex items-center gap-4">
                                      <div className="h-12 w-12 rounded-2xl bg-[#292828] flex items-center justify-center text-white"><Calendar size={22} /></div>
-                                     <div className="grid grid-cols-2 gap-4">
-                                        <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Venue</p><p className="text-sm font-bold text-[#292828]">Hub Cafe</p></div>
-                                        <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Status</p><p className="text-sm font-bold text-green-600 flex items-center gap-1.5">Live <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" /></p></div>
+                                     <div className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-4">
+                                           <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Venue</p><p className="text-sm font-bold text-[#292828]">Hub Cafe</p></div>
+                                           <div><p className="text-xs font-bold uppercase text-[#292828] leading-none mb-1.5">Status</p><p className="text-sm font-bold text-green-600 flex items-center gap-1.5">Live <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" /></p></div>
+                                        </div>
+                                        <p className="text-[11px] font-medium text-[#292828]/60 leading-tight line-clamp-1">
+                                           {post.content}
+                                        </p>
                                      </div>
                                   </div>
                                    <button 
@@ -531,7 +558,10 @@ export default function EliteHomeFeed() {
                                       </div>
                                       <div>
                                          <p className="text-xs font-bold uppercase text-white/40 leading-none mb-1">Job Opening</p>
-                                         <p className="text-sm font-bold uppercase">Principal Engineer</p>
+                                         <p className="text-sm font-bold uppercase mb-2">Principal Engineer</p>
+                                         <p className="text-[11px] font-medium text-white/60 leading-relaxed line-clamp-2">
+                                            {post.content}
+                                         </p>
                                       </div>
                                    </div>
                                    <button className="relative z-10 h-10 px-6 bg-red-600 text-white rounded-xl text-xs font-bold uppercase active:scale-95 transition-all shadow-lg shadow-red-500/20">Apply Now</button>
@@ -539,7 +569,7 @@ export default function EliteHomeFeed() {
                              )}
 
                              {post.type === 'Partnership' && (
-                                <div className="mt-6 p-0 rounded-[2rem] bg-white border-2 border-[#292828] flex flex-col overflow-hidden shadow-2xl shadow-[#292828]/5 group/action hover:shadow-[#292828]/10 transition-all">
+                                <div className="mt-6 p-0 rounded-[1.3rem] bg-white border-2 border-[#292828] flex flex-col overflow-hidden shadow-2xl shadow-[#292828]/5 group/action hover:shadow-[#292828]/10 transition-all">
                                    <div className="bg-[#292828] px-6 py-3 flex items-center justify-between">
                                       <div className="flex items-center gap-2.5">
                                          <Target size={16} className="text-red-500" />
@@ -560,23 +590,45 @@ export default function EliteHomeFeed() {
                                             ))}
                                          </div>
                                          <div className="flex-1 min-w-0 text-center md:text-left">
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#292828]/5 border border-[#292828]/10 mb-2">
-                                               <p className="text-xs font-bold uppercase text-[#292828]">Details</p>
-                                            </div>
-                                            <p className="text-sm font-bold text-[#292828] leading-tight line-clamp-2">Scaling Logistics • Joint MSME Venture</p>
+                                            <p className="text-sm font-bold text-[#292828] leading-tight line-clamp-2">
+                                               {post.content}
+                                            </p>
                                          </div>
                                          <button 
-                                           onClick={() => alert(`Strategic Proposal transmitted for project ID: ${post.id}. Target partners will be notified immediately.`)}
+                                           onClick={() => alert(`Offer transmitted for project ID: ${post.id}. Target partners will be notified immediately.`)}
                                            className="shrink-0 w-full md:w-auto h-11 px-8 bg-red-600 text-white rounded-xl text-xs font-bold uppercase hover:bg-[#292828] transition-all shadow-lg active:scale-95"
                                          >
-                                            Send Proposal
+                                            Send Offer
                                          </button>
                                       </div>
                                    </div>
                                 </div>
                              )}
 
-                            {post.images && (
+                             {post.type === 'Expo' && (
+                                <div className="mt-4 flex flex-col gap-4">
+                                   <div className="relative h-48 w-full rounded-2xl overflow-hidden shadow-xl group/expo-img">
+                                      <img 
+                                        src="/expo-summit.png" 
+                                        className="w-full h-full object-cover group-hover/expo-img:scale-105 transition-transform duration-700" 
+                                        alt="Expo Thumbnail" 
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                      <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
+                                         <div>
+                                            <p className="text-[10px] font-black uppercase text-red-500 mb-1">Upcoming Event</p>
+                                            <h4 className="text-xl font-black text-white uppercase">Global Trade Summit 2026</h4>
+                                         </div>
+                                         <button className="h-10 px-6 bg-red-600 text-white rounded-xl text-xs font-black uppercase active:scale-95 transition-all shadow-lg hover:bg-white hover:text-[#292828]">Book Ticket</button>
+                                      </div>
+                                   </div>
+                                   <p className="text-sm font-medium text-slate-600 leading-relaxed px-2">
+                                      {post.content}
+                                   </p>
+                                </div>
+                             )}
+
+                             {post.images && (
                                <div className="rounded-2xl overflow-hidden border border-[#292828]/10 shadow-lg lg:grayscale transition-all duration-700 group-hover/post:grayscale-0">
                                   <img src={post.images[0]} alt="" className="w-full h-full object-cover" />
                                </div>
@@ -643,46 +695,74 @@ export default function EliteHomeFeed() {
 
       <aside className="hidden lg:flex flex-col w-[400px] h-screen sticky top-0 bg-slate-50/50 p-6 lg:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50">
          <div className="group/hub">
-            <Link href="/explore">
+            <div onClick={() => setIsMapExpanded(true)}>
                <div className="flex items-center justify-between mb-6 px-1 cursor-pointer">
                   <div className="flex items-center gap-3">
                      <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-ping" />
-                     <h4 className="text-xs font-bold text-[#292828] uppercase">Live Map</h4>
+                     <h4 className="text-xs font-bold text-[#292828] uppercase">Explore Channels</h4>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[#292828]/10 rounded-xl shadow-sm">
                      <span className="h-1.5 w-1.5 bg-green-500 rounded-full" />
-                     <span className="text-xs font-bold text-[#292828] uppercase">Active Now</span>
+                     <span className="text-xs font-bold text-[#292828] uppercase">Live City Hub</span>
                   </div>
                </div>
                
-               <div className="relative h-[320px] bg-[#F1F5F9] rounded-[3.5rem] overflow-hidden shadow-[0_30px_60px_rgba(41,40,40,0.1)] group transition-all duration-700 ring-4 ring-white cursor-pointer group-hover/hub:ring-[#E53935]/10">
-                  <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#292828_1px,transparent_1px)] [background-size:15px_15px]" />
+               <div className="relative h-[400px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(41,40,40,0.12)] group transition-all duration-700 ring-8 ring-white cursor-pointer hover:ring-[#E53935]/5 group-hover/hub:shadow-2xl">
+                  <div className="absolute inset-0 opacity-[0.15] bg-[radial-gradient(#292828_1.2px,transparent_1.2px)] [background-size:24px_24px]" />
                   
-                  <svg className="absolute inset-0 w-full h-full text-[#292828]/40 pointer-events-none scale-75 -translate-x-10" viewBox="0 0 400 320" fill="none">
-                     <path d="M0,0 L120,0 C130,50 110,150 140,200 C160,250 130,300 120,320 L0,320 Z" fill="currentColor" fillOpacity="0.1" />
-                     <path d="M120,0 C130,50 110,150 140,200 C160,250 130,300 120,320" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" strokeDasharray="5 5" />
-                     <path d="M140,40 L400,40 M140,120 L400,120 M140,200 L400,200 M140,280 L400,280" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.1" />
-                  </svg>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] scale-150 opacity-20 group-hover/hub:scale-[1.6] group-hover/hub:opacity-30 transition-all duration-1000">
+                     <svg className="w-[400px] h-[320px] text-[#292828]/60" viewBox="0 0 400 320" fill="none">
+                        <path d="M0,0 L120,0 C130,50 110,150 140,200 C160,250 130,300 120,320 L0,320 Z" fill="currentColor" />
+                        <path d="M120,0 C130,50 110,150 140,200 C160,250 130,300 120,320" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" />
+                     </svg>
+                  </div>
 
-                  <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-white/90 via-white/40 to-transparent z-20">
+                  {/* MINIATURE ACTIVITY NODES */}
+                  <div className="absolute inset-0 z-10 pointer-events-none">
+                     {[1,2,3,4,5,6,7].map(i => (
+                        <div 
+                           key={i}
+                           className="absolute h-1.5 w-1.5 rounded-full animate-ping opacity-60"
+                           style={{ 
+                              left: `${30 + (i * 13)%50}%`, 
+                              top: `${35 + (i * 9)%40}%`,
+                              backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
+                              animationDelay: `${i * 0.4}s`
+                           }} 
+                        />
+                     ))}
+                     {[1,2,3,4,5,6,7].map(i => (
+                        <div 
+                           key={i}
+                           className="absolute h-1.5 w-1.5 rounded-full shadow-lg"
+                           style={{ 
+                              left: `${30 + (i * 13)%50}%`, 
+                              top: `${35 + (i * 9)%40}%`,
+                              backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
+                           }} 
+                        />
+                     ))}
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-white via-white/80 to-transparent z-20">
                      <div className="flex items-end justify-between">
-                        <div>
-                           <p className="text-3xl font-bold text-[#292828] mb-1 uppercase">Trivandrum</p>
-                           <p className="text-xs font-bold text-[#E53935] uppercase">Live City Hub</p>
+                        <div className="space-y-1">
+                           <h2 className="text-4xl font-black text-[#292828] uppercase tracking-tighter">Trivandrum</h2>
+                           <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">Regional Protocol V.6</p>
                         </div>
-                        <div className="bg-[#292828] px-4 py-3 rounded-2xl border border-slate-800 text-right shadow-xl">
-                           <p className="text-2xl font-bold text-white leading-none mb-1">1.4k</p>
-                           <p className="text-[10px] font-bold uppercase text-white/40">Active Nodes</p>
+                        <div className="bg-[#292828] px-5 py-4 rounded-[1.25rem] border border-white/10 text-right shadow-2xl transform group-hover/hub:scale-105 transition-transform">
+                           <p className="text-3xl font-black text-white leading-none mb-1">1.4k</p>
+                           <p className="text-[9px] font-black uppercase text-white/40">Active Nodes</p>
                         </div>
                      </div>
                   </div>
                </div>
-            </Link>
+            </div>
          </div>
 
          <div className="relative group/sync overflow-hidden shrink-0">
-            <div className="absolute inset-0 bg-[#E53935] rounded-[2.5rem] blur-3xl opacity-10 group-hover/sync:opacity-20 transition-opacity" />
-            <div className="relative p-8 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[2.5rem] shadow-2xl overflow-hidden group">
+            <div className="absolute inset-0 bg-[#E53935] rounded-[1.625rem] blur-3xl opacity-10 group-hover/sync:opacity-20 transition-opacity" />
+            <div className="relative p-8 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[1.625rem] shadow-2xl overflow-hidden group">
                <TrendingUp size={140} className="absolute -right-10 -bottom-10 text-white/10 group-hover/sync:rotate-12 transition-transform duration-[4s]" />
                <div className="relative z-10 space-y-6">
                   <div className="flex items-center gap-4">
@@ -691,7 +771,7 @@ export default function EliteHomeFeed() {
                      </div>
                      <div>
                         <h3 className="text-lg font-bold text-white uppercase leading-tight">Smart Match Engine</h3>
-                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-normal">12 Strategic MSME matches identified</p>
+                        <p className="text-white/60 text-[10px] font-bold uppercase">12 Strategic MSME matches identified</p>
                      </div>
                   </div>
                   <button 
@@ -709,7 +789,7 @@ export default function EliteHomeFeed() {
          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 lg:p-10">
             <div className="absolute inset-0 bg-[#292828]/95 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => setIsMatching(false)} />
             
-            <div className="relative w-full max-w-4xl bg-white rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
+            <div className="relative w-full max-w-4xl bg-white rounded-[2.275rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
                {matchingStep === 1 ? (
                   <div className="p-20 flex flex-col items-center justify-center text-center">
                      <div className="relative h-40 w-40 mb-12">
@@ -720,15 +800,15 @@ export default function EliteHomeFeed() {
                            <Users size={48} className="text-[#292828] animate-pulse" />
                         </div>
                      </div>
-                     <h3 className="text-3xl font-bold text-[#292828] uppercase mb-4 tracking-normal">Scanning Smart Network</h3>
-                     <p className="text-slate-400 font-bold uppercase text-[13px] tracking-normal mb-8">AI Matching Hub • MSME Kerala Region</p>
+                     <h3 className="text-3xl font-bold text-[#292828] uppercase mb-4">Scanning Smart Network</h3>
+                     <p className="text-slate-400 font-bold uppercase text-[13px] mb-8">AI Matching Hub • MSME Kerala Region</p>
                   </div>
                ) : (
                   <div className="flex flex-col h-full max-h-[90vh]">
                      <div className="bg-[#292828] px-10 py-10 flex items-center justify-between shrink-0">
                         <div>
                            <h3 className="text-3xl font-bold text-white uppercase leading-none mb-2">Network Sync Found</h3>
-                           <p className="text-white/40 font-bold text-xs uppercase tracking-normal">12 Strategic MSME matches in your sector</p>
+                           <p className="text-white/40 font-bold text-xs uppercase">12 Strategic MSME matches in your sector</p>
                         </div>
                         <button onClick={() => setIsMatching(false)} className="h-12 w-12 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center text-white transition-all">
                            <X size={24} />
@@ -739,7 +819,7 @@ export default function EliteHomeFeed() {
                           { name: "Global Logistics Ltd", distance: "4.2km", match: "98%", type: "Wholesaler" },
                           { name: "Techno Distribution", distance: "8.1km", match: "94%", type: "Distributor" }
                         ].map((partner, i) => (
-                           <div key={i} className="group p-6 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-2xl transition-all flex items-center justify-between">
+                           <div key={i} className="group p-6 rounded-[1.625rem] bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-2xl transition-all flex items-center justify-between">
                               <div className="flex items-center gap-6">
                                  <div className="h-16 w-16 rounded-2xl bg-[#292828] flex items-center justify-center text-white shadow-lg group-hover:bg-[#E53935] transition-colors">
                                     <Building size={28} />
@@ -767,6 +847,20 @@ export default function EliteHomeFeed() {
           onClose={() => setIsModalOpen(false)} 
           deal={selectedDeal} 
         />
+      )}
+      {/* CINEMATIC MAP EXPANSION OVERLAY */}
+      {isMapExpanded && (
+        <div className="fixed inset-0 z-[100] bg-white animate-in zoom-in-95 duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]">
+           <div className="absolute top-8 right-8 z-[110]">
+              <button 
+                onClick={() => setIsMapExpanded(false)}
+                className="h-14 w-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center shadow-2xl hover:bg-[#E53935] transition-all active:scale-95"
+              >
+                 <X size={28} />
+              </button>
+           </div>
+           <LiveMap posts={posts} />
+        </div>
       )}
     </div>
   );

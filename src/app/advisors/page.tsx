@@ -62,7 +62,7 @@ const CATEGORIES = [
   { name: "Tech", icon: Zap, color: "bg-orange-50 text-orange-600" }
 ];
 
-export default function EliteAdvisorsPortal() {
+export default function BusinessAdvisorsPortal() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [activeCategory, setActiveCategory] = useState("Scaling");
   const [search, setSearch] = useState("");
@@ -96,7 +96,7 @@ export default function EliteAdvisorsPortal() {
       <div className="px-6 lg:px-12 pt-12">
          <div className="mb-8">
             <h1 className="text-4xl font-black text-[#292828] mb-2 leading-tight uppercase">Expert <span className="text-[#E53935]">Help</span>.</h1>
-            <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-2 block">Get help from verified experts in your city.</p>
+            <p className="text-slate-500 font-bold text-sm uppercase mt-2 block">Get help from verified experts in your city.</p>
          </div>
          
          <div className="flex flex-wrap gap-2 mb-10">
@@ -125,7 +125,7 @@ export default function EliteAdvisorsPortal() {
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
                  placeholder="Search for help..." 
-                 className="w-full h-20 bg-white border border-[#292828]/10 rounded-[2rem] pl-16 pr-8 text-[16px] font-bold text-[#292828] outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all"
+                 className="w-full h-20 bg-white border border-[#292828]/10 rounded-[1.3rem] pl-16 pr-8 text-[16px] font-bold text-[#292828] outline-none focus:border-[#E53935]/20 focus:ring-8 focus:ring-red-500/5 shadow-2xl shadow-slate-200/20 transition-all"
                />
             </div>
 
@@ -148,13 +148,13 @@ export default function EliteAdvisorsPortal() {
              <div key={adv.id} className="group/adv relative">
                 <div className={cn(
                    "bg-white border-[#F2F4F7] overflow-hidden transition-all duration-500 shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/20",
-                   view === "grid" ? "rounded-[2rem] border-2 flex flex-col p-1" : "rounded-[2rem] border flex items-center p-6"
+                   view === "grid" ? "rounded-[1.3rem] border-2 flex flex-col p-1" : "rounded-[1.3rem] border flex items-center p-6"
                 )}>
                    
                    {/* Visual Section */}
                    <Link href={`/profile/${adv.id}`} className={cn(
                       "relative overflow-hidden block",
-                      view === "grid" ? "h-60 rounded-[1.75rem]" : "h-24 w-24 rounded-2xl shrink-0"
+                      view === "grid" ? "h-60 rounded-[1.1375rem]" : "h-24 w-24 rounded-2xl shrink-0"
                    )}>
                       <img src={adv.avatar} className="w-full h-full object-cover grayscale transition-all duration-[2s] group-hover/adv:grayscale-0 group-hover/adv:scale-110" alt="" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover/adv:opacity-100 transition-opacity" />
@@ -232,11 +232,11 @@ export default function EliteAdvisorsPortal() {
       {/* 3. BOOKING ENGINE MODAL (UNCHANGED LOGIC, POLISHED UI) */}
       {selectedAdv && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/40 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="relative w-full max-w-4xl bg-white rounded-[4rem] overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500 flex flex-col lg:flex-row h-[80vh]">
+           <div className="relative w-full max-w-4xl bg-white rounded-[2.6rem] overflow-hidden shadow-4xl animate-in zoom-in-95 duration-500 flex flex-col lg:flex-row h-[80vh]">
               
               {/* Profile Bar */}
               <div className="w-full lg:w-[320px] bg-[#292828]/5 p-12 flex flex-col items-center text-center">
-                 <div className="h-32 w-32 rounded-[2.5rem] overflow-hidden shadow-2xl mb-8 border-4 border-white">
+                 <div className="h-32 w-32 rounded-[1.625rem] overflow-hidden shadow-2xl mb-8 border-4 border-white">
                     <img src={selectedAdv.avatar} className="w-full h-full object-cover" alt="" />
                  </div>
                  <h2 className="text-2xl font-black text-[#292828] mb-1 uppercase">{selectedAdv.name}</h2>
@@ -312,7 +312,7 @@ export default function EliteAdvisorsPortal() {
                        onClick={handleBooking}
                        disabled={!selectedDate || !selectedTime || bookingStatus !== "idle"}
                        className={cn(
-                         "px-12 h-16 rounded-[1.5rem] font-black text-[12px] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3",
+                         "px-12 h-16 rounded-[0.975rem] font-black text-[12px] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3",
                          bookingStatus === "success" ? "bg-green-500 text-white" : "bg-[#E53935] text-white"
                        )}
                      >

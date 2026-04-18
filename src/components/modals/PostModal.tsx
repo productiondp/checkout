@@ -27,7 +27,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-4xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-white rounded-t-[1.625rem] sm:rounded-[1.625rem] overflow-hidden shadow-4xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
         
         <div className="p-6 border-b border-[#292828]/5 flex items-center justify-between bg-white sticky top-0 z-10">
           <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={`Share a business ${type.toLowerCase()}...`}
-            className="w-full bg-[#292828]/5 p-6 rounded-[1.5rem] border-2 border-transparent text-base font-bold text-[#292828] placeholder:text-[#292828]/20 outline-none resize-none min-h-[160px] focus:border-[#E53935]/20 focus:bg-white transition-all"
+            className="w-full bg-[#292828]/5 p-6 rounded-[0.975rem] border-2 border-transparent text-base font-bold text-[#292828] placeholder:text-[#292828]/20 outline-none resize-none min-h-[160px] focus:border-[#E53935]/20 focus:bg-white transition-all"
           />
 
           <div className="grid grid-cols-2 gap-4">

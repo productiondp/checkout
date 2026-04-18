@@ -121,9 +121,9 @@ export default function CommunityPage() {
                     <div>
                        <h1 className="text-3xl font-black text-[#292828] leading-tight">{activeGroup.name}</h1>
                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold text-[#E53935] uppercase tracking-widest">{activeGroup.members} Live Capacity</span>
+                          <span className="text-xs font-bold text-[#E53935] uppercase">{activeGroup.members} Live Capacity</span>
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{activeGroup.topic}</span>
+                          <span className="text-xs font-bold text-slate-500 uppercase">{activeGroup.topic}</span>
                        </div>
                     </div>
                  </div>
@@ -133,7 +133,7 @@ export default function CommunityPage() {
               <div className="p-4 lg:p-6 border-b-2 border-[#292828]/5">
                  <div className="flex gap-2 mb-3">
                     {activeGroup.tags.map(tag => (
-                       <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-black uppercase tracking-widest">{tag}</span>
+                       <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-black uppercase">{tag}</span>
                     ))}
                  </div>
                  <h2 className="text-2xl font-black text-[#292828] leading-tight mb-6">"{activeGroup.threadTitle}"</h2>
@@ -169,7 +169,7 @@ export default function CommunityPage() {
 
               {/* REPLIES */}
               <div className="p-4 lg:p-6 space-y-4">
-                 <h3 className="text-xs font-black uppercase tracking-widest text-[#292828]/40 mb-4">{activeGroup.replies.length} Responses</h3>
+                 <h3 className="text-xs font-black uppercase text-[#292828]/40 mb-4">{activeGroup.replies.length} Responses</h3>
                   {activeGroup.replies.map((reply: any) => (
                     <div key={reply.id} className="space-y-4">
                        <div className="flex gap-4 relative group">
@@ -233,7 +233,7 @@ export default function CommunityPage() {
               <div className="sticky top-8">
                  <div className="flex items-center gap-2 mb-6 text-[#E53935]">
                     <Sparkles size={18} />
-                    <h3 className="text-[11px] font-black uppercase tracking-widest text-[#292828]">People to meet</h3>
+                    <h3 className="text-[11px] font-black uppercase text-[#292828]">People to meet</h3>
                  </div>
                  <p className="text-xs font-medium text-slate-500 mb-8">Profiles structurally matched to this thread's domain logic.</p>
                  
@@ -268,7 +268,7 @@ export default function CommunityPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
            <h1 className="text-4xl font-black text-[#292828] mb-2 leading-tight">Groups</h1>
-           <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-2 block">Join groups and talk to people in your industry.</p>
+           <p className="text-slate-500 font-bold text-sm uppercase mt-2 block">Join groups and talk to people in your industry.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
@@ -276,10 +276,10 @@ export default function CommunityPage() {
               New Group <Plus size={16} />
            </button>
            <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-xl">
-              <button onClick={() => setViewMode("list")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm tracking-widest" : "text-[#292828]/40 hover:text-[#292828] tracking-widest")}>
+              <button onClick={() => setViewMode("list")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
                  <ListIcon size={14} /> List
               </button>
-              <button onClick={() => setViewMode("grid")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm tracking-widest" : "text-[#292828]/40 hover:text-[#292828] tracking-widest")}>
+              <button onClick={() => setViewMode("grid")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
                  <LayoutGrid size={14} /> Grid
               </button>
            </div>
@@ -287,7 +287,7 @@ export default function CommunityPage() {
       </div>
       
       {isCreating ? (
-         <div className="max-w-2xl bg-white border border-[#292828]/10 rounded-[3rem] p-10 shadow-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+         <div className="max-w-2xl bg-white border border-[#292828]/10 rounded-[1.95rem] p-10 shadow-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <button onClick={() => setIsCreating(false)} className="flex items-center gap-2 text-[10px] font-black uppercase text-[#292828]/40 hover:text-[#E53935] transition-colors mb-8">
                <ArrowLeft size={14} /> Cancel Creation
             </button>
@@ -295,15 +295,15 @@ export default function CommunityPage() {
             
             <div className="space-y-6">
                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Cluster Name</label>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Cluster Name</label>
                   <input type="text" value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})} placeholder="e.g. Export Logistics Strategy" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
                </div>
                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Primary Topic</label>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Primary Topic</label>
                   <input type="text" value={newGroup.topic} onChange={e => setNewGroup({...newGroup, topic: e.target.value})} placeholder="e.g. International Shipping Frameworks" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
                </div>
                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Tags (Comma Separated)</label>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Tags (Comma Separated)</label>
                   <input type="text" value={newGroup.tags} onChange={e => setNewGroup({...newGroup, tags: e.target.value})} placeholder="e.g. Scaling, Taxes, Supply Chain" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
                </div>
                
@@ -320,16 +320,16 @@ export default function CommunityPage() {
         {groups.map(group => (
           <div key={group.id} className={cn(
              "p-5 lg:p-6 bg-white border border-[#292828]/10 hover:shadow-3xl hover:border-[#E53935]/30 transition-all duration-500 group cursor-pointer",
-             viewMode === "grid" ? "rounded-[2.5rem] flex flex-col h-full" : "rounded-[2rem] flex flex-col lg:flex-row items-center gap-4 lg:gap-6 justify-between"
+             viewMode === "grid" ? "rounded-[1.625rem] flex flex-col h-full" : "rounded-[1.3rem] flex flex-col lg:flex-row items-center gap-4 lg:gap-6 justify-between"
           )} onClick={() => setActiveGroup(group)}>
              
              <div className={cn("flex items-center gap-5", viewMode === "list" && "w-full lg:w-1/4 shrink-0")}>
-                   <div className={cn("h-16 w-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-slate-200 shrink-0", group.color)}>
+                   <div className={cn("h-16 w-16 rounded-[0.975rem] flex items-center justify-center text-white shadow-xl shadow-slate-200 shrink-0", group.color)}>
                       <Users size={24} />
                    </div>
                    <div>
                       <h3 className="text-2xl font-bold text-[#292828] mb-1 group-hover:text-[#E53935] transition-colors">{group.name}</h3>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{group.members} Capacity • Regional</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase">{group.members} Capacity • Regional</p>
                    </div>
                 </div>
              <div className={cn("p-4 lg:p-5 bg-[#292828]/5 rounded-2xl border border-transparent group-hover:bg-[#E53935]/5 group-hover:border-[#E53935]/10 transition-all relative overflow-hidden", viewMode === "grid" ? "mb-4 flex-1 mt-4" : "flex-1 w-full")}>
@@ -338,7 +338,7 @@ export default function CommunityPage() {
                 </div>
                 <div className="flex items-center gap-2 mb-2 lg:mb-2 relative z-10">
                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                   <p className="text-xs font-black text-[#292828] uppercase tracking-widest">Active Thread</p>
+                   <p className="text-xs font-black text-[#292828] uppercase">Active Thread</p>
                 </div>
                 <p className={cn("font-black text-[#292828] leading-snug relative z-10", viewMode === "grid" ? "text-lg" : "text-xl line-clamp-2")}>"{group.threadTitle}"</p>
              </div>
@@ -351,7 +351,7 @@ export default function CommunityPage() {
                    </div>
                    <span className="text-xs font-bold text-slate-500 uppercase">{group.replies.length} Replies</span>
                 </div>
-                <button className="w-full h-12 bg-[#292828] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest group-hover:bg-[#E53935] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 px-6">
+                <button className="w-full h-12 bg-[#292828] text-white rounded-xl font-bold text-[10px] uppercase group-hover:bg-[#E53935] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 px-6">
                    Open <ArrowRight size={14} className={cn("transition-transform group-hover:translate-x-1", viewMode === "list" && "hidden lg:block")} />
                 </button>
              </div>

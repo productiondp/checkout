@@ -82,7 +82,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[500px] bg-[#FDFDFF] rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+      <div className="relative w-full max-w-[500px] bg-[#FDFDFF] rounded-[1.625rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
         
         {/* Close Button */}
         <button 
@@ -97,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           
           {/* Header */}
           <div className="space-y-1 pt-2 text-center">
-            <h2 className="text-3xl font-black tracking-tighter text-[#292828]">
+            <h2 className="text-3xl font-black text-[#292828]">
               {mode === "signin" ? "Welcome Back." : "Join Network."}
             </h2>
             <p className="text-[#292828] font-bold text-[13px]">
@@ -114,7 +114,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                 <button
                    key={r}
                    onClick={() => setRole(r)}
-                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all ${
                       role === r ? "bg-white text-[#292828] shadow-lg" : "text-[#292828] hover:text-[#292828]"
                    }`}
                 >
@@ -192,7 +192,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                <button 
                  type="submit"
                  disabled={isLoading || isSuccess}
-                 className={`w-full py-4 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-2 ${
+                 className={`w-full py-4 rounded-xl font-black text-[12px] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-2 ${
                    isLoading ? "bg-slate-800 text-white cursor-wait" : "bg-[#292828] text-white hover:bg-[#E53935]"
                  }`}
                >
@@ -205,14 +205,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           <div className="pt-4 text-center">
              <button 
                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-               className="text-[11px] font-black uppercase tracking-widest text-[#292828] hover:text-[#E53935] transition-colors"
+               className="text-[11px] font-black uppercase text-[#292828] hover:text-[#E53935] transition-colors"
              >
                {mode === "signin" ? "New here? Create Account" : "Registered? Sign In Instead"}
              </button>
           </div>
 
           <div className="grid grid-cols-1 gap-3 pt-2">
-             <button className="py-3.5 border border-slate-200 bg-white rounded-xl hover:border-[#E53935]/20 transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3">
+             <button className="py-3.5 border border-slate-200 bg-white rounded-xl hover:border-[#E53935]/20 transition-all text-[10px] font-black uppercase flex items-center justify-center gap-3">
                 <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google" className="h-4 w-4" />
                 Google Access
              </button>

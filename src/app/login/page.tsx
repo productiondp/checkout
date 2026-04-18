@@ -78,7 +78,7 @@ function AuthContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FDFDFF] text-[#292828] font-sans tracking-tight">
+    <div className="flex flex-col min-h-screen bg-[#FDFDFF] text-[#292828] font-sans">
       
       {/* Brand Header */}
       <header className="p-8 lg:p-12 flex justify-between items-center relative z-20">
@@ -87,7 +87,7 @@ function AuthContent() {
          </Link>
          <button 
            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-           className="text-[12px] font-black uppercase tracking-widest text-[#E53935] hover:opacity-70 transition-all flex items-center gap-2"
+           className="text-[12px] font-black uppercase text-[#E53935] hover:opacity-70 transition-all flex items-center gap-2"
          >
            {mode === "signin" ? "New here? Join Now" : "Already a member? Sign In"}
            <ArrowRight size={14} />
@@ -104,7 +104,7 @@ function AuthContent() {
             
             {/* Header Content */}
             <div className="space-y-4 text-center">
-               <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-[#292828] transition-all">
+               <h1 className="text-4xl lg:text-5xl font-black text-[#292828] transition-all">
                   {mode === "signin" ? "Welcome Back." : "Create Account."}
                </h1>
                <p className="text-[#292828] font-bold opacity-70">
@@ -117,14 +117,14 @@ function AuthContent() {
 
             {/* Role Switcher (Only for signup) */}
             <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828] text-center">Define Your Profile</p>
+              <p className="text-[10px] font-black uppercase text-[#292828] text-center">Define Your Profile</p>
               <div className="flex p-1.5 bg-[#292828]/10 rounded-2xl border border-slate-200/50">
                  {(["Business", "Professional", "Student"] as const).map((r) => (
                     <button
                        key={r}
                        type="button"
                        onClick={() => setRole(r)}
-                       className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                       className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
                           role === r ? "bg-white text-[#292828] shadow-xl border border-[#292828]/10" : "text-[#292828] hover:text-[#292828]"
                        }`}
                     >
@@ -204,7 +204,7 @@ function AuthContent() {
 
                {mode === "signin" && (
                  <div className="flex justify-end pr-2">
-                    <button type="button" className="text-[10px] font-black text-[#E53935] uppercase tracking-widest hover:underline">
+                    <button type="button" className="text-[10px] font-black text-[#E53935] uppercase hover:underline">
                        Forgot Password?
                     </button>
                  </div>
@@ -214,7 +214,7 @@ function AuthContent() {
                <button 
                  type="submit"
                  disabled={isLoading || isSuccess}
-                 className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-6 ${
+                 className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-6 ${
                    isLoading ? "bg-slate-800 text-white cursor-wait" : "bg-[#292828] text-white hover:bg-[#E53935]"
                  }`}
                >
@@ -228,18 +228,18 @@ function AuthContent() {
                <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-200/50"></div>
                </div>
-               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+               <div className="relative flex justify-center text-[10px] font-black uppercase">
                   <span className="bg-[#FDFDFF] px-4 text-[#292828]/40">Fast Access via</span>
                </div>
             </div>
 
             {/* Social Buttons */}
             <div className="grid grid-cols-2 gap-4">
-               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3">
+               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3">
                   <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google" className="h-4 w-4" />
                   Google
                </button>
-               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3">
+               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3">
                   <ShieldCheck size={16} className="text-[#E53935]" />
                   Passkey
                </button>

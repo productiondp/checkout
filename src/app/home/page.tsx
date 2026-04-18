@@ -45,6 +45,25 @@ const BUSINESS_LEAD_TITLES = [
   "Other (Custom Title)"
 ];
 
+const BUSINESS_REQUIREMENTS = [
+  "Service Required",
+  "Capital Needed",
+  "Asset Acquisition",
+  "Market Expansion",
+  "Tech Development",
+  "Distribution Reach",
+  "Other"
+];
+
+const TASK_TYPES = [
+  "Consultation",
+  "Implementation",
+  "Outsourcing",
+  "Advisory",
+  "Procurement",
+  "Strategic Audit"
+];
+
 export default function EliteHomeFeed() {
   const [posts, setPosts] = useState(DUMMY_POSTS);
   const [activeTab, setActiveTab] = useState<string>("All");
@@ -67,6 +86,10 @@ export default function EliteHomeFeed() {
   const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
+  const [requirement, setRequirement] = useState("Service Required");
+  const [taskType, setTaskType] = useState("Consultation");
+  const [isNDAProtected, setIsNDAProtected] = useState(false);
+  const [isUrgent, setIsUrgent] = useState(false);
 
   const handlePost = () => {
     if (!postContent.trim() && !attachment) return;
@@ -89,7 +112,11 @@ export default function EliteHomeFeed() {
       verified: true,
       likes: 0,
       isLiked: false,
-      comments: []
+      comments: [],
+      requirement: selectedPostType === 'Business Leads' ? requirement : undefined,
+      taskType: selectedPostType === 'Business Leads' ? taskType : undefined,
+      isNDA: isNDAProtected,
+      isUrgent: isUrgent
     };
 
     setPosts([newPostObj, ...posts]);
@@ -173,7 +200,7 @@ export default function EliteHomeFeed() {
                   ))}
                </div>
                 <div className="flex items-center gap-2">
-                   <div className="flex bg-[#292828]/10/50 p-1 rounded-xl">
+                   <div className="flex bg-[#292828]/5 p-1 rounded-xl">
                       <button onClick={() => setViewMode("list")} className={cn("h-7 px-3 rounded-lg text-xs font-bold uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828] hover:text-[#292828]")}>List</button>
                       <button onClick={() => setViewMode("grid")} className={cn("h-7 px-3 rounded-lg text-xs font-bold uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828] hover:text-[#292828]")}>Grid</button>
                    </div>
@@ -247,50 +274,64 @@ export default function EliteHomeFeed() {
 
                      <div className="space-y-4">
                         {selectedPostType === 'Business Leads' && (
-                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-                              <div className="space-y-2">
-                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Title</label>
-                                 <div className="relative">
+                           <div className="space-y-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                 <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase text-slate-400 ml-2">Lead Title</label>
                                     <select 
                                       value={businessLeadTitle}
                                       onChange={(e) => setBusinessLeadTitle(e.target.value)}
-                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
+                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#E53935]/20 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
                                     >
                                        <option disabled>Select Title</option>
                                        {BUSINESS_LEAD_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#292828]/30">
-                                       <ChevronRight size={14} className="rotate-90" />
-                                    </div>
                                  </div>
-                                 {businessLeadTitle === "Other (Custom Title)" && (
+                                 <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase text-slate-400 ml-2">Requirement</label>
+                                    <select 
+                                      value={requirement}
+                                      onChange={(e) => setRequirement(e.target.value)}
+                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#E53935]/20 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                       {BUSINESS_REQUIREMENTS.map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
+                                 </div>
+                                 <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase text-slate-400 ml-2">Task Type</label>
+                                    <select 
+                                      value={taskType}
+                                      onChange={(e) => setTaskType(e.target.value)}
+                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#E53935]/20 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                       {TASK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                 </div>
+                                 <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase text-slate-400 ml-2">Budget (USD)</label>
                                     <input 
                                       type="text" 
-                                      value={customTitle}
-                                      onChange={(e) => setCustomTitle(e.target.value)}
-                                      placeholder="Enter custom title..."
-                                      className="w-full h-10 bg-white px-4 rounded-xl border border-[#292828]/10 mt-2 text-xs font-bold text-[#292828] outline-none focus:border-[#E53935]/30 transition-all animate-in slide-in-from-top-2 duration-300"
+                                      value={budget}
+                                      onChange={(e) => setBudget(e.target.value)}
+                                      placeholder="e.g. $10k - $50k" 
+                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#E53935]/20 text-sm font-bold text-[#292828] outline-none transition-all" 
                                     />
-                                 )}
+                                 </div>
                               </div>
-                              <div className="space-y-2">
-                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Target Budget</label>
-                                 <input 
-                                   type="text" 
-                                   value={budget}
-                                   onChange={(e) => setBudget(e.target.value)}
-                                   placeholder="Enter amount..." 
-                                   className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-sm font-bold text-[#292828] outline-none transition-all" 
-                                 />
-                              </div>
-                              <div className="space-y-2">
-                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Due Date (Optional)</label>
-                                 <input 
-                                   type="date" 
-                                   value={dueDate}
-                                   onChange={(e) => setDueDate(e.target.value)}
-                                   className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all cursor-pointer" 
-                                 />
+                              <div className="flex flex-wrap items-center gap-6 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                 <div className="flex items-center gap-3">
+                                    <label className="text-[10px] font-black uppercase text-[#292828]">Due Date</label>
+                                    <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="h-10 bg-white border border-slate-200 px-4 rounded-xl text-[10px] font-black uppercase outline-none focus:border-[#E53935]" />
+                                 </div>
+                                 <div className="h-6 w-[1px] bg-slate-200 mx-2 hidden sm:block" />
+                                 <div className="flex items-center gap-4">
+                                    <button onClick={() => setIsNDAProtected(!isNDAProtected)} className={cn("flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase border", isNDAProtected ? "bg-[#292828] text-white border-[#292828]" : "bg-white text-slate-400 border-slate-200")}>
+                                       <ShieldCheck size={14} /> NDA Required
+                                    </button>
+                                    <button onClick={() => setIsUrgent(!isUrgent)} className={cn("flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase border", isUrgent ? "bg-[#E53935] text-white border-[#E53935]" : "bg-white text-slate-400 border-slate-200")}>
+                                       <Zap size={14} /> Urgent
+                                    </button>
+                                 </div>
                               </div>
                            </div>
                         )}
@@ -395,13 +436,17 @@ export default function EliteHomeFeed() {
                             {post.type === 'Business Leads' && (
                                 <div className="space-y-4 flex-1 flex flex-col">
                                    <div className="flex-1">
-                                      <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight mb-2 group-hover:text-[#E53935] transition-colors line-clamp-2">{post.title || "Project Business Lead"}</h3>
-                                      <div className="flex flex-wrap gap-2 mb-3">
-                                         {post.tags?.split(",").map((tag, i) => (
-                                            <span key={i} className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase rounded border border-slate-100">{tag.trim()}</span>
-                                         ))}
+                                      <div className="flex items-center gap-2 mb-2">
+                                         <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight group-hover:text-[#E53935] transition-colors line-clamp-1">{post.title || "Project Business Lead"}</h3>
+                                         {post.isUrgent && <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse shrink-0" />}
                                       </div>
-                                      <p className="text-xs font-bold text-slate-500 leading-relaxed mb-4 line-clamp-3 italic opacity-80">
+                                      
+                                      <div className="flex flex-wrap gap-1.5 mb-3">
+                                         <span className="px-2 py-0.5 bg-red-50 text-red-600 text-[8px] font-black uppercase rounded border border-red-100">{post.requirement}</span>
+                                         <span className="px-2 py-0.5 bg-[#292828]/5 text-[#292828] text-[8px] font-black uppercase rounded border border-[#292828]/10">{post.taskType}</span>
+                                         {post.isNDA && <span className="px-2 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase rounded flex items-center gap-1"><ShieldCheck size={8} /> NDA</span>}
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-500 leading-relaxed mb-4 line-clamp-2 italic opacity-80">
                                          "{post.content}"
                                       </p>
                                    </div>
@@ -411,22 +456,22 @@ export default function EliteHomeFeed() {
                                       <div className="relative z-10">
                                          <div className="flex justify-between items-center mb-4">
                                             <div className="flex items-center gap-2">
-                                               <div className="h-1.5 w-1.5 bg-[#E53935] rounded-full animate-ping" />
-                                               <span className="text-[9px] font-black text-white/40 uppercase ">Market Valuation</span>
+                                               <Target size={12} className="text-[#E53935]" />
+                                               <span className="text-[9px] font-black text-white/40 uppercase ">Business Valuation</span>
                                             </div>
-                                            <span className="text-[18px] font-black text-white  ">{post.value || post.budget || "₹TBA"}</span>
+                                            <span className="text-[18px] font-black text-white ">{post.budget || "₹TBA"}</span>
                                          </div>
                                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
-                                            <div className="h-full bg-[#E53935] rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)]" style={{ width: '85%' }} />
+                                            <div className="h-full bg-[#E53935] rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)]" style={{ width: post.budget ? '100%' : '20%' }} />
                                          </div>
                                          <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-1.5 ">
-                                               <span className="text-[8px] font-black text-white/20 uppercase ">Strategic Nodes</span>
+                                               <span className="text-[8px] font-black text-white/20 uppercase ">Strategic Alignment</span>
                                                <div className="flex gap-0.5">
-                                                  {[1,2,3].map(i => <div key={i} className="h-1 w-2 bg-[#E53935] rounded-full" />)}
+                                                  {[1,2,3].map(i => <div key={i} className={`h-1 w-2 rounded-full ${i <= 2 ? 'bg-[#E53935]' : 'bg-white/10'}`} />)}
                                                </div>
                                             </div>
-                                            <p className="text-[8px] font-black text-green-500 uppercase ">Trusted Deal</p>
+                                            <p className="text-[8px] font-black text-green-500 uppercase ">Verified Lead</p>
                                          </div>
                                       </div>
                                    </div>
@@ -558,8 +603,20 @@ export default function EliteHomeFeed() {
                                      
                                      <div className="px-10 py-4 bg-black/30 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                           <div className="h-2 w-2 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[10px] font-black text-white/50 uppercase ">Business Lead</span>
+                                           <div className="flex gap-2">
+                                              <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase rounded-lg shadow-lg shadow-red-500/20">{post.requirement || "Business Lead"}</span>
+                                              <span className="px-3 py-1 bg-white/5 text-white/40 text-[9px] font-black uppercase rounded-lg border border-white/10">{post.taskType || "System Entry"}</span>
+                                           </div>
+                                           {post.isNDA && (
+                                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                                                <ShieldCheck size={10} className="text-[#E53935]" />
+                                                <span className="text-[9px] font-black text-white/30 uppercase">NDA</span>
+                                             </div>
+                                           )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 grayscale opacity-50">
+                                           <div className={`h-1.5 w-1.5 rounded-full ${post.isUrgent ? 'bg-red-500 animate-pulse' : 'bg-white/20'}`} />
+                                           <span className="text-[10px] font-black text-white/50 uppercase ">{post.isUrgent ? 'High Urgency' : 'Neutral State'}</span>
                                         </div>
                                      </div>
 

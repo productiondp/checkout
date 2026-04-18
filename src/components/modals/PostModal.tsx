@@ -25,7 +25,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
   const [content, setContent] = useState("");
   const [type, setType] = useState("Update");
   const [isPosting, setIsPosting] = useState(false);
-  const [businessLeadTitle, setBusiness LeadTitle] = useState("Select Title");
+  const [businessLeadTitle, setBusinessLeadTitle] = useState("Select Title");
   const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
@@ -38,7 +38,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
       setIsPosting(false);
       onClose();
       setContent("");
-      setBusiness LeadTitle("Select Title");
+      setBusinessLeadTitle("Select Title");
       setCustomTitle("");
       setDueDate("");
       setBudget("");
@@ -83,7 +83,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Business Lead Title</label>
                   <select 
                     value={businessLeadTitle}
-                    onChange={(e) => setBusiness LeadTitle(e.target.value)}
+                    onChange={(e) => setBusinessLeadTitle(e.target.value)}
                     className="w-full h-12 bg-slate-50 px-4 rounded-xl border border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option disabled>Select Title</option>

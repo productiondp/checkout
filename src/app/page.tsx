@@ -136,7 +136,7 @@ export default function BalancedGlobalLanding() {
 
       {/* 4. FOOTER */}
       <footer className="relative z-50 py-8 lg:h-16 flex flex-col lg:flex-row items-center justify-between px-8 lg:px-20 border-t border-white/5 bg-[#292828]/10 backdrop-blur-md gap-6 lg:gap-0">
-         <p className="text-[9px] font-black uppercase text-white/30 text-center lg:text-left">© 2026 Checkout Protocol. <span className="text-white/50">Hyper-Local Standard.</span></p>
+         <p className="text-[9px] font-black uppercase text-white/30 text-center lg:text-left">© 2026 Checkout Network. <span className="text-white/50">Local Business Standard.</span></p>
          <div className="flex gap-8 text-[9px] font-black uppercase text-white/30">
             {["Privacy", "Safety", "Support"].map(it => (
               <span key={it} className="hover:text-white transition-colors cursor-pointer">{it}</span>

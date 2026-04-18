@@ -247,7 +247,7 @@ function AuthContent() {
 
             {/* Footer Note */}
             <p className="text-center text-[10px] font-medium text-[#292828] max-w-[300px] mx-auto leading-relaxed">
-              By continuing, you agree to the Checkout <span className="underline cursor-pointer">Service Terms</span> and <span className="underline cursor-pointer">Data Protocol</span>.
+              By continuing, you agree to the Checkout <span className="underline cursor-pointer">Service Terms</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
             </p>
          </div>
       </div>

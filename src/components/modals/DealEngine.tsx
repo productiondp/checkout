@@ -125,7 +125,7 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
 
          {/* FOOTER */}
          <div className="px-10 py-6 bg-[#292828]/5/50 border-t border-[#292828]/5 text-center">
-            <p className="text-[10px] font-black text-[#292828]/40 uppercase ">Technopark Business Node Security Protocol</p>
+            <p className="text-[10px] font-black text-[#292828]/40 uppercase ">Business Network Security Standards</p>
          </div>
       </div>
     </div>

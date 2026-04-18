@@ -195,8 +195,8 @@ export default function EliteHomeFeed() {
                               <Zap size={24} strokeWidth={2.5} />
                            </div>
                            <div>
-                              <h3 className="text-xl font-black text-[#292828] uppercase leading-none ">Command Center</h3>
-                              <p className="text-[10px] font-bold uppercase text-slate-400  mt-1">Initiating Global Broadcast</p>
+                              <h3 className="text-xl font-black text-[#292828] uppercase leading-none ">Create Post</h3>
+                              <p className="text-[10px] font-bold uppercase text-slate-400  mt-1">Share an update with your network</p>
                            </div>
                         </div>
                         <button onClick={() => setIsPosting(false)} className="h-10 w-10 rounded-xl flex items-center justify-center text-[#292828]/20 hover:text-[#292828] hover:bg-slate-50 transition-all">
@@ -225,11 +225,11 @@ export default function EliteHomeFeed() {
                         {['Opportunities', 'Hiring', 'Partnership', 'Meeting'].includes(selectedPostType) && (
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                               <div className="space-y-2">
-                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Protocol Type</label>
+                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Post Category</label>
                                  <input type="text" placeholder="Specify details..." className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-sm font-bold text-[#292828] outline-none transition-all" />
                               </div>
                               <div className="space-y-2">
-                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Target Valuation</label>
+                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Target Budget</label>
                                  <input type="text" placeholder="Enter amount..." className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-sm font-bold text-[#292828] outline-none transition-all" />
                               </div>
                            </div>
@@ -240,7 +240,7 @@ export default function EliteHomeFeed() {
                              autoFocus
                              value={postContent}
                              onChange={(e) => setPostContent(e.target.value)}
-                             placeholder="Broadcast your mission status..."
+                             placeholder="What's the latest in your business?"
                              className="w-full bg-slate-50 p-6 rounded-[1.3rem] border-2 border-transparent text-lg font-bold text-[#292828] placeholder:text-slate-200 outline-none resize-none min-h-[160px] transition-all focus:bg-white focus:border-[#292828]/5"
                            />
                            <div className="absolute bottom-6 right-6 flex items-center gap-4">
@@ -258,7 +258,7 @@ export default function EliteHomeFeed() {
                                 onClick={handlePost}
                                 className="px-10 h-12 bg-[#E53935] text-white rounded-xl text-[10px] font-black uppercase  shadow-[0_20px_40px_rgba(229,57,53,0.3)] hover:bg-[#292828] transition-all active:scale-95"
                               >
-                                Broadcast
+                                Post Update
                               </button>
                            </div>
                         </div>
@@ -334,7 +334,7 @@ export default function EliteHomeFeed() {
                                         <div className="h-full bg-gradient-to-r from-[#E53935] to-[#E53935]/60 rounded-full" style={{ width: '75%' }} />
                                      </div>
                                      <div className="mt-2.5 flex justify-between items-center">
-                                        <p className="text-[7px] font-bold text-white/20 uppercase ">Protocol ID: {post.id}88</p>
+                                        <p className="text-[7px] font-bold text-white/20 uppercase ">Ref ID: {post.id}88</p>
                                         <p className="text-[7px] font-bold text-green-500 uppercase ">+12.4% Match</p>
                                      </div>
                                   </div>
@@ -748,7 +748,7 @@ export default function EliteHomeFeed() {
                      <div className="flex items-end justify-between">
                         <div className="space-y-1">
                            <h2 className="text-4xl font-black text-[#292828] uppercase tracking-tighter">Trivandrum</h2>
-                           <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">Regional Protocol V.6</p>
+                           <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">Network Version 6.0</p>
                         </div>
                         <div className="bg-[#292828] px-5 py-4 rounded-[1.25rem] border border-white/10 text-right shadow-2xl transform group-hover/hub:scale-105 transition-transform">
                            <p className="text-3xl font-black text-white leading-none mb-1">1.4k</p>

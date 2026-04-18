@@ -6,37 +6,7 @@ import Image from "next/image";
 import { MapPin, Users, Calendar, ArrowRight, Star, Shield, Plus, MessageSquare, Clock, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const INITIAL_MEETUPS = Array.from({ length: 25 }).map((_, i) => ({
-  id: 101 + i,
-  title: [
-    "SaaS Business Coffee", "UI Design Workshop", "SME Growth Talk", "Startup Hub Meet", "Technopark Mixer",
-    "Digital Marketing Sync", "Founder Mastermind", "Tech Lead Circle", "MSME Strategy Hub", "Kerala Trade Coffee",
-    "Investor Pitch Prep", "Product Management Chat", "E-commerce Logistics", "Security Node Sync", "Financial Hub Talk",
-    "Women in Tech Mixer", "Regional Sales Meet", "Brand Identity Session", "Cloud Infra Group", "App Dev Meetup",
-    "Business Scaling Forum", "HR Tech Discussion", "Supply Chain Hub", "Cyber Security Talk", "Future Founders Meet"
-  ][i],
-  topic: ["Business", "Design", "Tech", "Startup", "Work"][i % 5],
-  count: Math.floor(Math.random() * 6) + 7, // 7 to 12 members
-  time: i % 3 === 0 ? "Live now" : `Starting in ${i * 5}m`,
-  loc: ["Technopark", "Pattom", "Kazhakkoottam", "Vellayambalam", "Palayam"][i % 5],
-  address: ["Park Centre", "The Hub", "Brew & Bytes", "Sector 7", "Central Plaza"][i % 5],
-  type: i % 2 === 0 ? "Virtual" : "In-Person",
-  price: i % 4 === 0 ? "Paid ($50)" : "Free",
-  score: 85 + (i % 14),
-  advisor: ["Arun D.", "Sarah W.", "John P.", "Deepa R."][i % 4],
-  participants: Array.from({length: Math.floor(Math.random() * 4) + 3}).map((_, j) => `https://i.pravatar.cc/150?u=meet${i}${j}`),
-  requireApproval: i % 3 === 0,
-  status: "none",
-  x: 10 + ((i * 37) % 80),
-  y: 10 + ((i * 19) % 70),
-  advice: [
-    "Finding local partners is key to scaling fast in Kerala.",
-    "Dark mode interfaces are seeing higher retention in current apps.",
-    "Technopark Ph-III is becoming the focal point for B2B growth.",
-    "Focus on supply chain transparency to build trust with MSMEs.",
-    "Networking with regional leads can unlock hidden tender opportunities."
-  ][i % 5]
-}));
+const INITIAL_MEETUPS: any[] = [];
 
 const TOPICS = ["All", "Business", "Design", "Tech", "Startup", "Work"];
 

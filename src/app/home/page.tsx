@@ -557,7 +557,10 @@ export default function EliteHomeFeed() {
                                            
                                            <div className="flex gap-10 items-end">
                                               <div>
-                                                 <p className="text-[9px] font-black text-white/40 uppercase  mb-2">Trust Score</p>
+                                                 <p className="text-[9px] font-black text-white/40 uppercase mb-2 flex items-center justify-between">
+                                                    <span>Trust Score</span>
+                                                    <span className="text-[#E53935] ml-4">92 / 100</span>
+                                                 </p>
                                                  <div className="flex gap-1">
                                                     {[1,2,3,4,5,6,7,8].map(i => (
                                                        <div key={i} className={cn("h-1 w-5 rounded-full transition-colors", i <= 6 ? "bg-[#E53935]" : "bg-white/10")} />

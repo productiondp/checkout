@@ -5,12 +5,7 @@ import Link from "next/link";
 import { Zap, ArrowLeft, Calendar, User, Briefcase, TrendingUp } from "lucide-react";
 
 export default function HistoryPage() {
-  const activities = [
-    { type: "Post", label: "Shared a new Business Deal", time: "2 hours ago", value: "₹45,000", icon: Zap, color: "text-amber-500", bg: "bg-amber-50" },
-    { type: "Connection", label: "Met Rahul Sethi from Bangalore", time: "5 hours ago", value: "Verified", icon: User, color: "text-blue-500", bg: "bg-blue-50" },
-    { type: "Project", label: "Accepted Kerala Logistics Tender", time: "Yesterday", value: "In Progress", icon: Briefcase, color: "text-green-500", bg: "bg-green-50" },
-    { type: "Growth", label: "Global Rank increased to #124", time: "2 days ago", value: "Top 1%", icon: TrendingUp, color: "text-red-500", bg: "bg-red-50" },
-  ];
+  const activities: any[] = [];
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] selection:bg-[#E53935]/10 pb-40 lg:pb-0">

@@ -2,19 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const RECENT_ACTIVITY = [
-  { name: "Cynthia", role: "UI Designer", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=64&auto=format&fit=crop" },
-  { name: "Danny C", role: "Owner", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=64&auto=format&fit=crop" },
-];
-
-const CONTACTS = [
-  { name: "Morgan", status: "online", avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=64&auto=format&fit=crop" },
-  { name: "Stanley", status: "offline", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=64&auto=format&fit=crop" },
-  { name: "Allen Am", status: "online", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=64&auto=format&fit=crop" },
-  { name: "Lucas W", status: "offline", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=64&auto=format&fit=crop" },
-  { name: "Danny M", status: "online", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=64&auto=format&fit=crop" },
-  { name: "Jason G", status: "offline", avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=64&auto=format&fit=crop" },
-];
+const RECENT_ACTIVITY: any[] = [];
+const CONTACTS: any[] = [];
 
 export default function RightSocialRail() {
   const router = useRouter();

@@ -257,13 +257,9 @@ export default function DynamicProfilePage() {
                         </h3>
                      </div>
                      <div className="space-y-8">
-                        {[
-                           "The Future of Logistics in Kerala",
-                           "Scale-up Strategies for MSMEs",
-                           "Digital Transformation Guide 2026"
-                        ].map((art, i) => (
+                        {[].map((art, i) => (
                            <div key={i} className="group/art cursor-pointer space-y-2">
-                              <p className="text-[13px] font-black text-[#292828] uppercase group-hover/art:text-[#E53935] transition-colors">{art}</p>
+                              <p className="text-[13px] font-black text-[#292828] uppercase group/art:text-[#E53935] transition-colors">{art}</p>
                               <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400">
                                  <span>8 min read</span>
                                  <span className="h-1 w-1 bg-slate-200 rounded-full" />
@@ -282,12 +278,9 @@ export default function DynamicProfilePage() {
                         </h3>
                      </div>
                      <div className="grid grid-cols-2 gap-4 flex-1">
-                        {[1, 2, 3, 4].map(i => (
+                        {[].map(i => (
                            <div key={i} className="relative rounded-[1rem] overflow-hidden group/img cursor-pointer">
-                              <img src={`https://images.unsplash.com/photo-${[
-                                 "1556761175-5973dc0f32e7", "1486406146926-c627a92ad1ab", 
-                                 "1554224155-169746991c99", "1542744173-05336fcc7ad4"
-                              ][i-1]}?q=80&w=500`} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/img:grayscale-0 group-hover/img:scale-110" alt="" />
+                              <img src={""} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/img:grayscale-0 group-hover/img:scale-110" alt="" />
                            </div>
                         ))}
                      </div>
@@ -304,21 +297,12 @@ export default function DynamicProfilePage() {
                   </div>
                   
                   <div className="space-y-12">
-                     {[
-                        { title: `Successfully completed project with ${profile.company}.`, time: "2 hours ago", node: "Logistics Hub" },
-                        { title: "Verification Update: Tier 1 Authority", time: "1 day ago", node: "Core Hub" },
-                        { title: "Network Match Successful", time: "3 days ago", node: "Matching Engine" },
-                     ].map((item, i) => (
+                     {[].map((item, i) => (
                         <div key={i} className="flex gap-8 relative group">
                            {i !== 2 && <div className="absolute left-2 top-8 bottom-[-32px] w-px bg-neutral-100" />}
                            <div className="h-4 w-4 rounded-full bg-[#E53935] shadow-[0_0_15px_rgba(229,57,53,0.4)] mt-1 relative z-10 border-4 border-white" />
                            <div className="flex-1">
-                              <p className="text-[16px] font-bold text-[#292828] leading-tight group-hover:text-[#E53935] transition-colors uppercase">{item.title}</p>
-                              <div className="flex items-center gap-4 mt-3">
-                                 <span className="text-[10px] font-black text-[#292828]/30 uppercase">{item.time}</span>
-                                 <span className="h-1 w-1 bg-neutral-200 rounded-full" />
-                                 <span className="text-[10px] font-black text-[#E53935] uppercase">{item.node}</span>
-                              </div>
+                              {/* Content would go here */}
                            </div>
                         </div>
                      ))}

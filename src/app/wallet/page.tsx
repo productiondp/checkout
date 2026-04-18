@@ -20,7 +20,7 @@ export default function WalletPage() {
                   </div>
                   <div>
                      <p className="text-[14px] font-bold uppercase text-white/50 mb-4">Total Liquidity Available</p>
-                     <h1 className="text-6xl font-black mb-12">₹8,42,500.00</h1>
+                     <h1 className="text-6xl font-black mb-12">₹0.00</h1>
                   </div>
                   <div className="flex items-center gap-6">
                      <button className="flex-1 h-14 bg-white text-[#292828] rounded-2xl font-bold text-[12px] uppercase shadow-2xl hover:scale-105 transition-all">Add Credits</button>
@@ -36,14 +36,14 @@ export default function WalletPage() {
                      <div className="h-14 w-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-500"><TrendingUp size={24} /></div>
                      <div>
                         <p className="text-[12px] font-bold text-[#292828] capitalize mb-1">Weekly Profit</p>
-                        <p className="text-[20px] font-black text-[#292828]">+ ₹12,400</p>
+                        <p className="text-[20px] font-black text-[#292828]">+ ₹0</p>
                      </div>
                   </div>
                   <div className="flex items-center gap-4">
                      <div className="h-14 w-14 bg-red-50 rounded-2xl flex items-center justify-center text-[#E53935]"><ArrowDownLeft size={24} /></div>
                      <div>
                         <p className="text-[12px] font-bold text-[#292828] capitalize mb-1">Expenses</p>
-                        <p className="text-[20px] font-black text-[#292828]">- ₹4,200</p>
+                        <p className="text-[20px] font-black text-[#292828]">- ₹0</p>
                      </div>
                   </div>
                </div>
@@ -61,11 +61,7 @@ export default function WalletPage() {
             </div>
 
             <div className="space-y-6">
-               {[
-                 { title: "Wholesale Order #924", type: "Credit", amount: "₹42,000", date: "Today, 2:40 PM" },
-                 { title: "Partner Fee - Rahul Sethi", type: "Debit", amount: "₹1,500", date: "Yesterday, 10:30 AM" },
-                 { title: "Logistics Payment", type: "Debit", amount: "₹8,400", date: "15 Apr 2026" },
-               ].map((tx, i) => (
+               {[].map((tx: any, i) => (
                  <div key={i} className="flex items-center justify-between p-6 rounded-3xl bg-[#292828]/5/50 hover:bg-[#292828]/5 transition-all border border-transparent hover:border-[#292828]/10 group">
                     <div className="flex items-center gap-6">
                        <div className={cn(

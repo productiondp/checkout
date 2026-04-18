@@ -34,25 +34,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ADVISORS = Array.from({ length: 24 }).map((_, i) => ({
-  id: i + 1,
-  name: [
-    "Dr. Aruna Nair", "Vikas Menon", "Sana Maryam", "Rahul Sethi", "Deepika R.", "Karan Johar",
-    "Anita Das", "Zayan F.", "Meera V.", "Aditya P.", "Sneha K.", "Rohan S.",
-    "Priya M.", "Arjun V.", "Ishaan B.", "Ananya G.", "Sanya S.", "Kabir D.",
-    "Zara H.", "Ayan K.", "Riya S.", "Noah J.", "Mila K.", "Liam P."
-  ][i],
-  firm: ["FinStrat Global", "LegalNode Kerala", "Growth Capital", "InnoTech Advisors", "Alpha Ops"][i % 5],
-  specialty: ["Trade Finance", "Corporate Law", "Scale-up Advice", "Regional Logistics", "HR & Payroll"][i % 5],
-  cost: Math.floor(Math.random() * 5000) + 2500,
-  rating: (4.7 + Math.random() * 0.3).toFixed(1),
-  reviews: Math.floor(Math.random() * 150) + 30,
-  avatar: `https://i.pravatar.cc/200?u=adv${i + 1}`,
-  rank: ["Elite Partner", "Top Rated", "Verified Expert"][i % 3],
-  highlights: ["Former Technopark CEO", "Led 12 MSME Mergers", "Startup Fund Lead"][i % 3],
-  available: i % 3 === 0,
-  matchScore: Math.floor(Math.random() * 20) + 80
-}));
+const ADVISORS: any[] = [];
 
 const CATEGORIES = [
   { name: "Finance", icon: DollarSign, color: "bg-green-50 text-green-600" },

@@ -69,7 +69,7 @@ export default function BalancedGlobalLanding() {
          {/* VALUE DISCOVERY (REBALANCED FONTS) */}
          <div className="lg:col-span-7 space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-left-2 duration-700">
             <div className="inline-flex items-center gap-2 px-4 lg:px-5 py-1.5 rounded-xl bg-[#E53935]/15 border border-[#E53935]/30 text-[#E53935] text-[8px] lg:text-[9px] font-black uppercase">
-               <Zap size={10} className="animate-pulse" /> Where Local Meets Opportunity
+               <Zap size={10} className="animate-pulse" /> Where Local Meets Business Lead
             </div>
             
             <h1 className="text-4xl lg:text-7xl font-black leading-tight text-white mix-blend-plus-lighter">

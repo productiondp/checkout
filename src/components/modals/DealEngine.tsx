@@ -61,10 +61,10 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
                <div className="p-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="space-y-4">
                      <div className="flex items-center justify-between">
-                        <span className="px-3 py-1 bg-[#292828] text-white text-[9px] font-black uppercase rounded-lg">Opportunity Entry</span>
+                        <span className="px-3 py-1 bg-[#292828] text-white text-[9px] font-black uppercase rounded-lg">Business Lead Entry</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">REF: {deal.id || 'N/A'}88</span>
                      </div>
-                     <h1 className="text-3xl font-black text-[#292828] uppercase leading-none">{deal.title || "Business Opportunity"}</h1>
+                     <h1 className="text-3xl font-black text-[#292828] uppercase leading-none">{deal.title || "Business Business Lead"}</h1>
                      <p className="text-base text-[#292828]/70 leading-relaxed font-medium bg-slate-50 p-6 rounded-2xl border border-slate-100">
                         "{deal.content}"
                      </p>

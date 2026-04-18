@@ -79,7 +79,7 @@ export default function MatchCard({
         className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
       >
         <Zap size={18} fill="white" />
-        Initiate Opportunity Engine
+        Initiate Business Lead Engine
       </button>
     </div>
   );

@@ -21,7 +21,7 @@ import {
   Compass
 } from "lucide-react";
 
-type MarkerType = "Meeting" | "Hiring" | "Opportunities" | "Partnership" | "Expo" | "Update";
+type MarkerType = "Meeting" | "Hiring" | "Business Leads" | "Partnership" | "Expo" | "Update";
 
 interface Marker {
   id: string;
@@ -83,7 +83,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
   const markers = posts ? posts.map((post, i) => ({
     id: post.id.toString(),
     type: post.type as MarkerType,
-    title: post.type === 'Opportunities' ? 'Project Prospect' : 
+    title: post.type === 'Business Leads' ? 'Project Prospect' : 
            post.type === 'Hiring' ? 'Open Mandate' : post.content.substring(0, 20) + "...",
     author: post.author,
     details: post.content,
@@ -137,7 +137,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
             >
               <div className={`absolute inset-0 -m-6 rounded-full animate-ping opacity-20 duration-[3s] ${
                 marker.type === "Jobs" ? "bg-blue-500" : 
-                marker.type === "Opportunities" ? "bg-red-500" :
+                marker.type === "Business Leads" ? "bg-red-500" :
                 marker.type === "Meets" ? "bg-green-500" : "bg-amber-500"
               }`} />
               
@@ -145,7 +145,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
                 onClick={(e) => { e.stopPropagation(); setSelectedMarker(marker); }}
                 className={`relative z-10 w-6 h-6 rounded-full border-4 border-white shadow-2xl transition-all hover:scale-125 active:scale-90 ${
                   marker.type === "Jobs" ? "bg-blue-600" : 
-                  marker.type === "Opportunities" ? "bg-red-600" :
+                  marker.type === "Business Leads" ? "bg-red-600" :
                   marker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
                 }`}
               >
@@ -172,13 +172,13 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
                </div>
                <input 
                  type="text" 
-                 placeholder="Find people or opportunities..."
+                 placeholder="Find people or business leads..."
                  className="w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] py-3 lg:py-5 pl-12 lg:pl-16 pr-6 lg:pr-8 text-[13px] lg:text-[15px] font-bold text-[#292828] outline-none ring-0 focus:border-[#E53935] transition-all"
                />
             </div>
             
             <div className="flex bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] p-1.5 shadow-2xl overflow-x-auto scrollbar-hide no-scrollbar">
-               {["All", "Meeting", "Hiring", "Opportunities", "Partnership", "Expo"].map(cat => (
+               {["All", "Meeting", "Hiring", "Business Leads", "Partnership", "Expo"].map(cat => (
                  <button 
                    key={cat}
                    onClick={() => setFilter(cat as any)}
@@ -216,11 +216,11 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
                <div className="flex items-start gap-5 lg:gap-8 mb-6 lg:mb-10">
                   <div className={`h-14 w-14 lg:h-20 lg:w-20 min-w-[56px] lg:min-w-[80px] rounded-2xl lg:rounded-3xl flex items-center justify-center text-white shadow-xl ${
                     selectedMarker.type === "Jobs" ? "bg-blue-600" : 
-                    selectedMarker.type === "Opportunities" ? "bg-red-600" :
+                    selectedMarker.type === "Business Leads" ? "bg-red-600" :
                     selectedMarker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
                   }`}>
                     {selectedMarker.type === "Jobs" && <Briefcase className="w-6 h-6 lg:w-8 lg:h-8" />}
-                    {selectedMarker.type === "Opportunities" && <Zap className="w-6 h-6 lg:w-8 lg:h-8" />}
+                    {selectedMarker.type === "Business Leads" && <Zap className="w-6 h-6 lg:w-8 lg:h-8" />}
                     {selectedMarker.type === "Meets" && <MessageSquare className="w-6 h-6 lg:w-8 lg:h-8" />}
                     {selectedMarker.type === "Social" && <User className="w-6 h-6 lg:w-8 lg:h-8" />}
                   </div>

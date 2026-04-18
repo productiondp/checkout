@@ -244,7 +244,7 @@ export default function PremiumMessagesPage() {
                 <MessageSquare size={40} />
              </div>
              <h2 className="text-2xl font-black text-[#292828] leading-tight">Your Communication Hub</h2>
-             <p className="text-[#292828] max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start exploring potential business opportunities and contract details.</p>
+             <p className="text-[#292828] max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start exploring potential business leads and contract details.</p>
           </div>
         )}
       </main>

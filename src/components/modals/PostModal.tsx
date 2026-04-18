@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { X, ImageIcon, Plus, Send, Zap, Briefcase, Target, Calendar, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const OPPORTUNITY_TITLES = [
+const BUSINESS_LEAD_TITLES = [
   "Strategic Partnership",
   "Capital Raise",
   "Service Contract",
@@ -25,7 +25,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
   const [content, setContent] = useState("");
   const [type, setType] = useState("Update");
   const [isPosting, setIsPosting] = useState(false);
-  const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [businessLeadTitle, setBusiness LeadTitle] = useState("Select Title");
   const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
@@ -38,7 +38,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
       setIsPosting(false);
       onClose();
       setContent("");
-      setOpportunityTitle("Select Title");
+      setBusiness LeadTitle("Select Title");
       setCustomTitle("");
       setDueDate("");
       setBudget("");
@@ -63,7 +63,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
 
         <div className="flex-1 p-6 overflow-y-auto no-scrollbar space-y-8">
           <div className="flex flex-wrap gap-2">
-            {["Update", "Opportunity", "Job", "Partner", "Meet", "Event"].map((t) => (
+            {["Update", "Business Lead", "Job", "Partner", "Meet", "Event"].map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
@@ -77,19 +77,19 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
             ))}
           </div>
 
-          {type === 'Opportunity' && (
+          {type === 'Business Lead' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Opportunity Title</label>
+                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Business Lead Title</label>
                   <select 
-                    value={opportunityTitle}
-                    onChange={(e) => setOpportunityTitle(e.target.value)}
+                    value={businessLeadTitle}
+                    onChange={(e) => setBusiness LeadTitle(e.target.value)}
                     className="w-full h-12 bg-slate-50 px-4 rounded-xl border border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option disabled>Select Title</option>
-                    {OPPORTUNITY_TITLES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    {BUSINESS_LEAD_TITLES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
-                  {opportunityTitle === "Other (Custom Title)" && (
+                  {businessLeadTitle === "Other (Custom Title)" && (
                      <input 
                        type="text" 
                        value={customTitle}

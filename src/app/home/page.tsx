@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { DUMMY_POSTS } from "@/lib/dummyData";
 import DealEngine from "@/components/modals/DealEngine";
 import PostModal from "@/components/modals/PostModal";
-const OPPORTUNITY_TITLES = [
+const BUSINESS_LEAD_TITLES = [
   "Strategic Partnership",
   "Capital Raise",
   "Service Contract",
@@ -63,7 +63,7 @@ export default function EliteHomeFeed() {
   const [activeBidPostId, setActiveBidPostId] = useState<number | null>(null);
   const [isMatching, setIsMatching] = useState(false);
   const [matchingStep, setMatchingStep] = useState(0);
-  const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [businessLeadTitle, setBusinessLeadTitle] = useState("Select Title");
   const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
@@ -74,11 +74,11 @@ export default function EliteHomeFeed() {
     const newPostObj = {
       id: posts.length + 1,
       type: selectedPostType,
-      title: selectedPostType === 'Opportunities' 
-        ? (opportunityTitle === "Other (Custom Title)" ? customTitle : (opportunityTitle === "Select Title" ? undefined : opportunityTitle))
+      title: selectedPostType === 'Business Leads' 
+        ? (businessLeadTitle === "Other (Custom Title)" ? customTitle : (businessLeadTitle === "Select Title" ? undefined : businessLeadTitle))
         : undefined,
-      budget: selectedPostType === 'Opportunities' ? budget : undefined,
-      dueDate: selectedPostType === 'Opportunities' ? dueDate : undefined,
+      budget: selectedPostType === 'Business Leads' ? budget : undefined,
+      dueDate: selectedPostType === 'Business Leads' ? dueDate : undefined,
       author: "User",
       authorId: 1,
       time: "Just now",
@@ -96,7 +96,7 @@ export default function EliteHomeFeed() {
     setIsPosting(false);
     setPostContent("");
     setAttachment(null);
-    setOpportunityTitle("Select Title");
+    setBusinessLeadTitle("Select Title");
     setCustomTitle("");
     setBudget("");
     setDueDate("");
@@ -158,7 +158,7 @@ export default function EliteHomeFeed() {
          <div className="bg-white/95 backdrop-blur-xl border-b border-[#292828]/5 px-4 py-3 sticky top-0 z-40">
             <div className="flex items-center justify-between mb-4">
                <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth">
-                   {(['All', 'Update', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
+                   {(['All', 'Update', 'Business Leads', 'Hiring', 'Partnership', 'Meeting'] as const).map(tab => (
                     <button 
                      key={tab} 
                      onClick={() => setActiveTab(tab)}
@@ -229,7 +229,7 @@ export default function EliteHomeFeed() {
                      </div>
 
                      <div className="flex flex-wrap gap-2 mb-6">
-                        {['General', 'Opportunities', 'Hiring', 'Partnership', 'Meeting'].map(type => (
+                        {['General', 'Business Leads', 'Hiring', 'Partnership', 'Meeting'].map(type => (
                            <button
                               key={type}
                               onClick={() => { setSelectedPostType(type); setPostContent(""); }}
@@ -246,24 +246,24 @@ export default function EliteHomeFeed() {
                      </div>
 
                      <div className="space-y-4">
-                        {selectedPostType === 'Opportunities' && (
+                        {selectedPostType === 'Business Leads' && (
                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                               <div className="space-y-2">
                                  <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Title</label>
                                  <div className="relative">
                                     <select 
-                                      value={opportunityTitle}
-                                      onChange={(e) => setOpportunityTitle(e.target.value)}
+                                      value={businessLeadTitle}
+                                      onChange={(e) => setBusinessLeadTitle(e.target.value)}
                                       className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
                                     >
                                        <option disabled>Select Title</option>
-                                       {OPPORTUNITY_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                                       {BUSINESS_LEAD_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#292828]/30">
                                        <ChevronRight size={14} className="rotate-90" />
                                     </div>
                                  </div>
-                                 {opportunityTitle === "Other (Custom Title)" && (
+                                 {businessLeadTitle === "Other (Custom Title)" && (
                                     <input 
                                       type="text" 
                                       value={customTitle}
@@ -349,7 +349,7 @@ export default function EliteHomeFeed() {
                     {viewMode === "grid" ? (
                       <div className={cn(
                         "bg-white rounded-[1.3rem] border-2 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(41,40,40,0.12)] flex flex-col h-full overflow-hidden",
-                        post.type === 'Opportunities' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
+                        post.type === 'Business Leads' ? "border-[#E53935]/10 hover:border-[#E53935]" : "border-[#292828]/5 hover:border-[#292828]"
                       )}>
                         <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                            <Link href={`/profile/${post.authorId}`} className="flex items-center gap-2 group/author">
@@ -366,7 +366,7 @@ export default function EliteHomeFeed() {
                            </Link>
                            <div className={cn(
                                "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
-                               post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : 
+                               post.type === 'Business Leads' ? "bg-red-50 text-red-600 border-red-100" : 
                                post.type === 'Meeting' ? "bg-green-50 text-green-600 border-green-100" :
                                post.type === 'Hiring' ? "bg-blue-50 text-blue-600 border-blue-100" :
                                "bg-[#292828]/5 text-[#292828] border-[#292828]/10"
@@ -386,16 +386,16 @@ export default function EliteHomeFeed() {
                                    {post.content}
                                 </p>
                              </div>
-                           ) : post.type !== 'Opportunities' && (
+                           ) : post.type !== 'Business Leads' && (
                              <p className="text-sm font-bold text-slate-700 leading-snug line-clamp-2">
                                 {post.content}
                              </p>
                            )}
 
-                            {post.type === 'Opportunities' && (
+                            {post.type === 'Business Leads' && (
                                 <div className="space-y-4 flex-1 flex flex-col">
                                    <div className="flex-1">
-                                      <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight mb-2 group-hover:text-[#E53935] transition-colors line-clamp-2">{post.title || "Project Opportunity"}</h3>
+                                      <h3 className="text-[17px] font-black text-[#292828] uppercase leading-tight mb-2 group-hover:text-[#E53935] transition-colors line-clamp-2">{post.title || "Project Business Lead"}</h3>
                                       <div className="flex flex-wrap gap-2 mb-3">
                                          {post.tags?.split(",").map((tag, i) => (
                                             <span key={i} className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase rounded border border-slate-100">{tag.trim()}</span>
@@ -456,7 +456,7 @@ export default function EliteHomeFeed() {
                               </div>
                            )}
 
-                           {!['Opportunities', 'Meeting'].includes(post.type) && post.images && (
+                           {!['Business Leads', 'Meeting'].includes(post.type) && post.images && (
                               <div className="h-24 w-full rounded-xl overflow-hidden border border-[#292828]/10 mt-auto">
                                  <img src={post.images[0]} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/post:grayscale-0" alt="" />
                               </div>
@@ -486,7 +486,7 @@ export default function EliteHomeFeed() {
                       <div className="bg-white border-slate-100 overflow-hidden transition-all duration-500 rounded-[1.625rem] border shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/10 p-1 relative group/list-card">
                          <div className={cn(
                             "absolute top-6 right-6 px-4 py-1.5 rounded-lg text-[12px] font-black uppercase border z-20 transition-all",
-                            post.type === 'Opportunities' ? "bg-red-50 text-red-600 border-red-100" : 
+                            post.type === 'Business Leads' ? "bg-red-50 text-red-600 border-red-100" : 
                             post.type === 'Meeting' ? "bg-green-50 text-green-600 border-green-100" :
                             post.type === 'Hiring' ? "bg-blue-50 text-blue-600 border-blue-100" :
                             "bg-slate-50 text-slate-500 border-slate-100"
@@ -545,13 +545,13 @@ export default function EliteHomeFeed() {
                                      </div>
                                   </div>
                                 </div>
-                             ) : !['Opportunities', 'Hiring', 'Partnership', 'Meeting', 'Expo'].includes(post.type) && (
+                             ) : !['Business Leads', 'Hiring', 'Partnership', 'Meeting', 'Expo'].includes(post.type) && (
                                <p className="text-base text-slate-700 leading-relaxed font-medium line-clamp-3 group-hover/post:line-clamp-none transition-all">
                                   {post.content}
                                </p>
                              )}
 
-                            {post.type === 'Opportunities' && (
+                            {post.type === 'Business Leads' && (
                                <div className="mt-8 relative group/opp-terminal">
                                   <div className="relative bg-[#292828] rounded-[1.95rem] overflow-hidden border border-[#292828] shadow-[0_48px_120px_rgba(0,0,0,0.15)] transition-all duration-700">
                                      <div className="absolute top-0 right-0 w-80 h-80 bg-[#E53935]/10 blur-[100px] pointer-events-none" />
@@ -559,7 +559,7 @@ export default function EliteHomeFeed() {
                                      <div className="px-10 py-4 bg-black/30 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                            <div className="h-2 w-2 bg-[#E53935] rounded-full animate-ping" />
-                                           <span className="text-[10px] font-black text-white/50 uppercase ">Business Opportunity</span>
+                                           <span className="text-[10px] font-black text-white/50 uppercase ">Business Lead</span>
                                         </div>
                                      </div>
 
@@ -568,7 +568,7 @@ export default function EliteHomeFeed() {
                                            <div className="space-y-3">
                                               <div className="flex items-center gap-3">
                                                  <span className="px-3 py-1 bg-[#E53935] text-white text-[9px] font-black uppercase  rounded-lg">Top-Tier</span>
-                                                 <h3 className="text-2xl font-black text-white uppercase  leading-none">{post.title || "Opportunity"}</h3>
+                                                 <h3 className="text-2xl font-black text-white uppercase  leading-none">{post.title || "Business Lead"}</h3>
                                               </div>
                                               <p className="text-white/70 text-base font-medium leading-relaxed italic line-clamp-2">
                                                  "{post.content || "Interested in scaling our operations via strategic partnership."}"
@@ -764,7 +764,7 @@ export default function EliteHomeFeed() {
                                    <div className="bg-[#292828] px-6 py-3 flex items-center justify-between">
                                       <div className="flex items-center gap-2.5">
                                          <Target size={16} className="text-red-500" />
-                                         <p className="text-xs font-bold uppercase text-white">Partnership Opportunity</p>
+                                         <p className="text-xs font-bold uppercase text-white">Partnership Business Lead</p>
                                       </div>
                                       <div className="flex items-center gap-1.5">
                                          <div className="h-1 w-1 bg-red-500 rounded-full animate-ping" />

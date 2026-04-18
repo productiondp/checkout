@@ -4,6 +4,17 @@ import React, { useState } from "react";
 import { X, ImageIcon, Plus, Send, Zap, Briefcase, Target, Calendar, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const OPPORTUNITY_TITLES = [
+  "Strategic Partnership",
+  "Capital Raise",
+  "Service Contract",
+  "Vendor Acquisition",
+  "Joint Venture",
+  "Tech Integration",
+  "Logistics Partnership",
+  "Marketing Mandate"
+];
+
 interface PostModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,6 +24,9 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
   const [content, setContent] = useState("");
   const [type, setType] = useState("Update");
   const [isPosting, setIsPosting] = useState(false);
+  const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [dueDate, setDueDate] = useState("");
+  const [budget, setBudget] = useState("");
 
   if (!isOpen) return null;
 
@@ -22,6 +36,9 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
       setIsPosting(false);
       onClose();
       setContent("");
+      setOpportunityTitle("Select Title");
+      setDueDate("");
+      setBudget("");
     }, 1500);
   };
 
@@ -56,6 +73,31 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
               </button>
             ))}
           </div>
+
+          {type === 'Opportunity' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="space-y-1.5">
+                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Opportunity Title</label>
+                  <select 
+                    value={opportunityTitle}
+                    onChange={(e) => setOpportunityTitle(e.target.value)}
+                    className="w-full h-12 bg-slate-50 px-4 rounded-xl border border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    <option disabled>Select Title</option>
+                    {OPPORTUNITY_TITLES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+               </div>
+               <div className="space-y-1.5">
+                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Due Date (Optional)</label>
+                  <input 
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full h-12 bg-slate-50 px-4 rounded-xl border border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all cursor-pointer"
+                  />
+               </div>
+            </div>
+          )}
 
           <textarea
             autoFocus

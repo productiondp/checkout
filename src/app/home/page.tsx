@@ -32,7 +32,16 @@ import { cn } from "@/lib/utils";
 import { DUMMY_POSTS } from "@/lib/dummyData";
 import DealEngine from "@/components/modals/DealEngine";
 import PostModal from "@/components/modals/PostModal";
-import LiveMap from "@/components/explore/LiveMap";
+const OPPORTUNITY_TITLES = [
+  "Strategic Partnership",
+  "Capital Raise",
+  "Service Contract",
+  "Vendor Acquisition",
+  "Joint Venture",
+  "Tech Integration",
+  "Logistics Partnership",
+  "Marketing Mandate"
+];
 
 export default function EliteHomeFeed() {
   const [posts, setPosts] = useState(DUMMY_POSTS);
@@ -52,6 +61,9 @@ export default function EliteHomeFeed() {
   const [activeBidPostId, setActiveBidPostId] = useState<number | null>(null);
   const [isMatching, setIsMatching] = useState(false);
   const [matchingStep, setMatchingStep] = useState(0);
+  const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [dueDate, setDueDate] = useState("");
+  const [budget, setBudget] = useState("");
 
   const handlePost = () => {
     if (!postContent.trim() && !attachment) return;
@@ -59,6 +71,9 @@ export default function EliteHomeFeed() {
     const newPostObj = {
       id: posts.length + 1,
       type: selectedPostType,
+      title: selectedPostType === 'Opportunities' ? (opportunityTitle === "Select Title" ? undefined : opportunityTitle) : undefined,
+      budget: selectedPostType === 'Opportunities' ? budget : undefined,
+      dueDate: selectedPostType === 'Opportunities' ? dueDate : undefined,
       author: "Arun Dev",
       authorId: 1,
       time: "Just now",
@@ -76,6 +91,9 @@ export default function EliteHomeFeed() {
     setIsPosting(false);
     setPostContent("");
     setAttachment(null);
+    setOpportunityTitle("Select Title");
+    setBudget("");
+    setDueDate("");
   };
 
   const handleLike = (postId: number) => {
@@ -222,7 +240,47 @@ export default function EliteHomeFeed() {
                      </div>
 
                      <div className="space-y-4">
-                        {['Opportunities', 'Hiring', 'Partnership', 'Meeting'].includes(selectedPostType) && (
+                        {selectedPostType === 'Opportunities' && (
+                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                              <div className="space-y-2">
+                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Title</label>
+                                 <div className="relative">
+                                    <select 
+                                      value={opportunityTitle}
+                                      onChange={(e) => setOpportunityTitle(e.target.value)}
+                                      className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                       <option disabled>Select Title</option>
+                                       {OPPORTUNITY_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#292828]/30">
+                                       <ChevronRight size={14} className="rotate-90" />
+                                    </div>
+                                 </div>
+                              </div>
+                              <div className="space-y-2">
+                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Target Budget</label>
+                                 <input 
+                                   type="text" 
+                                   value={budget}
+                                   onChange={(e) => setBudget(e.target.value)}
+                                   placeholder="Enter amount..." 
+                                   className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-sm font-bold text-[#292828] outline-none transition-all" 
+                                 />
+                              </div>
+                              <div className="space-y-2">
+                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Due Date (Optional)</label>
+                                 <input 
+                                   type="date" 
+                                   value={dueDate}
+                                   onChange={(e) => setDueDate(e.target.value)}
+                                   className="w-full h-12 bg-slate-50 px-6 rounded-2xl border-2 border-transparent focus:border-[#292828]/10 text-xs font-bold text-[#292828] outline-none transition-all cursor-pointer" 
+                                 />
+                              </div>
+                           </div>
+                        )}
+
+                        {['Hiring', 'Partnership', 'Meeting'].includes(selectedPostType) && (
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                               <div className="space-y-2">
                                  <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Post Category</label>
@@ -483,7 +541,7 @@ export default function EliteHomeFeed() {
                                               </p>
                                            </div>
                                            
-                                           <div className="flex gap-10">
+                                           <div className="flex gap-10 items-end">
                                               <div>
                                                  <p className="text-[9px] font-black text-white/40 uppercase  mb-2">Trust Score</p>
                                                  <div className="flex gap-1">
@@ -492,6 +550,15 @@ export default function EliteHomeFeed() {
                                                     ))}
                                                  </div>
                                               </div>
+                                              {post.dueDate && (
+                                                 <div className="flex flex-col gap-1.5 ">
+                                                    <p className="text-[9px] font-black text-white/40 uppercase leading-none">Decision Date</p>
+                                                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
+                                                       <Calendar size={12} className="text-[#E53935]" />
+                                                       <span className="text-[10px] font-black text-white uppercase">{post.dueDate}</span>
+                                                    </div>
+                                                 </div>
+                                              )}
                                            </div>
                                         </div>
 

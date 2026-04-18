@@ -123,91 +123,101 @@ export default function BusinessAdvisorsPortal() {
 
          {/* ADVISOR GRID (3 IN A ROW ON DESKTOP) */}
          <div className={cn(
-           "grid gap-6 lg:gap-8 mb-40",
-           view === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+           "flex-1",
+           filteredAdvisors.length > 0 
+             ? cn("grid gap-6 lg:gap-8 mb-40", view === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")
+             : "flex items-center justify-center py-40 bg-[#292828]/5 rounded-[2.6rem] border-2 border-dashed border-[#292828]/10 italic text-[#292828]/40 mb-40"
          )}>
-           {filteredAdvisors.map(adv => (
-             <div key={adv.id} className="group/adv relative">
-                <div className={cn(
-                   "bg-white border-[#F2F4F7] overflow-hidden transition-all duration-500 shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/20",
-                   view === "grid" ? "rounded-[1.3rem] border-2 flex flex-col p-1" : "rounded-[1.3rem] border flex items-center p-6"
-                )}>
-                   
-                   {/* Visual Section */}
-                   <Link href={`/profile/${adv.id}`} className={cn(
-                      "relative overflow-hidden block",
-                      view === "grid" ? "h-60 rounded-[1.1375rem]" : "h-24 w-24 rounded-2xl shrink-0"
+           {filteredAdvisors.length > 0 ? (
+             filteredAdvisors.map(adv => (
+                <div key={adv.id} className="group/adv relative">
+                   <div className={cn(
+                      "bg-white border-[#F2F4F7] overflow-hidden transition-all duration-500 shadow-2xl shadow-slate-200/10 hover:border-[#E53935]/20",
+                      view === "grid" ? "rounded-[1.3rem] border-2 flex flex-col p-1" : "rounded-[1.3rem] border flex items-center p-6"
                    )}>
-                      <img src={adv.avatar} className="w-full h-full object-cover grayscale transition-all duration-[2s] group-hover/adv:grayscale-0 group-hover/adv:scale-110" alt="" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover/adv:opacity-100 transition-opacity" />
                       
-                      {adv.available && (
-                        <div className="absolute top-5 left-5 px-3 py-1 bg-green-500 text-white text-[9px] font-black uppercase rounded-lg shadow-lg flex items-center gap-1.5 border border-white/20">
-                           <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" /> Online
-                        </div>
-                      )}
-
-                      <div className="absolute top-5 right-5 h-10 w-10 bg-white/95 backdrop-blur-md rounded-xl flex items-center justify-center text-[#E53935] shadow-xl opacity-0 group-hover/adv:opacity-100 transform translate-y-2 group-hover/adv:translate-y-0 transition-all">
-                         <Star size={18} fill="currentColor" />
-                      </div>
-                   </Link>
-
-                   {/* Content Section (Home Feed Style) */}
-                   <div className={cn("flex-1", view === "grid" ? "p-6" : "pl-10 flex items-center justify-between")}>
-                      <div className={view === "list" ? "flex items-center gap-12" : ""}>
-                         <div className="mb-6">
-                            <div className="flex items-center justify-between mb-4">
-                               <div className="flex items-center gap-1.5">
-                                  <h3 className="text-xl font-black text-[#292828] uppercase group-hover/adv:text-[#E53935] transition-colors">{adv.name}</h3>
-                                  <CheckCircle2 size={18} className="text-[#E53935]" />
-                               </div>
-                               <div className="px-2 py-0.5 bg-green-50 text-green-600 rounded-lg text-[8px] font-black uppercase border border-green-100 shadow-sm">
-                                  {adv.matchScore}% Match
-                               </div>
-                            </div>
-                            
-                            <p className="text-[11px] font-bold text-[#292828] capitalize flex items-center gap-2 mb-6">
-                               <MapPin size={12} className="text-[#E53935]" /> {adv.firm} • {adv.firm.includes('Kerala') ? 'Kerala' : 'Main City'}
-                            </p>
-
-                            <div className="flex flex-wrap gap-2">
-                               <span className="px-3 py-1 bg-[#292828]/5 text-[#292828] rounded-lg text-[9px] font-black uppercase border border-[#292828]/10">{adv.specialty}</span>
-                               <span className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-lg text-[9px] font-black uppercase border border-[#E53935]/10">{adv.rank}</span>
-                            </div>
-                         </div>
-
-                         {/* Excellence Highlight Panel */}
-                         <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10 flex items-center gap-4 mb-8 group-hover/adv:bg-white transition-colors">
-                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#292828]/40 group-hover/adv:text-[#E53935] transition-colors shadow-sm">
-                               <Award size={20} />
-                            </div>
-                            <div>
-                               <p className="text-[11px] font-black text-[#292828] leading-none mb-1">{adv.rating} Excellence Score</p>
-                               <p className="text-[10px] font-bold text-[#292828] capitalize">{adv.highlights}</p>
-                            </div>
-                         </div>
-                      </div>
-
-                      {/* Footer Actions (Home Feed Style) */}
-                      <div className={cn(
-                        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-[#292828]/5",
-                        view === "list" ? "gap-10 border-t-0 pt-0" : ""
+                      {/* Visual Section */}
+                      <Link href={`/profile/${adv.id}`} className={cn(
+                         "relative overflow-hidden block",
+                         view === "grid" ? "h-60 rounded-[1.1375rem]" : "h-24 w-24 rounded-2xl shrink-0"
                       )}>
-                         <div>
-                            <p className="text-[9px] font-black text-[#292828]/40 uppercase leading-none mb-1">Price</p>
-                            <p className="text-2xl font-black text-[#292828] leading-none">₹{adv.cost}<span className="text-sm font-bold text-[#292828] not-italic">/hr</span></p>
+                         <img src={adv.avatar} className="w-full h-full object-cover grayscale transition-all duration-[2s] group-hover/adv:grayscale-0 group-hover/adv:scale-110" alt="" />
+                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover/adv:opacity-100 transition-opacity" />
+                         
+                         {adv.available && (
+                           <div className="absolute top-5 left-5 px-3 py-1 bg-green-500 text-white text-[9px] font-black uppercase rounded-lg shadow-lg flex items-center gap-1.5 border border-white/20">
+                              <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" /> Online
+                           </div>
+                         )}
+
+                         <div className="absolute top-5 right-5 h-10 w-10 bg-white/95 backdrop-blur-md rounded-xl flex items-center justify-center text-[#E53935] shadow-xl opacity-0 group-hover/adv:opacity-100 transform translate-y-2 group-hover/adv:translate-y-0 transition-all">
+                            <Star size={18} fill="currentColor" />
                          </div>
-                         <button 
-                           onClick={() => setSelectedAdv(adv)}
-                           className="w-full sm:w-auto px-8 h-14 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-3 group/btn"
-                         >
-                            Book Now <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                         </button>
+                      </Link>
+
+                      {/* Content Section (Home Feed Style) */}
+                      <div className={cn("flex-1", view === "grid" ? "p-6" : "pl-10 flex items-center justify-between")}>
+                         <div className={view === "list" ? "flex items-center gap-12" : ""}>
+                            <div className="mb-6">
+                               <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-1.5">
+                                     <h3 className="text-xl font-black text-[#292828] uppercase group-hover/adv:text-[#E53935] transition-colors">{adv.name}</h3>
+                                     <CheckCircle2 size={18} className="text-[#E53935]" />
+                                  </div>
+                                  <div className="px-2 py-0.5 bg-green-50 text-green-600 rounded-lg text-[8px] font-black uppercase border border-green-100 shadow-sm">
+                                     {adv.matchScore}% Match
+                                  </div>
+                               </div>
+                               
+                               <p className="text-[11px] font-bold text-[#292828] capitalize flex items-center gap-2 mb-6">
+                                  <MapPin size={12} className="text-[#E53935]" /> {adv.firm} • {adv.firm.includes('Kerala') ? 'Kerala' : 'Main City'}
+                               </p>
+
+                               <div className="flex flex-wrap gap-2">
+                                  <span className="px-3 py-1 bg-[#292828]/5 text-[#292828] rounded-lg text-[9px] font-black uppercase border border-[#292828]/10">{adv.specialty}</span>
+                                  <span className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-lg text-[9px] font-black uppercase border border-[#E53935]/10">{adv.rank}</span>
+                               </div>
+                            </div>
+
+                            {/* Excellence Highlight Panel */}
+                            <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10 flex items-center gap-4 mb-8 group-hover/adv:bg-white transition-colors">
+                               <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#292828]/40 group-hover/adv:text-[#E53935] transition-colors shadow-sm">
+                                  <Award size={20} />
+                               </div>
+                               <div>
+                                  <p className="text-[11px] font-black text-[#292828] leading-none mb-1">{adv.rating} Excellence Score</p>
+                                  <p className="text-[10px] font-bold text-[#292828] capitalize">{adv.highlights}</p>
+                               </div>
+                            </div>
+                         </div>
+
+                         {/* Footer Actions (Home Feed Style) */}
+                         <div className={cn(
+                           "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-[#292828]/5",
+                           view === "list" ? "gap-10 border-t-0 pt-0" : ""
+                         )}>
+                            <div>
+                               <p className="text-[9px] font-black text-[#292828]/40 uppercase leading-none mb-1">Price</p>
+                               <p className="text-2xl font-black text-[#292828] leading-none">₹{adv.cost}<span className="text-sm font-bold text-[#292828] not-italic">/hr</span></p>
+                            </div>
+                            <button 
+                              onClick={() => setSelectedAdv(adv)}
+                              className="w-full sm:w-auto px-8 h-14 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-3 group/btn"
+                            >
+                               Book Now <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                            </button>
+                         </div>
                       </div>
                    </div>
                 </div>
+             ))
+           ) : (
+             <div className="flex flex-col items-center justify-center text-center">
+                <Briefcase size={48} className="mb-4 opacity-20" />
+                <p className="text-[14px] font-black uppercase tracking-widest">No Advisors Found</p>
+                <p className="text-[11px] font-medium mt-2">Verified experts are joining the platform daily.</p>
              </div>
-           ))}
+           )}
          </div>
       </div>
 

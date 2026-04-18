@@ -129,85 +129,93 @@ export default function MeetupPage() {
                "transition-all duration-500",
                viewMode === "grid" ? "grid grid-cols-1 xl:grid-cols-2 gap-8" : "flex flex-col gap-6"
            )}>
-              {filteredMeetups.map(m => (
-                 <div key={m.id} className={cn(
-                   "bg-white border transition-all overflow-hidden group",
-                   viewMode === "list" ? "rounded-[1.3rem] flex flex-col xl:flex-row items-stretch" : "rounded-[1.625rem] flex flex-col",
-                   m.status === "joined" ? "border-green-500 shadow-2xl shadow-green-500/5 scale-[1.02]" : "border-[#292828]/10 shadow-sm hover:border-[#E53935]/20 hover:shadow-xl"
-                 )}>
-                    <div className={cn(
-                        "p-8",
-                        viewMode === "list" ? "flex-1 pb-8 flex flex-col" : "pb-4"
+               {filteredMeetups.length > 0 ? (
+                 filteredMeetups.map(m => (
+                    <div key={m.id} className={cn(
+                      "bg-white border transition-all overflow-hidden group",
+                      viewMode === "list" ? "rounded-[1.3rem] flex flex-col xl:flex-row items-stretch" : "rounded-[1.625rem] flex flex-col",
+                      m.status === "joined" ? "border-green-500 shadow-2xl shadow-green-500/5 scale-[1.02]" : "border-[#292828]/10 shadow-sm hover:border-[#E53935]/20 hover:shadow-xl"
                     )}>
-                      <div className="flex justify-between items-center mb-6">
-                         <div className="flex items-center gap-2">
-                            <span className={cn("px-3 py-1 text-[9px] font-black uppercase rounded-lg border", m.type === "Virtual" ? "bg-indigo-50 text-indigo-700 border-indigo-100" : "bg-emerald-50 text-emerald-700 border-emerald-100")}>{m.type}</span>
-                            <span className={cn("px-3 py-1 text-[9px] font-black uppercase rounded-lg border", m.price === "Free" ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-amber-50 text-amber-700 border-amber-100")}>{m.price}</span>
+                       <div className={cn(
+                           "p-8",
+                           viewMode === "list" ? "flex-1 pb-8 flex flex-col" : "pb-4"
+                       )}>
+                         <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center gap-2">
+                               <span className={cn("px-3 py-1 text-[9px] font-black uppercase rounded-lg border", m.type === "Virtual" ? "bg-indigo-50 text-indigo-700 border-indigo-100" : "bg-emerald-50 text-emerald-700 border-emerald-100")}>{m.type}</span>
+                               <span className={cn("px-3 py-1 text-[9px] font-black uppercase rounded-lg border", m.price === "Free" ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-amber-50 text-amber-700 border-amber-100")}>{m.price}</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-[#E53935] uppercase flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />{m.time}</span>
                          </div>
-                         <span className="text-[10px] font-bold text-[#E53935] uppercase flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />{m.time}</span>
-                      </div>
 
-                      <h3 className="text-xl font-bold text-[#292828] mb-4 leading-tight group-hover:text-[#E53935] transition-colors">{m.title}</h3>
-                      
-                      <div className="flex flex-col gap-2 mb-6">
-                         <div className="flex items-center gap-2 text-[12px] font-medium text-[#292828] bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl">
-                            <MapPin size={14} className="text-[#E53935]" />
-                            <span>{m.type === "Virtual" ? "Online Link Available on Join" : `${m.loc} • ${m.address}`}</span>
-                         </div>
-                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-[#292828] px-3 py-1.5 rounded-xl shadow-md">
-                               <Star size={12} className="text-amber-400" /> Relevant: {m.score}%
+                         <h3 className="text-xl font-bold text-[#292828] mb-4 leading-tight group-hover:text-[#E53935] transition-colors">{m.title}</h3>
+                         
+                         <div className="flex flex-col gap-2 mb-6">
+                            <div className="flex items-center gap-2 text-[12px] font-medium text-[#292828] bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl">
+                               <MapPin size={14} className="text-[#E53935]" />
+                               <span>{m.type === "Virtual" ? "Online Link Available on Join" : `${m.loc} • ${m.address}`}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl">
-                               <Shield size={12} className="text-blue-500" /> Host: {m.advisor}
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                               <div className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-[#292828] px-3 py-1.5 rounded-xl shadow-md">
+                                  <Star size={12} className="text-amber-400" /> Relevant: {m.score}%
+                               </div>
+                               <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl">
+                                  <Shield size={12} className="text-blue-500" /> Host: {m.advisor}
+                               </div>
                             </div>
                          </div>
-                      </div>
+
+                          <div className={cn(
+                             "bg-[#292828]/5 rounded-2xl p-4 flex gap-4 items-center mt-auto",
+                             viewMode === "list" ? "max-w-2xl" : ""
+                          )}>
+                             <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-[#292828]/10 text-xl shrink-0">💡</div>
+                             <p className="text-[12px] font-medium text-[#292828] leading-snug">{m.advice}</p>
+                          </div>
+                       </div>
 
                        <div className={cn(
-                          "bg-[#292828]/5 rounded-2xl p-4 flex gap-4 items-center mt-auto",
-                          viewMode === "list" ? "max-w-2xl" : ""
+                          "p-8 flex flex-col gap-5 border-[#292828]/5",
+                          viewMode === "list" 
+                             ? "border-t xl:border-t-0 xl:border-l bg-slate-50/50 xl:w-[320px] shrink-0 justify-center" 
+                             : "pt-4 mt-auto border-t"
                        )}>
-                          <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-[#292828]/10 text-xl shrink-0">💡</div>
-                          <p className="text-[12px] font-medium text-[#292828] leading-snug">{m.advice}</p>
-                       </div>
-                    </div>
-
-                    <div className={cn(
-                       "p-8 flex flex-col gap-5 border-[#292828]/5",
-                       viewMode === "list" 
-                          ? "border-t xl:border-t-0 xl:border-l bg-slate-50/50 xl:w-[320px] shrink-0 justify-center" 
-                          : "pt-4 mt-auto border-t"
-                    )}>
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="flex -space-x-2">
-                               {m.participants.map((avatar, i) => (
-                                 <img key={i} src={avatar} className="h-8 w-8 rounded-full border-2 border-white shadow-sm object-cover" alt="" />
-                               ))}
+                         <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                               <div className="flex -space-x-2">
+                                  {m.participants.map((avatar: string, i: number) => (
+                                    <img key={i} src={avatar} className="h-8 w-8 rounded-full border-2 border-white shadow-sm object-cover" alt="" />
+                                  ))}
+                               </div>
+                               <span className="text-[11px] font-bold text-[#292828] uppercase">{m.count}/12 Local Members</span>
                             </div>
-                            <span className="text-[11px] font-bold text-[#292828] uppercase">{m.count}/12 Local Members</span>
                          </div>
+                     <button 
+                       onClick={() => handleJoin(m.id)}
+                       disabled={m.status === "none" && m.count >= 12}
+                       className={cn(
+                         "w-full px-6 py-4 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2",
+                         m.status === "joined" ? "bg-green-500 text-white shadow-green-500/20 hover:bg-green-600" : 
+                         m.status === "pending" ? "bg-amber-400 text-amber-950 shadow-amber-400/20 hover:bg-amber-500" :
+                         m.count >= 12 ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none active:scale-100" :
+                         "bg-[#292828] text-white hover:bg-[#E53935]"
+                       )}
+                     >
+                        {m.status === "joined" ? "✓ You're In!" : 
+                         m.status === "pending" ? "⏳ Waiting for host" : 
+                         m.count >= 12 ? "Full (12/12)" :
+                         (m.requireApproval ? "Ask to Join" : "Join Now")}
+                     </button>
                       </div>
-                  <button 
-                    onClick={() => handleJoin(m.id)}
-                    disabled={m.status === "none" && m.count >= 12}
-                    className={cn(
-                      "w-full px-6 py-4 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2",
-                      m.status === "joined" ? "bg-green-500 text-white shadow-green-500/20 hover:bg-green-600" : 
-                      m.status === "pending" ? "bg-amber-400 text-amber-950 shadow-amber-400/20 hover:bg-amber-500" :
-                      m.count >= 12 ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none active:scale-100" :
-                      "bg-[#292828] text-white hover:bg-[#E53935]"
-                    )}
-                  >
-                     {m.status === "joined" ? "✓ You're In!" : 
-                      m.status === "pending" ? "⏳ Waiting for host" : 
-                      m.count >= 12 ? "Full (12/12)" :
-                      (m.requireApproval ? "Ask to Join" : "Join Now")}
-                  </button>
                    </div>
-                </div>
-              ))}
+                 ))
+               ) : (
+                 <div className="col-span-full flex flex-col items-center justify-center py-40 bg-[#292828]/5 rounded-[2.6rem] border-2 border-dashed border-[#292828]/10 italic text-[#292828]/40">
+                    <Users size={48} className="mb-4 opacity-20" />
+                    <p className="text-[14px] font-black uppercase tracking-widest">No Meetups Found</p>
+                    <p className="text-[11px] font-medium mt-2">Start a meeting to connect with local builders.</p>
+                 </div>
+               )}
            </div>
         </div>
       </div>

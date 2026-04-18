@@ -83,53 +83,63 @@ export default function BusinessExposPage() {
         <div className="p-6 lg:p-10 space-y-12">
            {activeTab === "upcoming" && (
              <>
-               {/* MAIN FEATURED EXPO */}
-               <div 
-                 onClick={() => setSelectedExpo(EXPOS[0])}
-                 className="group bg-white rounded-[1.95rem] overflow-hidden border border-[#292828]/10 shadow-2xl shadow-slate-200/20 cursor-pointer"
-               >
-                  <div className="h-80 relative overflow-hidden">
-                     <img src={EXPOS[0].banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" alt="" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                     <div className="absolute top-8 left-8">
-                        <span className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-bold rounded-xl uppercase shadow-lg no-italic">Popular Event</span>
-                     </div>
-                     <div className="absolute bottom-10 left-10">
-                        <h3 className="text-4xl font-black text-white mb-2 leading-tight uppercase no-italic">{EXPOS[0].title}</h3>
-                        <div className="flex items-center gap-6 text-white/80">
-                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><MapPin size={16} /> {EXPOS[0].loc}, {EXPOS[0].city}</div>
-                           <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><Users size={16} /> {EXPOS[0].exhibitors} Companies</div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+               {EXPOS.length > 0 ? (
+                 <>
+                   {/* MAIN FEATURED EXPO */}
+                   <div 
+                     onClick={() => setSelectedExpo(EXPOS[0])}
+                     className="group bg-white rounded-[1.95rem] overflow-hidden border border-[#292828]/10 shadow-2xl shadow-slate-200/20 cursor-pointer"
+                   >
+                      <div className="h-80 relative overflow-hidden">
+                         <img src={EXPOS[0].banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" alt="" />
+                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                         <div className="absolute top-8 left-8">
+                            <span className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-bold rounded-xl uppercase shadow-lg no-italic">Popular Event</span>
+                         </div>
+                         <div className="absolute bottom-10 left-10">
+                            <h3 className="text-4xl font-black text-white mb-2 leading-tight uppercase no-italic">{EXPOS[0].title}</h3>
+                            <div className="flex items-center gap-6 text-white/80">
+                               <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><MapPin size={16} /> {EXPOS[0].loc}, {EXPOS[0].city}</div>
+                               <div className="flex items-center gap-2 text-[14px] font-bold no-italic"><Users size={16} /> {EXPOS[0].exhibitors} Companies</div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
 
-               {/* OTHER EXPOS GRID */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {EXPOS.slice(1).map(expo => (
-                    <div 
-                      key={expo.id} 
-                      onClick={() => setSelectedExpo(expo)}
-                      className="group bg-white border border-[#292828]/10 rounded-[1.625rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
-                    >
-                       <div className="h-48 relative overflow-hidden">
-                          <img src={expo.banner} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                          <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] no-italic">{expo.category}</div>
-                       </div>
-                       <div className="p-8">
-                          <h4 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic">{expo.title}</h4>
-                          <div className="flex items-center justify-between pt-6 border-t border-[#292828]/5">
-                             <div className="flex items-center gap-2 text-[12px] font-bold text-[#292828] capitalize no-italic">
-                                <Calendar size={14} className="text-[#292828]/40" /> {expo.date}
-                             </div>
-                             <div className="flex items-center gap-2 px-4 py-2 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white no-italic">
-                                View <ChevronRight size={14} />
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                  ))}
-               </div>
+                   {/* OTHER EXPOS GRID */}
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {EXPOS.slice(1).map(expo => (
+                        <div 
+                          key={expo.id} 
+                          onClick={() => setSelectedExpo(expo)}
+                          className="group bg-white border border-[#292828]/10 rounded-[1.625rem] overflow-hidden hover:shadow-2xl hover:border-[#E53935]/10 transition-all cursor-pointer"
+                        >
+                           <div className="h-48 relative overflow-hidden">
+                              <img src={expo.banner} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                              <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] no-italic">{expo.category}</div>
+                           </div>
+                           <div className="p-8">
+                              <h4 className="text-xl font-bold text-[#292828] mb-2 leading-tight group-hover:text-[#E53935] transition-colors no-italic">{expo.title}</h4>
+                              <div className="flex items-center justify-between pt-6 border-t border-[#292828]/5">
+                                 <div className="flex items-center gap-2 text-[12px] font-bold text-[#292828] capitalize no-italic">
+                                    <Calendar size={14} className="text-[#292828]/40" /> {expo.date}
+                                 </div>
+                                 <div className="flex items-center gap-2 px-4 py-2 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white no-italic">
+                                    View <ChevronRight size={14} />
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                 </>
+               ) : (
+                 <div className="flex flex-col items-center justify-center py-40 bg-[#292828]/5 rounded-[2.6rem] border-2 border-dashed border-[#292828]/10 italic text-[#292828]/40">
+                    <Calendar size={48} className="mb-4 opacity-20" />
+                    <p className="text-[14px] font-black uppercase tracking-widest">No Events Found</p>
+                    <p className="text-[11px] font-medium mt-2">Check back later for local meetups and expos.</p>
+                 </div>
+               )}
              </>
            )}
 

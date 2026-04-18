@@ -145,98 +145,108 @@ export default function PremiumMarketplacePage() {
 
          {/* WHOLESALE GRID */}
          {/* PRODUCT DISPLAY */}
-         {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-40">
-               {filteredItems.map(item => (
-                 <div key={item.id} className="group relative bg-white transition-all duration-500 hover:-translate-y-2">
-                    <div className="relative aspect-square rounded-[1.5rem] overflow-hidden bg-slate-100 border border-[#292828]/5 shadow-sm transition-all group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] group-hover:border-[#E53935]/10">
-                       <img 
-                         src={item.image} 
-                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                         alt={item.item} 
-                       />
-                       
-                       <div className="absolute top-4 left-4 flex flex-col gap-2">
-                          <div className="px-3 py-1 bg-white/95 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] shadow-sm border border-slate-100">
-                             {item.category}
-                          </div>
-                       </div>
+         {filteredItems.length > 0 ? (
+           <>
+             {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-40">
+                   {filteredItems.map(item => (
+                     <div key={item.id} className="group relative bg-white transition-all duration-500 hover:-translate-y-2">
+                        <div className="relative aspect-square rounded-[1.5rem] overflow-hidden bg-slate-100 border border-[#292828]/5 shadow-sm transition-all group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] group-hover:border-[#E53935]/10">
+                           <img 
+                             src={item.image} 
+                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                             alt={item.item} 
+                           />
+                           
+                           <div className="absolute top-4 left-4 flex flex-col gap-2">
+                              <div className="px-3 py-1 bg-white/95 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] shadow-sm border border-slate-100">
+                                 {item.category}
+                              </div>
+                           </div>
 
-                       <button 
-                          onClick={(e) => {
-                             e.stopPropagation();
-                             setFavorites(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
-                          }}
-                          className={cn(
-                             "absolute top-4 right-4 h-10 w-10 rounded-xl flex items-center justify-center transition-all z-20 shadow-xl",
-                             favorites.includes(item.id) ? "bg-[#E53935] text-white" : "bg-white/95 text-[#292828] hover:bg-[#E53935] hover:text-white"
-                          )}
-                       >
-                          <Heart size={18} fill={favorites.includes(item.id) ? "currentColor" : "none"} />
-                       </button>
+                           <button 
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 setFavorites(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                              }}
+                              className={cn(
+                                 "absolute top-4 right-4 h-10 w-10 rounded-xl flex items-center justify-center transition-all z-20 shadow-xl",
+                                 favorites.includes(item.id) ? "bg-[#E53935] text-white" : "bg-white/95 text-[#292828] hover:bg-[#E53935] hover:text-white"
+                              )}
+                           >
+                              <Heart size={18} fill={favorites.includes(item.id) ? "currentColor" : "none"} />
+                           </button>
 
-                       <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-20">
-                          <button 
-                             onClick={() => {
-                                setSelectedItem(item);
-                                setOrderStep("details");
-                                setQuantity(parseInt(item.cap) || 1);
-                             }}
-                             className="w-full h-12 bg-[#292828] text-white rounded-xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] transition-all active:scale-95"
-                          >
-                             Purchase Now
-                          </button>
-                       </div>
-                       
-                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
+                           <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-20">
+                              <button 
+                                 onClick={() => {
+                                    setSelectedItem(item);
+                                    setOrderStep("details");
+                                    setQuantity(parseInt(item.cap) || 1);
+                                 }}
+                                 className="w-full h-12 bg-[#292828] text-white rounded-xl font-black text-[10px] uppercase shadow-2xl hover:bg-[#E53935] transition-all active:scale-95"
+                              >
+                                 Purchase Now
+                              </button>
+                           </div>
+                           
+                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
 
-                    <div className="mt-4 px-1">
-                       <div className="flex justify-between items-start mb-1">
-                          <h3 className="text-lg font-bold text-[#292828] leading-tight uppercase group-hover:text-[#E53935] transition-colors line-clamp-1">{item.item}</h3>
-                          <p className="text-xl font-black text-[#292828]">{item.price}</p>
-                       </div>
-                       
-                       <div className="flex items-center justify-between mt-2">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                             <Package size={12} /> Min Order: {item.cap}
-                          </p>
-                          <div className="flex items-center gap-1">
-                             <BadgeCheck size={14} className="text-[#E53935]" />
-                             <span className="text-[9px] font-black text-[#292828] uppercase">Certified</span>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-               ))}
-            </div>
+                        <div className="mt-4 px-1">
+                           <div className="flex justify-between items-start mb-1">
+                              <h3 className="text-lg font-bold text-[#292828] leading-tight uppercase group-hover:text-[#E53935] transition-colors line-clamp-1">{item.item}</h3>
+                              <p className="text-xl font-black text-[#292828]">{item.price}</p>
+                           </div>
+                           
+                           <div className="flex items-center justify-between mt-2">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                                 <Package size={12} /> Min Order: {item.cap}
+                              </p>
+                              <div className="flex items-center gap-1">
+                                 <BadgeCheck size={14} className="text-[#E53935]" />
+                                 <span className="text-[9px] font-black text-[#292828] uppercase">Certified</span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             ) : (
+                <div className="flex flex-col gap-4 mb-40">
+                   {filteredItems.map(item => (
+                     <div key={item.id} className="group flex items-center gap-8 bg-white p-6 rounded-[1.5rem] border border-[#292828]/5 hover:border-[#E53935]/20 hover:shadow-xl transition-all">
+                        <div className="h-24 w-24 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                           <img src={item.image} className="w-full h-full object-cover" alt={item.item} />
+                        </div>
+                        <div className="flex-1">
+                           <div className="flex items-center gap-3 mb-1">
+                              <span className="px-2 py-0.5 bg-[#E53935]/5 text-[#E53935] text-[8px] font-black uppercase rounded">{item.category}</span>
+                              <h3 className="text-xl font-black text-[#292828] uppercase">{item.item}</h3>
+                           </div>
+                           <p className="text-xs font-bold text-slate-400 uppercase">Min Order: {item.cap} Units</p>
+                        </div>
+                        <div className="text-right mr-10">
+                           <p className="text-[10px] font-black text-[#292828]/40 uppercase mb-1">Price / Unit</p>
+                           <p className="text-3xl font-black text-[#292828]">{item.price}</p>
+                        </div>
+                        <button 
+                            onClick={() => {
+                               setSelectedItem(item);
+                               setOrderStep("details");
+                               setQuantity(parseInt(item.cap) || 1);
+                            }}
+                            className="h-16 px-10 bg-[#292828] text-white rounded-[1rem] font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] transition-all">Order Now</button>
+                     </div>
+                   ))}
+                </div>
+             )}
+           </>
          ) : (
-            <div className="flex flex-col gap-4 mb-40">
-               {filteredItems.map(item => (
-                 <div key={item.id} className="group flex items-center gap-8 bg-white p-6 rounded-[1.5rem] border border-[#292828]/5 hover:border-[#E53935]/20 hover:shadow-xl transition-all">
-                    <div className="h-24 w-24 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
-                       <img src={item.image} className="w-full h-full object-cover" alt={item.item} />
-                    </div>
-                    <div className="flex-1">
-                       <div className="flex items-center gap-3 mb-1">
-                          <span className="px-2 py-0.5 bg-[#E53935]/5 text-[#E53935] text-[8px] font-black uppercase rounded">{item.category}</span>
-                          <h3 className="text-xl font-black text-[#292828] uppercase">{item.item}</h3>
-                       </div>
-                       <p className="text-xs font-bold text-slate-400 uppercase">Min Order: {item.cap} Units</p>
-                    </div>
-                    <div className="text-right mr-10">
-                       <p className="text-[10px] font-black text-[#292828]/40 uppercase mb-1">Price / Unit</p>
-                       <p className="text-3xl font-black text-[#292828]">{item.price}</p>
-                    </div>
-                    <button 
-                        onClick={() => {
-                           setSelectedItem(item);
-                           setOrderStep("details");
-                           setQuantity(parseInt(item.cap) || 1);
-                        }}
-                        className="h-16 px-10 bg-[#292828] text-white rounded-[1rem] font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] transition-all">Order Now</button>
-                 </div>
-               ))}
+            <div className="flex flex-col items-center justify-center py-40 bg-[#292828]/5 rounded-[2.6rem] border-2 border-dashed border-[#292828]/10 italic text-[#292828]/40 mb-40">
+               <ShoppingBag size={48} className="mb-4 opacity-20" />
+               <p className="text-[14px] font-black uppercase tracking-widest">No Inventory Found</p>
+               <p className="text-[11px] font-medium mt-2">The marketplace is currently waiting for new business listings.</p>
             </div>
          )}
       </div>

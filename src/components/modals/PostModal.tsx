@@ -51,7 +51,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
              <div className="h-10 w-10 bg-[#E53935]/10 rounded-xl flex items-center justify-center text-[#E53935]">
                 <Plus size={20} />
              </div>
-             <h2 className="text-xl font-black text-[#292828] uppercase">New <span className="text-[#E53935]">Post</span></h2>
+             <h2 className="text-xl font-black text-[#292828] uppercase">New <span className="text-[#E53935]">{type}</span></h2>
           </div>
           <button onClick={onClose} className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828] hover:bg-[#292828]/10 transition-all">
             <X size={20} />

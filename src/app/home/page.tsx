@@ -213,7 +213,7 @@ export default function EliteHomeFeed() {
                               <Zap size={24} strokeWidth={2.5} />
                            </div>
                            <div>
-                              <h3 className="text-xl font-black text-[#292828] uppercase leading-none ">Create Post</h3>
+                              <h3 className="text-xl font-black text-[#292828] uppercase leading-none ">{selectedPostType === 'Update' ? 'General Post' : selectedPostType}</h3>
                               <p className="text-[10px] font-bold uppercase text-slate-400  mt-1">Share an update with your network</p>
                            </div>
                         </div>

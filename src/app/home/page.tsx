@@ -40,7 +40,8 @@ const OPPORTUNITY_TITLES = [
   "Joint Venture",
   "Tech Integration",
   "Logistics Partnership",
-  "Marketing Mandate"
+  "Marketing Mandate",
+  "Other (Custom Title)"
 ];
 
 export default function EliteHomeFeed() {
@@ -62,6 +63,7 @@ export default function EliteHomeFeed() {
   const [isMatching, setIsMatching] = useState(false);
   const [matchingStep, setMatchingStep] = useState(0);
   const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
 
@@ -71,7 +73,9 @@ export default function EliteHomeFeed() {
     const newPostObj = {
       id: posts.length + 1,
       type: selectedPostType,
-      title: selectedPostType === 'Opportunities' ? (opportunityTitle === "Select Title" ? undefined : opportunityTitle) : undefined,
+      title: selectedPostType === 'Opportunities' 
+        ? (opportunityTitle === "Other (Custom Title)" ? customTitle : (opportunityTitle === "Select Title" ? undefined : opportunityTitle))
+        : undefined,
       budget: selectedPostType === 'Opportunities' ? budget : undefined,
       dueDate: selectedPostType === 'Opportunities' ? dueDate : undefined,
       author: "Arun Dev",
@@ -92,6 +96,7 @@ export default function EliteHomeFeed() {
     setPostContent("");
     setAttachment(null);
     setOpportunityTitle("Select Title");
+    setCustomTitle("");
     setBudget("");
     setDueDate("");
   };
@@ -257,6 +262,15 @@ export default function EliteHomeFeed() {
                                        <ChevronRight size={14} className="rotate-90" />
                                     </div>
                                  </div>
+                                 {opportunityTitle === "Other (Custom Title)" && (
+                                    <input 
+                                      type="text" 
+                                      value={customTitle}
+                                      onChange={(e) => setCustomTitle(e.target.value)}
+                                      placeholder="Enter custom title..."
+                                      className="w-full h-10 bg-white px-4 rounded-xl border border-[#292828]/10 mt-2 text-xs font-bold text-[#292828] outline-none focus:border-[#E53935]/30 transition-all animate-in slide-in-from-top-2 duration-300"
+                                    />
+                                 )}
                               </div>
                               <div className="space-y-2">
                                  <label className="text-[9px] font-black uppercase text-slate-400 ml-2 ">Target Budget</label>

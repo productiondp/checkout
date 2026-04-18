@@ -12,7 +12,8 @@ const OPPORTUNITY_TITLES = [
   "Joint Venture",
   "Tech Integration",
   "Logistics Partnership",
-  "Marketing Mandate"
+  "Marketing Mandate",
+  "Other (Custom Title)"
 ];
 
 interface PostModalProps {
@@ -25,6 +26,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
   const [type, setType] = useState("Update");
   const [isPosting, setIsPosting] = useState(false);
   const [opportunityTitle, setOpportunityTitle] = useState("Select Title");
+  const [customTitle, setCustomTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
 
@@ -37,6 +39,7 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
       onClose();
       setContent("");
       setOpportunityTitle("Select Title");
+      setCustomTitle("");
       setDueDate("");
       setBudget("");
     }, 1500);
@@ -86,6 +89,15 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
                     <option disabled>Select Title</option>
                     {OPPORTUNITY_TITLES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
+                  {opportunityTitle === "Other (Custom Title)" && (
+                     <input 
+                       type="text" 
+                       value={customTitle}
+                       onChange={(e) => setCustomTitle(e.target.value)}
+                       placeholder="Enter custom title..."
+                       className="w-full h-10 bg-white px-4 rounded-xl border border-[#292828]/10 mt-2 text-xs font-bold text-[#292828] outline-none focus:border-[#E53935]/30 transition-all animate-in slide-in-from-top-2 duration-300"
+                     />
+                  )}
                </div>
                <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Due Date (Optional)</label>

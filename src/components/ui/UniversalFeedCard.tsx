@@ -200,7 +200,7 @@ export default function UniversalFeedCard({
                   <div className="flex flex-col items-start selection:bg-none relative group/ai">
                      <div className="flex items-center gap-1.5 mb-1.5 opacity-0 group-hover/ai:opacity-100 transition-opacity">
                         <Sparkles size={8} className="text-[#E53935] animate-pulse" />
-                        <span className="text-[7px] font-black text-[#E53935] uppercase tracking-widest">Neural Match</span>
+                        <span className="text-[7px] font-black text-[#E53935] uppercase tracking-widest">Partner Score</span>
                      </div>
                      <p className="subheading-editorial !text-[#666666] !mb-1">
                         Alignment
@@ -222,7 +222,7 @@ export default function UniversalFeedCard({
                      <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-48 bg-[#292828] text-white p-3 rounded-xl text-[9px] font-medium leading-relaxed opacity-0 group-hover/ai:opacity-100 transition-all pointer-events-none z-50 shadow-2xl translate-x-2 group-hover/ai:translate-x-0">
                         <div className="flex items-center gap-2 mb-1.5 text-[#E53935]">
                            <BrainCircuit size={10} />
-                           <span className="font-black uppercase tracking-widest text-[8px]">AI Intelligence</span>
+                           <span className="font-black uppercase tracking-widest text-[8px]">Partner Insight</span>
                         </div>
                         "This {type} aligns with your {domain || 'core'} expertise. High probability of strategic fit."
                      </div>

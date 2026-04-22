@@ -71,7 +71,7 @@ export default function CheckoutHomeFeed() {
   const supabase = createClient();
 
   const fetchPosts = async (profile: any) => {
-    // 2. Call Neural Match RPC (or fallback to standard fetch)
+    // 2. Call Partner Discovery RPC (or fallback to standard fetch)
     const { data: rankedData, error } = await supabase.rpc('match_posts', {
       query_embedding: profile?.embedding || null,
       match_threshold: 0.1, // Show a broader range on home
@@ -152,7 +152,7 @@ export default function CheckoutHomeFeed() {
       setTotalRevenue(revenue);
     }
 
-    // 5. Fetch Neural Ranked Posts (Requires Profile Embedding)
+    // 5. Fetch Ranked Partner Mandates (Requires Profile Embedding)
     await fetchPosts(profile);
     setIsLoading(false);
   };

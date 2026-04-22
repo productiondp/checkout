@@ -89,7 +89,7 @@ export default function CheckoutHomeFeed() {
       match_count: 50
     });
 
-    if (rankedData) {
+    if (rankedData && rankedData.length > 0) {
       // 3. Hydrate with Author Metadata
       const authorIds = [...new Set(rankedData.map((p: any) => p.author_id))];
       const { data: authors } = await supabase
@@ -338,6 +338,33 @@ export default function CheckoutHomeFeed() {
 
          {/* SIDEBAR WIDGETS */}
          <aside className="hidden lg:block space-y-6">
+            {/* SYNDICATE SENTINEL WIDGET */}
+            {!isJoinedToSyndicate && isVerified && (
+              <div className="bg-[#292828] p-6 rounded-[24px] text-white shadow-2xl relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
+                 
+                 <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                       <Globe size={14} className="text-[#E53935]" />
+                       <span className="text-[8px] font-black uppercase tracking-widest text-[#E53935]">Network Status</span>
+                    </div>
+                    <h2 className="text-lg font-black uppercase leading-tight mb-2">
+                       Node <br /> <span className="text-[#E53935]">De-synced</span>
+                    </h2>
+                    <p className="text-[10px] font-medium text-white/50 mb-6">
+                       Unlock mandates and business capital.
+                    </p>
+                    <Link 
+                      href="/communities"
+                      className="inline-flex items-center gap-2 px-6 h-10 bg-white text-[#292828] rounded-xl font-black text-[9px] uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-xl w-full justify-between group"
+                    >
+                       Join Syndicate <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Link>
+                 </div>
+              </div>
+            )}
+
+            {/* BOARD SCHEDULE WIDGET */}
             <div className="bg-white rounded-[24px] p-6 border border-[#292828]/10 shadow-premium">
                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#292828]/40 mb-6 flex items-center justify-between">
                   Board Schedule <Calendar size={14} />
@@ -404,32 +431,6 @@ export default function CheckoutHomeFeed() {
                   Discover Experts <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                </Link>
             </div>
-
-            {/* SYNDICATE SENTINEL WIDGET */}
-            {!isJoinedToSyndicate && isVerified && (
-              <div className="bg-[#292828] p-6 rounded-[24px] text-white shadow-2xl relative overflow-hidden group">
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
-                 
-                 <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-4">
-                       <Globe size={14} className="text-[#E53935]" />
-                       <span className="text-[8px] font-black uppercase tracking-widest text-[#E53935]">Network Status</span>
-                    </div>
-                    <h2 className="text-lg font-black uppercase leading-tight mb-2">
-                       Node <br /> <span className="text-[#E53935]">De-synced</span>
-                    </h2>
-                    <p className="text-[10px] font-medium text-white/50 mb-6">
-                       Unlock mandates and business capital.
-                    </p>
-                    <Link 
-                      href="/communities"
-                      className="inline-flex items-center gap-2 px-6 h-10 bg-white text-[#292828] rounded-xl font-black text-[9px] uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-xl w-full justify-between group"
-                    >
-                       Join Syndicate <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </Link>
-                 </div>
-              </div>
-            )}
          </aside>
       </div>
 

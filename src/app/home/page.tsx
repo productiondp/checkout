@@ -249,7 +249,7 @@ export default function CheckoutHomeFeed() {
     <div className="w-full max-w-4xl mx-auto px-4 py-6 lg:py-8 space-y-6 selection:bg-[#E53935]/10">
       
       {/* 1. COMPOSER */}
-      <section className="max-w-2xl mx-auto bg-white rounded-[24px] p-2 border border-[#292828]/10 shadow-premium group transition-all hover:border-[#292828]/20">
+      <section className="max-w-3xl mx-auto bg-white rounded-[24px] p-2 border border-[#292828]/10 shadow-premium group transition-all hover:border-[#292828]/20">
          <div className="flex items-center gap-3 p-3 lg:p-4">
             <div className="h-10 w-10 rounded-xl bg-[#292828] overflow-hidden border border-[#292828]/10 shrink-0 flex items-center justify-center text-white">
                <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=me"} className="h-full w-full object-cover" alt="" />
@@ -293,7 +293,7 @@ export default function CheckoutHomeFeed() {
 
       {/* 2. IDENTITY SENTINEL (Email Only) */}
       {!isVerified && (
-         <div className="max-w-2xl mx-auto bg-[#E53935] text-white p-8 rounded-[32px] mb-8 shadow-2xl animate-in slide-in-from-top-4 duration-700 flex items-center justify-between group relative overflow-hidden">
+         <div className="max-w-3xl mx-auto bg-[#E53935] text-white p-8 rounded-[32px] mb-8 shadow-2xl animate-in slide-in-from-top-4 duration-700 flex items-center justify-between group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2" />
             <div className="flex items-center gap-6 relative z-10">
                <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
@@ -308,7 +308,7 @@ export default function CheckoutHomeFeed() {
       )}
 
       {/* 2. QUICK FILTERS */}
-      <div className="max-w-2xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      <div className="max-w-3xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
          {SMART_FILTERS.map(f => (
            <button 
              key={f.id}
@@ -326,7 +326,7 @@ export default function CheckoutHomeFeed() {
       </div>
 
       {/* 3. YOUR BEST FEED - CENTERED OPTIMIZATION */}
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
           {rankedPosts.map(post => (
              <UniversalFeedCard 
              key={post.id}

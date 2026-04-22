@@ -132,7 +132,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     return Math.min(100, score);
   }, [formData, formType]);
 
-  const supabase = createClient();
+
 
   const handlePost = async () => {
     setIsPosting(true);

@@ -12,7 +12,9 @@ import {
   GraduationCap,
   CheckCircle2,
   AlertCircle,
-  Chrome
+  Chrome,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -33,6 +35,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -103,6 +108,22 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email);
+      if (error) throw error;
+      setResetSent(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset link.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
       {/* Cinematic Backdrop */}
@@ -134,37 +155,77 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
               Join the Network
             </div>
             <h2 className="text-4xl font-black text-white tracking-tighter">
-              {mode === "signin" ? "Welcome Back" : "Create Account"}
+              {isResetting ? "Reset Authority" : mode === "signin" ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="text-white/40 font-bold text-[13px]">
-              {isVerificationSent 
-                ? "Identity mandate dispatched." 
-                : mode === "signin"
-                  ? "Sign in to your local account."
-                  : "Join the local business network."
+              {resetSent 
+                ? "Recovery link dispatched." 
+                : isResetting 
+                  ? "Enter your email to restore access."
+                  : mode === "signin"
+                    ? "Sign in to your local account."
+                    : "Join the local business network."
               }
             </p>
           </div>
 
-          {isVerificationSent ? (
+          {isVerificationSent || resetSent ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
                   <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
                      <Mail size={32} />
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2 uppercase">Check Your Inbox</h3>
+                  <h3 className="text-xl font-black text-white mb-2 uppercase">{resetSent ? "Reset Link Sent" : "Check Your Inbox"}</h3>
                   <p className="text-white/40 text-[13px] font-medium leading-relaxed">
-                     We've sent a verification link to <span className="text-white">{formData.email}</span>. <br/> 
-                     Confirm your identity to activate your network node.
+                     {resetSent 
+                      ? `We've sent a recovery link to ${formData.email}. Access it to reset your password.`
+                      : `We've sent a verification link to ${formData.email}. Confirm your identity to activate your node.`
+                     }
                   </p>
                </div>
                <button 
-                 onClick={() => setIsVerificationSent(false)}
+                 onClick={() => { setIsVerificationSent(false); setResetSent(false); setIsResetting(false); }}
                  className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"
                >
                   Back to Sign In
                </button>
             </div>
+          ) : isResetting ? (
+            <form onSubmit={handleResetPassword} className="space-y-6">
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-[13px] font-bold">
+                  <AlertCircle size={16} /> {error}
+                </div>
+              )}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center text-white/20 group-focus-within:text-[#E53935]">
+                  <Mail size={18} />
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Recovery Email"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 transition-all placeholder:text-white/20"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-5 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4"
+              >
+                {isLoading ? "Dispatching..." : "Send Reset Link"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsResetting(false)}
+                className="w-full text-center text-[10px] font-black uppercase text-white/30 hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+            </form>
           ) : (
             <>
               {/* Role Switcher - Premium Style */}
@@ -187,7 +248,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
                 <AlertCircle size={16} />
@@ -240,22 +301,41 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                   <Lock size={18} />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   required
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Password"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-12 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-5 flex items-center text-white/20 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
+
+              {mode === "signin" && (
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsResetting(true)}
+                    className="text-[10px] font-black uppercase text-white/20 hover:text-[#E53935] transition-all"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* CTA */}
             <button
               type="submit"
               disabled={isLoading || isSuccess}
-              className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 mt-4 overflow-hidden relative group ${isLoading || isSuccess ? "bg-white/10 text-white/30 cursor-wait" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
+              className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 mt-2 overflow-hidden relative group ${isLoading || isSuccess ? "bg-white/10 text-white/30 cursor-wait" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
                 }`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
@@ -291,14 +371,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           </div>
 
           {/* Toggle Mode */}
-          <div className="text-center">
+          <div className="text-center pt-2">
             <button
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setIsResetting(false); }}
               className="text-[11px] font-black uppercase text-white/30 hover:text-[#E53935] transition-all"
             >
               {mode === "signin" ? "No account? Start Building" : "Registered? Sign In Instead"}
             </button>
-            </div>
+          </div>
           </>
           )}
         </div>

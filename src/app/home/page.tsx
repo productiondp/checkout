@@ -343,69 +343,7 @@ export default function CheckoutHomeFeed() {
 
          {/* SIDEBAR WIDGETS */}
          <aside className="hidden lg:block space-y-6">
-            {/* 1. STRATEGIC NODES (Market Alignment) */}
-            <div className="bg-white rounded-[24px] p-6 shadow-premium border border-[#292828]/10 overflow-hidden relative group">
-               <div className="absolute top-0 right-0 w-24 h-24 bg-[#E53935]/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-               <h3 className="text-[9px] font-black text-[#292828]/40 uppercase mb-5 flex items-center gap-2">
-                  <BrainCircuit size={14} className="text-[#E53935]" /> Strategic Nodes
-               </h3>
-               <div className="flex flex-wrap gap-1.5">
-                  {user?.skills && user.skills.length > 0 ? user.skills.map(skill => (
-                    <span key={skill} className="px-3 py-1.5 bg-[#292828]/5 border border-[#292828]/10 rounded-lg text-[9px] font-bold text-[#292828] uppercase">{skill}</span>
-                  )) : (
-                    <p className="text-[10px] font-bold text-[#292828]/20 italic px-1">No market nodes defined.</p>
-                  )}
-               </div>
-               <Link href="/profile" className="w-full mt-5 h-10 border border-[#292828]/5 text-[#292828]/40 hover:text-[#292828] hover:bg-slate-50 flex items-center justify-center rounded-xl text-[9px] font-black uppercase transition-all">
-                 Update Nodes
-               </Link>
-            </div>
-
-            {/* 2. PERFORMANCE HUB (Trust & Authority) */}
-            <div className="space-y-3">
-               {[
-                 { label: "Trust Score", value: 98, icon: Shield, color: "bg-[#E53935]" },
-                 { label: "Network Growth", value: 84, icon: TrendingIcon, color: "bg-[#292828]" }
-               ].map((met, i) => (
-                  <div key={i} className="bg-white p-5 rounded-[24px] border border-[#292828]/10 shadow-premium group hover:bg-[#292828] transition-all duration-500">
-                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#E53935] group-hover:bg-white/10 transition-all"><met.icon size={16} /></div>
-                        <span className="text-lg font-black text-[#292828] group-hover:text-white transition-colors">{met.value}%</span>
-                     </div>
-                     <p className="text-[8px] font-black text-[#292828]/40 uppercase group-hover:text-white/40 transition-colors">{met.label}</p>
-                     <div className="h-1 w-full bg-[#292828]/5 group-hover:bg-white/10 rounded-full mt-2.5 overflow-hidden">
-                        <div className={cn("h-full rounded-full transition-all duration-1000", met.color)} style={{ width: `${met.value}%` }} />
-                     </div>
-                  </div>
-               ))}
-            </div>
-
-            {/* 3. SYNDICATE SENTINEL WIDGET */}
-            {!isJoinedToSyndicate && isVerified && (
-              <div className="bg-[#292828] p-6 rounded-[24px] text-white shadow-2xl relative overflow-hidden group">
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
-                 
-                 <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-4">
-                       <Globe size={14} className="text-[#E53935]" />
-                       <span className="text-[8px] font-black uppercase tracking-widest text-[#E53935]">Network Status</span>
-                    </div>
-                    <h2 className="text-lg font-black uppercase leading-tight mb-2">
-                       Node <br /> <span className="text-[#E53935]">De-synced</span>
-                    </h2>
-                    <p className="text-[10px] font-medium text-white/50 mb-6">
-                       Unlock mandates and business capital.
-                    </p>
-                    <Link 
-                      href="/communities"
-                      className="inline-flex items-center gap-2 px-6 h-10 bg-white text-[#292828] rounded-xl font-black text-[9px] uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-xl w-full justify-between group"
-                    >
-                       Join Syndicate <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </Link>
-                 </div>
-              </div>
-            )}
-
+            
             {/* BOARD SCHEDULE WIDGET */}
             <div className="bg-white rounded-[24px] p-6 border border-[#292828]/10 shadow-premium">
                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#292828]/40 mb-6 flex items-center justify-between">

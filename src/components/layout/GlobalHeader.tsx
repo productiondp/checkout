@@ -292,11 +292,20 @@ export default function FullyActiveGlobalHeader() {
                   ))}
                   <div className="h-px bg-[#292828]/5 my-2 mx-2" />
                   <button 
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      window.location.href = "/";
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        const { error } = await supabase.auth.signOut();
+                        if (error) throw error;
+                        // Hard purge and redirect
+                        window.localStorage.clear();
+                        window.location.href = "/";
+                      } catch (err) {
+                        console.error("Logout Protocol Failure:", err);
+                        window.location.href = "/";
+                      }
                     }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all"
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all text-left"
                   >
                     <LogOut size={16} /> Logout
                   </button>

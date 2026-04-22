@@ -39,9 +39,16 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
     { label: "Communities", href: "/community", icon: Globe },
   ];
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/";
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await supabase.auth.signOut();
+      window.localStorage.clear();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Mobile Logout Failure:", err);
+      window.location.href = "/";
+    }
   };
 
   if (!isOpen) return null;

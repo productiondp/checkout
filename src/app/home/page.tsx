@@ -60,6 +60,7 @@ export default function CheckoutHomeFeed() {
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
   const [isVerified, setIsVerified] = useState<boolean>(true);
   const [user, setUser] = useState<any>(null);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   const supabase = createClient();
 
@@ -150,7 +151,14 @@ export default function CheckoutHomeFeed() {
       .order('scheduled_at', { ascending: true })
       .limit(3);
     
-    if (data) setBookings(data);
+    if (data) {
+      setBookings(data);
+      // Calculate Simulated Revenue (Advisor role only)
+      const revenue = data
+        .filter((b: any) => b.advisor_id === user.id && b.status !== 'CANCELLED')
+        .length * 2500;
+      setTotalRevenue(revenue);
+    }
   };
 
   const handleBookingStatus = async (bookingId: string, status: 'CONFIRMED' | 'CANCELLED') => {
@@ -428,6 +436,24 @@ export default function CheckoutHomeFeed() {
                <Link href="/advisors" className="mt-8 flex items-center justify-center gap-2 w-full h-12 bg-[#292828]/5 rounded-xl text-[9px] font-black uppercase text-[#292828] hover:bg-[#292828] hover:text-white transition-all group">
                   Discover Experts <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                </Link>
+            </div>
+
+            {/* FINOPS WIDGET */}
+            <div className="bg-[#292828] rounded-[24px] p-6 text-white shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <TrendingUp size={80} />
+               </div>
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-6">Revenue Flow</h3>
+               <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-tighter">Total Tactical Earnings</span>
+                  <div className="text-3xl font-black italic">₹{totalRevenue.toLocaleString()}</div>
+               </div>
+               <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
+                     <span>Active Mandates</span>
+                     <span className="text-white">{bookings.filter(b => b.status === 'PENDING').length}</span>
+                  </div>
+               </div>
             </div>
          </aside>
       </div>

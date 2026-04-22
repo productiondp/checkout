@@ -57,38 +57,46 @@ export default function AdvisorDirectoryPage() {
       return;
     }
 
+    // 1. Initiate Simulated Payment Terminal
     setIsProcessing(true);
+    
+    // Artificial latency for payment orchestration simulation
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      alert("Authentication required for tactical bookings.");
+      alert("Authentication required for revenue-locked mandates.");
       setIsProcessing(false);
       return;
     }
 
-    // 1. Create Booking
+    const simulatedPaymentId = `pay_${Math.random().toString(36).substring(7)}`;
+
+    // 2. Synchronize Verified Booking with Ledger
     const { error: bookingError } = await supabase
       .from('bookings')
       .insert([{
         advisor_id: selectedExpert.id,
         client_id: user.id,
         scheduled_at: new Date(bookingData.date).toISOString(),
+        payment_intent_id: simulatedPaymentId,
         status: 'PENDING'
       }]);
 
     if (bookingError) {
-      alert("Booking failed: " + bookingError.message);
+      alert("Ledger synchronization failed: " + bookingError.message);
     } else {
-      // 2. Notify Advisor
+      // 3. Dispatch High-Authority Notification
       await supabase.from('notifications').insert([{
          user_id: selectedExpert.id,
-         title: 'New Session Request',
-         message: `${user.email || 'A client'} requested a tactical session on ${bookingData.date}.`,
+         title: 'Verified Mandate Received',
+         message: `${user.full_name || user.email} has initialized a tactical session. Payment Verified: ${simulatedPaymentId}`,
          type: 'BOOKING',
          link: '/home'
       }]);
 
-      alert("Booking Request Synchronized. Awaiting Advisor Confirmation.");
+      alert(`Transaction Successful. Mandate synchronized with Ledger: ${simulatedPaymentId}`);
       setIsBookingModalOpen(false);
     }
     setIsProcessing(false);

@@ -286,55 +286,20 @@ export default function CheckoutHomeFeed() {
          </div>
       </section>
 
-      {/* 2. IDENTITY & ONBOARDING SENTINELS */}
+      {/* 2. IDENTITY SENTINEL (Email Only) */}
       {!isVerified && (
          <div className="bg-[#E53935] text-white p-8 rounded-[32px] mb-8 shadow-2xl animate-in slide-in-from-top-4 duration-700 flex items-center justify-between group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2" />
             <div className="flex items-center gap-6 relative z-10">
                <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
-                  <Mail size={30} className="animate-bounce-subtle" />
+                  <Globe size={30} className="animate-bounce-subtle" />
                </div>
                <div>
                   <h3 className="text-xl font-black uppercase tracking-tight">Identity Pending Verification</h3>
-                  <p className="text-white/70 font-medium text-sm">Please confirm your email address to unlock full network authority and mandate posting.</p>
+                  <p className="text-white/70 font-medium text-sm">Please confirm your email address to unlock full network authority.</p>
                </div>
             </div>
-            <div className="flex items-center gap-4 relative z-10">
-               <span className="hidden md:block text-[10px] font-black uppercase bg-white/20 px-4 py-2 rounded-xl backdrop-blur-md">Check Tactical Inbox</span>
-            </div>
          </div>
-      )}
-
-      {!isJoinedToSyndicate && isVerified && (
-        <div className="bg-[#292828] p-8 rounded-[32px] text-white shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-700">
-           {/* Cinematic Backdrop */}
-           <div className="absolute top-0 right-0 w-64 h-64 bg-[#E53935]/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-           <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2" />
-           
-           <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                 <Globe size={18} className="text-[#E53935]" />
-                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E53935]">Network Activation Required</span>
-              </div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight mb-4">
-                 Your node is currently <br /> <span className="text-[#E53935]">De-synchronized</span>
-              </h2>
-              <p className="text-[14px] font-medium text-white/50 mb-8 max-w-md">
-                 To unlock sector-specific mandates and regional business capital, you must join a professional Syndicate guild.
-              </p>
-              <Link 
-                href="/communities"
-                className="inline-flex items-center gap-3 px-8 h-14 bg-white text-[#292828] rounded-2xl font-black text-xs uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-xl group"
-              >
-                 Find Your Syndicate <ArrowUpRight size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </Link>
-           </div>
-
-           {/* Stylized Node Graphics */}
-           <div className="absolute right-8 bottom-0 opacity-10 pointer-events-none translate-y-1/4">
-              <Users size={180} strokeWidth={1} />
-           </div>
-        </div>
       )}
 
       {/* 2. QUICK FILTERS */}
@@ -440,23 +405,31 @@ export default function CheckoutHomeFeed() {
                </Link>
             </div>
 
-            {/* FINOPS WIDGET */}
-            <div className="bg-[#292828] rounded-[24px] p-6 text-white shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <TrendingUp size={80} />
-               </div>
-               <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-6">Revenue Flow</h3>
-               <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-tighter">Total Tactical Earnings</span>
-                  <div className="text-3xl font-black italic">₹{totalRevenue.toLocaleString()}</div>
-               </div>
-               <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
-                     <span>Active Mandates</span>
-                     <span className="text-white">{bookings.filter(b => b.status === 'PENDING').length}</span>
-                  </div>
-               </div>
-            </div>
+            {/* SYNDICATE SENTINEL WIDGET */}
+            {!isJoinedToSyndicate && isVerified && (
+              <div className="bg-[#292828] p-6 rounded-[24px] text-white shadow-2xl relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
+                 
+                 <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                       <Globe size={14} className="text-[#E53935]" />
+                       <span className="text-[8px] font-black uppercase tracking-widest text-[#E53935]">Network Status</span>
+                    </div>
+                    <h2 className="text-lg font-black uppercase leading-tight mb-2">
+                       Node <br /> <span className="text-[#E53935]">De-synced</span>
+                    </h2>
+                    <p className="text-[10px] font-medium text-white/50 mb-6">
+                       Unlock mandates and business capital.
+                    </p>
+                    <Link 
+                      href="/communities"
+                      className="inline-flex items-center gap-2 px-6 h-10 bg-white text-[#292828] rounded-xl font-black text-[9px] uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-xl w-full justify-between group"
+                    >
+                       Join Syndicate <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Link>
+                 </div>
+              </div>
+            )}
          </aside>
       </div>
 

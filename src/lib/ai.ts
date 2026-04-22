@@ -22,19 +22,22 @@ export const CATEGORIES_MAP = {
  * This is used to drive the "matchScore" visible in the UI.
  */
 export function calculateMatchScore(user: { role: string; bio: string; domains?: string[] }, post: any): number {
+  if (!post) return 0;
   let score = 70; // Baseline score
   
-  const userDomain = user.role.toLowerCase();
+  const userDomain = (user.role || "").toLowerCase();
   const postDomain = (post.domain || "").toLowerCase();
   
   // 1. Domain Alignment
-  if (userDomain === postDomain) {
+  if (userDomain && postDomain && userDomain === postDomain) {
     score += 15;
   }
   
   // 2. Keyword Matching (Deep Logic)
-  const keywords = post.title.toLowerCase() + " " + (post.content || "").toLowerCase();
-  const userContext = user.bio.toLowerCase();
+  const title = (post.title || "").toLowerCase();
+  const content = (post.content || "").toLowerCase();
+  const keywords = title + " " + content;
+  const userContext = (user.bio || "").toLowerCase();
   
   const commonKeywords = ["expert", "scale", "launch", "strategy", "digital", "growth"];
   commonKeywords.forEach(word => {
@@ -54,8 +57,12 @@ export function calculateMatchScore(user: { role: string; bio: string; domains?:
  * Calculates a match score for an advisor based on user needs.
  */
 export function calculateAdvisorMatch(user: any, advisor: any): number {
+  if (!user || !advisor) return 0;
   let score = 80;
-  if (user.role.toLowerCase() === advisor.role.toLowerCase()) score += 10;
+  const userRole = (user.role || "").toLowerCase();
+  const advisorRole = (advisor.role || "").toLowerCase();
+  
+  if (userRole && advisorRole && userRole === advisorRole) score += 10;
   if (advisor.checkoutScore > 90) score += 5;
   return Math.min(score, 100);
 }

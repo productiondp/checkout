@@ -57,7 +57,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
   useEffect(() => {
     if (isOpen) {
       if (editPost) {
-        setFormType(editPost.type.charAt(0).toUpperCase() + editPost.type.slice(1).toLowerCase() as FormType);
+        const postType = editPost.type || "LEAD";
+        setFormType(postType.charAt(0).toUpperCase() + postType.slice(1).toLowerCase() as FormType);
         setFormData({
           leadTitle: editPost.title || "",
           leadProblem: editPost.content || "",

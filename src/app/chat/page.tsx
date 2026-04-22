@@ -173,7 +173,7 @@ export default function PremiumMessagesPage() {
 
                   <div className="flex flex-col items-end w-full">
                      <div className="bg-[#E53935] p-5 rounded-[1.3rem] rounded-tr-lg shadow-xl shadow-red-500/10 max-w-[80%]">
-                        <p className="text-[15px] font-medium text-white leading-relaxed">Hey {selectedChat.name.split(' ')[0]}! Yes, we just finalized the regional strategy. Attaching the summary PDF here.</p>
+                        <p className="text-[15px] font-medium text-white leading-relaxed">Hey {(selectedChat.name || "there").split(' ')[0]}! Yes, we just finalized the regional strategy. Attaching the summary PDF here.</p>
                      </div>
                      <div className="flex items-center gap-2 mt-2 mr-4">
                         <span className="text-[10px] font-bold text-[#292828]/40">10:45 AM</span>

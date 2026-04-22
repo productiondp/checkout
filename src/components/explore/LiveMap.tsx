@@ -22,11 +22,15 @@ import {
  Shield,
  TrendingUp as TrendingIcon,
  Award,
- CheckCircle2 as CheckIcon
+ CheckCircle2 as CheckIcon,
+ Calendar,
+ Clock,
+ ArrowRight
 } from "lucide-react";
 
 import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
+import ReviewModal from "@/components/modals/ReviewModal";
 
 type MarkerType = "Meeting" | "Hiring" | "Business Leads" | "Partnership" | "Expo" | "Update" | "LEAD" | "HIRING" | "MEETUP" | "UPDATE" | "PARTNER";
 
@@ -53,8 +57,36 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
  const [isLoading, setIsLoading] = useState(true);
  const [userProfile, setUserProfile] = useState<any>(null);
  const [isJoinedToSyndicate, setIsJoinedToSyndicate] = useState(false);
+ const [bookings, setBookings] = useState<any[]>([]);
+ const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+ const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
 
  const supabase = createClient();
+
+ const fetchBookings = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)')
+      .or(`advisor_id.eq.${user.id},client_id.eq.${user.id}`)
+      .order('scheduled_at', { ascending: true })
+      .limit(3);
+    
+    if (bookingsData) setBookings(bookingsData);
+ };
+
+  const handleBookingStatus = async (bookingId: string, status: 'CONFIRMED' | 'CANCELLED') => {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId);
+    
+    if (!error) {
+      fetchBookings();
+    }
+  };
 
  useEffect(() => {
    async function fetchData() {
@@ -75,6 +107,7 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
          .eq('user_id', user.id)
          .single();
        setIsJoinedToSyndicate(!!communityJoin);
+       fetchBookings();
      }
 
      const { data: postsData } = await supabase
@@ -196,6 +229,57 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
                </div>
             </div>
          ))}
+      </div>
+
+      {/* BOARD SCHEDULE WIDGET */}
+      <div className="bg-white rounded-[24px] p-6 border border-[#292828]/10 shadow-premium">
+         <h3 className="text-[9px] font-black uppercase tracking-widest text-[#292828]/40 mb-5 flex items-center justify-between">
+            Board Schedule <Calendar size={12} className="text-[#E53935]" />
+         </h3>
+         
+         <div className="space-y-3">
+            {bookings.length > 0 ? bookings.map((b) => (
+              <div key={b.id} className="p-3.5 bg-slate-50 border border-[#292828]/5 rounded-xl group cursor-default">
+                 <div className="flex items-center justify-between mb-2">
+                    <span className={cn(
+                      "px-1.5 py-0.5 rounded-md text-[6px] font-black uppercase tracking-tighter text-white",
+                      b.status === 'PENDING' ? "bg-amber-500" : b.status === 'CONFIRMED' ? "bg-emerald-600" : "bg-[#292828]"
+                    )}>
+                       {b.status}
+                    </span>
+                    <span className="text-[7px] font-bold text-slate-400">{new Date(b.scheduled_at).toLocaleDateString()}</span>
+                 </div>
+                 <p className="text-[10px] font-black text-[#292828] mb-1 truncate">
+                    {userProfile?.id === b.advisor_id ? `${b.client?.full_name}` : `${b.advisor?.full_name}`}
+                 </p>
+                 <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-400">
+                    <Clock size={10} /> 1 HR Session
+                 </div>
+
+                 {/* ADVISOR ACTIONS */}
+                 {userProfile?.id === b.advisor_id && b.status === 'PENDING' && (
+                    <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100">
+                       <button onClick={() => handleBookingStatus(b.id, 'CONFIRMED')} className="h-7 bg-[#292828] text-white rounded-lg text-[7px] font-black uppercase hover:bg-emerald-600 transition-all">Accept</button>
+                       <button onClick={() => handleBookingStatus(b.id, 'CANCELLED')} className="h-7 bg-white border border-slate-200 text-slate-400 rounded-lg text-[7px] font-black uppercase hover:text-red-500 transition-all">Decline</button>
+                    </div>
+                 )}
+
+                 {/* CLIENT ACTIONS */}
+                 {userProfile?.id === b.client_id && b.status === 'CONFIRMED' && (
+                    <button 
+                      onClick={() => { setSelectedBookingForReview(b); setIsReviewModalOpen(true); }}
+                      className="w-full h-8 bg-[#292828] text-white rounded-lg text-[7px] font-black uppercase mt-3 flex items-center justify-center gap-2 hover:bg-[#E53935] transition-all"
+                    >
+                       Finalize Mandate <CheckIcon size={10} />
+                    </button>
+                 )}
+              </div>
+            )) : (
+              <div className="py-8 text-center bg-[#292828]/5 rounded-xl">
+                 <p className="text-[9px] font-bold text-slate-400 italic">No active mandates</p>
+              </div>
+            )}
+         </div>
       </div>
 
       {/* NETWORK STATUS */}
@@ -370,6 +454,13 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
   </div>
   </div>
   )}
+
+  <ReviewModal 
+    isOpen={isReviewModalOpen}
+    onClose={() => setIsReviewModalOpen(false)}
+    booking={selectedBookingForReview}
+    onSuccess={fetchBookings}
+  />
 
   </div>
  );

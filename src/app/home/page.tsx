@@ -325,93 +325,19 @@ export default function CheckoutHomeFeed() {
          ))}
       </div>
 
-      {/* 3. YOUR BEST FEED & SIDEBAR GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
-         <div className="space-y-6">
-            {rankedPosts.map(post => (
-               <UniversalFeedCard 
-               key={post.id}
-               post={post}
-               isExpanded={expandedId === post.id}
-               onExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
-               onAction={() => { setSelectedDeal(post); setIsModalOpen(true); }}
-               onEdit={handleEditPost}
-               onDelete={handleDeletePost}
-               />
-            ))}
-         </div>
-
-         {/* SIDEBAR WIDGETS */}
-         <aside className="hidden lg:block space-y-6">
-            
-            {/* BOARD SCHEDULE WIDGET */}
-            <div className="bg-white rounded-[24px] p-6 border border-[#292828]/10 shadow-premium">
-               <h3 className="text-[10px] font-black uppercase tracking-widest text-[#292828]/40 mb-6 flex items-center justify-between">
-                  Board Schedule <Calendar size={14} />
-               </h3>
-               
-               <div className="space-y-4">
-                  {bookings.length > 0 ? bookings.map((b) => (
-                    <div key={b.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 group cursor-default">
-                       <div className="flex items-center justify-between mb-2">
-                          <span className={cn(
-                            "px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-tighter text-white",
-                            b.status === 'PENDING' ? "bg-amber-500" : b.status === 'CONFIRMED' ? "bg-emerald-600" : "bg-[#292828]"
-                          )}>
-                             {b.status}
-                          </span>
-                          <span className="text-[8px] font-bold text-slate-400">{new Date(b.scheduled_at).toLocaleDateString()}</span>
-                       </div>
-                       <p className="text-[12px] font-bold text-[#292828] mb-1 truncate">
-                          {user?.id === b.advisor_id ? `Client: ${b.client?.full_name}` : `Expert: ${b.advisor?.full_name}`}
-                       </p>
-                       <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mb-3">
-                          <Clock size={10} /> 1 HR Session
-                       </div>
-
-                       {/* ADVISOR ACTIONS */}
-                       {user?.id === b.advisor_id && b.status === 'PENDING' && (
-                         <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 mt-3">
-                            <button 
-                              onClick={() => handleBookingStatus(b.id, 'CONFIRMED')}
-                              className="h-8 bg-emerald-600 text-white rounded-lg text-[8px] font-black uppercase hover:bg-emerald-700 transition-all shadow-sm"
-                            >
-                               Accept
-                            </button>
-                            <button 
-                              onClick={() => handleBookingStatus(b.id, 'CANCELLED')}
-                              className="h-8 bg-white border border-slate-200 text-slate-400 rounded-lg text-[8px] font-black uppercase hover:bg-red-50 hover:text-red-600 transition-all"
-                            >
-                               Decline
-                            </button>
-                         </div>
-                       )}
-
-                       {/* CLIENT ACTIONS */}
-                       {user?.id === b.client_id && b.status === 'CONFIRMED' && (
-                          <div className="border-t border-slate-100 pt-3 mt-3">
-                             <button 
-                               onClick={() => {
-                                 setSelectedBookingForReview(b);
-                                 setIsReviewModalOpen(true);
-                               }}
-                               className="w-full h-10 bg-[#292828] text-white rounded-xl text-[9px] font-black uppercase flex items-center justify-center gap-2 hover:bg-[#E53935] transition-all shadow-lg"
-                             >
-                                Finalize Mandate <CheckCircle2 size={14} />
-                             </button>
-                          </div>
-                       )}
-                    </div>
-                  )) : (
-                    <div className="py-10 text-center opacity-20 italic text-[11px]">No active mandates</div>
-                  )}
-               </div>
-
-               <Link href="/advisors" className="mt-8 flex items-center justify-center gap-2 w-full h-12 bg-[#292828]/5 rounded-xl text-[9px] font-black uppercase text-[#292828] hover:bg-[#292828] hover:text-white transition-all group">
-                  Discover Experts <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-               </Link>
-            </div>
-         </aside>
+      {/* 3. YOUR BEST FEED - CENTERED OPTIMIZATION */}
+      <div className="max-w-2xl mx-auto space-y-6">
+          {rankedPosts.map(post => (
+             <UniversalFeedCard 
+             key={post.id}
+             post={post}
+             isExpanded={expandedId === post.id}
+             onExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
+             onAction={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+             onEdit={handleEditPost}
+             onDelete={handleDeletePost}
+             />
+          ))}
       </div>
 
       {/* FLOAT ACTION */}

@@ -144,19 +144,37 @@ export default function CheckoutHomeFeed() {
     setIsJoinedToSyndicate(syndicateRes.count ? syndicateRes.count > 0 : false);
 
     // 4. Process Bookings & Revenue
-    if (bookingRes.data) {
-      setBookings(bookingRes.data);
-      const revenue = bookingRes.data
-        .filter((b: any) => b.advisor_id === authUser.id && b.status !== 'CANCELLED')
-        .length * 2500;
-      setTotalRevenue(revenue);
-    }
+    await fetchBookings(authUser.id);
 
     // 5. Fetch Ranked Partner Mandates (Requires Profile Embedding)
     await fetchPosts(profile);
     setIsLoading(false);
   };
 
+  const fetchBookings = async (userIdOverride?: string) => {
+    let targetId = userIdOverride;
+    
+    if (!targetId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      targetId = user.id;
+    }
+
+    const { data } = await supabase
+      .from('bookings')
+      .select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)')
+      .or(`advisor_id.eq.${targetId},client_id.eq.${targetId}`)
+      .order('scheduled_at', { ascending: true })
+      .limit(3);
+    
+    if (data) {
+      setBookings(data);
+      const revenue = data
+        .filter((b: any) => b.advisor_id === targetId && b.status !== 'CANCELLED')
+        .length * 2500;
+      setTotalRevenue(revenue);
+    }
+  };
 
   const handleBookingStatus = async (bookingId: string, status: 'CONFIRMED' | 'CANCELLED') => {
     const { error } = await supabase

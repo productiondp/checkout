@@ -68,16 +68,16 @@ export default function BalancedGlobalLanding() {
          
          {/* VALUE DISCOVERY (REBALANCED FONTS) */}
          <div className="lg:col-span-7 space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-left-2 duration-700">
-            <div className="inline-flex items-center gap-2 px-4 lg:px-5 py-1.5 rounded-xl bg-[#E53935]/15 border border-[#E53935]/30 text-[#E53935] text-[8px] lg:text-[9px] font-black uppercase">
+            <div className="label-premium">
                <Zap size={10} className="animate-pulse" /> Where Local Meets Business Lead
             </div>
             
-            <h1 className="text-4xl lg:text-7xl font-black leading-tight text-white mix-blend-plus-lighter">
+            <h1>
               Stop Networking. <br className="hidden sm:block" />
               <span className="text-[#E53935]">Start Building.</span>
             </h1>
             
-            <p className="text-lg lg:text-3xl text-white/60 font-bold max-w-2xl leading-snug">
+            <p>
                Checkout is a simple way for entrepreneurs and creators in your city to connect and get things done.
             </p>
             
@@ -110,7 +110,7 @@ export default function BalancedGlobalLanding() {
             <div className="relative w-full max-w-sm">
                {/* Why Checkout Wins Differentiator Card */}
                <div className="w-full bg-[#292828]/60 p-8 lg:p-10 rounded-[1.625rem] lg:rounded-[1.95rem] border border-white/10 shadow-3xl hover:border-[#E53935]/30 transition-all duration-700 relative z-20 backdrop-blur-md">
-                  <h3 className="text-3xl lg:text-4xl font-black text-white mb-6 lg:mb-8 leading-none uppercase">Why <span className="text-[#E53935]">Checkout?</span></h3>
+                  <h3 className="text-white mb-6 lg:mb-8">Why <span className="text-[#E53935]">Checkout?</span></h3>
                   
                   <div className="space-y-4 lg:space-y-6">
                     {[

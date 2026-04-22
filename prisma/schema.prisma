@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  BUSINESS
+  PROFESSIONAL
+  ADVISOR
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(PROFESSIONAL)
+  bio           String?
+  domains       String[]  @default([])
+  location      String?
+  matchScore    Int       @default(0)
+  
+  posts         Post[]
+  meetupsJoined MeetupAttendee[]
+  meetupsHosted Meetup[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  type        String   // Lead, Hiring, Partner, Update, Meetup
+  title       String
+  content     String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  
+  // Lead Specific
+  budget      String?
+  dueDate     DateTime?
+  
+  // Hiring Specific
+  skills      String[] @default([])
+  workType    String?  // Remote, Hybrid, Physical
+  
+  // Partner Specific
+  offer       String?
+  need        String?
+  
+  location    String   @default("Global")
+  matchScore  Int      @default(0)
+  isLive      Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Meetup {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  location    String
+  date        DateTime
+  maxSlots    Int      @default(10)
+  type        String   @default("Physical") // Physical, Virtual
+  category    String?  // Tech, Strategy, etc.
+  
+  hostId      String
+  host        User     @relation(fields: [hostId], references: [id])
+  
+  attendees   MeetupAttendee[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MeetupAttendee {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  meetupId  String
+  meetup    Meetup   @relation(fields: [meetupId], references: [id])
+  
+  joinedAt  DateTime @default(now())
+
+  @@unique([userId, meetupId])
+}
+
+model NetworkNode {
+  id          String   @id @default(cuid())
+  name        String   // e.g., Indiranagar Hub
+  latitude    Float
+  longitude   Float
+  activity    Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+}

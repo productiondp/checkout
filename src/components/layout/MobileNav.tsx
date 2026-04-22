@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, Plus, MessageSquare, User, Search } from "lucide-react";
+import { 
+  Home, 
+  Users, 
+  Search, 
+  MessageSquare, 
+  User, 
+  Plus 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import PostModal from "../modals/PostModal";
 
@@ -12,8 +19,8 @@ export default function MobileNav() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const menu = [
-    { label: "Home", href: "/home", icon: Home },
-    { label: "People", href: "/match", icon: Users },
+    { label: "Feeds", href: "/home", icon: Home },
+    { label: "Partners", href: "/match", icon: Users },
     { label: "Find", href: "/explore", icon: Search },
     { label: "Chats", href: "/chat", icon: MessageSquare },
     { label: "Me", href: "/profile", icon: User },
@@ -28,7 +35,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Home size={22} className={cn("transition-all", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[0].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Home</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Feeds</span>
         </Link>
 
         <Link 
@@ -36,7 +43,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>People</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Partners</span>
         </Link>
 
         {/* 2. CENTER ACTION (ADD) */}

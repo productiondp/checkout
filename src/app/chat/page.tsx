@@ -19,10 +19,23 @@ import {
   Star,
   Settings,
   X,
-  MessageSquare
+  MessageSquare,
+  Trophy,
+  ShieldCheck,
+  Zap,
+  Target,
+  Sparkles,
+  BrainCircuit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_CHATS } from "@/lib/dummyData";
+import { getChatInsight } from "@/lib/ai";
+
+const MOCK_CURRENT_USER = {
+  role: "Strategy",
+  bio: "Expert in scaling brands and regional growth.",
+  domains: ["Strategy", "Marketing"]
+};
 
 export default function PremiumMessagesPage() {
   const [selectedChat, setSelectedChat] = useState<any>(DUMMY_CHATS[0]);
@@ -41,7 +54,7 @@ export default function PremiumMessagesPage() {
       )}>
         <div className="p-8 pb-6 bg-white/100 z-10 sticky top-0">
            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-black text-[#292828] leading-none">Chats</h1>
+              <h1 className="text-3xl font-bold text-[#292828] leading-none font-outfit uppercase">Chats</h1>
               <button 
                 onClick={() => setShowSettings(true)}
                 className="h-10 w-10 bg-[#292828]/5 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828]/10 hover:text-[#292828] transition-all"
@@ -115,7 +128,7 @@ export default function PremiumMessagesPage() {
                         <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
                      </Link>
                      <div>
-                        <h2 className="text-[17px] font-black text-[#292828] leading-tight">{selectedChat.name}</h2>
+                        <h2 className="text-[17px] font-bold text-[#292828] leading-tight font-outfit uppercase">{selectedChat.name}</h2>
                         <div className="flex items-center gap-2">
                            <span className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-green-500" : "bg-slate-300")} />
                            <span className="text-[11px] font-bold text-[#292828] uppercase">{selectedChat.online ? "Online Now" : "Inactive"}</span>
@@ -133,7 +146,10 @@ export default function PremiumMessagesPage() {
                   </button>
                   <button 
                     onClick={() => setShowProfile(!showProfile)}
-                    className="h-12 w-12 items-center justify-center rounded-2xl bg-[#292828]/5 text-[#292828] hover:bg-[#292828] hover:text-white transition-all shadow-sm"
+                    className={cn(
+                      "h-12 w-12 items-center justify-center rounded-2xl transition-all shadow-sm",
+                      showProfile ? "bg-[#292828] text-white" : "bg-[#292828]/5 text-[#292828] hover:bg-[#292828] hover:text-white"
+                    )}
                   >
                      <Info size={22} />
                   </button>
@@ -143,7 +159,7 @@ export default function PremiumMessagesPage() {
             {/* MESSAGE STREAM */}
             <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase">Session Encryption Active</span>
+                  <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase">Secure Connection</span>
                </div>
 
                {/* Mock Messages */}
@@ -243,8 +259,8 @@ export default function PremiumMessagesPage() {
              <div className="h-24 w-24 bg-white rounded-[1.625rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
                 <MessageSquare size={40} />
              </div>
-             <h2 className="text-2xl font-black text-[#292828] leading-tight">Your Communication Hub</h2>
-             <p className="text-[#292828] max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start exploring potential business leads and contract details.</p>
+             <h2 className="text-2xl font-bold text-[#292828] group-hover:text-white leading-tight">Messages</h2>
+             <p className="text-[#292828] max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start chatting with others and discuss detail.</p>
           </div>
         )}
       </main>
@@ -253,59 +269,118 @@ export default function PremiumMessagesPage() {
       {selectedChat && showProfile && (
         <aside className="hidden lg:flex flex-col w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300">
            <div className="p-8 h-full overflow-y-auto no-scrollbar">
-              <div className="flex justify-between items-center mb-10">
-                 <h3 className="text-[12px] font-bold text-[#292828]/40 uppercase">Partner Profile</h3>
-                 <button onClick={() => setShowProfile(false)} className="h-8 w-8 bg-[#292828]/5 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#292828]/10">
-                    <X size={16} />
+              <div className="flex justify-between items-center mb-8">
+                 <h3 className="text-[11px] font-bold text-[#292828] group-hover:text-white/30 uppercase tracking-widest">Partner Info</h3>
+                 <button onClick={() => setShowProfile(false)} className="h-9 w-9 bg-[#292828]/5 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828]/10 transition-colors">
+                    <X size={18} />
                  </button>
               </div>
 
-              <div className="text-center mb-12">
-                 <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-[1.625rem] overflow-hidden shadow-2xl mb-6 ring-4 ring-slate-50 block hover:scale-105 transition-transform active:scale-95">
-                    <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
-                 </Link>
-                 <h2 className="text-2xl font-black text-[#292828] leading-tight mb-1">{selectedChat.name}</h2>
-                 <p className="text-[11px] font-bold text-[#E53935] uppercase mb-6">Verified Business Founder</p>
+              <div className="text-center mb-10">
+                 <div className="relative inline-block mb-6">
+                    <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-[2rem] overflow-hidden shadow-2xl ring-8 ring-[#292828]/5 block hover:scale-105 transition-transform active:scale-95">
+                       <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
+                    </Link>
+                    <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-white rounded-2xl shadow-xl flex items-center justify-center text-[#E53935] border border-[#292828]/5">
+                       <ShieldCheck size={24} fill="currentColor" fillOpacity={0.1} />
+                    </div>
+                 </div>
                  
-                 <div className="flex justify-center gap-3">
-                    <button className="px-6 py-3 bg-[#292828] text-white rounded-xl text-[10px] font-bold uppercase hover:bg-[#E53935] shadow-lg transition-all">View Profile</button>
-                    <button className="h-10 w-10 flex items-center justify-center bg-[#292828]/5 text-[#292828] rounded-xl hover:bg-[#292828]/10"><Star size={18} /></button>
+                 <h2 className="text-2xl font-bold text-[#292828] group-hover:text-white leading-tight mb-1 font-outfit uppercase tracking-tight">{selectedChat.name}</h2>
+                 <p className="text-[13px] font-bold text-[#E53935] mb-6 uppercase tracking-widest">{selectedChat.role || "Verified Partner"}</p>
+                 
+                 <div className="flex justify-center gap-2 mb-8">
+                    <div className="px-4 py-2 bg-[#292828] text-white rounded-xl flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                       <Zap size={14} className="text-yellow-400 fill-yellow-400" />
+                       <span className="text-[12px] font-black">{selectedChat.checkoutScore}</span>
+                    </div>
+                    <div className={cn(
+                       "px-4 py-2 rounded-xl flex items-center gap-2 border-2",
+                       selectedChat.badge === "Elite" ? "border-red-500/20 bg-red-50 text-red-600" :
+                       selectedChat.badge === "Gold" ? "border-amber-500/20 bg-amber-50 text-amber-600" :
+                       "border-slate-500/20 bg-slate-50 text-slate-600"
+                    )}>
+                       <span className="text-[10px] font-black uppercase tracking-wider">{selectedChat.badge}</span>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 gap-3 mb-10">
+                    <div className="p-5 bg-[#292828]/5 rounded-[1.5rem] border border-[#292828]/5 text-left group hover:bg-white hover:shadow-xl transition-all cursor-default">
+                       <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-[#292828] shadow-sm group-hover:scale-110 transition-transform">
+                             <Trophy size={20} />
+                          </div>
+                          <div>
+                             <p className="text-[10px] font-bold text-[#292828] group-hover:text-white/30 uppercase tracking-wider">Rank</p>
+                             <p className="text-[15px] font-bold text-[#292828] group-hover:text-white">#{selectedChat.rank?.pos} in {selectedChat.rank?.city}</p>
+                             <p className="text-[11px] font-bold text-[#E53935]">{selectedChat.rank?.domain} Expert</p>
+                          </div>
+                       </div>
+                    </div>
                  </div>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-10">
+                 {/* AI Insight Section */}
+                 <div className="p-6 bg-[#292828]/5 border border-[#292828]/5 rounded-[2rem] mb-2 overflow-hidden relative group/ai">
+                    <div className="absolute top-0 right-0 p-3 opacity-20"><BrainCircuit size={40} className="text-[#292828]" /></div>
+                    <h4 className="text-[10px] font-black text-[#292828]/40 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                       <Sparkles size={10} className="text-[#E53935]" /> Expert Tip
+                    </h4>
+                    <p className="text-[13px] font-bold text-[#292828] leading-tight relative z-10">
+                       {getChatInsight(MOCK_CURRENT_USER, selectedChat)}
+                     </p>
+                  </div>
+
+                 {/* Bio Section */}
+                 {selectedChat.bio && (
+                    <div>
+                       <p className="text-[14px] font-medium text-[#292828]/70 leading-relaxed bg-[#292828]/5 p-5 rounded-2xl italic border-l-4 border-[#292828]">
+                          "{selectedChat.bio}"
+                       </p>
+                    </div>
+                 )}
+
+                 {/* Requirements Section */}
+                 {selectedChat.requirements && (
+                    <div>
+                        <div className="flex items-center gap-2 mb-6">
+                           <Target size={16} className="text-[#E53935]" />
+                           <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest">Active Needs</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                           {selectedChat.requirements.map((req: string, i: number) => (
+                              <span key={i} className="px-4 py-2 bg-white border border-[#292828]/10 rounded-xl text-[12px] font-bold text-[#292828] shadow-sm hover:border-[#E53935] hover:text-[#E53935] transition-all cursor-default">
+                                 {req}
+                              </span>
+                           ))}
+                        </div>
+                    </div>
+                 )}
+
+                 {/* Collaboration Stats */}
                  <div>
-                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase mb-4">Collaboration History</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                       <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10/50">
-                          <p className="text-[18px] font-bold text-[#292828]">12</p>
-                          <p className="text-[10px] font-bold text-[#292828] uppercase">Documents</p>
+                    <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest mb-6">Activity</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-5 bg-[#292828]/5 rounded-3xl border border-[#292828]/5 text-center">
+                          <p className="text-2xl font-black text-[#292828]">12</p>
+                          <p className="text-[10px] font-black text-[#292828]/40 uppercase mt-1">Shared Files</p>
                        </div>
-                       <div className="p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/10/50">
-                          <p className="text-[18px] font-bold text-[#292828]">4</p>
-                          <p className="text-[10px] font-bold text-[#292828] uppercase">Contracts</p>
+                       <div className="p-5 bg-red-50 rounded-3xl border border-red-500/10 text-center">
+                          <p className="text-2xl font-black text-[#E53935]">4</p>
+                          <p className="text-[10px] font-black text-red-500/40 uppercase mt-1">Contracts</p>
                        </div>
                     </div>
                  </div>
 
-                 <div>
-                    <h4 className="text-[11px] font-bold text-[#292828]/40 uppercase mb-4">Shared Files</h4>
-                    <div className="space-y-3">
-                       {[
-                         { icon: FileText, name: "Proposal_Final.pdf", size: "1.2MB" },
-                         { icon: ImageIcon, name: "Asset_Photos.zip", size: "145MB" },
-                       ].map((f, i) => (
-                         <div key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-[#292828]/5 hover:bg-[#292828]/5 cursor-pointer transition-all">
-                            <div className="h-10 w-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-[#292828]">
-                               <f.icon size={18} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                               <p className="text-[13px] font-bold text-[#292828] truncate">{f.name}</p>
-                               <p className="text-[10px] font-bold text-[#292828]">{f.size}</p>
-                            </div>
-                         </div>
-                       ))}
-                    </div>
+                 {/* Action Buttons */}
+                 <div className="pt-6 space-y-3">
+                    <Link href={`/profile/${selectedChat.id}`} className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:bg-[#E53935] hover:-translate-y-1 transition-all active:translate-y-0">
+                       View Full Profile
+                    </Link>
+                    <button className="w-full h-14 bg-[#292828]/5 text-[#292828] rounded-2xl flex items-center justify-center font-black text-[11px] uppercase tracking-widest hover:bg-[#292828]/10 transition-all">
+                       Flag as High Priority
+                    </button>
                  </div>
               </div>
            </div>

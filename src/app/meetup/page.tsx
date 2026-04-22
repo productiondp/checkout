@@ -1,421 +1,444 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { 
   MapPin, 
   Users, 
   Calendar, 
-  ArrowRight, 
-  Star, 
-  Shield, 
   Plus, 
-  MessageSquare, 
   Clock, 
   LayoutGrid, 
   List,
   CheckCircle2,
-  ArrowUpRight
+  ArrowUpRight,
+  Sparkles,
+  Zap,
+  Target,
+  BrainCircuit,
+  Maximize2,
+  Filter,
+  Check,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DUMMY_POSTS } from "@/lib/dummyData";
+import { createClient } from "@/utils/supabase/client";
+import { calculateMatchScore } from "@/lib/ai";
 
-// Extract Meetings from DUMMY_POSTS
-const INITIAL_MEETUPS: any[] = [];
+const MOCK_CURRENT_USER = {
+  role: "Strategy",
+  bio: "Expert in scaling brands and regional growth.",
+  domains: ["Strategy", "Marketing"]
+};
 
 const TOPICS = ["All", "Networking", "Investment", "Community", "Strategy", "Tech", "Logistics"];
 
 export default function MeetupPage() {
-  const [meetups, setMeetups] = useState(INITIAL_MEETUPS);
+  const [meetups, setMeetups] = useState<any[]>([]);
   const [showHostModal, setShowHostModal] = useState(false);
-  const [hostData, setHostData] = useState({ title: "", loc: "", category: "Networking", type: "In-Person", requireApproval: true });
   const [activeTopic, setActiveTopic] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showAiArchitect, setShowAiArchitect] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createClient();
+
+  React.useEffect(() => {
+    async function fetchMeetups() {
+      setIsLoading(true);
+      const { data } = await supabase
+        .from('posts')
+        .select('*, author:profiles(full_name, avatar_url)')
+        .eq('type', 'MEETUP')
+        .order('created_at', { ascending: false });
+
+      if (data && data.length > 0) {
+        const mapped = data.map(m => ({
+          ...m,
+          author: m.author?.full_name || "Community Member",
+          avatar: m.author?.avatar_url || `https://i.pravatar.cc/150?u=${m.id}`,
+          timeAgo: "Live in 2h", // Mocked for UI feel
+          matchPotential: m.match_score || 95,
+          attendees: 12,
+          category: m.domain || "Tech",
+          x: Math.random() * 80 + 10,
+          y: Math.random() * 80 + 10
+        }));
+        setMeetups(mapped);
+      } else {
+        setMeetups([]);
+      }
+      setIsLoading(false);
+    }
+    fetchMeetups();
+  }, []);
 
   const filteredMeetups = useMemo(() => {
-    return meetups.filter(m => activeTopic === "All" || m.category === activeTopic);
+    const list = meetups.filter(m => activeTopic === "All" || m.category === activeTopic);
+    
+    // AI Intelligence: Dynamically calculate match and sort by relevance + proximity
+    return list.map(m => ({
+      ...m,
+      matchPotential: calculateMatchScore(MOCK_CURRENT_USER, { ...m, type: "Meetup", domain: m.category })
+    })).sort((a, b) => b.matchPotential - a.matchPotential || a.id.localeCompare(b.id));
   }, [meetups, activeTopic]);
 
-  const handleJoin = (id: string | number) => {
-    setMeetups(meetups.map(m => {
-      if (m.id === id) {
-        if (m.status === "none") {
-           return { ...m, status: "joined" };
-        } else {
-           return { ...m, status: "none" };
-        }
-      }
-      return m;
-    }));
-  };
+  const strategicRecommendations = useMemo(() => {
+    return [
+      { title: `${MOCK_CURRENT_USER.role} Growth Sync`, time: "Tomorrow, 10:00", type: "Virtual", score: 99 },
+      { title: "Supply Chain Sync", time: "Friday, 14:30", type: "Technopark", score: 92 }
+    ];
+  }, []);
 
-  const handleStartMeeting = () => {
-    if (!hostData.title || !hostData.loc) return;
-    const newMeetup = {
-      id: `custom-${Date.now()}`,
-      title: hostData.title,
-      category: hostData.category,
-      likes: 1,
-      timeAgo: "Just now",
-      loc: hostData.loc,
-      location: hostData.loc,
-      meetingType: hostData.type,
-      author: "User",
-      avatar: "/placeholder-user.jpg",
-      status: "joined",
-      meetingTime: new Date().toISOString(),
-      x: 50, y: 50,
-      advice: "Welcome to the network! Start by introducing your business."
-    };
-    // @ts-ignore
-    setMeetups([newMeetup, ...meetups]);
-    setShowHostModal(false);
-    setHostData({ title: "", loc: "", category: "Networking", type: "In-Person", requireApproval: true });
+  const handleJoin = (id: string) => {
+    setMeetups(meetups.map(m => m.id === id ? { ...m, status: m.status === "none" ? "joined" : "none" } : m));
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white selection:bg-[#E53935]/10">
+    <div className="flex h-screen bg-white overflow-hidden selection:bg-[#E53935]/10">
       
-      {/* 1. MEETING FEED (LEFT) */}
-      <div className="flex-1 flex flex-col min-h-screen border-r border-[#292828]/10 pb-40 lg:pb-12">
-        
-        {/* Header Section */}
-        <div className="p-6 lg:p-10 border-b border-[#292828]/5 sticky top-0 bg-white/95 backdrop-blur-xl z-30">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-              <div>
-                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53935]/10 border border-[#E53935]/20 text-[#E53935] text-[9px] font-black uppercase tracking-widest mb-3">
-                    Hyperlocal Discovery
-                 </div>
-                 <h1 className="text-4xl font-black text-[#292828] leading-tight tracking-tighter uppercase">Meetups</h1>
-                 <p className="text-[12px] font-bold text-[#292828]/40 uppercase tracking-wide mt-1">Connect with builders in your proximity.</p>
-              </div>
-              <button 
-                onClick={() => setShowHostModal(true)}
-                className="px-10 h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase shadow-[0_20px_40px_rgba(41,40,40,0.2)] hover:bg-[#E53935] active:scale-95 transition-all flex items-center justify-center gap-3 group"
-              >
-                 <Plus size={18} strokeWidth={3} className="group-hover:rotate-90 transition-transform" /> Host a Meeting
-              </button>
-           </div>
+      {/* 1. DISCOVERY HUB (LEFT) */}
+      <main className="flex-1 overflow-y-auto no-scrollbar border-r border-[#292828]/5 pb-32 lg:pb-0 scroll-smooth">
+         
+         {/* HEADER */}
+         <div className="p-8 lg:p-12 bg-white/50 backdrop-blur-xl border-b border-[#292828]/5 sticky top-0 z-40">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-10">
+               <div>
+                  <div className="label-premium">
+                     <Target size={12} className="text-[#E53935]" /> Area Proximity Active
+                  </div>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl mb-0 tracking-tight font-black uppercase">
+                     Meetups<span className="text-[#E53935]">.</span>
+                  </h1>
+                  <p className="subheading-editorial mt-2">Connect with people in your area.</p>
+               </div>
+               
+               <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setShowAiArchitect(true)}
+                    className="h-16 px-8 rounded-2xl bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
+                  >
+                     <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-xl animate-pulse">
+                        <BrainCircuit size={20} />
+                     </div>
+                     <div className="text-left">
+                        <p className="text-[9px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
+                        <p className="text-[11px] font-bold uppercase">Plan Meeting</p>
+                     </div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setShowHostModal(true)}
+                    className="h-16 w-16 lg:w-auto lg:px-8 rounded-2xl bg-white border-2 border-[#292828] text-[#292828] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group"
+                  >
+                     <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                     <span className="hidden lg:block font-bold text-[11px] uppercase">New Meet Up</span>
+                  </button>
+               </div>
+            </div>
 
-           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 sm:pb-0">
-                 {TOPICS.map(t => (
-                   <button 
-                     key={t} 
-                     onClick={() => setActiveTopic(t)}
-                     className={cn(
-                       "px-6 h-11 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap border-2",
-                       activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-xl" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10 hover:text-[#292828]"
-                     )}
-                   >
-                      {t}
-                   </button>
-                 ))}
-              </div>
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto">
+                  {TOPICS.map(t => (
+                    <button 
+                      key={t}
+                      onClick={() => setActiveTopic(t)}
+                      className={cn(
+                        "px-6 h-11 rounded-xl text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
+                        activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
+                      )}
+                    >
+                       {t}
+                    </button>
+                  ))}
+               </div>
+               <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-xl">
+                  <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                     <LayoutGrid size={14} /> Grid
+                  </button>
+                  <button onClick={() => setViewMode("list")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                     <List size={14} /> List
+                  </button>
+               </div>
+            </div>
+         </div>
 
-              <div className="flex items-center gap-1 p-1.5 bg-[#292828]/5 rounded-2xl self-start sm:self-auto shrink-0">
-                 <button 
-                   onClick={() => setViewMode("grid")}
-                   className={cn(
-                     "h-10 px-5 rounded-xl flex items-center gap-2 text-[9px] font-black uppercase transition-all",
-                     viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30 hover:text-[#292828]"
-                   )}
-                 >
-                    <LayoutGrid size={14} /> Grid
-                 </button>
-                 <button 
-                   onClick={() => setViewMode("list")}
-                   className={cn(
-                     "h-10 px-5 rounded-xl flex items-center gap-2 text-[9px] font-black uppercase transition-all",
-                     viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30 hover:text-[#292828]"
-                   )}
-                 >
-                    <List size={14} /> List
-                 </button>
-              </div>
-           </div>
-        </div>
+         {/* CONTENT GRID */}
+         <div className="p-8 lg:p-12">
+            <div className={cn(
+               "grid gap-10",
+               viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
+            )}>
+               {filteredMeetups.map(m => (
+                 <div key={m.id} className="group relative">
+                    <div className={cn(
+                       "bg-white rounded-[2.5rem] border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] hover:border-[#E53935]/20 hover:-translate-y-2",
+                       m.status === "joined" && "border-emerald-500/30 ring-4 ring-emerald-500/5 shadow-2xl shadow-emerald-500/10"
+                    )}>
+                       {/* AI Alignment Indicator */}
+                       <div className="absolute top-6 right-6 z-10">
+                          <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl border border-[#292828]/10 flex items-center gap-2 shadow-lg">
+                             <Sparkles size={14} className="text-[#E53935] animate-pulse" />
+                             <span className="text-[10px] font-black text-[#292828] uppercase">{m.matchPotential}% Score</span>
+                          </div>
+                       </div>
 
-        {/* Meeting Grid */}
-        <div className="p-6 lg:p-10">
-           
-           <div className={cn(
-               "transition-all duration-500",
-               viewMode === "grid" ? "grid grid-cols-1 xl:grid-cols-2 gap-8" : "flex flex-col gap-8"
-           )}>
-               {filteredMeetups.length > 0 ? (
-                 filteredMeetups.map(m => (
-                    <div key={m.id} className="group/meeting-card relative">
-                       <div className={cn(
-                         "bg-white rounded-[1.625rem] border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_32px_80px_-20px_rgba(41,40,40,0.15)] hover:border-[#E53935]/20 hover:-translate-y-1 relative",
-                         m.status === "joined" && "border-emerald-500/30 ring-1 ring-emerald-500/10"
-                       )}>
-                          {/* Premium Accent Bar */}
-                          <div className={cn(
-                             "h-1.5 w-full bg-gradient-to-r",
-                             m.status === "joined" ? "from-emerald-500 via-teal-400 to-emerald-500" : "from-[#E53935] via-[#FF6B35] to-[#E53935]"
-                          )} />
+                       {/* Card Content */}
+                       <div className="p-8 lg:p-10 space-y-8">
+                          <div className="flex items-center gap-4">
+                             <div className="h-14 w-14 rounded-2xl overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
+                                <img src={m.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                                <div className="absolute inset-0 bg-[#E53935]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                             </div>
+                             <div>
+                                <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 tracking-tight">{m.author}</h4>
+                                <p className="text-[10px] font-bold text-[#292828]/30 uppercase tracking-widest">{m.category} • {m.timeAgo}</p>
+                             </div>
+                          </div>
 
-                          <div className="p-6 lg:p-8 flex flex-col gap-6">
-                             {/* Row 1: Badges & Author */}
-                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5">
-                                   <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm">
-                                      <img src={m.avatar} className="w-full h-full object-cover grayscale group-hover/meeting-card:grayscale-0 transition-all duration-500" alt="" />
-                                   </div>
-                                   <div>
-                                      <p className="text-[11px] font-black text-[#292828] uppercase leading-none mb-1">{m.author}</p>
-                                      <p className="text-[9px] font-bold text-[#292828]/30 uppercase tracking-tighter">{m.timeAgo}</p>
-                                   </div>
+                          <div className="space-y-3">
+                             <h3 className="group-hover:text-[#E53935] transition-colors">{m.title}</h3>
+                             <p className="text-[14px] font-medium text-[#292828]/60 leading-relaxed italic line-clamp-2">"{m.content}"</p>
+                          </div>
+
+                          <div className="flex flex-col gap-3">
+                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
+                                <div className="h-10 w-10 bg-[#292828] rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
+                                   <MapPin size={18} />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                   <span className={cn(
-                                     "px-3 py-1 rounded-full text-[9px] font-black uppercase border",
-                                     m.meetingType === 'Physical'
-                                       ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                       : "bg-blue-50 text-blue-700 border-blue-100"
-                                   )}>
-                                      {m.meetingType === 'Physical' ? 'In-Person' : 'Online'}
-                                   </span>
-                                   <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-[#292828]/5 text-[#292828]/60 border border-[#292828]/5">
-                                      {m.category}
-                                   </span>
+                                <div className="min-w-0">
+                                   <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Strategic Venue</p>
+                                   <p className="text-[12px] font-bold text-[#292828] uppercase truncate">{m.location}</p>
                                 </div>
                              </div>
 
-                             {/* Row 2: Title & Content */}
-                             <div className="space-y-2">
-                                <h3 className="text-2xl font-black text-[#292828] leading-tight tracking-tighter group-hover/meeting-card:text-[#E53935] transition-colors uppercase">
-                                   {m.title}
-                                </h3>
-                                <p className="text-[13px] text-[#292828]/60 font-medium leading-relaxed italic line-clamp-2">
-                                   "{m.content}"
-                                </p>
-                             </div>
-
-                             {/* Row 3: Meta Info Chips */}
-                             <div className="flex flex-wrap gap-3">
-                                <div className="flex items-center gap-3 bg-[#E53935]/5 border border-[#E53935]/10 rounded-2xl px-4 py-2.5">
-                                   <div className="h-9 w-9 bg-[#E53935] rounded-xl flex flex-col items-center justify-center shrink-0 shadow-lg">
-                                      <span className="text-[7px] font-black uppercase text-white/70 leading-none">MAY</span>
-                                      <span className="text-base font-black text-white leading-none">{(m.id as string).split('-').pop() || '15'}</span>
-                                   </div>
-                                   <div>
-                                      <p className="text-[8px] font-black text-[#292828]/30 uppercase leading-none mb-1">Schedule</p>
-                                      <p className="text-[11px] font-black text-[#292828] uppercase leading-none">WED, 02:30 PM</p>
-                                   </div>
+                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
+                                <div className="h-10 w-10 bg-[#E53935]/10 rounded-xl flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
+                                   <Clock size={18} />
                                 </div>
-
-                                <div className="flex items-center gap-3 bg-[#292828]/5 border border-[#292828]/5 rounded-2xl px-4 py-2.5 min-w-0 flex-1">
-                                   <div className="h-9 w-9 bg-[#292828] rounded-xl flex items-center justify-center shrink-0 shadow-lg">
-                                      <MapPin size={16} className="text-white" />
-                                   </div>
-                                   <div className="min-w-0">
-                                      <p className="text-[8px] font-black text-[#292828]/30 uppercase leading-none mb-1">Venue Hub</p>
-                                      <p className="text-[11px] font-black text-[#292828] uppercase leading-none truncate">{m.location}</p>
-                                   </div>
+                                <div>
+                                   <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Meeting Time</p>
+                                   <p className="text-[12px] font-bold text-[#292828] uppercase">TODAY, 18:30</p>
                                 </div>
                              </div>
+                          </div>
 
-                             {/* Row 4: Action Footer */}
-                             <div className="flex items-center justify-between pt-4 border-t border-[#292828]/5">
-                                <div className="flex items-center gap-3">
-                                   <div className="flex -space-x-2.5">
-                                       {[1, 2, 3, 4].map(i => (
-                                         <div key={i} className="h-8 w-8 rounded-full border-2 border-white overflow-hidden bg-slate-100 shadow-sm flex items-center justify-center">
-                                            <Users size={14} className="text-[#292828]/20" />
-                                         </div>
-                                       ))}
-                                   </div>
-                                   <span className="text-[10px] font-black text-[#292828]/30 uppercase">{m.likes}+ Builders Joining</span>
+                          <div className="flex items-center justify-between pt-8 border-t border-[#292828]/5 mt-4">
+                             <div className="flex items-center gap-3">
+                                <div className="flex -space-x-2.5">
+                                   {[1,2,3].map(i => (
+                                     <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200">
+                                        <img src={`https://i.pravatar.cc/150?u=${i+10}`} alt="" className="grayscale" />
+                                     </div>
+                                   ))}
                                 </div>
-                                
-                                <button 
-                                   onClick={() => handleJoin(m.id)}
-                                   className={cn(
-                                     "h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 active:scale-95 flex items-center gap-2",
-                                     m.status === "joined" 
-                                       ? "bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:bg-emerald-600" 
-                                       : "bg-[#292828] text-white hover:bg-[#E53935] shadow-xl"
-                                   )}
-                                >
-                                   {m.status === "joined" ? (
-                                      <><CheckCircle2 size={16} strokeWidth={3} /> RSVP&apos;ed</>
-                                   ) : (
-                                      <><Calendar size={16} strokeWidth={3} /> RSVP Now</>
-                                   )}
-                                </button>
+                                <span className="text-[11px] font-bold text-[#292828]/40 uppercase tracking-tight">{m.attendees} Attending</span>
                              </div>
+
+                             <button 
+                               onClick={() => handleJoin(m.id)}
+                               className={cn(
+                                 "h-14 px-8 rounded-2xl font-bold text-[11px] uppercase tracking-widest transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
+                                 m.status === "joined" 
+                                  ? "bg-emerald-500 text-white shadow-emerald-500/20" 
+                                  : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
+                               )}
+                             >
+                                {m.status === "joined" ? <><CheckCircle2 size={18} strokeWidth={3} /> RSVP'ed</> : <><Plus size={18} strokeWidth={3} /> Grab Slot</>}
+                             </button>
                           </div>
                        </div>
                     </div>
-                 ))
-               ) : (
-                 <div className="col-span-full flex flex-col items-center justify-center py-40 bg-[#292828]/5 rounded-[2.6rem] border-2 border-dashed border-[#292828]/10 text-[#292828]/20">
-                    <Users size={64} strokeWidth={1} className="mb-6 opacity-20" />
-                    <p className="text-[14px] font-black uppercase tracking-[0.2em]">Zero Live Nodes Found</p>
-                    <p className="text-[11px] font-bold mt-2 uppercase">Start a meeting to activate your city hub.</p>
                  </div>
-               )}
-           </div>
-        </div>
-      </div>
-
-      {/* 2. AREA ANALYTICS (RIGHT) - Premium Map & Data */}
-      <aside className="hidden xl:flex flex-col w-[450px] h-screen sticky top-0 bg-[#FDFDFF] border-l border-[#292828]/10 p-10 gap-10">
-         <div>
-            <div className="flex items-center justify-between mb-8">
-               <p className="text-[10px] font-black text-[#292828]/30 uppercase tracking-widest">Local Signal</p>
-               <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 bg-emerald-500 rounded-full animate-ping" />
-                  <span className="text-[9px] font-black uppercase text-emerald-600">Active Now</span>
-               </div>
-            </div>
-            
-            <div className="p-8 bg-[#292828] rounded-[2rem] shadow-[0_40px_100px_rgba(41,40,40,0.3)] relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/15 blur-[60px] pointer-events-none" />
-               <div className="relative z-10 flex items-center gap-6">
-                  <div className="h-16 w-16 bg-[#E53935] rounded-2xl flex items-center justify-center text-3xl shadow-xl border border-white/10 group-hover:scale-110 transition-transform">🛰️</div>
-                  <div>
-                     <p className="text-xl font-black text-white uppercase tracking-tighter">Proximity Scan</p>
-                     <p className="text-[11px] font-bold text-[#E53935] uppercase mt-1">Found 12+ Active Hubs</p>
-                  </div>
-               </div>
+               ))}
             </div>
          </div>
+      </main>
 
-         {/* Interactive Map Section */}
-         <div className="flex-1 bg-white rounded-[2.5rem] border-4 border-white shadow-[0_40px_120px_-30px_rgba(0,0,0,0.15)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-slate-100 opacity-50">
-               {/* This would be the real map image */}
-               <div className="absolute inset-0 bg-[#292828]/5 grayscale opacity-40 mix-blend-multiply" />
+      {/* 2. AI ANALYTICS SIDEBAR (RIGHT) */}
+      <aside className="hidden xl:flex flex-col w-[420px] bg-[#FDFDFF] border-l border-[#292828]/10 p-10 gap-10 overflow-y-auto no-scrollbar">
+         
+         {/* AI PLANNER STATUS */}
+         <section className="space-y-6">
+            <div className="flex items-center justify-between">
+               <p className="subheading-editorial !text-slate-400">Meeting Planner</p>
+               <div className="flex items-center gap-2 text-emerald-600">
+                  <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider font-outfit">Active</span>
+               </div>
             </div>
-            
-            {/* Map Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 pointer-events-none" />
-            
-            {/* Interactive Pins */}
-            {filteredMeetups.slice(0, 8).map(m => (
-               <div 
-                 key={`map-pin-${m.id}`} 
-                 className="absolute group/pin cursor-pointer transition-all hover:z-50" 
-                 style={{ top: `${m.y}%`, left: `${m.x}%` }}
-               >
-                  <div className={cn(
-                    "h-12 w-12 rounded-2xl border-4 shadow-2xl flex items-center justify-center text-xl transition-all duration-300 group-hover/pin:scale-110 group-hover/pin:rotate-12",
-                    m.status === "joined" ? "bg-emerald-500 border-white" : "bg-[#292828] border-white group-hover/pin:bg-[#E53935]"
-                  )}>
-                     {m.category === 'Tech' ? '💻' : m.category === 'Investment' ? '🏦' : m.category === 'Networking' ? '🏢' : '🤝'}
+
+            <div className="p-8 bg-gradient-to-br from-[#292828] to-black rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 blur-[60px] pointer-events-none" />
+               <BrainCircuit size={160} className="absolute -bottom-16 -right-16 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[4s]" />
+               
+               <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-8">
+                     <div className="h-12 w-12 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-xl">
+                        <Sparkles size={24} />
+                     </div>
+                     <div>
+                        <p className="text-[13px] font-bold uppercase tracking-tight">AI Strategy Insight</p>
+                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5 leading-none">Contextual Analysis</p>
+                     </div>
                   </div>
                   
-                  {/* Tooltip Overlay */}
-                  <div className="absolute bottom-[calc(100%+1rem)] left-1/2 -translate-x-1/2 w-[240px] bg-white border border-[#292828]/10 p-6 rounded-[1.5rem] opacity-0 invisible group-hover/pin:opacity-100 group-hover/pin:visible transition-all pointer-events-none shadow-[0_30px_60px_-10px_rgba(0,0,0,0.25)] z-50 translate-y-3 group-hover/pin:translate-y-0">
-                     <div className="mb-3 flex justify-between items-center">
-                        <span className="px-2 py-0.5 bg-[#E53935]/10 text-[#E53935] text-[7px] font-black uppercase rounded-md tracking-widest">{m.category}</span>
-                        <span className="text-[8px] font-black text-[#292828]/20 uppercase">Local Node</span>
-                     </div>
-                     <p className="text-[13px] font-black text-[#292828] leading-tight uppercase mb-3 line-clamp-2">{m.title}</p>
-                     <div className="flex items-center gap-2 text-[#292828]/40 font-bold text-[10px] uppercase border-t border-[#292828]/5 pt-3">
-                        <MapPin size={12} className="text-[#E53935]" /> {m.location.split(',')[0]}
-                     </div>
-                  </div>
+                  <p className="text-[14px] font-medium text-white/70 leading-relaxed mb-8 uppercase tracking-wide">
+                     "Found 3 optimal slots for a logistics sync in <span className="text-[#E53935]">Indiranagar</span> today. Participation potential is at peak capacity."
+                  </p>
+                  
+                  <button onClick={() => setShowAiArchitect(true)} className="w-full h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#292828] transition-all">
+                     Open Suggestion Box
+                  </button>
                </div>
-            ))}
+            </div>
+         </section>
 
-            {/* Map Action Button */}
-            <div className="absolute bottom-8 inset-x-8">
-               <div className="bg-white/95 backdrop-blur-xl p-6 rounded-3xl border border-[#292828]/5 shadow-4xl group/link transition-all hover:-translate-y-2">
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-xl">🏙️</div>
-                        <div>
-                           <p className="text-[13px] font-black text-[#292828] uppercase">Explore Nodes</p>
-                           <p className="text-[10px] font-bold text-[#292828]/30 uppercase mt-0.5 tracking-tight">V3 Signal Processing</p>
-                        </div>
-                     </div>
-                     <div className="h-10 w-10 bg-[#292828] text-white rounded-xl flex items-center justify-center group-hover/link:bg-[#E53935] transition-colors">
-                        <ArrowUpRight size={18} />
-                     </div>
+         {/* NEARBY HEATMAP */}
+         <section className="space-y-6">
+            <p className="subheading-editorial !text-slate-400">Meet Up Activity Map</p>
+            <div className="h-64 bg-slate-50 border-4 border-white shadow-xl rounded-[2.5rem] relative overflow-hidden group cursor-crosshair">
+               <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#292828_2px,transparent_2px)] [background-size:24px_24px]" />
+               
+               {/* Map Pins */}
+               {meetups.map(m => (
+                 <div key={`pin-${m.id}`} className="absolute transition-all duration-700" style={{ top: `${m.y}%`, left: `${m.x}%` }}>
+                    <div className={cn(
+                      "h-10 w-10 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-lg transition-transform hover:scale-125 hover:z-10",
+                      m.status === "joined" ? "bg-emerald-500 scale-110" : "bg-[#292828] text-white hover:bg-[#E53935]"
+                    )}>
+                       {m.category === "Tech" ? "💻" : m.category === "Logistics" ? "📦" : "🏢"}
+                    </div>
+                 </div>
+               ))}
+
+               <div className="absolute bottom-6 inset-x-6 flex items-center justify-between bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-[#292828]/5 shadow-xl">
+                  <div>
+                     <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">Trivandrum Hub</p>
+                     <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">8 Active Sessions</p>
+                  </div>
+                  <div className="h-10 w-10 bg-[#292828] rounded-xl flex items-center justify-center text-white hover:bg-[#E53935] transition-colors">
+                     <Maximize2 size={16} />
                   </div>
                </div>
             </div>
-         </div>
+         </section>
+
+          <section className="mt-auto space-y-6">
+            <p className="subheading-editorial !text-slate-400">Upcoming Strategic Sections</p>
+            <div className="space-y-4">
+               {strategicRecommendations.map((block, i) => (
+                 <div key={i} className="p-5 bg-white border border-[#292828]/5 rounded-3xl hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer group/block">
+                    <div className="flex items-center justify-between mb-4">
+                       <span className="px-3 py-1 bg-white border border-[#292828]/10 rounded-lg text-[8px] font-bold uppercase tracking-widest">{block.type}</span>
+                       <div className="flex items-center gap-1.5 text-[#E53935]">
+                          <Zap size={14} fill="currentColor" />
+                          <span className="text-[11px] font-bold">{block.score}%</span>
+                       </div>
+                    </div>
+                    <h4 className="text-[14px] font-bold text-[#292828] uppercase leading-tight group-hover/block:text-[#E53935] transition-colors">{block.title}</h4>
+                    <p className="text-[10px] font-bold text-[#292828]/30 uppercase mt-1.5">{block.time}</p>
+                 </div>
+               ))}
+            </div>
+          </section>
       </aside>
 
-      {/* START MEETING MODAL */}
-      {showHostModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-           <div className="absolute inset-0 bg-[#0a0a0a]/90 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
-           
-           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-white/10 shadow-[0_0_100px_-20px_rgba(229,57,53,0.3)] overflow-hidden animate-in zoom-in-95 duration-500">
-              <div className="absolute -top-32 -left-32 w-64 h-64 bg-[#E53935]/10 rounded-full blur-[100px]" />
-              
-              <div className="p-10 lg:p-12 space-y-8 relative z-10">
-                 <div className="text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53935]/10 border border-[#E53935]/20 text-[#E53935] text-[9px] font-black uppercase tracking-widest mb-4">
-                       Create Node
+      {/* AI PLANNER DRAWER */}
+      {showAiArchitect && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+           <div className="absolute inset-0 bg-[#292828]/40 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => setShowAiArchitect(false)} />
+           <aside className="relative w-full max-w-xl bg-white h-full shadow-[-40px_0_100px_rgba(0,0,0,0.1)] flex flex-col p-12 overflow-y-auto no-scrollbar animate-in slide-in-from-right duration-500">
+              <div className="flex items-center justify-between mb-12">
+                 <div>
+                    <div className="label-premium">
+                       Meeting OS v3.0
                     </div>
-                    <h2 className="text-4xl font-black text-[#292828] tracking-tighter uppercase leading-none">Post <span className="text-[#E53935]">Meetup</span></h2>
-                    <p className="text-[12px] font-bold text-[#292828]/40 uppercase tracking-wide mt-3">Activate your local business signal.</p>
+                    <h2>AI <span className="text-[#E53935] italic">Planner</span></h2>
+                 </div>
+                 <button onClick={() => setShowAiArchitect(false)} className="h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-2xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all active:scale-95">
+                    <Check size={28} />
+                 </button>
+              </div>
+
+              <div className="space-y-12">
+                 <section className="space-y-6">
+                    <p className="subheading-editorial !text-slate-400">Active Objectives</p>
+                    <div className="space-y-3">
+                       {["Schedule series A sync", "Find logistics provider", "Arrange venue for Friday"].map((ob, i) => (
+                         <div key={i} className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-2xl group hover:border-[#E53935] transition-all cursor-pointer">
+                            <span className="text-[14px] font-medium text-[#292828] uppercase">{ob}</span>
+                            <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover:text-[#E53935] transition-colors">
+                               <ChevronRight size={18} />
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                 </section>
+
+                 <section className="p-8 bg-[#E53935] rounded-[2.5rem] text-white space-y-6 relative overflow-hidden">
+                    <Sparkles size={120} className="absolute -top-12 -right-12 text-white/10 rotate-12" />
+                    <p className="subheading-editorial !text-white/40 mb-6">Neural Suggestion</p>
+                    <p className="text-[17px] font-bold leading-relaxed relative z-10">
+                       "Based on your {filteredMeetups[0]?.matchPotential}% score with local hubs, I recommend joining the <span className="underline decoration-white/30 underline-offset-4">{filteredMeetups[0]?.title}</span> today."
+                     </p>
+                    <button className="w-full h-16 bg-white text-[#E53935] rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all">
+                       Auto-Plan Meeting
+                    </button>
+                 </section>
+
+                 <section className="space-y-6">
+                    <p className="subheading-editorial !text-slate-400">Contextual Data</p>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
+                          <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Venue Match</p>
+                          <p className="text-2xl font-bold text-[#292828]">94<span className="text-[12px] opacity-30">%</span></p>
+                       </div>
+                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
+                          <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Network Reach</p>
+                          <p className="text-2xl font-bold text-[#292828]">12.4<span className="text-[12px] opacity-30">k</span></p>
+                       </div>
+                    </div>
+                 </section>
+              </div>
+           </aside>
+        </div>
+      )}
+
+      {/* HOST MODAL (CLEANER) */}
+      {showHostModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+           <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
+           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500">
+              <div className="text-center mb-10">
+                 <h2>Activate <span className="text-[#E53935]">Meet Up</span></h2>
+                 <p className="subheading-editorial mt-2 px-10">Broadcast your meeting post to the local business network.</p>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="space-y-2">
+                    <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Meeting Title</label>
+                    <input type="text" placeholder="e.g. Series A Strategy Circle" className="w-full h-16 bg-[#292828]/5 rounded-2xl px-8 text-[15px] font-bold outline-none border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner" />
                  </div>
                  
-                 <div className="space-y-6">
-                    <div>
-                       <label className="text-[10px] font-black text-[#292828]/30 uppercase ml-2 mb-2 block tracking-widest">Meeting Name</label>
-                       <input 
-                         type="text" 
-                         value={hostData.title}
-                         onChange={(e) => setHostData({ ...hostData, title: e.target.value })}
-                         placeholder="e.g. Founder Coffee Talk" 
-                         className="w-full h-16 bg-[#292828]/5 border border-transparent rounded-[1.3rem] px-8 text-[15px] font-black text-[#292828] outline-none focus:bg-white focus:border-[#E53935]/30 transition-all placeholder:text-[#292828]/20 shadow-inner" 
-                       />
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Format</label>
+                       <select className="w-full h-16 bg-[#292828]/5 rounded-2xl px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
+                          <option>In-Person</option>
+                          <option>Virtual Hub</option>
+                       </select>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                       <div>
-                          <label className="text-[10px] font-black text-[#292828]/30 uppercase ml-2 mb-2 block tracking-widest">Type</label>
-                          <select 
-                            value={hostData.type}
-                            onChange={(e) => setHostData({ ...hostData, type: e.target.value })}
-                            className="w-full h-16 bg-[#292828]/5 border border-transparent rounded-[1.3rem] px-8 text-[12px] font-black text-[#292828] uppercase outline-none appearance-none cursor-pointer focus:bg-white focus:border-[#E53935]/30 transition-all shadow-inner"
-                          >
-                             <option value="In-Person">In-Person</option>
-                             <option value="Virtual">Virtual Session</option>
-                          </select>
-                       </div>
-                       <div>
-                          <label className="text-[10px] font-black text-[#292828]/30 uppercase ml-2 mb-2 block tracking-widest">Sector</label>
-                          <select 
-                            value={hostData.loc}
-                            onChange={(e) => setHostData({ ...hostData, loc: e.target.value })}
-                            className="w-full h-16 bg-[#292828]/5 border border-transparent rounded-[1.3rem] px-8 text-[12px] font-black text-[#292828] uppercase outline-none appearance-none cursor-pointer focus:bg-white focus:border-[#E53935]/30 transition-all shadow-inner"
-                          >
-                             <option value="">Select Hub...</option>
-                             <option value="Technopark, Trivandrum">Technopark</option>
-                             <option value="Infopark, Kochi">Infopark</option>
-                             <option value="Cyberpark, Kozhikode">Cyberpark</option>
-                             <option value="Bangalore Central Hub">Bangalore</option>
-                          </select>
-                       </div>
+                    <div className="space-y-2">
+                       <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Category</label>
+                       <select className="w-full h-16 bg-[#292828]/5 rounded-2xl px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
+                          {TOPICS.map(t => t !== "All" && <option key={t}>{t}</option>)}
+                       </select>
                     </div>
-
-                    <button 
-                      onClick={handleStartMeeting}
-                      disabled={!hostData.title || !hostData.loc}
-                      className="w-full h-20 bg-[#292828] text-white rounded-[1.3rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-[#E53935] disabled:opacity-30 transition-all flex items-center justify-center gap-4 mt-4 active:scale-95 group"
-                    >
-                       Broadcast Signal <Zap size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
-                    </button>
-
-                    <button 
-                       onClick={() => setShowHostModal(false)}
-                       className="w-full text-[10px] font-black uppercase text-[#292828]/30 hover:text-[#E53935] transition-colors tracking-widest"
-                    >
-                       Cancel / Return
-                    </button>
                  </div>
+
+                 <button className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl hover:bg-[#E53935] transition-all flex items-center justify-center gap-4 group">
+                    Invite Others <Zap size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+                 </button>
               </div>
            </div>
         </div>

@@ -19,18 +19,25 @@ import {
   Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DUMMY_POSTS } from "@/lib/dummyData";
+import { createClient } from "@/utils/supabase/client";
 import UniversalFeedCard from "@/components/ui/UniversalFeedCard";
 import DealEngine from "@/components/modals/DealEngine";
 import PostModal from "@/components/modals/PostModal";
+import { calculateMatchScore, optimizeFeedOrder } from "@/lib/ai";
+
+const MOCK_CURRENT_USER = {
+  role: "Strategy",
+  bio: "Expert in scaling brands and regional growth. Founder of scaling nodes.",
+  domains: ["Strategy", "Marketing", "FMCG"]
+};
 
 const SMART_FILTERS = [
   { id: 'All', label: 'Everything', icon: LayoutGrid },
-  { id: 'Lead', label: 'Needs', icon: Target },
-  { id: 'Hiring', label: 'Jobs', icon: Briefcase },
-  { id: 'Partner', label: 'Partners', icon: Sparkles },
+  { id: 'LEAD', label: 'What People Need', icon: Target },
+  { id: 'HIRING', label: 'Jobs', icon: Briefcase },
+  { id: 'PARTNER', label: 'Partnerships', icon: Sparkles },
   { id: 'Meetup', label: 'Meetups', icon: Users },
-  { id: 'Update', label: 'Updates', icon: Zap },
+  { id: 'UPDATE', label: 'Latest Updates', icon: Zap },
 ];
 
 export default function CheckoutHomeFeed() {
@@ -38,30 +45,67 @@ export default function CheckoutHomeFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
   const [isPosting, setIsPosting] = useState(false);
-  const [formType, setFormType] = useState<"Update" | "Lead" | "Hiring" | "Partner" | "Meetup">("Lead");
-  const [posts, setPosts] = useState(DUMMY_POSTS);
+  const [formType, setFormType] = useState<"Update" | "Lead" | "Hiring" | "Partner" | "Meetup">("LEAD");
+  const [posts, setPosts] = useState<any[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editPost, setEditPost] = useState<any>(null);
+
+  const supabase = createClient();
+
+  const fetchPosts = async () => {
+    setIsLoading(true);
+    const { data } = await supabase
+      .from('posts')
+      .select(`*, author:profiles(full_name, avatar_url)`)
+      .order('created_at', { ascending: false });
+
+    if (data && data.length > 0) {
+      const mappedPosts = data.map(p => ({
+        ...p,
+        author: p.author?.full_name || "Anonymous",
+        avatar: p.author?.avatar_url || `https://i.pravatar.cc/150?u=${p.id}`,
+        time: new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        matchScore: p.match_score || 0
+      }));
+      setPosts(mappedPosts);
+    }
+    setIsLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleDeletePost = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    
+    const { error } = await supabase.from('posts').delete().eq('id', id);
+    if (error) {
+      alert("Failed to delete post.");
+    } else {
+      setPosts(posts.filter(p => p.id !== id));
+    }
+  };
+
+  const handleEditPost = (post: any) => {
+    setEditPost(post);
+    setIsPosting(true);
+  };
 
   const rankedPosts = useMemo(() => {
-    let filtered = posts.filter(p => {
+    // 1. Filter by category
+    const filtered = posts.filter(p => {
       if (activeFilter !== 'All' && p.type !== activeFilter) return false;
       return true;
     });
 
-    const typePriority: any = {
-      Lead: 1,
-      Meetup: 2,
-      Partner: 3,
-      Hiring: 4,
-      Update: 5
-    };
-
-    return [...filtered].sort((a, b) => {
-      // 1. Primary Sort: Match Score (highest first)
-      if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
-      // 2. Secondary Sort: Type Priority
-      return typePriority[a.type] - typePriority[b.type];
-    });
+    // 2. Optimized Intelligence (Invisible Logic)
+    return optimizeFeedOrder(filtered, MOCK_CURRENT_USER).map(post => ({
+      ...post,
+      // Inject smarter internal score while keeping dummy structure
+      matchScore: Math.round((post.matchScore + calculateMatchScore(MOCK_CURRENT_USER, post)) / 2)
+    }));
   }, [activeFilter, posts]);
 
   const handlePostSuccess = (newPost: any) => {
@@ -82,18 +126,18 @@ export default function CheckoutHomeFeed() {
               onClick={() => { setFormType("Update"); setIsPosting(true); }}
               className="flex-1 h-12 bg-[#292828]/5 hover:bg-[#292828]/10 text-[#292828]/40 rounded-xl px-5 text-left text-[13px] font-bold uppercase transition-all flex items-center justify-between"
             >
-               <span>Broadcast a need...</span>
+               <span>Share what you need...</span>
                <Zap size={16} className="text-[#292828]" />
             </button>
          </div>
          
          <div className="grid grid-cols-2 lg:grid-cols-5 gap-1 px-1.5 pb-1.5">
             {[
-               { id: 'Lead', icon: Target, label: "Post Lead", color: "text-[#292828]" },
+               { id: 'Lead', icon: Target, label: "Post a Need", color: "text-[#292828]" },
                { id: 'Hiring', icon: Briefcase, label: "Hiring", color: "text-[#292828]" },
                { id: 'Partner', icon: Sparkles, label: "Partnership", color: "text-[#292828]" },
-               { id: 'Meetup', icon: Users, label: "Meetup", color: "text-[#292828]" },
-               { id: 'Update', icon: Zap, label: "Checkout Now", color: "text-[#292828]" }
+               { id: 'Meetup', icon: Users, label: "Meetups", color: "text-[#292828]" },
+               { id: 'Update', icon: Zap, label: "Update Now", color: "text-[#292828]" }
             ].map((btn, i) => (
                <button 
                  key={i}
@@ -115,7 +159,7 @@ export default function CheckoutHomeFeed() {
          </div>
       </section>
 
-      {/* 2. SMART FILTERS */}
+      {/* 2. QUICK FILTERS */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 -mx-4 px-4">
          {SMART_FILTERS.map(f => (
            <button 
@@ -133,7 +177,7 @@ export default function CheckoutHomeFeed() {
          ))}
       </div>
 
-      {/* 3. AI RANKED FEED */}
+      {/* 3. YOUR BEST FEED */}
       <div className="space-y-6">
          {rankedPosts.map(post => (
            <UniversalFeedCard 
@@ -142,6 +186,8 @@ export default function CheckoutHomeFeed() {
              isExpanded={expandedId === post.id}
              onExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
              onAction={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+             onEdit={handleEditPost}
+             onDelete={handleDeletePost}
            />
          ))}
       </div>
@@ -149,7 +195,7 @@ export default function CheckoutHomeFeed() {
       {/* FLOAT ACTION */}
       <div className="fixed bottom-10 right-10 z-[100] lg:hidden">
          <button 
-           onClick={() => setIsPosting(true)}
+           onClick={() => { setEditPost(null); setIsPosting(true); }}
            className="h-16 w-16 bg-[#292828] text-white rounded-[20px] flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all group"
          >
             <Plus size={28} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
@@ -163,9 +209,10 @@ export default function CheckoutHomeFeed() {
       {isPosting && (
         <PostModal 
           isOpen={isPosting} 
-          onClose={() => setIsPosting(false)} 
-          onPostSuccess={handlePostSuccess} 
+          onClose={() => { setIsPosting(false); setEditPost(null); }} 
+          onPostSuccess={() => { fetchPosts(); setIsPosting(false); setEditPost(null); }} 
           initialFormType={formType}
+          editPost={editPost}
         />
       )}
 

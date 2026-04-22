@@ -48,9 +48,11 @@ export default function ClientLayout({
              {children}
           </div>
 
-          <div className="hidden xl:block">
-            <RightSocialRail />
-          </div>
+          {pathname === "/home" && (
+            <div className="hidden xl:block">
+              <RightSocialRail />
+            </div>
+          )}
         </main>
       </div>
 

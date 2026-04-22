@@ -21,7 +21,9 @@ import {
  Compass
 } from "lucide-react";
 
-type MarkerType = "Meeting" | "Hiring" | "Business Leads" | "Partnership" | "Expo" | "Update";
+import { createClient } from "@/utils/supabase/client";
+
+type MarkerType = "Meeting" | "Hiring" | "Business Leads" | "Partnership" | "Expo" | "Update" | "LEAD" | "HIRING" | "MEETUP" | "UPDATE" | "PARTNER";
 
 interface Marker {
  id: string;
@@ -34,9 +36,7 @@ interface Marker {
  details: string;
 }
 
-const TRIVANDRUM_MARKERS: Marker[] = [];
-
-export default function LiveMap({ posts }: { posts?: any[] }) {
+export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
  const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);
  const [filter, setFilter] = useState<MarkerType | "All">("All");
  const [isLoaded, setIsLoaded] = useState(false);
@@ -44,20 +44,37 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
  const [offset, setOffset] = useState({ x: 0, y: 0 });
  const [isDragging, setIsDragging] = useState(false);
  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+ const [dbPosts, setDbPosts] = useState<any[]>([]);
+ const [isLoading, setIsLoading] = useState(true);
+
+ const supabase = createClient();
 
  useEffect(() => {
- setIsLoaded(true);
- // Hard lock scroll
- document.documentElement.style.overflow = "hidden";
- document.body.style.overflow = "hidden";
- return () => { 
- document.documentElement.style.overflow = "unset";
- document.body.style.overflow = "unset"; 
- };
+   async function fetchData() {
+     setIsLoading(true);
+     const { data } = await supabase
+       .from('posts')
+       .select('*, author:profiles(full_name)');
+     
+     if (data) setDbPosts(data);
+     setIsLoading(false);
+   }
+   fetchData();
+ }, []);
+
+ useEffect(() => {
+   setIsLoaded(true);
+   // Hard lock scroll
+   document.documentElement.style.overflow = "hidden";
+   document.body.style.overflow = "hidden";
+   return () => { 
+     document.documentElement.style.overflow = "unset";
+     document.body.style.overflow = "unset"; 
+   };
  }, []);
 
  const handleZoom = (delta: number) => {
- setZoom(prev => Math.min(Math.max(prev + delta, 0.4), 4));
+  setZoom(prev => Math.min(Math.max(prev + delta, 0.4), 4));
  };
 
  const handleWheel = (e: React.WheelEvent) => {
@@ -80,21 +97,22 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
 
  const handleMouseUp = () => setIsDragging(false);
 
- const markers = posts ? posts.map((post, i) => ({
- id: post.id.toString(),
- type: post.type as MarkerType,
- title: post.type === 'Business Leads' ? 'Project Prospect' : 
- post.type === 'Hiring' ? 'Open Mandate' : post.content.substring(0, 20) + "...",
- author: post.author,
- details: post.content,
- distance: `${(i * 1.2).toFixed(1)}km`,
- x: 25 + (i * 14.5) % 60,
- y: 30 + (i * 11.2) % 50
- })) : TRIVANDRUM_MARKERS;
+  const activePosts = propPosts || dbPosts;
 
- const filteredMarkers = filter === "All" 
- ? markers 
- : (markers as Marker[]).filter(m => m.type === filter);
+  const markers = activePosts.map((post, i) => ({
+    id: post.id.toString(),
+    type: post.type as MarkerType,
+    title: post.title || "Activity",
+    author: post.author?.full_name || post.author || "Community",
+    details: post.content,
+    distance: `${(i * 1.2).toFixed(1)}km`,
+    x: 25 + (i * 14.5) % 60,
+    y: 30 + (i * 11.2) % 50
+  }));
+
+  const filteredMarkers = filter === "All" 
+    ? markers 
+    : markers.filter(m => m.type?.toUpperCase() === filter.toUpperCase());
 
  return (
  <div 
@@ -163,7 +181,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
  {/* 3. RESPONSIVE FLOATING UI */}
  
  {/* Search & Filter Hub (Bottom) */}
- <div className="absolute bottom-4 lg:bottom-10 left-4 right-4 lg:left-10 lg:right-10 flex flex-col gap-3 lg:gap-5 z-50 pointer-events-none">
+ <div className="absolute bottom-24 lg:bottom-10 left-4 right-4 lg:left-10 lg:right-10 flex flex-col gap-3 lg:gap-5 z-50 pointer-events-none">
  <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto pointer-events-auto">
  <div className="relative group w-full lg:w-96 shadow-2xl">
  <div className="absolute left-6 inset-y-0 flex items-center gap-3 pointer-events-none">
@@ -194,7 +212,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
  </div>
 
  {/* Navigation Controls (Side/Bottom) */}
- <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-50 items-end">
+ <div className="absolute bottom-24 right-6 flex flex-col gap-3 z-50 items-end lg:bottom-10">
  <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-2 rounded-2xl shadow-2xl flex flex-col gap-1">
  <button onClick={() => handleZoom(0.25)} className="h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center rounded-xl text-[#292828] hover:bg-[#292828] hover:text-white transition-all"><Plus size={20} /></button>
  <button onClick={() => handleZoom(-0.25)} className="h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center rounded-xl text-[#292828] hover:bg-[#292828] hover:text-white transition-all"><Minus size={20} /></button>
@@ -209,7 +227,7 @@ export default function LiveMap({ posts }: { posts?: any[] }) {
 
  {/* 4. DETAIL OVERLAY / BOTTOM SHEET */}
  {selectedMarker && (
- <div className="absolute inset-x-4 bottom-4 lg:inset-x-auto lg:bottom-10 lg:right-10 lg:w-[440px] z-[60] animate-in slide-in-from-bottom-5 lg:slide-in-from-right-10 duration-500">
+ <div className="absolute inset-x-4 bottom-24 lg:bottom-10 lg:right-10 lg:w-[440px] z-[60] animate-in slide-in-from-bottom-5 lg:slide-in-from-right-10 duration-500">
  <div className="bg-white/95 border-2 border-[#292828]/10 rounded-[1.3rem] lg:rounded-[1.95rem] p-6 lg:p-10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.15)] relative overflow-hidden backdrop-blur-2xl">
  <button onClick={() => setSelectedMarker(null)} className="absolute top-6 lg:top-10 right-6 lg:right-10 text-[#292828] hover:text-[#E53935]"><X className="w-5 h-5 lg:w-6 lg:h-6" /></button>
  

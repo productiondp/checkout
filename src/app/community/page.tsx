@@ -1,14 +1,67 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { Users, MessageSquare, ArrowRight, ArrowLeft, Send, Sparkles, Building, Briefcase, List as ListIcon, LayoutGrid, Plus } from "lucide-react";
+import { 
+  Users, 
+  MessageSquare, 
+  ArrowRight, 
+  ArrowLeft, 
+  Send, 
+  Sparkles, 
+  Building, 
+  Briefcase, 
+  List as ListIcon, 
+  LayoutGrid, 
+  Plus,
+  TrendingUp,
+  Search,
+  CheckCircle2,
+  Bell
+} from "lucide-react";
 import { DUMMY_PROFILES } from "@/lib/dummyData";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-const NETWORK_GROUPS: any[] = [];
+const NETWORK_GROUPS: any[] = [
+  {
+    id: 1,
+    name: "Founders Strategy Hub",
+    members: "1.2k",
+    topic: "New Business & Growth",
+    color: "bg-[#292828]",
+    threadTitle: "Going from Start to Success: Main challenges in 2026",
+    tags: ["Growth", "Success", "Funding"],
+    replies: [
+      { id: 101, user: DUMMY_PROFILES[0], text: "The biggest bottleneck is currently executive-level hiring in the AI sector.", time: "2h ago" },
+      { id: 102, user: DUMMY_PROFILES[1], text: "Agreed. We've also seen a shift in how founders approach unit economics.", time: "1h ago" }
+    ],
+    suggestions: DUMMY_PROFILES.slice(0, 4)
+  },
+  {
+    id: 2,
+    name: "Logistics Optimization",
+    members: "850",
+    topic: "Supply Chain",
+    color: "bg-[#E53935]",
+    threadTitle: "Optimizing Last-Mile Delivery for Pan-India Operations",
+    tags: ["Logistics", "Supply Chain", "India"],
+    replies: [],
+    suggestions: DUMMY_PROFILES.slice(4, 8)
+  },
+  {
+    id: 3,
+    name: "D2C Brand Builders",
+    members: "2.1k",
+    topic: "Growth & Marketing",
+    color: "bg-blue-600",
+    threadTitle: "Building Emotional Connectivity in a Digital-First Brand",
+    tags: ["D2C", "Branding", "Digital"],
+    replies: [],
+    suggestions: DUMMY_PROFILES.slice(8, 12)
+  }
+];
 
 export default function CommunityPage() {
-  const [activeGroup, setActiveGroup] = useState<typeof NETWORK_GROUPS[0] | null>(null);
+  const [activeGroup, setActiveGroup] = useState<any | null>(null);
   const [replyText, setReplyText] = useState("");
   const [groups, setGroups] = useState(NETWORK_GROUPS);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -42,7 +95,7 @@ export default function CommunityPage() {
         if (g.id === activeGroup.id) {
            const newReply: any = {
               id: Date.now(),
-              user: { ...DUMMY_PROFILES[99], name: "You" },
+              user: { ...DUMMY_PROFILES[0], name: "You" },
               text: replyText,
               time: "Just now",
               subReplies: []
@@ -83,7 +136,7 @@ export default function CommunityPage() {
                        <Users size={24} />
                     </div>
                     <div>
-                       <h1 className="text-3xl font-black text-[#292828] leading-tight">{activeGroup.name}</h1>
+                       <h1 className="text-3xl font-bold text-[#292828] leading-tight">{activeGroup.name}</h1>
                        <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs font-bold text-[#E53935] uppercase">{activeGroup.members} Live Capacity</span>
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
@@ -96,11 +149,11 @@ export default function CommunityPage() {
               {/* OP POST */}
               <div className="p-4 lg:p-6 border-b-2 border-[#292828]/5">
                  <div className="flex gap-2 mb-3">
-                    {activeGroup.tags.map(tag => (
+                    {activeGroup.tags.map((tag: any) => (
                        <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-black uppercase">{tag}</span>
                     ))}
                  </div>
-                 <h2 className="text-2xl font-black text-[#292828] leading-tight mb-6">"{activeGroup.threadTitle}"</h2>
+                 <h2 className="text-2xl font-bold text-[#292828] leading-tight mb-6">"{activeGroup.threadTitle}"</h2>
                  
                  <div className="bg-[#292828]/5 p-4 rounded-2xl flex flex-col sm:flex-row gap-3 items-center">
                     <div className="flex-1 w-full relative">
@@ -122,9 +175,9 @@ export default function CommunityPage() {
                        />
                     </div>
                     <button 
-                      onClick={handleReply}
-                      disabled={!replyText.trim()}
-                      className="h-12 px-8 w-full sm:w-auto bg-[#E53935] text-white rounded-xl text-xs font-black uppercase shadow-xl hover:bg-[#292828] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                       onClick={handleReply}
+                       disabled={!replyText.trim()}
+                       className="h-12 px-8 w-full sm:w-auto bg-[#E53935] text-white rounded-xl text-xs font-black uppercase shadow-xl hover:bg-[#292828] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                        {replyToId ? "Reply" : "Post"} <Send size={16} />
                     </button>
@@ -144,7 +197,7 @@ export default function CommunityPage() {
                           <div className="flex-1 bg-white p-4 rounded-2xl border border-[#292828]/10 shadow-sm hover:border-[#E53935]/20 transition-all">
                              <div className="flex items-center justify-between mb-2">
                                 <div>
-                                   <Link href={`/profile/${reply.user.id}`} className="text-base font-black text-[#292828] hover:text-[#E53935] transition-colors">{reply.user.name}</Link>
+                                   <Link href={`/profile/${reply.user.id}`} className="text-base font-bold text-[#292828] hover:text-[#E53935] transition-colors">{reply.user.name}</Link>
                                    <p className="text-xs font-bold text-slate-500 uppercase">{reply.user.role} • {reply.user.company}</p>
                                 </div>
                                 <span className="text-xs font-bold text-[#292828]/30 uppercase">{reply.time}</span>
@@ -173,7 +226,7 @@ export default function CommunityPage() {
                              </div>
                              <div className="flex-1 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                                 <div className="flex items-center justify-between mb-1">
-                                   <p className="text-xs font-black text-[#292828]">{sub.user.name}</p>
+                                   <p className="text-xs font-bold text-[#292828]">{sub.user.name}</p>
                                    <span className="text-[10px] font-bold text-slate-400 capitalize">{sub.time}</span>
                                 </div>
                                 <p className="text-sm font-medium text-slate-600 leading-relaxed">{sub.text}</p>
@@ -202,14 +255,14 @@ export default function CommunityPage() {
                  <p className="text-xs font-medium text-slate-500 mb-8">Profiles structurally matched to this thread's domain logic.</p>
                  
                  <div className="space-y-4">
-                    {activeGroup.suggestions.map(prof => (
+                    {activeGroup.suggestions.map((prof: any) => (
                        <div key={prof.id} className="bg-white p-5 rounded-2xl border border-slate-200 flex items-center justify-between group hover:border-[#E53935]/30 transition-all hover:shadow-xl">
                           <div className="flex items-center gap-4">
                              <Link href={`/profile/${prof.id}`} className="h-10 w-10 rounded-xl overflow-hidden shadow-sm shrink-0">
                                 <img src={prof.avatar} className="w-full h-full object-cover" alt="" />
                              </Link>
                              <div>
-                                <Link href={`/profile/${prof.id}`} className="text-xs font-black text-[#292828] group-hover:text-[#E53935] transition-colors line-clamp-1">{prof.name}</Link>
+                                <Link href={`/profile/${prof.id}`} className="text-xs font-bold text-[#292828] group-hover:text-[#E53935] transition-colors line-clamp-1">{prof.name}</Link>
                                 <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase text-slate-400 mt-0.5">
                                    <Briefcase size={10} /> {prof.company}
                                 </div>
@@ -228,101 +281,179 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white px-6 py-6 pb-20 lg:pb-6 lg:px-10 max-w-[1400px] mx-auto w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-           <h1 className="text-4xl font-black text-[#292828] mb-2 leading-tight">Groups</h1>
-           <p className="text-slate-500 font-bold text-sm uppercase mt-2 block">Join groups and talk to people in your industry.</p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
-           <button onClick={() => setIsCreating(true)} className="h-12 px-6 bg-[#E53935] text-white rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase shadow-xl hover:bg-[#292828] active:scale-95 transition-all">
-              New Group <Plus size={16} />
-           </button>
-           <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-xl">
-              <button onClick={() => setViewMode("list")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
-                 <ListIcon size={14} /> List
-              </button>
-              <button onClick={() => setViewMode("grid")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
-                 <LayoutGrid size={14} /> Grid
-              </button>
-           </div>
-        </div>
-      </div>
-      
-      {isCreating ? (
-         <div className="max-w-2xl bg-white border border-[#292828]/10 rounded-[1.95rem] p-10 shadow-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <button onClick={() => setIsCreating(false)} className="flex items-center gap-2 text-[10px] font-black uppercase text-[#292828]/40 hover:text-[#E53935] transition-colors mb-8">
-               <ArrowLeft size={14} /> Cancel Creation
-            </button>
-            <h2 className="text-3xl font-black text-[#292828] uppercase mb-8">Create a <span className="text-[#E53935]">Group</span>.</h2>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#FDFDFF] selection:bg-[#E53935]/10">
+      <main className="flex-1 min-h-screen lg:border-r border-[#292828]/10 overflow-y-auto no-scrollbar py-10 px-6 lg:px-12">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
+            <div>
+              <h1 className="text-4xl font-bold text-[#292828] mb-2 leading-tight">Groups</h1>
+              <p className="text-slate-500 font-bold text-sm uppercase mt-2 block tracking-tight">Join industry clusters and talk to people in your domain.</p>
+            </div>
             
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Cluster Name</label>
-                  <input type="text" value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})} placeholder="e.g. Export Logistics Strategy" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Primary Topic</label>
-                  <input type="text" value={newGroup.topic} onChange={e => setNewGroup({...newGroup, topic: e.target.value})} placeholder="e.g. International Shipping Frameworks" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Tags (Comma Separated)</label>
-                  <input type="text" value={newGroup.tags} onChange={e => setNewGroup({...newGroup, tags: e.target.value})} placeholder="e.g. Scaling, Taxes, Supply Chain" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
-               </div>
-               
-               <button onClick={handleCreateGroup} disabled={!newGroup.name || !newGroup.topic} className="w-full h-16 mt-4 bg-[#292828] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                  Create Group <ArrowRight size={18} />
-               </button>
+            <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+              <button 
+                onClick={() => setIsCreating(true)} 
+                className="h-12 px-6 bg-[#E53935] text-white rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase shadow-xl hover:bg-[#292828] active:scale-95 transition-all"
+              >
+                New Group <Plus size={16} />
+              </button>
+              <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-xl">
+                  <button onClick={() => setViewMode("list")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
+                    <ListIcon size={14} /> List
+                  </button>
+                  <button onClick={() => setViewMode("grid")} className={cn("h-10 px-4 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase transition-all", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/40 hover:text-[#292828]")}>
+                    <LayoutGrid size={14} /> Grid
+                  </button>
+              </div>
+            </div>
+          </div>
+          
+          {isCreating ? (
+            <div className="max-w-2xl bg-white border border-[#292828]/10 rounded-[1.95rem] p-10 shadow-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <button onClick={() => setIsCreating(false)} className="flex items-center gap-2 text-[10px] font-black uppercase text-[#292828]/40 hover:text-[#E53935] transition-colors mb-8">
+                  <ArrowLeft size={14} /> Cancel Creation
+                </button>
+                <h2 className="text-3xl font-bold text-[#292828] uppercase mb-8">Create a <span className="text-[#E53935]">Group</span>.</h2>
+                
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Cluster Name</label>
+                      <input type="text" value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})} placeholder="e.g. Export Logistics Strategy" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
+                  </div>
+                  <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Primary Topic</label>
+                      <input type="text" value={newGroup.topic} onChange={e => setNewGroup({...newGroup, topic: e.target.value})} placeholder="e.g. International Shipping Frameworks" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
+                  </div>
+                  <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Tags (Comma Separated)</label>
+                      <input type="text" value={newGroup.tags} onChange={e => setNewGroup({...newGroup, tags: e.target.value})} placeholder="e.g. Scaling, Taxes, Supply Chain" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
+                  </div>
+                  
+                  <button onClick={handleCreateGroup} disabled={!newGroup.name || !newGroup.topic} className="w-full h-16 mt-4 bg-[#292828] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-[#E53935] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                      Create Group <ArrowRight size={18} />
+                  </button>
+                </div>
+            </div>
+          ) : (
+            <div className={cn(
+            "transition-all duration-500",
+            viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6" : "flex flex-col gap-4"
+          )}>
+            {groups.map(group => (
+              <div key={group.id} className={cn(
+                "p-5 lg:p-6 bg-white border border-[#292828]/10 hover:shadow-3xl hover:border-[#E53935]/30 transition-all duration-500 group cursor-pointer",
+                viewMode === "grid" ? "rounded-[1.625rem] flex flex-col h-full" : "rounded-[1.3rem] flex flex-col lg:flex-row items-center gap-4 lg:gap-6 justify-between"
+              )} onClick={() => setActiveGroup(group)}>
+                
+                <div className={cn("flex items-center gap-5", viewMode === "list" && "w-full lg:w-1/4 shrink-0")}>
+                    <div className={cn("h-16 w-16 rounded-[0.975rem] flex items-center justify-center text-white shadow-xl shadow-slate-200 shrink-0", group.color)}>
+                        <Users size={24} />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold text-[#292828] mb-1 group-hover:text-[#E53935] transition-colors">{group.name}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase">{group.members} Capacity • Regional</p>
+                    </div>
+                  </div>
+
+                <div className={cn("p-4 lg:p-5 bg-[#292828]/5 rounded-2xl border border-transparent group-hover:bg-[#E53935]/5 group-hover:border-[#E53935]/10 transition-all relative overflow-hidden", viewMode === "grid" ? "mb-4 flex-1 mt-4" : "flex-1 w-full")}>
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                      <MessageSquare size={60} className="text-[#292828] -translate-y-2 translate-x-2 rotate-12" />
+                    </div>
+                    <div className="flex items-center gap-2 mb-2 lg:mb-2 relative z-10">
+                      <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
+                      <p className="text-xs font-bold text-[#292828] uppercase">Active Thread</p>
+                    </div>
+                    <p className={cn("font-bold text-[#292828] leading-snug relative z-10", viewMode === "grid" ? "text-lg" : "text-xl line-clamp-2")}>"{group.threadTitle}"</p>
+                </div>
+                
+                <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 w-full", viewMode === "list" && "lg:w-1/4 shrink-0")}>
+                    <div className={cn("flex items-center gap-2", viewMode === "list" && "hidden lg:flex")}>
+                      <div className="flex -space-x-2">
+                          <img src={DUMMY_PROFILES[0].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
+                          <img src={DUMMY_PROFILES[1].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
+                      </div>
+                      <span className="text-xs font-bold text-slate-500 uppercase">{group.replies.length} Replies</span>
+                    </div>
+                    <button className="w-full h-12 bg-[#292828] text-white rounded-xl font-bold text-[10px] uppercase group-hover:bg-[#E53935] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 px-6">
+                      Open <ArrowRight size={14} className={cn("transition-transform group-hover:translate-x-1", viewMode === "list" && "hidden lg:block")} />
+                    </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          )}
+        </div>
+      </main>
+
+      {/* COMMUNITY CONTEXT SIDEBAR */}
+      <aside className="hidden lg:flex flex-col w-[380px] xl:w-[420px] h-screen sticky top-0 bg-white p-8 gap-10 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10">
+         <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-bold text-[#292828]/30 uppercase tracking-widest">Community Hub</h3>
+            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase">
+               <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" /> Live Now
             </div>
          </div>
-      ) : (
-        <div className={cn(
-         "transition-all duration-500",
-         viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-4" : "flex flex-col gap-4"
-      )}>
-        {groups.map(group => (
-          <div key={group.id} className={cn(
-             "p-5 lg:p-6 bg-white border border-[#292828]/10 hover:shadow-3xl hover:border-[#E53935]/30 transition-all duration-500 group cursor-pointer",
-             viewMode === "grid" ? "rounded-[1.625rem] flex flex-col h-full" : "rounded-[1.3rem] flex flex-col lg:flex-row items-center gap-4 lg:gap-6 justify-between"
-          )} onClick={() => setActiveGroup(group)}>
-             
-             <div className={cn("flex items-center gap-5", viewMode === "list" && "w-full lg:w-1/4 shrink-0")}>
-                   <div className={cn("h-16 w-16 rounded-[0.975rem] flex items-center justify-center text-white shadow-xl shadow-slate-200 shrink-0", group.color)}>
-                      <Users size={24} />
-                   </div>
-                   <div>
-                      <h3 className="text-2xl font-bold text-[#292828] mb-1 group-hover:text-[#E53935] transition-colors">{group.name}</h3>
-                      <p className="text-xs font-bold text-slate-400 uppercase">{group.members} Capacity • Regional</p>
-                   </div>
-                </div>
-             <div className={cn("p-4 lg:p-5 bg-[#292828]/5 rounded-2xl border border-transparent group-hover:bg-[#E53935]/5 group-hover:border-[#E53935]/10 transition-all relative overflow-hidden", viewMode === "grid" ? "mb-4 flex-1 mt-4" : "flex-1 w-full")}>
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                   <MessageSquare size={60} className="text-[#292828] -translate-y-2 translate-x-2 rotate-12" />
-                </div>
-                <div className="flex items-center gap-2 mb-2 lg:mb-2 relative z-10">
-                   <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                   <p className="text-xs font-black text-[#292828] uppercase">Active Thread</p>
-                </div>
-                <p className={cn("font-black text-[#292828] leading-snug relative z-10", viewMode === "grid" ? "text-lg" : "text-xl line-clamp-2")}>"{group.threadTitle}"</p>
-             </div>
-             
-             <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 w-full", viewMode === "list" && "lg:w-1/4 shrink-0")}>
-                <div className={cn("flex items-center gap-2", viewMode === "list" && "hidden lg:flex")}>
-                   <div className="flex -space-x-2">
-                      <img src={DUMMY_PROFILES[0].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
-                      <img src={DUMMY_PROFILES[1].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
-                   </div>
-                   <span className="text-xs font-bold text-slate-500 uppercase">{group.replies.length} Replies</span>
-                </div>
-                <button className="w-full h-12 bg-[#292828] text-white rounded-xl font-bold text-[10px] uppercase group-hover:bg-[#E53935] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 px-6">
-                   Open <ArrowRight size={14} className={cn("transition-transform group-hover:translate-x-1", viewMode === "list" && "hidden lg:block")} />
-                </button>
-             </div>
-          </div>
-        ))}
-      </div>
-      )}
+
+         <div className="space-y-6">
+            <h4 className="text-[13px] font-bold text-[#292828] uppercase">Trending Discussions</h4>
+            <div className="space-y-2">
+               {["#IndiaScaling", "#VentureCap2026", "#LogisticsAudit", "#D2CGrowth"].map((tag, i) => (
+                 <div key={i} className="flex items-center justify-between p-4 bg-[#292828]/5 rounded-2xl group cursor-pointer hover:bg-[#E53935] hover:text-white transition-all">
+                    <span className="text-[11px] font-black uppercase tracking-tight">{tag}</span>
+                    <span className="text-[10px] font-bold opacity-40 group-hover:opacity-100">{Math.floor(Math.random()*500 + 100)} nodes</span>
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         <div className="p-8 bg-gradient-to-br from-[#292828] to-[#121212] rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 blur-3xl" />
+            <Users size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
+            
+            <div className="relative z-10">
+               <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Network Density</p>
+               <h3 className="text-4xl font-black mb-4">42,841 <span className="text-emerald-400 text-sm">↑</span></h3>
+               <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-8">
+                  Verified professional nodes currently interacting across global hubs.
+               </p>
+               <div className="flex -space-x-4 mb-8">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-10 w-10 rounded-full border-4 border-[#292828] bg-slate-200 overflow-hidden shadow-xl">
+                       <img src={`https://i.pravatar.cc/150?u=${i+42}`} className="grayscale" alt="" />
+                    </div>
+                  ))}
+                  <div className="h-10 w-10 rounded-full border-4 border-[#292828] bg-[#E53935] flex items-center justify-center text-[10px] font-bold text-white shadow-xl">
+                     +12K
+                  </div>
+               </div>
+               <button className="w-full h-12 border-2 border-white/10 bg-white/5 backdrop-blur-md rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-[#292828] transition-all">Explore Global Index</button>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <h4 className="text-[13px] font-bold text-[#292828] uppercase">Domain Experts</h4>
+            <div className="space-y-4">
+               {DUMMY_PROFILES.slice(20, 23).map((expert, i) => (
+                 <div key={`Expert-${i}`} className="flex items-center gap-4 group">
+                    <div className="h-12 w-12 rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border border-[#292828]/10 shadow-sm relative">
+                       <img src={expert.avatar} className="w-full h-full object-cover" alt="" />
+                       <div className="absolute top-1 right-1 h-3 w-3 bg-emerald-500 rounded-full border-2 border-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                       <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">{expert.name}</p>
+                       <p className="text-[9px] font-bold text-[#E53935] uppercase truncate tracking-tight">{expert.role} node</p>
+                    </div>
+                    <button className="h-10 px-4 border border-[#292828]/10 rounded-xl text-[9px] font-black uppercase hover:bg-[#E53935] hover:text-white hover:border-transparent transition-all">Connect</button>
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         <div className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-center">
+            <p className="text-[11px] font-bold text-slate-500 uppercase leading-relaxed mb-4">You are currently in the <span className="text-[#292828]">Standard Node Pool</span>.</p>
+            <button className="w-full h-14 bg-white border-2 border-[#292828] text-[#292828] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#292828] hover:text-white transition-all">Verify Node Status</button>
+         </div>
+      </aside>
     </div>
   );
 }

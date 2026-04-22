@@ -29,7 +29,11 @@ import {
   UploadCloud,
   MapPin,
   Users,
-  ArrowUpRight
+  ArrowUpRight,
+  BarChart3,
+  Check,
+  Clock,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_MARKET, DUMMY_PROFILES } from "@/lib/dummyData";
@@ -177,7 +181,7 @@ export default function PremiumMarketplacePage() {
                               <button 
                                  onClick={(e) => {
                                     e.stopPropagation();
-                                    setFavorites(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, id]);
+                                    setFavorites(prev => prev.includes(item.id) ? prev.filter(favId => favId !== item.id) : [...prev, item.id]);
                                  }}
                                  className={cn(
                                     "absolute top-4 right-4 h-10 w-10 rounded-xl flex items-center justify-center transition-all z-20 shadow-xl",
@@ -205,8 +209,8 @@ export default function PremiumMarketplacePage() {
 
                            <div className="mt-4 px-1">
                               <div className="flex justify-between items-start mb-1">
-                                 <h3 className="text-lg font-bold text-[#292828] leading-tight uppercase group-hover:text-[#E53935] transition-colors line-clamp-1">{item.item}</h3>
-                                 <p className="text-xl font-black text-[#292828]">{item.price}</p>
+                                 <h3 className="line-clamp-1">{item.item}</h3>
+                                 <p className="text-2xl font-black text-[#111111]">{item.price}</p>
                               </div>
                               
                               <div className="flex items-center justify-between mt-2">
@@ -232,7 +236,7 @@ export default function PremiumMarketplacePage() {
                            <div className="flex-1">
                               <div className="flex items-center gap-3 mb-1">
                                  <span className="px-2 py-0.5 bg-[#E53935]/5 text-[#E53935] text-[8px] font-black uppercase rounded">{item.category}</span>
-                                 <h3 className="text-xl font-black text-[#292828] uppercase">{item.item}</h3>
+                                 <h3>{item.item}</h3>
                               </div>
                               <p className="text-xs font-bold text-slate-400 uppercase">Min Order: {item.cap} Units</p>
                            </div>
@@ -265,8 +269,8 @@ export default function PremiumMarketplacePage() {
          <div className="mt-20 p-12 bg-[#292828] rounded-[2.6rem] text-white relative overflow-hidden group mx-6 lg:mx-12 mb-20">
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                <div className="max-w-xl">
-                  <h3 className="text-3xl lg:text-5xl font-black mb-6 leading-tight uppercase">Sell your <span className="text-[#E53935]">Items</span>.</h3>
-                  <p className="text-white/50 text-xl font-medium leading-relaxed">Earn money by selling raw materials or equipment you don't use.</p>
+                  <h2 className="mb-6 leading-tight">Sell your <span className="text-[#E53935]">Items</span>.</h2>
+                  <p className="text-white/50">Earn money by selling raw materials or equipment you don't use.</p>
                </div>
                <button 
                   onClick={() => setIsSellModalOpen(true)}
@@ -279,126 +283,85 @@ export default function PremiumMarketplacePage() {
          </div>
       </main>
 
-      {/* PERSISTENT RIGHT SIDEBAR */}
-      <aside className="hidden lg:flex flex-col w-[380px] xl:w-[400px] 2xl:w-[450px] h-screen sticky top-0 bg-slate-50/50 p-6 xl:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50 shrink-0">
-         {/* POST ENTRY POINT */}
-         <div className="px-2">
-            <button 
-              onClick={() => setIsPosting(true)}
-              className="w-full h-20 bg-[#292828] text-white rounded-[1.8rem] flex items-center justify-between px-8 group hover:bg-[#E53935] transition-all shadow-[0_20px_50px_rgba(41,40,40,0.2)] active:scale-95"
-            >
-               <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#E53935] transition-all">
-                     <Plus size={20} strokeWidth={3} />
-                  </div>
-                  <div className="text-left">
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 leading-none mb-1">Execution Node</p>
-                     <p className="text-base font-black uppercase tracking-tight">Post Opportunity</p>
-                  </div>
-               </div>
-               <ArrowUpRight size={20} className="text-white/20 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+      {/* MARKETPLACE CONTEXT SIDEBAR */}
+      <aside className="hidden lg:flex flex-col w-[380px] xl:w-[420px] h-screen sticky top-0 bg-white p-8 gap-10 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10">
+         <div className="flex items-center justify-between">
+            <p className="subheading-editorial !text-slate-400">Trade Intelligence</p>
+            <button className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828] hover:bg-[#E53935] hover:text-white transition-all">
+               <Bell size={18} />
             </button>
          </div>
 
-         <div className="group/hub">
-            <div className="flex items-center justify-between mb-6 px-1">
-               <div className="flex items-center gap-3">
-                  <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-ping" />
-                  <h4 className="text-xs font-bold text-[#292828] uppercase">Explore Channels</h4>
-               </div>
-               <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[#292828]/10 rounded-xl shadow-sm">
-                  <span className="h-1.5 w-1.5 bg-green-500 rounded-full" />
-                  <span className="text-xs font-bold text-[#292828] uppercase">Opportunity Engine</span>
-               </div>
-            </div>
-            
-            <div className="relative h-[400px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(41,40,40,0.12)] group transition-all duration-700 ring-8 ring-white cursor-pointer hover:ring-[#E53935]/5 group-hover/hub:shadow-2xl">
-               <div className="absolute inset-0 opacity-[0.15] bg-[radial-gradient(#292828_1.2px,transparent_1.2px)] [background-size:24px_24px]" />
-               
-               {/* Map Activity Nodes */}
-               <div className="absolute inset-0">
-                  {[1,2,3,4,5].map(i => (
-                     <div 
-                        key={i}
-                        className="absolute h-1.5 w-1.5 rounded-full animate-ping opacity-60"
-                        style={{ 
-                           left: `${30 + (i * 13)%50}%`, 
-                           top: `${35 + (i * 9)%40}%`,
-                           backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
-                           animationDelay: `${i * 0.4}s`
-                        }} 
-                     />
-                  ))}
-                  {[1,2,3,4,5,6,7].map(i => (
-                     <div 
-                        key={i}
-                        className="absolute h-1.5 w-1.5 rounded-full shadow-lg"
-                        style={{ 
-                           left: `${30 + (i * 13)%50}%`, 
-                           top: `${35 + (i * 9)%40}%`,
-                           backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
-                        }} 
-                     />
-                  ))}
-               </div>
-
-               <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-white via-white/80 to-transparent z-20">
-                  <div className="flex items-end justify-between">
-                     <div className="space-y-1">
-                        <h2 className="text-4xl font-black text-[#292828] uppercase tracking-tighter">Execution Hub</h2>
-                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">Live Inventory Nodes</p>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div className="relative group/sync overflow-hidden shrink-0">
-            <div className="absolute inset-0 bg-[#E53935] rounded-[1.625rem] blur-3xl opacity-10 group-hover/sync:opacity-20 transition-opacity" />
-            <div className="relative p-8 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[1.625rem] shadow-2xl overflow-hidden group">
-               <TrendingUp size={140} className="absolute -right-10 -bottom-10 text-white/10 group-hover/sync:rotate-12 transition-transform duration-[4s]" />
-               <div className="relative z-10 space-y-6">
-                  <div className="flex items-center gap-4">
-                     <div className="h-12 w-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xl">
-                        <Users size={24} />
-                     </div>
-                     <div>
-                        <h3 className="text-lg font-bold text-white uppercase leading-tight">Wholesale Match</h3>
-                        <p className="text-white/60 text-[10px] font-bold uppercase">4 Supply chain matches identified</p>
-                     </div>
-                  </div>
-                  <button className="w-full py-4 bg-white text-[#E53935] rounded-xl font-bold text-[10px] uppercase shadow-xl hover:bg-[#292828] hover:text-white transition-all transform active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap">
-                     Audit Inventory <ArrowRight size={16} />
-                  </button>
-               </div>
-            </div>
-         </div>
-
-         {/* ACTIVE GURU NODES */}
+         {/* 1. ACTIVE ORDERS */}
          <div className="space-y-6">
-            <div className="flex items-center justify-between px-1">
-               <h4 className="text-[10px] font-black text-[#292828]/40 uppercase tracking-widest">Active Guru Nodes</h4>
-               <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-            </div>
-            
+            <p className="subheading-editorial !text-slate-400">Active Shipments</p>
             <div className="space-y-3">
-               {DUMMY_PROFILES.slice(4, 7).map((guru, idx) => (
-                  <div key={idx} className="group/guru p-4 bg-white border border-[#292828]/5 rounded-2xl hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer flex items-center gap-4">
-                     <div className="h-10 w-10 rounded-xl overflow-hidden grayscale group-hover/guru:grayscale-0 transition-all border border-[#292828]/5 shadow-sm">
-                        <img src={guru.avatar} className="w-full h-full object-cover" alt="" />
-                     </div>
-                     <div className="flex-1 min-w-0" onClick={() => window.location.href = `/profile/${guru.id}`}>
-                        <p className="text-[12px] font-black text-[#292828] uppercase truncate leading-none mb-1">{guru.name}</p>
-                        <p className="text-[8px] font-bold text-[#E53935] uppercase truncate tracking-tight">Active for advisory</p>
-                     </div>
-                     <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover/guru:bg-[#E53935] group-hover/guru:text-white transition-all">
-                        <ArrowUpRight size={14} />
-                     </div>
-                  </div>
+               {[
+                 { item: "Steel Rollers", id: "OR-9912", status: "In Transit", date: "Delivery Tomorrow" },
+                 { item: "Control Panels", id: "OR-8841", status: "Processing", date: "ETA: 3 Days" }
+               ].map((order, i) => (
+                 <div key={i} className="p-5 bg-white border border-[#292828]/10 rounded-3xl hover:border-[#E53935]/30 hover:shadow-xl transition-all group">
+                    <div className="flex items-center justify-between mb-4">
+                       <span className="px-3 py-1 bg-[#292828]/5 rounded-lg text-[9px] font-black text-[#292828]/40 uppercase">{order.id}</span>
+                       <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                          <div className="h-1 w-1 bg-emerald-500 rounded-full animate-pulse" /> {order.status}
+                       </span>
+                    </div>
+                    <p className="text-base font-black text-[#292828] uppercase mb-1">{order.item}</p>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-[#E53935] uppercase">
+                       <Clock size={12} /> {order.date}
+                    </div>
+                 </div>
                ))}
             </div>
          </div>
+
+         {/* 2. PRICE FORECAST */}
+         <div className="p-8 bg-[#292828] rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 blur-3xl" />
+            <BarChart3 size={150} className="absolute -right-10 -bottom-10 text-white/[0.03] group-hover:scale-110 transition-transform duration-[5s]" />
+            
+            <div className="relative z-10">
+               <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Price Alert: Industrial Steel</p>
+               <h3>Market Spike <span className="text-emerald-400">↑ 8%</span></h3>
+               <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-8">
+                  Bulk order prices for raw materials are forecasted to rise by 12% in the next quarter. Secure inventory now.
+               </p>
+               <button className="w-full h-12 bg-[#E53935] text-white rounded-xl text-[10px] font-black uppercase shadow-xl hover:bg-white hover:text-[#E53935] transition-all">Audit Raw Materials</button>
+            </div>
+         </div>
+
+         {/* 3. SAVED INVENTORY */}
+         <div className="space-y-6">
+            <p className="subheading-editorial !text-slate-400">Saved for Later</p>
+            <div className="grid grid-cols-2 gap-4">
+               {DUMMY_MARKET.slice(0, 2).map((item, i) => (
+                 <div key={i} className="group cursor-pointer">
+                    <div className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-[#292828]/5 relative mb-3">
+                       <img src={item.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt="" />
+                       <div className="absolute top-2 right-2 h-7 w-7 bg-white rounded-lg flex items-center justify-center text-[#E53935] shadow-lg scale-0 group-hover:scale-100 transition-transform">
+                          <Heart size={14} fill="currentColor" />
+                       </div>
+                    </div>
+                    <p className="text-[11px] font-black text-[#292828] uppercase truncate leading-tight">{item.item}</p>
+                    <p className="text-[10px] font-bold text-[#E53935]">{item.price}</p>
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         {/* 4. SELLER STATS */}
+         <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex items-center gap-5">
+            <div className="h-12 w-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
+               <ShieldCheck size={24} />
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1.5">Seller Rating</p>
+               <p className="text-xl font-black text-[#292828]">4.9 <span className="text-slate-400 text-xs font-bold uppercase ml-1">Elite Merchant</span></p>
+            </div>
+         </div>
       </aside>
+
 
       {/* 4. MARKETPLACE WORKFLOW MODAL */}
       {selectedItem && (
@@ -424,7 +387,7 @@ export default function PremiumMarketplacePage() {
                      <span className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-xl mb-4 inline-block">
                         Verfied Inventory
                      </span>
-                     <h2 className="text-4xl lg:text-5xl font-black text-white uppercase leading-none">{selectedItem.item}</h2>
+                     <h2 className="text-white leading-none">{selectedItem.item}</h2>
                   </div>
                </div>
 
@@ -487,7 +450,7 @@ export default function PremiumMarketplacePage() {
 
                   {orderStep === "checkout" && (
                      <div className="flex-1 animate-in slide-in-from-right-10 duration-500">
-                        <h3 className="text-[10px] font-black text-[#292828] uppercase tracking-[.2em] mb-10 border-b border-[#292828]/5 pb-4">Secure Checkout</h3>
+                        <p className="subheading-editorial !text-slate-400 mb-10 border-b border-[#292828]/5 pb-4">Secure Checkout</p>
                         <div className="space-y-6 mb-12">
                            <div className="flex justify-between items-center">
                               <span className="text-sm font-bold text-slate-400 uppercase tracking-tighter">Subtotal ({quantity} Units)</span>
@@ -538,7 +501,7 @@ export default function PremiumMarketplacePage() {
                         <div className="h-24 w-24 bg-green-500 text-white rounded-full flex items-center justify-center mb-8 shadow-4xl animate-bounce">
                            <CheckCircle2 size={48} />
                         </div>
-                        <h3 className="text-3xl font-black text-[#292828] uppercase mb-4">Order Successful</h3>
+                        <h3>Order Successful</h3>
                         <p className="text-slate-400 text-sm font-medium leading-relaxed mb-12 max-w-sm">Your secure transaction has been processed. Order ID <span className="text-[#292828] font-bold">#CH-77{Math.floor(Math.random()*900)}</span> is now in fulfillment.</p>
                         <button 
                            onClick={() => setSelectedItem(null)}
@@ -563,7 +526,7 @@ export default function PremiumMarketplacePage() {
             
             <div className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-4xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
                <div className="p-10 border-b border-[#292828]/5 flex items-center justify-between">
-                  <h3 className="text-2xl font-black text-[#292828] uppercase">Post Your Ad</h3>
+                  <h3>Post Your Ad</h3>
                   <button onClick={() => setIsSellModalOpen(false)} className="h-10 w-10 rounded-full bg-[#292828]/5 flex items-center justify-center text-[#292828] hover:bg-[#E53935] hover:text-white transition-all">
                      <X size={20} />
                   </button>

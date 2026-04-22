@@ -78,7 +78,11 @@ module.exports = {
       boxShadow: {
         "soft": "0 2px 4px 0 rgba(0,0,0,0.04), 0 1px 2px 0 rgba(0,0,0,0.02)",
         "premium": "0 12px 32px -8px rgba(0,0,0,0.08)",
-      }
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "Inter", "sans-serif"],
+        outfit: ["var(--font-outfit)", "Outfit", "sans-serif"],
+      },
     },
   },
   plugins: [],

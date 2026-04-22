@@ -10,6 +10,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 import { DUMMY_PROFILES } from "@/lib/dummyData";
 
 interface PostModalProps {
@@ -17,6 +18,7 @@ interface PostModalProps {
   onClose: () => void;
   onPostSuccess?: (post: any) => void;
   initialFormType?: FormType;
+  editPost?: any;
 }
 
 type FormType = "Update" | "Lead" | "Hiring" | "Partner" | "Meetup";
@@ -24,17 +26,31 @@ type FormType = "Update" | "Lead" | "Hiring" | "Partner" | "Meetup";
 const DOMAINS = ["FMCG", "Marketing", "Finance", "Operations", "Legal", "Tech", "Food"];
 const STAGES = ["Idea", "Early", "Growth", "Scale"];
 
-export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormType }: PostModalProps) {
+export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormType, editPost }: PostModalProps) {
   const [formType, setFormType] = useState<FormType>("Lead");
   const [isPosting, setIsPosting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
-    if (isOpen && initialFormType) {
-      setFormType(initialFormType);
+    if (isOpen) {
+      if (editPost) {
+        setFormType(editPost.type.charAt(0).toUpperCase() + editPost.type.slice(1).toLowerCase() as FormType);
+        setFormData({
+          leadTitle: editPost.title || "",
+          leadProblem: editPost.content || "",
+          leadBudget: editPost.budget || "",
+          hiringRole: editPost.title || "",
+          hiringTasks: editPost.content || "",
+          meetupTitle: editPost.title || "",
+          meetupDescription: editPost.content || "",
+          updateContent: editPost.content || "",
+        });
+      } else if (initialFormType) {
+        setFormType(initialFormType);
+      }
       setCurrentStep(1);
     }
-  }, [isOpen, initialFormType]);
+  }, [isOpen, initialFormType, editPost]);
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -93,47 +109,72 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     return Math.min(100, score);
   }, [formData, formType]);
 
-  const handlePost = () => {
-    setIsPosting(true);
-    const post: any = {
-      id: Date.now(),
-      author: "Yakshith",
-      avatar: "https://i.pravatar.cc/150?u=yakshith",
-      time: "Just now",
-      type: formType,
-      title: formData.leadTitle || formData.hiringRole || formData.meetupTitle || formData.updateContent.substring(0, 30),
-      content: formData.leadProblem || formData.hiringTasks || formData.meetupDescription || formData.updateContent,
-      location: "Trivandrum",
-      matchScore: checkoutScore,
-      badge: "Gold",
-      rank: `#? in ${formData.meetupDomain || "Trivandrum"}`,
-      domain: formData.meetupDomain || "Business",
-      
-      // Lead specific
-      budget: formData.leadBudget,
-      dueDate: formData.leadDeadline,
-      
-      // Hiring specific
-      skills: formData.hiringSkills,
-      duration: formData.hiringDuration,
-      workType: formData.hiringEngagement,
-      
-      // Partner specific
-      offer: formData.partnerOffer,
-      need: formData.partnerNeed || formData.updateNeed,
-      
-      // Meetup specific
-      advisor: formData.selectedAdvisor?.name || "Pending",
-      advisorScore: formData.selectedAdvisor?.matchScore || 0,
-      joined: 1,
-      maxSlots: 8
-    };
+  const supabase = createClient();
 
-    setTimeout(() => {
-      onPostSuccess?.(post);
-      setIsPosting(false);
+  const handlePost = async () => {
+    setIsPosting(true);
+    
+    try {
+      // 1. Get the first profile or create a default one if none exists
+      let authorId = editPost?.author_id;
+
+      if (!authorId) {
+        let { data: profile } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+        
+        if (!profile) {
+          const { data: newProfile, error: profileError } = await supabase
+            .from('profiles')
+            .insert([{ 
+              full_name: 'Community Elite', 
+              role: 'PROFESSIONAL', 
+              location: 'Trivandrum',
+              bio: 'Automated founding member profile.'
+            }])
+            .select()
+            .single();
+          
+          if (profileError) throw profileError;
+          profile = newProfile;
+        }
+        authorId = profile.id;
+      }
+
+      const postData = {
+        author_id: authorId,
+        type: formType.toUpperCase(),
+        title: formData.leadTitle || formData.hiringRole || formData.meetupTitle || (formData.updateContent ? formData.updateContent.substring(0, 30) : "Update"),
+        content: formData.leadProblem || formData.hiringTasks || formData.meetupDescription || formData.updateContent,
+        location: "Trivandrum",
+        match_score: checkoutScore,
+        budget: formData.leadBudget,
+      };
+
+      let result;
+      if (editPost) {
+        result = await supabase
+          .from('posts')
+          .update(postData)
+          .eq('id', editPost.id)
+          .select()
+          .single();
+      } else {
+        result = await supabase
+          .from('posts')
+          .insert([postData])
+          .select()
+          .single();
+      }
+
+      if (result.error) throw result.error;
+
+      onPostSuccess?.(result.data);
       onClose();
-    }, 2000);
+    } catch (err) {
+      console.error("Post failed:", err);
+      alert("Failed to post. Check console for error details.");
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -198,7 +239,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                   { label: "Lead", icon: Target, id: "Lead" },
                   { label: "Hiring", icon: Briefcase, id: "Hiring" },
                   { label: "Partner", icon: Sparkles, id: "Partner" },
-                  { label: "Meetup", icon: Users, id: "Meetup" }
+                  { label: "Meetups", icon: Users, id: "Meetup" }
                 ].map((item) => (
                   <button 
                     key={item.id}
@@ -313,7 +354,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                         <div className="space-y-6">
                            <div className="flex items-center justify-between">
                               <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-widest">Suggested Advisors</h4>
-                              <button className="text-[8px] font-bold text-emerald-600 uppercase border-b border-emerald-600">Explore All advisors</button>
+                              <button className="text-[8px] font-bold text-emerald-600 uppercase border-b border-emerald-600">Explore All Advisors</button>
                            </div>
                            
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

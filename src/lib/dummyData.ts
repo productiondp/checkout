@@ -5,10 +5,14 @@ export const DUMMY_PROFILES: any[] = [
     name: "Anand M", 
     role: "Strategy", 
     avatar: "https://i.pravatar.cc/150?u=anand", 
-    location: "Trivandrum", 
+    city: "Trivandrum", 
     rating: 4.9, 
     badge: "Elite",
     checkoutScore: 94,
+    match: 98,
+    online: true,
+    company: "Zigma Strategy",
+    tags: ["Strategy", "Growth", "Scale"],
     rank: { pos: 1, city: "Trivandrum", domain: "Strategy" },
     bio: "Expert in scaling brands. Helped 3 companies grow significantly." 
   },
@@ -17,10 +21,14 @@ export const DUMMY_PROFILES: any[] = [
     name: "Meera Nair", 
     role: "Marketing", 
     avatar: "https://i.pravatar.cc/150?u=meera", 
-    location: "Kochi", 
+    city: "Kochi", 
     rating: 4.8, 
     badge: "Gold",
     checkoutScore: 88,
+    match: 92,
+    online: false,
+    company: "BrandLogic",
+    tags: ["Marketing", "Sales", "Digital"],
     rank: { pos: 5, city: "Kochi", domain: "Marketing" },
     bio: "Digital marketing specialist for consumer goods." 
   },
@@ -29,10 +37,14 @@ export const DUMMY_PROFILES: any[] = [
     name: "Adnan S", 
     role: "Finance", 
     avatar: "https://i.pravatar.cc/150?u=adnan", 
-    location: "Bangalore", 
+    city: "Bangalore", 
     rating: 4.9, 
     badge: "Silver",
     checkoutScore: 72,
+    match: 85,
+    online: true,
+    company: "SeedScale VC",
+    tags: ["Fintech", "Investment", "Finance"],
     rank: { pos: 12, city: "Bangalore", domain: "Finance" },
     bio: "Expert in fundraising and financial planning." 
   },
@@ -41,12 +53,48 @@ export const DUMMY_PROFILES: any[] = [
     name: "Sarah Chen", 
     role: "Operations", 
     avatar: "https://i.pravatar.cc/150?u=sarah", 
-    location: "Singapore", 
+    city: "Singapore", 
     rating: 5.0, 
     badge: "Elite",
     checkoutScore: 99,
-    rank: { pos: 2, city: "Trivandrum", domain: "Operations" },
+    match: 99,
+    online: true,
+    company: "OmniLogistics",
+    tags: ["Logistics", "Operations", "Supply"],
+    rank: { pos: 2, city: "Singapore", domain: "Operations" },
     bio: "Specialist in logistics and supply chain." 
+  },
+  { 
+    id: 5, 
+    name: "Vikram Raj", 
+    role: "Tech Advisor", 
+    avatar: "https://i.pravatar.cc/150?u=vikram", 
+    city: "Bangalore", 
+    rating: 4.9, 
+    badge: "Elite",
+    checkoutScore: 96,
+    match: 94,
+    online: true,
+    company: "Cortex AI",
+    tags: ["Tech", "AI", "Strategy"],
+    rank: { pos: 3, city: "Bangalore", domain: "Tech" },
+    bio: "Helping traditional businesses integrate AI automation." 
+  },
+  { 
+    id: 6, 
+    name: "Elena Rossi", 
+    role: "Legal Consultant", 
+    avatar: "https://i.pravatar.cc/150?u=elena", 
+    city: "Mumbai", 
+    rating: 4.7, 
+    badge: "Gold",
+    checkoutScore: 85,
+    match: 82,
+    online: false,
+    company: "Rossi Legal",
+    tags: ["Legal", "Fintech", "Compliance"],
+    rank: { pos: 8, city: "Mumbai", domain: "Legal" },
+    bio: "Corporate law and cross-border trade compliance expert." 
   }
 ];
 
@@ -132,5 +180,113 @@ export const DUMMY_POSTS: any[] = [
     badge: "Silver",
     rank: "#34 in Food",
     domain: "Food"
+  }
+];
+
+// ── CHATS ────────────────────────────────────────────────────────
+export const DUMMY_CHATS: any[] = [
+  {
+    id: 1,
+    name: "Arun Dev",
+    role: "Core Developer",
+    avatar: "https://i.pravatar.cc/150?u=arun",
+    online: true,
+    time: "10:45 AM",
+    last: "Yes, we just finalized the regional strategy.",
+    checkoutScore: 98,
+    rank: { pos: 1, city: "Trivandrum", domain: "Engineering" },
+    badge: "Elite",
+    bio: "Building the future of hyperlocal business networks. Focused on performance and premium UI.",
+    requirements: ["Packaging Vendors", "Logistics Partners", "UI Designers"]
+  },
+  {
+    id: 2,
+    name: "Sarah Chen",
+    role: "Operations Head",
+    avatar: "https://i.pravatar.cc/150?u=sarah",
+    online: true,
+    time: "9:30 AM",
+    last: "I'll review the logistics deck by EOD.",
+    checkoutScore: 94,
+    rank: { pos: 2, city: "Singapore", domain: "Operations" },
+    badge: "Elite",
+    bio: "Global supply chain expert with 10+ years experience in APAC logistics.",
+    requirements: ["Warehouse Space", "Fleet Owners"]
+  },
+  {
+    id: 3,
+    name: "Meera Nair",
+    role: "Marketing Director",
+    avatar: "https://i.pravatar.cc/150?u=meera",
+    online: false,
+    time: "Yesterday",
+    last: "The marketing report is ready for download.",
+    checkoutScore: 88,
+    rank: { pos: 5, city: "Kochi", domain: "Marketing" },
+    badge: "Gold",
+    bio: "Passionate about brand storytelling and growth hacking for D2C brands.",
+    requirements: ["Content Creators", "SEO Experts"]
+  },
+  {
+    id: 4,
+    name: "Adnan S",
+    role: "Financial Advisor",
+    avatar: "https://i.pravatar.cc/150?u=adnan",
+    online: false,
+    time: "2 days ago",
+    last: "Let's discuss the funding options next week.",
+    checkoutScore: 72,
+    rank: { pos: 12, city: "Bangalore", domain: "Finance" },
+    badge: "Silver",
+    bio: "Helping startups navigate seed rounds and series A funding.",
+    requirements: ["Fintech Startups", "Legal Tech"]
+  }
+];
+
+// ── MARKETPLACE / INVENTORY ─────────────────────────────────────
+export const DUMMY_MARKET: any[] = [
+  {
+    id: 1,
+    item: "Industrial Steel Rollers",
+    price: "₹4,500",
+    category: "Equipment",
+    author: "SteelNode Corp",
+    avatar: "https://logo.clearbit.com/fedex.com",
+    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
+    description: "High-grade industrial steel rollers for heavy-duty conveyor systems. Standard 500mm width.",
+    stock: 24
+  },
+  {
+    id: 2,
+    item: "Eco-Friendly Pouch Packs",
+    price: "₹12/unit",
+    category: "Packaging",
+    author: "GreenPack Ltd",
+    avatar: "https://logo.clearbit.com/tata.com",
+    image: "https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&q=80&w=800",
+    description: "Biodegradable snack pouches with resealable zippers. Minimum order 5000 units.",
+    stock: 12000
+  },
+  {
+    id: 3,
+    item: "Fleet Logistics Management",
+    price: "₹85,000/mo",
+    category: "Services",
+    author: "OmniShip",
+    avatar: "https://logo.clearbit.com/maersk.com",
+    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
+    description: "End-to-end fleet tracking and management service for pan-India logistics operations.",
+    stock: 5
+  },
+  {
+    id: 4,
+    item: "Smart Inventory Nodes",
+    price: "₹2,200",
+    category: "Automation",
+    author: "LogiAI Systems",
+    avatar: "https://logo.clearbit.com/dhl.com",
+    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
+    description: "IoT enabled inventory tracking nodes for real-time stock monitoring and audit.",
+    stock: 150
   }
 ];

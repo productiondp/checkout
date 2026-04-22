@@ -1,8 +1,9 @@
 // CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import { 
   User, 
   Mail, 
@@ -64,12 +65,100 @@ export default function PremiumProfilePage() {
   };
 
   const [userData, setUserData] = useState({
+     id: "",
      name: "User",
      role: "Founder",
      company: "Business Name",
      bio: "Professional profile description goes here.",
-     checkoutRank: "--"
+     checkoutRank: "--",
+     avatar_url: "",
+     location: "Trivandrum",
+     email: "",
+     phone: "",
+     website: ""
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = createClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      setIsLoading(true);
+      // For MVP, we fetch the first profile or create one if empty
+      let { data: profile, error } = await supabase.from('profiles').select('*').limit(1).maybeSingle();
+      
+      if (!profile) {
+        const { data: newProfile } = await supabase.from('profiles').insert([{
+           full_name: 'Community Elite',
+           role: 'FOUNDER',
+           location: 'Trivandrum',
+           bio: 'Managing partner and strategic node.'
+        }]).select().single();
+        profile = newProfile;
+      }
+
+      if (profile) {
+        setUserData({
+          id: profile.id,
+          name: profile.full_name || "User",
+          role: profile.role || "Founder",
+          company: profile.location || "Business Name",
+          bio: profile.bio || "Professional profile description goes here.",
+          checkoutRank: profile.match_score ? `#${100 - profile.match_score}` : "Elite",
+          avatar_url: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.id}`,
+          location: profile.location || "Trivandrum",
+          email: profile.email || "ahmad@zenithtech.com",
+          phone: profile.phone || "+91 9XX XXXXXXX",
+          website: profile.website || "zenithtech.io"
+        });
+      }
+      setIsLoading(false);
+    }
+    loadProfile();
+  }, []);
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: userData.name,
+        role: userData.role,
+        bio: userData.bio,
+        location: userData.location,
+        avatar_url: userData.avatar_url,
+        // email: userData.email, // Assume these exist or add them
+        // phone: userData.phone,
+        // website: userData.website
+      })
+      .eq('id', userData.id);
+
+    if (error) {
+      alert("Failed to save profile: " + error.message);
+    } else {
+      setShowEditModal(false);
+    }
+    setIsSaving(false);
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // In a real app, you'd upload to Supabase Storage. 
+    // For now, we'll use a FileReader to show it locally and set it as a placeholder.
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setUserData(prev => ({ ...prev, avatar_url: event.target?.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const [dependencyList, setDependencyList] = useState(
     roleDefaults["SEO"]
@@ -105,10 +194,24 @@ export default function PremiumProfilePage() {
          <div className="max-w-[1240px] mx-auto px-6 h-full flex flex-col justify-center relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-12">
                {/* Cinematic Avatar Hub */}
-               <div className="relative shrink-0">
-                  <div className="h-52 w-52 rounded-full bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-2xl p-2 shadow-4xl relative z-10 border border-white/20 ring-4 ring-white/10 ring-offset-8 ring-offset-[#292828] flex items-center justify-center">
-                     <User size={80} className="text-white/20" />
+               <div className="relative shrink-0 group cursor-pointer" onClick={handleAvatarClick}>
+                  <div className="h-52 w-52 rounded-full bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-2xl p-2 shadow-4xl relative z-10 border border-white/20 ring-4 ring-white/10 ring-offset-8 ring-offset-[#292828] flex items-center justify-center overflow-hidden">
+                     {userData.avatar_url ? (
+                        <img src={userData.avatar_url} className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700" alt="" />
+                     ) : (
+                        <User size={80} className="text-white/20" />
+                     )}
+                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Plus size={32} className="text-white" />
+                     </div>
                   </div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange} 
+                    className="hidden" 
+                    accept="image/*" 
+                  />
                   <div className="absolute top-4 right-4 h-10 w-10 bg-white border-2 border-[#E53935] rounded-full flex items-center justify-center text-[#E53935] shadow-2xl z-20 animate-bounce-slow">
                      <Award size={20} />
                   </div>
@@ -131,7 +234,7 @@ export default function PremiumProfilePage() {
                   </div>
                   <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/40 text-[11px] font-bold uppercase pt-2">
                      <span className="flex items-center gap-2"> <Building size={14} className="text-[#E53935]" /> {userData.company}</span>
-                     <span className="flex items-center gap-2"> <MapPin size={14} className="text-[#E53935]" /> Trivandrum, Kerala</span>
+                     <span className="flex items-center gap-2"> <MapPin size={14} className="text-[#E53935]" /> {userData.location}</span>
                   </div>
                </div>
 
@@ -460,20 +563,33 @@ export default function PremiumProfilePage() {
                      </div>
                   </div>
                  <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">Executive Bio</label>
-                    <textarea 
-                      rows={4}
-                      value={userData.bio}
-                      onChange={(e) => setUserData({...userData, bio: e.target.value})}
-                      className="w-full p-5 bg-slate-50 border border-slate-100 rounded-xl font-medium text-[#292828] outline-none focus:border-[#E53935] transition-all"
-                    />
+                  <div>
+                     <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">Avatar URL (Optional)</label>
+                     <input 
+                       type="text" 
+                       value={userData.avatar_url}
+                       onChange={(e) => setUserData({...userData, avatar_url: e.target.value})}
+                       placeholder="https://..."
+                       className="w-full h-14 px-5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-[#292828] outline-none focus:border-[#E53935]"
+                     />
+                  </div>
+                  <div>
+                     <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">Executive Bio</label>
+                     <textarea 
+                       rows={4}
+                       value={userData.bio}
+                       onChange={(e) => setUserData({...userData, bio: e.target.value})}
+                       className="w-full p-5 bg-slate-50 border border-slate-100 rounded-xl font-medium text-[#292828] outline-none focus:border-[#E53935] transition-all"
+                     />
+                  </div>
+                  <button 
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="w-full h-16 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-[#292828] transition-all disabled:opacity-50"
+                  >
+                     {isSaving ? "Saving..." : "Save Profile"}
+                  </button>
                  </div>
-                 <button 
-                   onClick={() => setShowEditModal(false)}
-                   className="w-full h-16 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-[#292828] transition-all"
-                 >
-                    Save Profile
-                 </button>
               </div>
            </div>
         </div>

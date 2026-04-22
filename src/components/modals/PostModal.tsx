@@ -163,14 +163,28 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         authorId = profile.id;
       }
 
-      const postData = {
+      const postData: any = {
         author_id: authorId,
         type: formType.toUpperCase(),
         title: formData.leadTitle || formData.hiringRole || formData.meetupTitle || (formData.updateContent ? formData.updateContent.substring(0, 30) : "Update"),
         content: formData.leadProblem || formData.hiringTasks || formData.meetupDescription || formData.updateContent,
         location: "Trivandrum",
         match_score: checkoutScore,
-        budget: formData.leadBudget,
+        
+        // Type-specific mappings
+        budget: formData.leadBudget || formData.hiringComp,
+        due_date: formData.leadDeadline ? new Date(formData.leadDeadline).toISOString().split('T')[0] : null,
+        skills_required: formData.hiringSkills ? formData.hiringSkills.split(',').map((s: string) => s.trim()) : null,
+        work_type: formData.hiringEngagement,
+        duration: formData.hiringDuration,
+        offer: formData.partnerOffer,
+        need: formData.partnerNeed || formData.updateNeed,
+        timeline: formData.partnerTimeline,
+        
+        // Meetup specifics
+        max_slots: 8,
+        payment_type: formData.meetupPayment,
+        domain: formData.meetupDomain
       };
 
       let result;

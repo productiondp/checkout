@@ -1,328 +1,288 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Filter, 
-  CheckCircle2, 
+  Star, 
+  ShieldCheck, 
+  Zap, 
   MapPin, 
-  ChevronDown,
-  LayoutGrid,
-  List,
+  Calendar, 
+  Clock,
   ArrowUpRight,
-  X,
-  Video,
-  FileText,
-  Plus,
-  Zap,
-  Sparkles,
+  TrendingUp,
+  BrainCircuit,
   Award,
-  ChevronRight
+  Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import PostModal from "@/components/modals/PostModal";
 
-const CATEGORIES = ["All", "Strategy", "Tech", "Growth", "Logistics", "Sales", "Fintech", "AI", "Legal"];
-
-export default function BusinessAdvisorsPage() {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedAdv, setSelectedAdv] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success">("idle");
-  const [isPosting, setIsPosting] = useState(false);
-  const [isDomainOpen, setIsDomainOpen] = useState(false);
+export default function AdvisorDirectoryPage() {
   const [advisors, setAdvisors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [bookingData, setBookingData] = useState({ date: "", context: "" });
 
   const supabase = createClient();
 
-  React.useEffect(() => {
-    async function fetchAdvisors() {
+  useEffect(() => {
+    async function loadAdvisors() {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'ADVISOR');
-
-      if (data && data.length > 0) {
-        const mapped = data.map(p => ({
-          ...p,
-          name: p.full_name || "Expert",
-          avatar: p.avatar_url || `https://i.pravatar.cc/150?u=${p.id}`,
-          role: p.bio?.split('.')[0] || "Advisor", // Use first sentence of bio as role if role is generic
-          company: p.location || "Global Hub",
-          tags: p.domains || ["Expert"],
-          match: p.match_score || 90,
-          city: p.location || "Virtual"
-        }));
-        setAdvisors(mapped);
-      }
+        .eq('role', 'ADVISOR')
+        .order('match_score', { ascending: false });
+      
+      if (data) setAdvisors(data);
       setIsLoading(false);
     }
-    fetchAdvisors();
+    loadAdvisors();
   }, []);
 
-  const filteredAdvisors = useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    const filtered = advisors.filter(profile => {
-      const matchesCategory = activeCategory === "All" || (profile.tags && profile.tags.includes(activeCategory));
-      const matchesSearch = !query || 
-                            (profile.name || "").toLowerCase().includes(query) || 
-                            (profile.role || "").toLowerCase().includes(query) ||
-                            (profile.company && profile.company.toLowerCase().includes(query));
-      return matchesCategory && matchesSearch;
-    });
-    return filtered.sort((a, b) => (b.match || 0) - (a.match || 0));
-  }, [activeCategory, searchQuery, advisors]);
+  const handleBooking = async (expert: any) => {
+    setSelectedExpert(expert);
+    setBookingData({ date: "", context: "" });
+    setIsBookingModalOpen(true);
+  };
 
-  const handleBooking = () => {
-    if (!selectedDate || !selectedTime) return;
-    setBookingStatus("loading");
-    setTimeout(() => {
-      setBookingStatus("success");
-      setTimeout(() => {
-        setSelectedAdv(null);
-        setBookingStatus("idle");
-      }, 2000);
-    }, 1500);
+  const confirmBooking = async () => {
+    if (!bookingData.date || !bookingData.context) {
+      alert("Please define session context and date.");
+      return;
+    }
+
+    setIsProcessing(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Authentication required for tactical bookings.");
+      setIsProcessing(false);
+      return;
+    }
+
+    // 1. Create Booking
+    const { error: bookingError } = await supabase
+      .from('bookings')
+      .insert([{
+        advisor_id: selectedExpert.id,
+        client_id: user.id,
+        scheduled_at: new Date(bookingData.date).toISOString(),
+        status: 'PENDING'
+      }]);
+
+    if (bookingError) {
+      alert("Booking failed: " + bookingError.message);
+    } else {
+      // 2. Notify Advisor
+      await supabase.from('notifications').insert([{
+         user_id: selectedExpert.id,
+         title: 'New Session Request',
+         message: `${user.email || 'A client'} requested a tactical session on ${bookingData.date}.`,
+         type: 'BOOKING',
+         link: '/home'
+      }]);
+
+      alert("Booking Request Synchronized. Awaiting Advisor Confirmation.");
+      setIsBookingModalOpen(false);
+    }
+    setIsProcessing(false);
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#292828] selection:bg-[#E53935]/10 font-sans p-6 lg:p-12">
+    <div className="min-h-screen bg-[#F8FAFC] pb-40">
       
-      {/* ── HEADER ────────────────────────────────────────────────────── */}
-      <header className="max-w-7xl mx-auto mb-16 space-y-10">
-         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-[#292828]/5 pb-12">
-            <div className="space-y-4">
-               <div className="label-premium">
-                  <Sparkles size={10} className="animate-pulse" /> Expert Marketplace
-               </div>
-                <h1 className="text-xl md:text-2xl lg:text-3xl mb-0 tracking-tight font-black uppercase">
-                   Advisors<span className="text-[#E53935]">.</span>
-                </h1>
-               <p className="text-slate-500 text-lg md:text-xl max-w-2xl font-medium leading-relaxed">
-                  The world's most capable strategic and technical talent, vetted for performance and ready to scale your network.
-               </p>
+      {/* 1. ELITE SEARCH HEADER */}
+      <section className="bg-[#292828] pt-24 pb-32 px-10 relative overflow-hidden text-white">
+         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E53935]/15 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/3" />
+         
+         <div className="max-w-6xl mx-auto relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+               <div className="h-1px w-12 bg-[#E53935]" />
+               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935]">Elite Expert Network</p>
             </div>
+            <h1 className="text-6xl font-black uppercase tracking-tighter leading-none mb-8">
+               Tactical <br /> Advisors
+            </h1>
+            <p className="text-xl font-medium text-white/50 max-w-2xl leading-relaxed mb-12">
+               Connect with verified domain specialists to solve bottlenecks, scale operations, or validate strategic mandates in your region.
+            </p>
 
-            <div className="flex items-center gap-4">
-               <button 
-                  onClick={() => setIsPosting(true)}
-                  className="h-16 px-10 bg-[#E53935] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 hover:scale-105 active:scale-95 transition-all"
-               >
-                  Host Expert Node
-               </button>
-            </div>
-         </div>
-
-         {/* FILTERS & SEARCH (Unified Logical Strip) */}
-         <div className="flex flex-col md:flex-row items-center gap-4 pt-4">
-            <div className="relative flex-1 w-full group">
-               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" size={20} />
+            <div className="max-w-3xl relative group">
+               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#E53935] transition-colors" size={24} />
                <input 
-                  type="text" 
-                  placeholder="Search expert registry..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-8 text-[15px] font-bold outline-none focus:bg-white focus:border-[#292828]/10 transition-all shadow-sm"
+                 type="text" 
+                 placeholder="Search by expertise (e.g. FMCG Growth, UI/UX, Legal)..." 
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="w-full h-20 bg-white/5 border border-white/10 rounded-3xl pl-20 pr-8 text-lg font-bold outline-none focus:bg-white/10 focus:border-[#E53935] transition-all placeholder:text-white/20"
                />
             </div>
+         </div>
+      </section>
 
-            <div className="relative">
-               <button 
-                  onClick={() => setIsDomainOpen(!isDomainOpen)}
-                  className="h-16 px-8 bg-white border border-slate-100 rounded-2xl flex items-center gap-6 text-[11px] font-black uppercase shadow-sm hover:border-[#292828]/10 transition-all"
-               >
-                  <span className="text-slate-400">Domain:</span>
-                  <span>{activeCategory}</span>
-                  <ChevronDown size={16} className={cn("transition-transform", isDomainOpen && "rotate-180")} />
-               </button>
-               {isDomainOpen && (
-                 <div className="absolute top-full mt-2 right-0 w-64 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {CATEGORIES.map(cat => (
-                      <button 
-                        key={cat} 
-                        onClick={() => { setActiveCategory(cat); setIsDomainOpen(false); }}
-                        className={cn(
-                          "w-full px-4 py-3 rounded-xl text-left text-[10px] font-black uppercase transition-all flex items-center justify-between group",
-                          activeCategory === cat ? "bg-[#292828] text-white" : "text-slate-500 hover:bg-slate-50"
-                        )}
-                      >
-                         {cat}
-                         {activeCategory === cat && <ChevronRight size={14} />}
-                      </button>
-                    ))}
-                 </div>
-               )}
+      {/* 2. ADVISOR GRID */}
+      <div className="max-w-6xl mx-auto px-6 -mt-16">
+         <div className="bg-white p-4 rounded-[2.5rem] shadow-2xl border border-[#292828]/5 mb-12 flex items-center justify-between px-8">
+            <div className="flex items-center gap-8">
+               <div className="flex flex-col">
+                  <span className="text-[9px] font-black uppercase text-[#292828]/30 tracking-widest leading-none mb-1">Active Now</span>
+                  <span className="text-xl font-black text-[#292828]">248 Experts</span>
+               </div>
+               <div className="h-10 w-px bg-slate-100" />
+               <div className="flex flex-col">
+                  <span className="text-[9px] font-black uppercase text-[#292828]/30 tracking-widest leading-none mb-1">Verified Base</span>
+                  <span className="text-xl font-black text-[#E53935]">Top 1%</span>
+               </div>
             </div>
-
-            <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-               <button onClick={() => setViewMode("grid")} className={cn("p-3 rounded-xl transition-all", viewMode === "grid" ? "bg-white shadow-sm text-[#292828]" : "text-slate-300")}><LayoutGrid size={20} /></button>
-               <button onClick={() => setViewMode("list")} className={cn("p-3 rounded-xl transition-all", viewMode === "list" ? "bg-white shadow-sm text-[#292828]" : "text-slate-300")}><List size={20} /></button>
+            <div className="flex items-center gap-2">
+               {['Strategy', 'Tech', 'Design', 'Marketing'].map(cat => (
+                 <button key={cat} className="px-5 py-2 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-bold uppercase transition-all hover:bg-[#292828] hover:text-white">{cat}</button>
+               ))}
             </div>
          </div>
-      </header>
 
-      {/* ── GRID ──────────────────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto pb-40">
-         <div className={cn(
-            "grid gap-8",
-            viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "flex flex-col max-w-4xl"
-         )}>
-            {filteredAdvisors.map(profile => (
-              <div 
-                key={profile.id}
-                onClick={() => setSelectedAdv({ ...profile, cost: 2500, rank: "National Authority" })}
-                className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 lg:p-10 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] hover:border-[#E53935]/20 transition-all duration-500 cursor-pointer overflow-hidden"
-              >
-                <div className="flex flex-col gap-8">
-                   <div className="flex items-start justify-between">
-                      <div className="h-24 w-24 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl relative group-hover:scale-105 transition-transform duration-500">
-                         <img src={profile.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                      </div>
-                      <div className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-xl border border-emerald-100">
-                        {profile.match}% Match
-                      </div>
-                   </div>
+         {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {[1,2,3,4].map(i => <div key={i} className="h-80 bg-slate-100 rounded-[2.5rem] animate-pulse" />)}
+            </div>
+         ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+               {advisors.map((advisor) => (
+                  <div key={advisor.id} className="bg-white rounded-[2.5rem] p-10 border border-[#292828]/5 shadow-xl hover:shadow-4xl transition-all duration-500 group relative overflow-hidden">
+                     
+                     <div className="flex gap-8 items-start relative z-10">
+                        <div className="relative shrink-0">
+                           <div className="h-32 w-32 rounded-[2rem] overflow-hidden border-4 border-slate-50 group-hover:scale-105 transition-transform duration-700">
+                              <img src={advisor.avatar_url || `https://i.pravatar.cc/150?u=${advisor.id}`} className="w-full h-full object-cover grayscale brightness-110" alt="" />
+                           </div>
+                           <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl border-4 border-white">
+                              <ShieldCheck size={20} />
+                           </div>
+                        </div>
 
-                   <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-3xl mb-0 leading-none">{profile.name}</h3>
-                        <CheckCircle2 size={20} className="text-[#E53935]" />
-                      </div>
-                      <p className="subheading-editorial !text-slate-400 mb-6">{profile.role} @ {profile.company}</p>
-                      
-                    <div className="flex flex-wrap gap-2 mb-10">
-                      {profile.tags?.map(tag => (
-                        <span key={tag} className="px-3 py-1.5 bg-slate-50 text-slate-500 text-[9px] font-black uppercase rounded-lg border border-slate-100">{tag}</span>
-                      ))}
-                    </div>
+                        <div className="flex-1">
+                           <div className="flex items-center justify-between mb-2">
+                              <div className="px-3 py-1 bg-[#292828] text-white text-[8px] font-black uppercase rounded-lg tracking-widest">
+                                 Verified Advisor
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                 <Zap size={14} className="text-[#E53935] fill-[#E53935]" />
+                                 <span className="text-2xl font-black text-[#292828]">{advisor.match_score}%</span>
+                              </div>
+                           </div>
+                           <h3 className="text-3xl font-black text-[#292828] uppercase tracking-tighter leading-none mb-4 group-hover:text-[#E53935] transition-colors">{advisor.full_name}</h3>
+                           <p className="text-[13px] font-medium text-[#292828]/60 line-clamp-2 leading-relaxed mb-6">
+                              {advisor.bio || "Specialist in strategic business development and high-authority operational scaling."}
+                           </p>
+                           
+                           <div className="flex flex-wrap gap-2">
+                              {['Scaling', 'Strategy', 'UI/UX'].map(tag => (
+                                <span key={tag} className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black uppercase text-[#292828]/40 border border-slate-100">{tag}</span>
+                              ))}
+                           </div>
+                        </div>
+                     </div>
 
-                      <div className="flex items-center justify-between pt-8 border-t border-slate-50">
-                         <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-300">
-                            <MapPin size={14} className="text-[#E53935]" /> {profile.city}
-                         </div>
-                         <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-[#292828] group-hover:text-white transition-all">
-                            <ArrowUpRight size={22} />
-                         </div>
-                      </div>
-                   </div>
-                </div>
+                     <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-4">
+                           <div className="flex flex-col">
+                              <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Session Cost</span>
+                              <span className="text-xl font-black text-[#292828]">₹2,500 <span className="text-[9px] opacity-30">/ HR</span></span>
+                           </div>
+                           <div className="h-8 w-px bg-slate-100" />
+                           <div className="flex flex-col">
+                              <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Availability</span>
+                              <span className="text-[12px] font-bold text-emerald-600">Immediate</span>
+                           </div>
+                        </div>
+                        <button 
+                          onClick={() => handleBooking(advisor)}
+                          className="h-14 px-8 bg-[#292828] text-white rounded-2xl flex items-center gap-3 font-black text-xs uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95"
+                        >
+                           Book Session <Calendar size={18} />
+                        </button>
+                     </div>
+
+                     {/* Cinematic Backdrop Accent */}
+                     <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                        <Award size={200} strokeWidth={1} />
+                     </div>
+                  </div>
+               ))}
+            </div>
+         )}
+      </div>
+
+      {/* BOOKING MODAL */}
+      {isBookingModalOpen && selectedExpert && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
+           <div className="w-full max-w-xl bg-white rounded-[2.5rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
+              <div className="flex items-center justify-between mb-10">
+                 <h2 className="text-2xl font-black text-[#292828] uppercase">Tactical <span className="text-[#E53935]">Booking</span></h2>
+                 <button onClick={() => setIsBookingModalOpen(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><Circle size={20} /></button>
               </div>
-            ))}
-         </div>
-      </main>
-
-      {/* ── BOOKING MODAL ──────────────────────────────────────────────── */}
-      {selectedAdv && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => setSelectedAdv(null)} />
-           <div className="relative w-full max-w-5xl bg-white rounded-[3rem] overflow-hidden shadow-4xl animate-in zoom-in-95 duration-700 flex flex-col lg:flex-row h-[85vh]">
               
-              <div className="w-full lg:w-[350px] bg-slate-50 p-12 flex flex-col items-center border-r border-slate-100">
-                 <div className="h-40 w-40 rounded-[3rem] overflow-hidden shadow-2xl mb-8 border-4 border-white">
-                    <img src={selectedAdv.avatar} className="w-full h-full object-cover" alt="" />
+              <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex items-center gap-6 mb-10">
+                 <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-lg border-2 border-white">
+                    <img src={selectedExpert.avatar_url || `https://i.pravatar.cc/150?u=${selectedExpert.id}`} className="w-full h-full object-cover grayscale" alt="" />
                  </div>
-                 <h2 className="text-3xl mb-1">{selectedAdv.name}</h2>
-                 <p className="subheading-editorial !text-[#E53935] mb-12">{selectedAdv.rank}</p>
-                 
-                 <div className="space-y-4 w-full">
-                    {[
-                      { icon: <Video />, label: "Session", val: "Secure Video" },
-                      { icon: <FileText />, label: "Output", val: "Strategy PDF" }
-                    ].map((it, i) => (
-                      <div key={i} className="p-5 bg-white rounded-2xl flex items-center gap-4 border border-slate-100">
-                         <div className="h-10 w-10 bg-[#292828] text-white rounded-xl flex items-center justify-center">{it.icon}</div>
-                         <div>
-                            <p className="text-[9px] font-black uppercase text-slate-400 leading-none mb-1">{it.label}</p>
-                            <p className="text-[13px] font-bold">{it.val}</p>
-                         </div>
-                      </div>
-                    ))}
+                 <div>
+                    <h3 className="text-xl font-black text-[#292828] leading-tight mb-1">{selectedExpert.full_name}</h3>
+                    <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">{selectedExpert.role} • 1 HR Session</p>
                  </div>
               </div>
 
-              <div className="flex-1 p-12 lg:p-20 flex flex-col relative overflow-y-auto no-scrollbar">
-                 <button onClick={() => setSelectedAdv(null)} className="absolute top-12 right-12 h-14 w-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-[#E53935] hover:text-white transition-all"><X size={28} /></button>
+              <div className="space-y-8">
+                 <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest">Select Date</label>
+                    <input 
+                      type="date" 
+                      value={bookingData.date}
+                      onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
+                      className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-[#292828] outline-none focus:border-[#E53935]" 
+                    />
+                 </div>
+                 <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest">Session Context</label>
+                    <textarea 
+                      rows={3} 
+                      placeholder="What operational bottleneck are we solving?" 
+                      value={bookingData.context}
+                      onChange={(e) => setBookingData({...bookingData, context: e.target.value})}
+                      className="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl font-medium text-[#292828] outline-none focus:border-[#E53935]" 
+                    />
+                 </div>
                  
-                 <div className="mb-16">
-                    <p className="subheading-editorial !text-[#E53935] mb-2">Step 01: Availability</p>
-                    <h2 className="text-5xl lg:text-7xl font-black mb-0 tracking-tighter">Reserve Slot<span className="text-slate-200">.</span></h2>
-                 </div>
-
-                 <div className="space-y-12 flex-1">
-                    <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase mb-8 tracking-widest">Select Date</p>
-                       <div className="grid grid-cols-4 md:grid-cols-7 gap-3">
-                          {[18, 19, 20, 21, 22, 23, 24].map(day => (
-                            <button 
-                              key={day} 
-                              onClick={() => setSelectedDate(day)}
-                              className={cn(
-                                "h-20 rounded-2xl border transition-all flex flex-col items-center justify-center",
-                                selectedDate === day 
-                                  ? "bg-[#292828] border-[#292828] text-white shadow-xl scale-105" 
-                                  : "bg-slate-50 border-slate-50 text-slate-400 hover:border-slate-200"
-                              )}
-                            >
-                               <p className="text-[8px] font-black uppercase opacity-40">MAY</p>
-                               <p className="text-xl font-black">{day}</p>
-                            </button>
-                          ))}
-                       </div>
+                 <div className="p-6 bg-[#292828] rounded-[2rem] text-white">
+                    <div className="flex justify-between items-center mb-4">
+                       <span className="text-[10px] font-black uppercase text-white/30 tracking-widest">Service Fee</span>
+                       <span className="text-xl font-black">₹2,500</span>
                     </div>
-
-                    <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase mb-8 tracking-widest">Select Time</p>
-                       <div className="flex flex-wrap gap-3">
-                          {["10:00 AM", "11:30 AM", "02:00 PM", "04:30 PM", "06:00 PM"].map(time => (
-                            <button 
-                              key={time} 
-                              onClick={() => setSelectedTime(time)}
-                              className={cn(
-                                "px-8 py-5 rounded-2xl border text-[11px] font-black transition-all uppercase",
-                                selectedTime === time 
-                                  ? "bg-[#E53935] border-[#E53935] text-white shadow-xl" 
-                                  : "bg-slate-50 border-slate-50 text-slate-400 hover:border-slate-200"
-                              )}
-                            >
-                               {time}
-                            </button>
-                          ))}
-                       </div>
+                    <div className="flex justify-between items-center mb-6">
+                       <span className="text-[10px] font-black uppercase text-white/30 tracking-widest">Platform Tax</span>
+                       <span className="text-xl font-black">₹250</span>
                     </div>
-                 </div>
-
-                 <div className="mt-12 pt-10 border-t border-slate-50 flex items-center justify-between">
-                    <div>
-                       <p className="text-4xl font-black leading-none mb-2">₹{selectedAdv.cost}</p>
-                       <p className="subheading-editorial !mb-0 !text-slate-300">Professional Fee</p>
-                    </div>
+                    <div className="h-px bg-white/10 mb-6" />
                     <button 
-                       onClick={handleBooking}
-                       disabled={!selectedDate || !selectedTime || bookingStatus !== "idle"}
-                       className={cn(
-                         "h-24 px-16 rounded-[2rem] font-black text-[12px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-4 shadow-xl shadow-red-500/10",
-                         bookingStatus === "success" 
-                           ? "bg-emerald-500 text-white" 
-                           : "bg-[#292828] text-white hover:bg-[#E53935]"
-                       )}
+                      onClick={confirmBooking}
+                      disabled={isProcessing}
+                      className="w-full h-16 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
-                       {bookingStatus === "loading" ? "Processing..." : bookingStatus === "success" ? "Success" : <><Zap size={20} fill="currentColor" /> Confirm Session</>}
+                       {isProcessing ? "Synchronizing..." : "Initialize Payment Terminal"}
                     </button>
+                    <p className="text-center text-[8px] font-black text-white/20 uppercase mt-4 tracking-widest">Secured by Checkout Neural Ledger</p>
                  </div>
               </div>
            </div>
         </div>
       )}
 
-      {isPosting && (
-        <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} onPostSuccess={() => setIsPosting(false)} />
-      )}
     </div>
   );
 }

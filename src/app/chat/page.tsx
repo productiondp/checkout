@@ -29,6 +29,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getChatInsight } from "@/lib/ai";
+import { createClient } from "@/utils/supabase/client";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const MOCK_CURRENT_USER = {
   role: "Strategy",
@@ -36,13 +39,126 @@ const MOCK_CURRENT_USER = {
   domains: ["Strategy", "Marketing"]
 };
 
-export default function PremiumMessagesPage() {
+function ChatTerminal() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<any[]>([]);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [chats, setChats] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const roomParam = searchParams.get('room');
+
+  const supabase = createClient();
+
+  // 1. IDENTITY & ROOM FETCHING
+  React.useEffect(() => {
+    async function initChat() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setCurrentUser(user);
+
+      // Fetch rooms where user is a participant
+      const { data: rooms, error } = await supabase
+        .from('participants')
+        .select(`
+          room:chat_rooms (
+            id,
+            title,
+            is_group,
+            participants:participants (
+              profile:profiles (id, full_name, avatar_url, role, match_score)
+            )
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (rooms) {
+        const formattedChats = rooms.map((r: any) => {
+          const otherParticipant = r.room.participants.find((p: any) => p.profile.id !== user.id);
+          return {
+            id: r.room.id,
+            name: otherParticipant?.profile.full_name || "Community Chat",
+            avatar: otherParticipant?.profile.avatar_url || `https://i.pravatar.cc/150?u=${r.room.id}`,
+            role: otherParticipant?.profile.role || "Partner",
+            checkoutScore: otherParticipant?.profile.match_score || 90,
+            online: true,
+            last: "New thread started",
+            time: "now"
+          };
+        });
+        setChats(formattedChats);
+
+        // 3. Handle Direct Link (Syndicate Room Selection)
+        if (roomParam) {
+           const targetChat = formattedChats.find(c => c.id === roomParam);
+           if (targetChat) {
+              setSelectedChat(targetChat);
+           }
+        }
+      }
+      setIsLoading(false);
+    }
+    initChat();
+  }, [roomParam]);
+
+  // 2. MESSAGE LOADING & REALTIME SUBSCRIPTION
+  React.useEffect(() => {
+    if (!selectedChat) return;
+
+    // Initial Load
+    async function loadMessages() {
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('room_id', selectedChat.id)
+        .order('created_at', { ascending: true });
+      if (data) setMessages(data);
+    }
+    loadMessages();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`chat_room_${selectedChat.id}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `room_id=eq.${selectedChat.id}`
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedChat]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || !selectedChat || !currentUser) return;
+
+    const newMessage = {
+      room_id: selectedChat.id,
+      sender_id: currentUser.id,
+      content: message
+    };
+
+    setMessage("");
+
+    const { error } = await supabase
+      .from('messages')
+      .insert([newMessage]);
+
+    if (error) {
+      console.error("Message failed:", error);
+      alert("Failed to send message.");
+    }
+  };
 
   return (
     <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
@@ -156,50 +272,44 @@ export default function PremiumMessagesPage() {
                </div>
             </header>
 
-            {/* MESSAGE STREAM */}
+             {/* MESSAGE STREAM */}
             <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="flex justify-center">
                   <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase">Secure Connection</span>
                </div>
 
-               {/* Mock Messages */}
+               {/* Live Message Stream */}
                <div className="space-y-8">
-                  <div className="flex flex-col items-start max-w-[80%]">
-                     <div className="bg-white border border-[#292828]/10 p-5 rounded-[1.3rem] rounded-tl-lg shadow-sm">
-                        <p className="text-[15px] font-medium text-slate-700 leading-relaxed">Hey Ahmad! I saw your recent post about the MSME logistics collective. Do you have a deck I could review?</p>
-                     </div>
-                     <span className="text-[10px] font-bold text-[#292828]/40 mt-2 ml-4">10:42 AM</span>
-                  </div>
-
-                  <div className="flex flex-col items-end w-full">
-                     <div className="bg-[#E53935] p-5 rounded-[1.3rem] rounded-tr-lg shadow-xl shadow-red-500/10 max-w-[80%]">
-                        <p className="text-[15px] font-medium text-white leading-relaxed">Hey {(selectedChat.name || "there").split(' ')[0]}! Yes, we just finalized the regional strategy. Attaching the summary PDF here.</p>
-                     </div>
-                     <div className="flex items-center gap-2 mt-2 mr-4">
-                        <span className="text-[10px] font-bold text-[#292828]/40">10:45 AM</span>
-                        <CheckCheck size={14} className="text-[#E53935]" />
-                     </div>
-                  </div>
-
-                  <div className="flex flex-col items-end w-full">
-                     <div className="bg-white border border-[#292828]/10 p-4 rounded-[1.3rem] rounded-tr-lg shadow-sm flex items-center gap-4 max-w-[80%]">
-                        <div className="h-12 w-12 bg-red-50 text-[#E53935] rounded-xl flex items-center justify-center shrink-0">
-                           <FileText size={20} />
+                  {messages.map((msg) => {
+                    const isMe = msg.sender_id === currentUser?.id;
+                    return (
+                      <div key={msg.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
+                        <div className={cn(
+                          "p-5 rounded-[1.3rem] shadow-sm max-w-[80%] leading-relaxed text-[15px] font-medium",
+                          isMe ? "bg-[#E53935] text-white rounded-tr-lg shadow-red-500/10" : "bg-white border border-[#292828]/10 text-slate-700 rounded-tl-lg"
+                        )}>
+                          {msg.content}
                         </div>
-                        <div className="flex-1 min-w-0 pr-12">
-                           <p className="text-[14px] font-bold text-[#292828] truncate">Logistics_Synergy_2026.pdf</p>
-                           <p className="text-[11px] font-medium text-[#292828]">4.2 MB • PDF Document</p>
+                        <div className={cn("flex items-center gap-2 mt-2", isMe ? "mr-4" : "ml-4")}>
+                           <span className="text-[10px] font-bold text-[#292828]/40">
+                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                           </span>
+                           {isMe && <CheckCheck size={14} className="text-[#E53935]" />}
                         </div>
-                     </div>
-                  </div>
+                      </div>
+                    );
+                  })}
+                  {messages.length === 0 && (
+                    <div className="text-center py-20 opacity-20 italic text-sm">Beginning of shared history</div>
+                  )}
                </div>
             </div>
-
-            {/* COMPOSER (BOTTOM) */}
+>             {/* COMPOSER (BOTTOM) */}
             <div className="p-6 lg:p-8 bg-white border-t border-[#292828]/5 pb-24 lg:pb-8">
-               <div className="flex items-center gap-4 bg-[#292828]/5 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-[#292828]/10/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
+               <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-[#292828]/5 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-[#292828]/10/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
                   <div className="relative">
                      <button 
+                       type="button"
                        onClick={() => setShowAttachMenu(!showAttachMenu)}
                        className={cn(
                          "h-12 w-12 flex items-center justify-center rounded-2xl transition-all",
@@ -219,6 +329,7 @@ export default function PremiumMessagesPage() {
                           ].map((it, i) => (
                             <button 
                               key={i} 
+                              type="button"
                               onClick={() => setShowAttachMenu(false)}
                               className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group"
                             >
@@ -239,10 +350,11 @@ export default function PremiumMessagesPage() {
                     className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium text-[#292828] py-4"
                   />
                   <div className="flex items-center gap-2 pr-2">
-                     <button className="h-10 w-10 flex items-center justify-center text-[#292828]/40 hover:text-[#292828] transition-colors">
+                     <button type="button" className="h-10 w-10 flex items-center justify-center text-[#292828]/40 hover:text-[#292828] transition-colors">
                         <ImageIcon size={20} />
                      </button>
                      <button 
+                       type="submit"
                        className={cn(
                         "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
                         message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-[#292828] grayscale"
@@ -251,8 +363,9 @@ export default function PremiumMessagesPage() {
                         <Send size={20} />
                      </button>
                   </div>
-               </div>
+               </form>
             </div>
+>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#FDFDFF]">
@@ -416,13 +529,25 @@ export default function PremiumMessagesPage() {
                             </div>
                          </div>
                        ))}
-                    </div>
-                 </div>
-                 <div className="pt-4">
-                    <button className="w-full h-14 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase shadow-xl hover:bg-black transition-all">Save Changes</button>
-                 </div>
-              </div>
-           </div>
+                     </div>
+                  </div>
+                  <div className="pt-4">
+                     <button className="w-full h-14 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase shadow-xl hover:bg-black transition-all">Save Changes</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      )}
+    </div>
+  );
+}
+
+export default function PremiumMessagesPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 tracking-widest animate-pulse">Synchronizing Tactical Channels...</div>}>
+      <ChatTerminal />
+    </Suspense>
+  );
         </div>
       )}
     </div>

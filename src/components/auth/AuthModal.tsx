@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Chrome
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student";
@@ -31,6 +32,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -63,15 +65,42 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    // Simulating API call
-    setTimeout(() => {
-      setIsSuccess(true);
-      setTimeout(() => {
-        router.push("/home");
-        onClose();
-      }, 800);
-    }, 1200);
+    const supabase = createClient();
+
+    try {
+      if (mode === "signup") {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: role.toUpperCase(), // Matches ENUM: STUDENT, BUSINESS, PROFESSIONAL
+            },
+          },
+        });
+        if (signUpError) throw signUpError;
+        setIsVerificationSent(true);
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (signInError) throw signInError;
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/home");
+          onClose();
+        }, 800);
+      }
+    } catch (err: any) {
+      console.error("Auth Error:", err);
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -108,14 +137,37 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
               {mode === "signin" ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="text-white/40 font-bold text-[13px]">
-              {mode === "signin"
-                ? "Sign in to your local account."
-                : "Join the local business network."
+              {isVerificationSent 
+                ? "Identity mandate dispatched." 
+                : mode === "signin"
+                  ? "Sign in to your local account."
+                  : "Join the local business network."
               }
             </p>
           </div>
 
-          {/* Role Switcher - Premium Style */}
+          {isVerificationSent ? (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+               <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
+                  <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
+                     <Mail size={32} />
+                  </div>
+                  <h3 className="text-xl font-black text-white mb-2 uppercase">Check Your Inbox</h3>
+                  <p className="text-white/40 text-[13px] font-medium leading-relaxed">
+                     We've sent a verification link to <span className="text-white">{formData.email}</span>. <br/> 
+                     Confirm your identity to activate your network node.
+                  </p>
+               </div>
+               <button 
+                 onClick={() => setIsVerificationSent(false)}
+                 className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"
+               >
+                  Back to Sign In
+               </button>
+            </div>
+          ) : (
+            <>
+              {/* Role Switcher - Premium Style */}
           <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5">
             {(["Business", "Professional", "Student"] as const).map((r) => (
               <button
@@ -246,7 +298,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
             >
               {mode === "signin" ? "No account? Start Building" : "Registered? Sign In Instead"}
             </button>
-          </div>
+            </div>
+          </>
+          )}
         </div>
       </div>
 

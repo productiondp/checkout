@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Zap, ShieldCheck, Check, MessageSquare, ArrowRight, Shield, BadgeCheck, Lock, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 interface DealEngineProps {
  isOpen: boolean;
@@ -23,12 +24,69 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
  router.push("/chat");
  };
 
- const handleSubmitProposal = () => {
- setStep("TRANSMITTING");
- setTimeout(() => {
- setStep("SUCCESS");
- }, 2000);
- };
+  const handleSubmitProposal = async () => {
+    setStep("TRANSMITTING");
+    
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user || !deal.author_id) throw new Error("Connection lost. Please login.");
+
+      // 1. Check if room exists between these two users
+      const { data: existingRooms } = await supabase
+        .from('participants')
+        .select('room_id')
+        .eq('user_id', user.id);
+      
+      let targetRoomId = null;
+
+      if (existingRooms && existingRooms.length > 0) {
+        const roomIds = existingRooms.map(r => r.room_id);
+        const { data: mutualRoom } = await supabase
+          .from('participants')
+          .select('room_id')
+          .in('room_id', roomIds)
+          .eq('user_id', deal.author_id)
+          .maybeSingle();
+        
+        if (mutualRoom) targetRoomId = mutualRoom.room_id;
+      }
+
+      // 2. Create room if not exists
+      if (!targetRoomId) {
+        const { data: newRoom, error: roomErr } = await supabase
+          .from('chat_rooms')
+          .insert([{ title: `Chat with ${deal.author}`, is_group: false }])
+          .select()
+          .single();
+        
+        if (roomErr) throw roomErr;
+        targetRoomId = newRoom.id;
+
+        // Add both participants
+        await supabase.from('participants').insert([
+          { room_id: targetRoomId, user_id: user.id },
+          { room_id: targetRoomId, user_id: deal.author_id }
+        ]);
+      }
+
+      // 3. Send initial message
+      const { error: msgErr } = await supabase.from('messages').insert([{
+        room_id: targetRoomId,
+        sender_id: user.id,
+        content: proposal
+      }]);
+
+      if (msgErr) throw msgErr;
+
+      setStep("SUCCESS");
+    } catch (err: any) {
+      console.error("Deal Engine Error:", err);
+      alert(err.message);
+      setStep("PROPOSAL");
+    }
+  };
 
  return (
  <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 lg:p-10 bg-slate-900/40 backdrop-blur-xl">

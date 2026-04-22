@@ -14,10 +14,13 @@ import {
   ShoppingBag, 
   Zap, 
   TrendingUp,
+  BrainCircuit,
+  Layout,
+  Globe,
+  ChevronRight,
   Target,
   Activity,
-  ShieldCheck,
-  ChevronRight,
+  ShieldCheck
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -25,9 +28,9 @@ const NAV_GROUPS = [
     group: "Network Hub",
     items: [
       { label: "Feeds", icon: Home, href: "/home" },
-      { label: "Messages", icon: MessageSquare, href: "/chat", badge: "2" },
-      { label: "Partners", icon: Users, href: "/match" },
-      { label: "Meetups", icon: MapPin, href: "/meetup" },
+      {label: "Neural Matches", icon: BrainCircuit, href: "/matches"},
+      {label: "Messages", icon: MessageSquare, href: "/chat", badge: "2"},
+      {label: "Communities", icon: Globe, href: "/communities"},
     ]
   },
   {

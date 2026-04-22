@@ -154,22 +154,22 @@ export default function UniversalFeedCard({
                      <>
                         <DataField label="Requirement" value={post.content} highlight />
                         <DataField label="Budget range" value={post.budget} color="text-blue-600" />
-                        <DataField label="Mandated deadline" value={post.dueDate} color="text-[#E53935]" />
+                        <DataField label="Mandated deadline" value={post.due_date} color="text-[#E53935]" />
                         <DataField label="Verified hub" value={location} icon={<MapPin size={12} />} />
                      </>
                   )}
                   {isMeetup && (
                      <>
-                        <DataField label="Selected expert" value={post.advisor} color="text-emerald-600" highlight />
+                        <DataField label="Selected expert" value={post.advisor || "Awaiting Expert"} color="text-emerald-600" highlight />
                         <DataField label="Expert rank" value={`Local ranking`} />
-                        <DataField label="Pay type" value={post.payment || "Shared cost"} color="text-emerald-600" />
+                        <DataField label="Pay type" value={post.payment_type || "Shared cost"} color="text-emerald-600" />
                         <DataField label="Field" value={domain} />
                      </>
                   )}
                   {isHiring && (
                      <>
-                        <DataField label="Core mandate" value={post.skills} highlight />
-                        <DataField label="Work structure" value={post.workType} />
+                        <DataField label="Core mandate" value={post.skills_required?.join(', ') || 'General Help'} highlight />
+                        <DataField label="Work structure" value={post.work_type} />
                         <DataField label="Project duration" value={post.duration} />
                         <DataField label="Hub location" value={location} />
                      </>

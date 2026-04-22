@@ -76,33 +76,51 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
     try {
       if (mode === "signup") {
+        if (!formData.fullName || formData.fullName.length < 2) {
+          throw new Error("Please enter your full name.");
+        }
+        
         const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
               full_name: formData.fullName,
-              role: role.toUpperCase(), // Matches ENUM: STUDENT, BUSINESS, PROFESSIONAL
+              role: role.toUpperCase(),
             },
           },
         });
-        if (signUpError) throw signUpError;
+        
+        if (signUpError) {
+          // Check for existing user error
+          if (signUpError.message.includes("already registered")) {
+            throw new Error("This email is already registered. Please sign in instead.");
+          }
+          throw signUpError;
+        }
+        
         setIsVerificationSent(true);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-        if (signInError) throw signInError;
+        
+        if (signInError) {
+          if (signInError.message.includes("Invalid login credentials")) {
+            throw new Error("Invalid email or password.");
+          }
+          throw signInError;
+        }
+        
         setIsSuccess(true);
-        setTimeout(() => {
-          router.push("/home");
-          onClose();
-        }, 800);
+        onClose();
+        router.push("/home");
+        router.refresh(); // Force re-validation of auth state
       }
     } catch (err: any) {
-      console.error("Auth Error:", err);
-      setError(err.message || "An unexpected error occurred.");
+      console.error("Auth Failure:", err);
+      setError(err.message || "Credential verification failed.");
     } finally {
       setIsLoading(false);
     }

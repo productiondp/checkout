@@ -291,7 +291,13 @@ export default function FullyActiveGlobalHeader() {
                     </Link>
                   ))}
                   <div className="h-px bg-[#292828]/5 my-2 mx-2" />
-                  <button className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all">
+                  <button 
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      window.location.href = "/";
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all"
+                  >
                     <LogOut size={16} /> Logout
                   </button>
                 </div>

@@ -3,67 +3,72 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
- Plus, 
- Minus,
- MapPin, 
- Search, 
- Filter, 
- Users, 
- Briefcase, 
- Zap, 
- MessageSquare,
- Navigation,
- Globe,
- X,
- ArrowUpRight,
- User,
- Compass,
- BrainCircuit,
- Shield,
- TrendingUp as TrendingIcon,
- Award,
- CheckCircle2 as CheckIcon,
- Calendar,
- Clock,
- ArrowRight
+  Plus, 
+  Minus,
+  MapPin, 
+  Search, 
+  Filter, 
+  Users, 
+  Briefcase, 
+  Zap, 
+  MessageSquare,
+  Navigation,
+  Globe,
+  X,
+  ArrowUpRight,
+  User,
+  Compass,
+  BrainCircuit,
+  Shield,
+  TrendingUp as TrendingIcon,
+  Award,
+  CheckCircle2 as CheckIcon,
+  Calendar,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  Target,
+  ChevronRight,
+  Maximize2
 } from "lucide-react";
 
 import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 import ReviewModal from "@/components/modals/ReviewModal";
 
-type MarkerType = "Meeting" | "Hiring" | "Business Leads" | "Partnership" | "Expo" | "Update" | "LEAD" | "HIRING" | "MEETUP" | "UPDATE" | "PARTNER";
+type MarkerType = "LEAD" | "HIRING" | "MEETUP" | "UPDATE" | "PARTNER";
 
 interface Marker {
- id: string;
- x: number;
- y: number;
- type: MarkerType;
- title: string;
- author: string;
- distance: string;
- details: string;
+  id: string;
+  x: number;
+  y: number;
+  type: MarkerType;
+  title: string;
+  author: string;
+  distance: string;
+  details: string;
+  matchScore: number;
 }
 
 export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
- const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);
- const [filter, setFilter] = useState<MarkerType | "All">("All");
- const [isLoaded, setIsLoaded] = useState(false);
- const [zoom, setZoom] = useState(1);
- const [offset, setOffset] = useState({ x: 0, y: 0 });
- const [isDragging, setIsDragging] = useState(false);
- const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
- const [dbPosts, setDbPosts] = useState<any[]>([]);
- const [isLoading, setIsLoading] = useState(true);
- const [userProfile, setUserProfile] = useState<any>(null);
- const [isJoinedToSyndicate, setIsJoinedToSyndicate] = useState(false);
- const [bookings, setBookings] = useState<any[]>([]);
- const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
- const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
+  const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);
+  const [filter, setFilter] = useState<string>("All");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dbPosts, setDbPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isJoinedToSyndicate, setIsJoinedToSyndicate] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
 
- const supabase = createClient();
+  const supabase = createClient();
 
- const fetchBookings = async () => {
+  const fetchBookings = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -75,7 +80,7 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
       .limit(3);
     
     if (bookingsData) setBookings(bookingsData);
- };
+  };
 
   const handleBookingStatus = async (bookingId: string, status: 'CONFIRMED' | 'CANCELLED') => {
     const { error } = await supabase
@@ -88,75 +93,47 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
     }
   };
 
- useEffect(() => {
-   async function fetchData() {
-     setIsLoading(true);
-     
-     const { data: { user } } = await supabase.auth.getUser();
-     if (user) {
-       const { data: profile } = await supabase
-         .from('profiles')
-         .select('*')
-         .eq('id', user.id)
-         .single();
-       setUserProfile(profile);
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        setUserProfile(profile);
+        const { data: communityJoin } = await supabase.from('community_members').select('*').eq('user_id', user.id).single();
+        setIsJoinedToSyndicate(!!communityJoin);
+        fetchBookings();
+      }
+      const { data: postsData } = await supabase.from('posts').select('*, author:profiles(full_name)');
+      if (postsData) setDbPosts(postsData);
+      setIsLoading(false);
+    }
+    fetchData();
+  }, []);
 
-       const { data: communityJoin } = await supabase
-         .from('community_members')
-         .select('*')
-         .eq('user_id', user.id)
-         .single();
-       setIsJoinedToSyndicate(!!communityJoin);
-       fetchBookings();
-     }
+  useEffect(() => {
+    setIsLoaded(true);
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => { 
+      document.documentElement.style.overflow = "unset";
+      document.body.style.overflow = "unset"; 
+    };
+  }, []);
 
-     const { data: postsData } = await supabase
-       .from('posts')
-       .select('*, author:profiles(full_name)');
-     
-     if (postsData) setDbPosts(postsData);
-     setIsLoading(false);
-   }
-   fetchData();
- }, []);
-
- useEffect(() => {
-   setIsLoaded(true);
-   // Hard lock scroll
-   document.documentElement.style.overflow = "hidden";
-   document.body.style.overflow = "hidden";
-   return () => { 
-     document.documentElement.style.overflow = "unset";
-     document.body.style.overflow = "unset"; 
-   };
- }, []);
-
- const handleZoom = (delta: number) => {
-  setZoom(prev => Math.min(Math.max(prev + delta, 0.4), 4));
- };
-
- const handleWheel = (e: React.WheelEvent) => {
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  handleZoom(delta);
- };
-
- const handleMouseDown = (e: React.MouseEvent) => {
-  setIsDragging(true);
-  setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
- };
-
- const handleMouseMove = (e: React.MouseEvent) => {
-  if (!isDragging) return;
-  setOffset({
-  x: e.clientX - dragStart.x,
-  y: e.clientY - dragStart.y
-  });
- };
-
- const handleMouseUp = () => setIsDragging(false);
+  const handleZoom = (delta: number) => setZoom(prev => Math.min(Math.max(prev + delta, 0.4), 4));
+  const handleWheel = (e: React.WheelEvent) => handleZoom(e.deltaY > 0 ? -0.1 : 0.1);
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+  const handleMouseUp = () => setIsDragging(false);
 
   const activePosts = propPosts || dbPosts;
-
   const markers = activePosts.map((post, i) => ({
     id: post.id.toString(),
     type: post.type as MarkerType,
@@ -164,304 +141,351 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
     author: post.author?.full_name || post.author || "Community",
     details: post.content,
     distance: `${(i * 1.2).toFixed(1)}km`,
+    matchScore: Math.round(70 + (i * 7) % 30),
     x: 25 + (i * 14.5) % 60,
-    y: 30 + (i * 11.2) % 50
+    y: 35 + (i * 11.2) % 45
   }));
 
   const filteredMarkers = filter === "All" 
     ? markers 
     : markers.filter(m => m.type?.toUpperCase() === filter.toUpperCase());
 
- return (
-  <div 
-  className="relative w-full h-[100dvh] overflow-hidden font-sans select-none bg-[#F8FAFC] flex"
-  onWheel={handleWheel}
-  onMouseDown={handleMouseDown}
-  onMouseMove={handleMouseMove}
-  onMouseUp={handleMouseUp}
-  onMouseLeave={handleMouseUp}
-  >
-  
-  {/* 0. TACTICAL SIDEBAR */}
-  <aside className="hidden lg:flex w-[320px] h-full bg-white/80 backdrop-blur-3xl border-r border-[#292828]/10 z-[70] flex-col p-8 overflow-y-auto no-scrollbar shadow-4xl animate-in slide-in-from-left-10 duration-700">
-    <div className="mb-10">
-      <Link href="/home" className="flex items-center gap-3 group">
-        <div className="h-10 w-10 bg-[#292828] rounded-xl flex items-center justify-center text-white group-hover:bg-[#E53935] transition-all">
-          <Globe size={20} className="animate-spin-slow" />
+  return (
+    <div 
+      className="relative w-full h-[100dvh] overflow-hidden font-sans select-none bg-[#111111] flex text-white selection:bg-[#E53935]/20"
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* 0. TACTICAL SIDEBAR - CHROME DARK MODE */}
+      <aside className="hidden lg:flex w-[340px] h-full bg-[#1a1a1a]/80 backdrop-blur-3xl border-r border-white/5 z-[70] flex-col overflow-y-auto no-scrollbar shadow-4xl animate-in slide-in-from-left-10 duration-700">
+        <div className="p-8 pb-4 border-b border-white/5 bg-[#1a1a1a]/40 sticky top-0 z-10 backdrop-blur-md">
+          <Link href="/home" className="flex items-center gap-4 group mb-6">
+            <div className="h-12 w-12 bg-[#292828] border border-white/10 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-black/20 group-hover:bg-[#E53935] transition-all">
+              <Compass size={24} className="animate-spin-slow" />
+            </div>
+            <div>
+              <span className="text-xl font-black tracking-tight uppercase text-white block">Command</span>
+              <span className="text-[10px] font-black uppercase text-[#E53935] tracking-widest">Regional Hub</span>
+            </div>
+          </Link>
+          
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
+            <div className="h-10 w-10 border-2 border-[#E53935] rounded-full overflow-hidden p-0.5">
+              <img src={userProfile?.avatar_url || `https://i.pravatar.cc/100?u=${userProfile?.id}`} alt="" className="h-full w-full object-cover rounded-full" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-tight truncate">{userProfile?.full_name || "Profile Status"}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-bold text-white/40 uppercase">Pilot Authorized</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <span className="text-xl font-black tracking-tighter uppercase text-[#292828]">Checkout</span>
-      </Link>
-    </div>
 
-    <div className="space-y-8">
-      {/* STRATEGIC NODES */}
-      <div className="bg-[#292828] rounded-[24px] p-6 text-white shadow-2xl relative overflow-hidden group">
-         <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-         <h3 className="text-[9px] font-black text-white/40 uppercase mb-5 flex items-center gap-2">
-            <BrainCircuit size={14} className="text-[#E53935]" /> Strategic Nodes
-         </h3>
-         <div className="flex flex-wrap gap-1.5">
-            {userProfile?.skills && userProfile.skills.length > 0 ? userProfile.skills.map((skill: string) => (
-              <span key={skill} className="px-3 py-1.5 bg-white/10 border border-white/10 rounded-lg text-[9px] font-bold uppercase">{skill}</span>
-            )) : (
-              <p className="text-[10px] font-bold text-white/20 italic">No nodes defined.</p>
-            )}
-         </div>
-         <Link href="/profile" className="w-full mt-5 h-10 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 flex items-center justify-center rounded-xl text-[9px] font-black uppercase transition-all">
-           Update Nodes
-         </Link>
+        <div className="p-6 space-y-6">
+          {/* TACTICAL METRICS */}
+          <div className="grid grid-cols-2 gap-3">
+             {[
+               { label: "Authority", value: 98, icon: Shield, color: "bg-[#E53935]" },
+               { label: "Trust Score", value: 84, icon: TrendingIcon, color: "bg-emerald-600" }
+             ].map((met, i) => (
+                <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                   <div className="flex items-center justify-between mb-3">
+                      <div className="h-8 w-8 bg-white/5 rounded-lg flex items-center justify-center text-white group-hover:text-[#E53935]"><met.icon size={14} /></div>
+                      <span className="text-sm font-black">{met.value}%</span>
+                   </div>
+                   <p className="text-[7px] font-black text-white/30 uppercase tracking-widest">{met.label}</p>
+                </div>
+             ))}
+          </div>
+
+          {/* BOARD SCHEDULE - SITUATIONAL AWARENESS */}
+          <div className="bg-white/5 rounded-3xl p-6 border border-white/10">
+             <div className="flex items-center justify-between mb-6">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-white">Board Schedule</h3>
+               <Calendar size={14} className="text-[#E53935]" />
+             </div>
+             
+             <div className="space-y-3">
+                {bookings.length > 0 ? bookings.map((b) => (
+                  <div key={b.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl group hover:border-[#E53935]/40 transition-all">
+                     <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-md text-[7px] font-black uppercase text-white shadow-sm",
+                          b.status === 'PENDING' ? "bg-amber-500/80" : b.status === 'CONFIRMED' ? "bg-emerald-600/80" : "bg-white/20"
+                        )}>
+                           {b.status}
+                        </span>
+                        <div className="flex items-center gap-1.5 text-[7px] font-black text-white/30 uppercase">
+                          <Clock size={10} /> {new Date(b.scheduled_at).toLocaleDateString()}
+                        </div>
+                     </div>
+                     <p className="text-[12px] font-black text-white mb-3">
+                        {userProfile?.id === b.advisor_id ? `${b.client?.full_name}` : `${b.advisor?.full_name}`}
+                     </p>
+
+                     {/* ADVISOR ACTIONS */}
+                     {userProfile?.id === b.advisor_id && b.status === 'PENDING' && (
+                        <div className="grid grid-cols-2 gap-2">
+                           <button onClick={() => handleBookingStatus(b.id, 'CONFIRMED')} className="h-8 bg-white text-black rounded-xl text-[8px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all shadow-xl">Authorize</button>
+                           <button onClick={() => handleBookingStatus(b.id, 'CANCELLED')} className="h-8 bg-white/10 text-white/40 rounded-xl text-[8px] font-black uppercase hover:text-red-500 transition-all">Reject</button>
+                        </div>
+                     )}
+
+                     {/* CLIENT ACTIONS */}
+                     {userProfile?.id === b.client_id && b.status === 'CONFIRMED' && (
+                        <button 
+                          onClick={() => { setSelectedBookingForReview(b); setIsReviewModalOpen(true); }}
+                          className="w-full h-9 bg-white text-black rounded-xl text-[8px] font-black uppercase flex items-center justify-center gap-2 hover:bg-[#E53935] hover:text-white transition-all shadow-xl"
+                        >
+                           Finalize Mandate <ArrowRight size={12} />
+                        </button>
+                     )}
+                  </div>
+                )) : (
+                  <div className="py-10 text-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
+                     <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">No active sessions</p>
+                  </div>
+                )}
+             </div>
+          </div>
+
+          {/* STRATEGIC NODES */}
+          <div className="bg-[#292828] rounded-3xl p-6 border border-white/5 relative overflow-hidden group shadow-2xl">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+             <div className="flex items-center justify-between mb-5">
+               <h3 className="text-[10px] font-black text-white/60 uppercase flex items-center gap-2 tracking-widest">
+                  <BrainCircuit size={14} className="text-[#E53935]" /> Strategic Hub
+               </h3>
+               <Link href="/settings" className="p-2 hover:bg-white/10 rounded-lg transition-all"><Plus size={12} className="text-white/40" /></Link>
+             </div>
+             <div className="flex flex-wrap gap-2">
+                {["Regional Growth", "Neural Scaling", "Mandate Pilot"].map((node) => (
+                  <span key={node} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[8px] font-black uppercase tracking-tighter hover:bg-[#E53935] hover:border-[#E53935] transition-all cursor-default">{node}</span>
+                ))}
+             </div>
+          </div>
+        </div>
+
+        {/* NETWORK FOOTER */}
+        <div className="mt-auto p-8 border-t border-white/5 bg-[#1a1a1a]/40">
+           {!isJoinedToSyndicate ? (
+             <Link 
+               href="/communities"
+               className="flex items-center justify-between px-6 h-12 bg-white text-black rounded-2xl font-black text-[10px] uppercase hover:bg-[#E53935] hover:text-white transition-all shadow-2xl group"
+             >
+                Join Syndicate <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+             </Link>
+           ) : (
+             <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                <span className="text-[10px] font-black uppercase text-emerald-500">Syndicate Verified</span>
+                <CheckIcon size={16} className="text-emerald-500" />
+             </div>
+           )}
+        </div>
+      </aside>
+      
+      {/* 1. MAP VISUALIZATION LAYER - NEURAL DESIGN */}
+      <div 
+        className="flex-1 relative transition-transform duration-300 ease-out flex items-center justify-center pointer-events-none overflow-hidden"
+        style={{ 
+          transform: `scale(${zoom}) translate(${offset.x / zoom}px, ${offset.y / zoom}px)`,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+      >
+        <div className="relative w-[1400px] h-[1400px] pointer-events-auto">
+          {/* Background Neural Grid */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:60px_60px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(17,17,17,0.8)_100%)]" />
+          </div>
+
+          {/* TRIVANDRUM SCHEMATIC */}
+          <svg className="absolute inset-0 w-full h-full text-white/5 group-hover:text-[#E53935]/10 transition-colors duration-1000" viewBox="0 0 1000 1000" fill="none">
+            <path d="M0,0 L300,0 C320,100 280,300 350,500 C400,700 320,850 300,1000 L0,1000 Z" fill="currentColor" fillOpacity="0.2" />
+            <path d="M300,0 C320,100 280,300 350,500 C400,700 320,850 300,1000" stroke="currentColor" strokeWidth="4" strokeOpacity="0.3" strokeDasharray="15 10" />
+            <circle cx="500" cy="500" r="400" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" fill="none" />
+            <circle cx="500" cy="500" r="250" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" fill="none" />
+            <circle cx="500" cy="500" r="100" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" fill="none" />
+            <line x1="500" y1="0" x2="500" y2="1000" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" />
+            <line x1="0" y1="500" x2="1000" y2="500" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" />
+          </svg>
+
+          {/* 2. ACTIVITY NODES - HIGH INTENSITY */}
+          {filteredMarkers.map((marker) => (
+            <div 
+              key={marker.id}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
+              style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+            >
+              <div className={cn(
+                "absolute inset-0 -m-8 rounded-full animate-ping opacity-20 duration-[4s]",
+                marker.type === "HIRING" ? "bg-emerald-500" : "bg-[#E53935]"
+              )} />
+              <div className={cn(
+                "absolute inset-0 -m-4 rounded-full animate-pulse opacity-40 duration-[2s]",
+                marker.type === "HIRING" ? "bg-emerald-500" : "bg-[#E53935]"
+              )} />
+              
+              <button 
+                onClick={(e) => { e.stopPropagation(); setSelectedMarker(marker); }}
+                className={cn(
+                  "relative z-10 h-10 w-10 lg:h-12 lg:w-12 rounded-2xl rotate-45 border-4 border-[#111111] shadow-4xl flex items-center justify-center transition-all hover:scale-125 hover:rotate-0 group/node",
+                  marker.type === "HIRING" ? "bg-emerald-600" : "bg-[#E53935]"
+                )}
+              >
+                <div className="-rotate-45 group-hover/node:rotate-0 transition-transform">
+                   {marker.type === "HIRING" ? <Briefcase size={20} className="text-white" /> : <Zap size={20} className="text-white" />}
+                </div>
+              </button>
+
+              <div className="hidden lg:flex absolute left-full ml-6 top-1/2 -translate-y-1/2 flex-col items-start font-black">
+                 <span className="text-[14px] bg-[#111111] border border-white/10 px-3 py-1 rounded-lg shadow-2xl whitespace-nowrap backdrop-blur-md">
+                    {marker.author}
+                 </span>
+                 <div className="flex items-center gap-2 mt-1.5">
+                    <div className="h-1 w-12 bg-white/10 rounded-full overflow-hidden">
+                       <div className="h-full bg-[#E53935]" style={{ width: `${marker.matchScore}%` }} />
+                    </div>
+                    <span className="text-[8px] uppercase tracking-widest text-white/40">Partner Match</span>
+                 </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* AUTHORITY METRICS */}
-      <div className="space-y-4">
-         {[
-           { label: "Trust Score", value: 98, icon: Shield, color: "bg-[#E53935]" },
-           { label: "Network Growth", value: 84, icon: TrendingIcon, color: "bg-[#292828]" }
-         ].map((met, i) => (
-            <div key={i} className="bg-white p-5 rounded-[24px] border border-[#292828]/5 shadow-premium">
-               <div className="flex items-center justify-between mb-3">
-                  <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#E53935]"><met.icon size={16} /></div>
-                  <span className="text-lg font-black text-[#292828]">{met.value}%</span>
+      {/* 3. RESPONSIVE FLOATING HUD */}
+      <div className="absolute top-10 right-10 flex flex-col gap-4 z-[80]">
+         <div className="bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-premium flex flex-col gap-1">
+            <button onClick={() => handleZoom(0.25)} className="h-12 w-12 flex items-center justify-center rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all"><Plus size={20} /></button>
+            <button onClick={() => handleZoom(-0.25)} className="h-12 w-12 flex items-center justify-center rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all"><Minus size={20} /></button>
+         </div>
+         <button 
+           onClick={() => { setZoom(1); setOffset({x:0, y:0}); }}
+           className="h-16 w-16 bg-[#E53935] text-white rounded-2xl flex items-center justify-center shadow-4xl hover:scale-110 active:scale-95 transition-all shadow-red-500/20"
+         >
+           <Target size={28} className="animate-pulse" />
+         </button>
+      </div>
+
+      {/* Search & Intelligence Terminal (Bottom) */}
+      <div className="absolute bottom-10 left-10 right-10 lg:left-[380px] lg:right-10 flex flex-col gap-6 z-[60] pointer-events-none">
+        <div className="flex flex-col lg:flex-row items-end gap-5 pointer-events-auto">
+          <div className="relative group w-full lg:w-[480px]">
+            <div className="absolute left-6 inset-y-0 flex items-center text-white/20 group-focus-within:text-[#E53935] transition-colors">
+              <Search size={22} />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Find Strategic Alliances..."
+              className="w-full bg-[#1a1a1a]/90 backdrop-blur-2xl border border-white/10 rounded-3xl py-6 pl-16 pr-8 text-lg font-black text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] transition-all placeholder:text-white/10"
+            />
+          </div>
+          
+          <div className="flex bg-[#1a1a1a]/90 backdrop-blur-2xl border border-white/10 rounded-[1.75rem] p-2 shadow-4xl overflow-x-auto no-scrollbar">
+            {["All", "Lead", "Hiring", "Partner", "Meetup"].map(cat => (
+              <button 
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={cn(
+                  "px-8 h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                  (filter === cat || (filter === "All" && cat === "All"))
+                    ? "bg-[#E53935] text-white shadow-xl shadow-red-500/20" 
+                    : "text-white/40 hover:text-white hover:bg-white/5"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. INTEL REPORT SHEET (Detail Overlay) */}
+      {selectedMarker && (
+        <div className="absolute inset-x-6 bottom-10 lg:bottom-auto lg:top-10 lg:right-10 lg:w-[440px] z-[90] animate-in slide-in-from-bottom-10 lg:slide-in-from-top-10 duration-700">
+          <div className="bg-[#1a1a1a]/95 border border-white/10 rounded-[2.5rem] p-10 shadow-[0_64px_128px_-24px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-3xl group/intel">
+            
+            {/* Ambient Background Glow */}
+            <div className={cn(
+              "absolute -top-32 -right-32 w-64 h-64 rounded-full blur-[100px] opacity-20 transition-colors duration-1000",
+              selectedMarker.type === "HIRING" ? "bg-emerald-500" : "bg-[#E53935]"
+            )} />
+
+            <button onClick={() => setSelectedMarker(null)} className="absolute top-10 right-10 text-white/20 hover:text-white transition-all hover:rotate-90"><X size={24} /></button>
+            
+            <div className="flex items-start gap-8 mb-10 relative z-10">
+              <div className={cn(
+                "h-20 w-20 min-w-[80px] rounded-3xl flex items-center justify-center text-white shadow-2xl rotate-12 group-hover/intel:rotate-0 transition-all duration-700",
+                selectedMarker.type === "HIRING" ? "bg-emerald-600 shadow-emerald-500/20" : "bg-[#E53935] shadow-red-500/20"
+              )}>
+                {selectedMarker.type === "HIRING" ? <Briefcase size={32} /> : <Zap size={32} />}
+              </div>
+              <div className="pr-4">
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-[0.2em] mb-2 block",
+                  selectedMarker.type === "HIRING" ? "text-emerald-500" : "text-[#E53935]"
+                )}>
+                  {selectedMarker.type}
+                </span>
+                <h3 className="text-2xl lg:text-3xl font-black text-white leading-tight uppercase tracking-tight">{selectedMarker.title}</h3>
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="h-6 w-6 rounded-lg bg-white/5 border border-white/10 overflow-hidden">
+                     <img src={`https://i.pravatar.cc/100?u=${selectedMarker.id}`} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <p className="text-white/60 font-bold text-[13px]">{selectedMarker.author}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-10 relative z-10">
+               <div className="p-5 bg-white/5 border border-white/5 rounded-2xl">
+                  <p className="text-white/80 font-bold text-[15px] leading-relaxed uppercase tracking-tight italic">
+                    "{selectedMarker.details || "Strategizing high-authority node expansions within the regional command hub and broadcasting mandates."}"
+                  </p>
                </div>
-               <p className="text-[8px] font-black text-[#292828]/40 uppercase">{met.label}</p>
-               <div className="h-1 w-full bg-[#292828]/5 rounded-full mt-2.5 overflow-hidden">
-                  <div className={cn("h-full rounded-full transition-all duration-1000", met.color)} style={{ width: `${met.value}%` }} />
+               
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                     <p className="text-[8px] font-black text-white/30 uppercase mb-1 tracking-widest">Alignment</p>
+                     <p className="text-xl font-black text-white tabular-nums">{selectedMarker.matchScore}%</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                     <p className="text-[8px] font-black text-white/30 uppercase mb-1 tracking-widest">Distance</p>
+                     <p className="text-xl font-black text-white tabular-nums">{selectedMarker.distance}</p>
+                  </div>
                </div>
             </div>
-         ))}
-      </div>
-
-      {/* BOARD SCHEDULE WIDGET */}
-      <div className="bg-white rounded-[24px] p-6 border border-[#292828]/10 shadow-premium">
-         <h3 className="text-[9px] font-black uppercase tracking-widest text-[#292828]/40 mb-5 flex items-center justify-between">
-            Board Schedule <Calendar size={12} className="text-[#E53935]" />
-         </h3>
-         
-         <div className="space-y-3">
-            {bookings.length > 0 ? bookings.map((b) => (
-              <div key={b.id} className="p-3.5 bg-slate-50 border border-[#292828]/5 rounded-xl group cursor-default">
-                 <div className="flex items-center justify-between mb-2">
-                    <span className={cn(
-                      "px-1.5 py-0.5 rounded-md text-[6px] font-black uppercase tracking-tighter text-white",
-                      b.status === 'PENDING' ? "bg-amber-500" : b.status === 'CONFIRMED' ? "bg-emerald-600" : "bg-[#292828]"
-                    )}>
-                       {b.status}
-                    </span>
-                    <span className="text-[7px] font-bold text-slate-400">{new Date(b.scheduled_at).toLocaleDateString()}</span>
-                 </div>
-                 <p className="text-[10px] font-black text-[#292828] mb-1 truncate">
-                    {userProfile?.id === b.advisor_id ? `${b.client?.full_name}` : `${b.advisor?.full_name}`}
-                 </p>
-                 <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-400">
-                    <Clock size={10} /> 1 HR Session
-                 </div>
-
-                 {/* ADVISOR ACTIONS */}
-                 {userProfile?.id === b.advisor_id && b.status === 'PENDING' && (
-                    <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100">
-                       <button onClick={() => handleBookingStatus(b.id, 'CONFIRMED')} className="h-7 bg-[#292828] text-white rounded-lg text-[7px] font-black uppercase hover:bg-emerald-600 transition-all">Accept</button>
-                       <button onClick={() => handleBookingStatus(b.id, 'CANCELLED')} className="h-7 bg-white border border-slate-200 text-slate-400 rounded-lg text-[7px] font-black uppercase hover:text-red-500 transition-all">Decline</button>
-                    </div>
-                 )}
-
-                 {/* CLIENT ACTIONS */}
-                 {userProfile?.id === b.client_id && b.status === 'CONFIRMED' && (
-                    <button 
-                      onClick={() => { setSelectedBookingForReview(b); setIsReviewModalOpen(true); }}
-                      className="w-full h-8 bg-[#292828] text-white rounded-lg text-[7px] font-black uppercase mt-3 flex items-center justify-center gap-2 hover:bg-[#E53935] transition-all"
-                    >
-                       Finalize Mandate <CheckIcon size={10} />
-                    </button>
-                 )}
-              </div>
-            )) : (
-              <div className="py-8 text-center bg-[#292828]/5 rounded-xl">
-                 <p className="text-[9px] font-bold text-slate-400 italic">No active mandates</p>
-              </div>
-            )}
-         </div>
-      </div>
-
-      {/* NETWORK STATUS */}
-      {!isJoinedToSyndicate && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-[24px] group">
-           <div className="flex items-center gap-3 mb-4">
-              <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">Map Live</span>
-           </div>
-           <h2 className="text-lg font-black uppercase leading-tight text-[#292828] mb-2">
-              Sync <br /> <span className="text-[#E53935]">Required</span>
-           </h2>
-           <p className="text-[10px] font-medium text-slate-400 mb-6">
-              Join a syndicate to broadcast on the map.
-           </p>
-           <Link 
-             href="/communities"
-             className="inline-flex items-center gap-2 px-6 h-10 bg-[#292828] text-white rounded-xl font-black text-[9px] uppercase hover:bg-[#E53935] transition-all shadow-xl w-full justify-between"
-           >
-              Join Network <ArrowUpRight size={14} />
-           </Link>
+            
+            <div className="flex gap-4 relative z-10">
+              <button className={cn(
+                "flex-[2] py-5 rounded-2xl font-black text-[13px] uppercase tracking-widest text-white shadow-2xl transition-all active:scale-95 group/action overflow-hidden relative",
+                selectedMarker.type === "HIRING" ? "bg-emerald-600 hover:bg-emerald-500" : "bg-[#E53935] hover:bg-[#ff4d4d]"
+              )}>
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/action:translate-x-[100%] transition-transform duration-1000" />
+                <span className="relative z-10">Execute Mandate</span>
+              </button>
+              <Link href="/profile" className="flex-1">
+                <button className="w-full py-5 bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all">
+                  Profile
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
+
+      <ReviewModal 
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        booking={selectedBookingForReview}
+        onSuccess={fetchBookings}
+      />
     </div>
-
-    <div className="mt-auto pt-8 border-t border-[#292828]/5">
-      <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-4">
-        <div className="h-10 w-10 bg-white border border-slate-100 rounded-full overflow-hidden">
-          <img src={userProfile?.avatar_url || `https://i.pravatar.cc/100?u=${userProfile?.id}`} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div>
-          <p className="text-[11px] font-black uppercase text-[#292828] leading-none mb-1">{userProfile?.full_name || "Profile Status"}</p>
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Authorized Pilot</p>
-        </div>
-      </div>
-    </div>
-  </aside>
-  
-  {/* 1. MAP VISUALIZATION LAYER */}
-  <div 
-  className="flex-1 relative transition-transform duration-300 ease-out flex items-center justify-center pointer-events-none"
-  style={{ 
-  transform: `scale(${zoom}) translate(${offset.x / zoom}px, ${offset.y / zoom}px)`,
-  cursor: isDragging ? 'grabbing' : 'grab'
-  }}
-  >
-  <div className="relative w-[1200px] h-[1200px] pointer-events-auto">
-  {/* Background Grid */}
-  <div className="absolute inset-0 opacity-40">
-  <div className="absolute inset-0 bg-[radial-gradient(#292828_1.5px,transparent_1.5px)] [background-size:40px_40px]" />
-  </div>
-
-  {/* TRIVANDRUM SVG MAP */}
-  <svg className="absolute inset-0 w-full h-full text-[#292828] group-hover:text-blue-500 transition-colors duration-1000" viewBox="0 0 1000 1000" fill="none">
-  <path d="M0,0 L300,0 C320,100 280,300 350,500 C400,700 320,850 300,1000 L0,1000 Z" fill="#E2E8F0" fillOpacity="0.6" />
-  <path d="M300,0 C320,100 280,300 350,500 C400,700 320,850 300,1000" stroke="currentColor" strokeWidth="4" strokeOpacity="0.4" strokeDasharray="10 5" />
-  <path d="M350,200 L900,200 M350,400 L900,400 M350,600 L900,600 M350,800 L900,800" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" />
-  <path d="M500,0 L500,1000 M700,0 L700,1000" stroke="currentColor" strokeWidth="1" strokeOpacity="0.1" />
-  </svg>
-
-  {/* 2. ACTIVITY NODES */}
-  {filteredMarkers.map((marker) => (
-  <div 
-  key={marker.id}
-  className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
-  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
-  >
-  <div className={`absolute inset-0 -m-6 rounded-full animate-ping opacity-20 duration-[3s] ${
-  marker.type === "Jobs" ? "bg-blue-500" : 
-  marker.type === "Business Leads" ? "bg-red-500" :
-  marker.type === "Meets" ? "bg-green-500" : "bg-amber-500"
-  }`} />
-  
-  <button 
-  onClick={(e) => { e.stopPropagation(); setSelectedMarker(marker); }}
-  className={`relative z-10 w-6 h-6 rounded-full border-4 border-white shadow-2xl transition-all hover:scale-125 active:scale-90 ${
-  marker.type === "Jobs" ? "bg-blue-600" : 
-  marker.type === "Business Leads" ? "bg-red-600" :
-  marker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
-  }`}
-  >
-  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-pulse" />
-  </button>
-
-  <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 px-3 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-bold uppercase whitespace-nowrap shadow-xl text-[#292828]">
-  {marker.author}
-  </div>
-  </div>
-  ))}
-  </div>
-  </div>
-
-  {/* 3. RESPONSIVE FLOATING UI */}
-  
-  {/* Search & Filter Hub (Bottom) */}
-  <div className="absolute bottom-24 lg:bottom-10 left-4 right-4 lg:left-10 lg:right-10 flex flex-col gap-3 lg:gap-5 z-50 pointer-events-none">
-  <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto pointer-events-auto">
-  <div className="relative group w-full lg:w-96 shadow-2xl">
-  <div className="absolute left-6 inset-y-0 flex items-center gap-3 pointer-events-none">
-  <Search className="text-[#292828]/40" size={18} />
-  <div className="h-4 w-[1px] bg-slate-200" />
-  </div>
-  <input 
-  type="text" 
-  placeholder="Find people or business leads..."
-  className="w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] py-3 lg:py-5 pl-12 lg:pl-16 pr-6 lg:pr-8 text-[13px] lg:text-[15px] font-bold text-[#292828] outline-none ring-0 focus:border-[#E53935] transition-all"
-  />
-  </div>
-  
-  <div className="flex bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl lg:rounded-[0.975rem] p-1.5 shadow-2xl overflow-x-auto scrollbar-hide no-scrollbar">
-  {["All", "Meeting", "Hiring", "Business Leads", "Partnership", "Expo"].map(cat => (
-  <button 
-  key={cat}
-  onClick={() => setFilter(cat as any)}
-  className={`px-6 h-12 rounded-xl text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
-  filter === cat ? "bg-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white border border-[#292828]/10 text-[#292828] hover:bg-slate-50"
-  }`}
-  >
-  {cat}
-  </button>
-  ))}
-  </div>
-  </div>
-  </div>
-
-  {/* Navigation Controls (Side/Bottom) */}
-  <div className="absolute bottom-24 right-6 flex flex-col gap-3 z-50 items-end lg:bottom-10">
-  <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-2 rounded-2xl shadow-2xl flex flex-col gap-1">
-  <button onClick={() => handleZoom(0.25)} className="h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center rounded-xl text-[#292828] hover:bg-[#292828] hover:text-white transition-all"><Plus size={20} /></button>
-  <button onClick={() => handleZoom(-0.25)} className="h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center rounded-xl text-[#292828] hover:bg-[#292828] hover:text-white transition-all"><Minus size={20} /></button>
-  </div>
-  <button 
-  onClick={() => { setZoom(1); setOffset({x:0, y:0}); }}
-  className="h-12 w-12 lg:h-16 lg:w-16 bg-[#E53935] text-white rounded-2xl lg:rounded-[0.975rem] flex items-center justify-center shadow-4xl hover:scale-105 active:scale-95 transition-all"
-  >
-  <Navigation size={24} fill="currentColor" className="rotate-45" />
-  </button>
-  </div>
-
-  {/* 4. DETAIL OVERLAY / BOTTOM SHEET */}
-  {selectedMarker && (
-  <div className="absolute inset-x-4 bottom-24 lg:bottom-10 lg:right-10 lg:w-[440px] z-[60] animate-in slide-in-from-bottom-5 lg:slide-in-from-right-10 duration-500">
-  <div className="bg-white/95 border-2 border-[#292828]/10 rounded-[1.3rem] lg:rounded-[1.95rem] p-6 lg:p-10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.15)] relative overflow-hidden backdrop-blur-2xl">
-  <button onClick={() => setSelectedMarker(null)} className="absolute top-6 lg:top-10 right-6 lg:right-10 text-[#292828] hover:text-[#E53935]"><X className="w-5 h-5 lg:w-6 lg:h-6" /></button>
-  
-  <div className="flex items-start gap-5 lg:gap-8 mb-6 lg:mb-10">
-  <div className={`h-14 w-14 lg:h-20 lg:w-20 min-w-[56px] lg:min-w-[80px] rounded-2xl lg:rounded-3xl flex items-center justify-center text-white shadow-xl ${
-  selectedMarker.type === "Jobs" ? "bg-blue-600" : 
-  selectedMarker.type === "Business Leads" ? "bg-red-600" :
-  selectedMarker.type === "Meets" ? "bg-green-600" : "bg-amber-600"
-  }`}>
-  {selectedMarker.type === "Jobs" && <Briefcase className="w-6 h-6 lg:w-8 lg:h-8" />}
-  {selectedMarker.type === "Business Leads" && <Zap className="w-6 h-6 lg:w-8 lg:h-8" />}
-  {selectedMarker.type === "Meets" && <MessageSquare className="w-6 h-6 lg:w-8 lg:h-8" />}
-  {selectedMarker.type === "Social" && <User className="w-6 h-6 lg:w-8 lg:h-8" />}
-  </div>
-  <div className="pr-8">
-  <span className="text-[9px] lg:text-[10px] font-bold uppercase text-[#E53935]">{selectedMarker.type}</span>
-  <h3 className="text-xl lg:text-3xl font-bold text-[#292828] leading-tight mt-1">{selectedMarker.title}</h3>
-  <p className="text-[#292828] font-bold text-xs lg:text-sm mt-1">{selectedMarker.author}</p>
-  </div>
-  </div>
-  
-  <p className="text-xs lg:text-base font-medium leading-relaxed text-[#292828] mb-6 lg:mb-10 line-clamp-2 lg:line-clamp-none">{selectedMarker.details}</p>
-  
-  <div className="flex gap-2 lg:gap-4">
-  <button className="flex-1 py-4 lg:py-5 bg-[#292828] text-white rounded-xl lg:rounded-[0.975rem] font-bold text-[11px] lg:text-[13px] uppercase hover:bg-[#E53935] transition-all">Connect</button>
-  <Link href={`/profile/${parseInt(selectedMarker.id) + 1}`} className="flex-1">
-  <button className="w-full px-5 lg:px-8 py-4 lg:py-5 bg-white border border-slate-200 text-[#292828] rounded-xl lg:rounded-[0.975rem] font-bold text-[11px] lg:text-[13px] uppercase hover:bg-[#292828]/5 transition-all">View Profile</button>
-  </Link>
-  </div>
-  </div>
-  </div>
-  )}
-
-  <ReviewModal 
-    isOpen={isReviewModalOpen}
-    onClose={() => setIsReviewModalOpen(false)}
-    booking={selectedBookingForReview}
-    onSuccess={fetchBookings}
-  />
-
-  </div>
- );
+  );
 }

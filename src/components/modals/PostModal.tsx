@@ -139,29 +139,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     setIsPosting(true);
     
     try {
-      // 1. Get the first profile or create a default one if none exists
-      let authorId = editPost?.author_id;
-
-      if (!authorId) {
-        let { data: profile } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
-        
-        if (!profile) {
-          const { data: newProfile, error: profileError } = await supabase
-            .from('profiles')
-            .insert([{ 
-              full_name: 'Community Elite', 
-              role: 'PROFESSIONAL', 
-              location: 'Trivandrum',
-              bio: 'Automated founding member profile.'
-            }])
-            .select()
-            .single();
-          
-          if (profileError) throw profileError;
-          profile = newProfile;
-        }
-        authorId = profile.id;
+      // 1. Get the authenticated user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Unauthorized. Please sign in.");
+        return;
       }
+      
+      let authorId = editPost?.author_id || user.id;
 
       const postData: any = {
         author_id: authorId,

@@ -79,6 +79,8 @@ export default function CheckoutHomeFeed() {
       .select('*')
       .eq('id', user.id)
       .single();
+    
+    if (profile) setUser(profile);
 
     // 2. Call Neural Match RPC (or fallback to standard fetch)
     const { data: rankedData, error } = await supabase.rpc('match_posts', {
@@ -245,7 +247,7 @@ export default function CheckoutHomeFeed() {
       <section className="bg-white rounded-[24px] p-2 border border-[#292828]/10 shadow-premium group transition-all hover:border-[#292828]/20">
          <div className="flex items-center gap-3 p-3 lg:p-4">
             <div className="h-10 w-10 rounded-xl bg-[#292828] overflow-hidden border border-[#292828]/10 shrink-0 flex items-center justify-center text-white">
-               <img src="https://i.pravatar.cc/150?u=me" className="h-full w-full grayscale contrast-125" alt="" />
+               <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=me"} className="h-full w-full object-cover" alt="" />
             </div>
             <button 
               onClick={() => { setFormType("Update"); setIsPosting(true); }}
@@ -389,14 +391,14 @@ export default function CheckoutHomeFeed() {
                           <span className="text-[8px] font-bold text-slate-400">{new Date(b.scheduled_at).toLocaleDateString()}</span>
                        </div>
                        <p className="text-[12px] font-bold text-[#292828] mb-1 truncate">
-                          {currentUser?.id === b.advisor_id ? `Client: ${b.client?.full_name}` : `Expert: ${b.advisor?.full_name}`}
+                          {user?.id === b.advisor_id ? `Client: ${b.client?.full_name}` : `Expert: ${b.advisor?.full_name}`}
                        </p>
                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mb-3">
                           <Clock size={10} /> 1 HR Session
                        </div>
 
                        {/* ADVISOR ACTIONS */}
-                       {currentUser?.id === b.advisor_id && b.status === 'PENDING' && (
+                       {user?.id === b.advisor_id && b.status === 'PENDING' && (
                          <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 mt-3">
                             <button 
                               onClick={() => handleBookingStatus(b.id, 'CONFIRMED')}
@@ -414,7 +416,7 @@ export default function CheckoutHomeFeed() {
                        )}
 
                        {/* CLIENT ACTIONS */}
-                       {currentUser?.id === b.client_id && b.status === 'CONFIRMED' && (
+                       {user?.id === b.client_id && b.status === 'CONFIRMED' && (
                           <div className="border-t border-slate-100 pt-3 mt-3">
                              <button 
                                onClick={() => {

@@ -150,31 +150,37 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 DECLARE
   v_role public.profile_role;
+  v_name text;
 BEGIN
-  -- 1. Safely parse role from metadata or fallback
+  -- 1. Extract and sanitize metadata
+  v_name := COALESCE(new.raw_user_meta_data->>'full_name', 'Professional Node');
+  
+  -- 2. Defensive Role Parsing (Case-Insensitive & Safe Cast)
   BEGIN
-    v_role := (new.raw_user_meta_data->>'role')::public.profile_role;
+    v_role := UPPER(TRIM(new.raw_user_meta_data->>'role'))::public.profile_role;
   EXCEPTION WHEN OTHERS THEN
     v_role := 'PROFESSIONAL'::public.profile_role;
   END;
 
-  -- 2. Atomic Profile Insertion
+  -- 3. Atomic Upsert (Prevents Identity Collisions)
   INSERT INTO public.profiles (
     id, 
     full_name, 
     role, 
-    avatar_url, 
     city, 
     location
   )
   VALUES (
     new.id,
-    COALESCE(new.raw_user_meta_data->>'full_name', 'Business Node'),
+    v_name,
     COALESCE(v_role, 'PROFESSIONAL'::public.profile_role),
-    new.raw_user_meta_data->>'avatar_url',
     COALESCE(new.raw_user_meta_data->>'city', 'Trivandrum'),
     COALESCE(new.raw_user_meta_data->>'location', 'Trivandrum')
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    role = EXCLUDED.role;
+
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

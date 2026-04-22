@@ -68,8 +68,16 @@ export default function FullyActiveGlobalHeader() {
         setNotifications(notes);
         setUnreadCount(notes.filter(n => !n.is_read).length);
       }
-    }
     initHeader();
+
+    const handleProfileUpdate = () => {
+      initHeader();
+    };
+
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profile-updated', handleProfileUpdate);
+    };
   }, []);
 
   // 2. REAL-TIME SUBSCRIPTION

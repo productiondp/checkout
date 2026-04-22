@@ -134,35 +134,39 @@ export default function PremiumProfilePage() {
     loadProfile();
   }, []);
 
-  const handleSaveProfile = async () => {
-    if (!userData.id) {
+  const handleSaveProfile = async (updatedData?: any) => {
+    const dataToSave = updatedData || userData;
+    if (!dataToSave.id) {
        alert("Profile ID not found. Please refresh and try again.");
        return;
     }
     
     setIsSaving(true);
     
-    const systemRole = ["ADVISOR", "STUDENT", "BUSINESS"].includes(userData.role.toUpperCase()) 
-      ? userData.role.toUpperCase() 
+    const systemRole = ["ADVISOR", "STUDENT", "BUSINESS"].includes(dataToSave.role.toUpperCase()) 
+      ? dataToSave.role.toUpperCase() 
       : "PROFESSIONAL";
 
     const { error } = await supabase
       .from('profiles')
       .update({
-        full_name: userData.name,
+        full_name: dataToSave.name,
         role: systemRole,
-        bio: userData.bio,
-        location: userData.location,
-        avatar_url: userData.avatar_url,
-        skills: userData.skills
+        bio: dataToSave.bio,
+        location: dataToSave.location,
+        avatar_url: dataToSave.avatar_url,
+        skills: dataToSave.skills
       })
-      .eq('id', userData.id);
+      .eq('id', dataToSave.id);
 
     if (error) {
       console.error("Save Error:", error);
       alert("Failed to save profile: " + error.message);
     } else {
+      setUserData(dataToSave);
       setShowEditModal(false);
+      // Optional: Refresh the window to sync GlobalHeader immediately
+      window.dispatchEvent(new Event('profile-updated'));
     }
     setIsSaving(false);
   };
@@ -175,8 +179,12 @@ export default function PremiumProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setUserData(prev => ({ ...prev, avatar_url: event.target?.result as string }));
+    reader.onload = async (event) => {
+      const b64 = event.target?.result as string;
+      const nextState = { ...userData, avatar_url: b64 };
+      setUserData(nextState);
+      // Immediate persistence for avatar
+      await handleSaveProfile(nextState);
     };
     reader.readAsDataURL(file);
   };

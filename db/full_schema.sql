@@ -153,20 +153,21 @@ DECLARE
   v_name text;
 BEGIN
   -- 1. Extract and sanitize metadata
-  v_name := COALESCE(new.raw_user_meta_data->>'full_name', 'Professional Node');
+  v_name := COALESCE(new.raw_user_meta_data->>'full_name', 'Business Partner');
   
-  -- 2. Defensive Role Parsing (Case-Insensitive & Safe Cast)
+  -- 2. Defensive Role Parsing
   BEGIN
     v_role := UPPER(TRIM(new.raw_user_meta_data->>'role'))::public.profile_role;
   EXCEPTION WHEN OTHERS THEN
     v_role := 'PROFESSIONAL'::public.profile_role;
   END;
 
-  -- 3. Atomic Upsert (Prevents Identity Collisions)
+  -- 3. Atomic Insertion with Full Metadata
   INSERT INTO public.profiles (
     id, 
     full_name, 
     role, 
+    avatar_url,
     city, 
     location
   )
@@ -174,12 +175,15 @@ BEGIN
     new.id,
     v_name,
     COALESCE(v_role, 'PROFESSIONAL'::public.profile_role),
+    new.raw_user_meta_data->>'avatar_url',
     COALESCE(new.raw_user_meta_data->>'city', 'Trivandrum'),
     COALESCE(new.raw_user_meta_data->>'location', 'Trivandrum')
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = EXCLUDED.full_name,
-    role = EXCLUDED.role;
+    role = EXCLUDED.role,
+    avatar_url = EXCLUDED.avatar_url,
+    city = EXCLUDED.city;
 
   RETURN new;
 END;

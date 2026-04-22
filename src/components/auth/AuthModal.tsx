@@ -250,14 +250,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         </div>
       </div>
 
-      <style jsx>{`
+{/* <style jsx>{`
         @keyframes shimmer {
           100% { transform: translateX(100%); }
         }
         .group:hover .group-hover\:animate-shimmer {
           animation: shimmer 1.5s infinite;
         }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }

@@ -48,7 +48,7 @@ export default function ClientLayout({
              {children}
           </div>
 
-          <div className="hidden 3xl:block">
+          <div className="hidden xl:block">
             <RightSocialRail />
           </div>
         </main>

@@ -26,6 +26,7 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PostModal from "@/components/modals/PostModal";
 
 const EXPOS: any[] = [];
 
@@ -33,6 +34,12 @@ export default function BusinessExposPage() {
   const [selectedExpo, setSelectedExpo] = useState<any>(null);
   const [registeredList, setRegisteredList] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState<"upcoming" | "businesses" | "map">("upcoming");
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handlePostSuccess = (post: any) => {
+    console.log("Events Page Post Success:", post);
+    setIsPosting(false);
+  };
 
   const toggleRegister = (id: number) => {
     if (registeredList.includes(id)) {
@@ -181,8 +188,57 @@ export default function BusinessExposPage() {
         </div>
       </div>
 
-      {/* 2. ANALYTICS (RIGHT) */}
-      <aside className="hidden xl:flex flex-col w-[450px] h-screen sticky top-0 bg-[#FDFDFF] p-12 gap-12 overflow-y-auto no-scrollbar border-l border-[#292828]/10">
+      {/* 2. REGIONAL PULSE (RIGHT) */}
+      <aside className="hidden xl:flex flex-col w-[380px] xl:w-[400px] 2xl:w-[450px] h-screen sticky top-0 bg-slate-50/50 p-6 xl:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-[#292828]/10 shrink-0">
+         {/* POST ENTRY POINT */}
+         <div className="px-2">
+            <button 
+              onClick={() => setIsPosting(true)}
+              className="w-full h-20 bg-[#292828] text-white rounded-[1.8rem] flex items-center justify-between px-8 group hover:bg-[#E53935] transition-all shadow-[0_20px_50px_rgba(41,40,40,0.2)] active:scale-95"
+            >
+               <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#E53935] transition-all">
+                     <Plus size={20} strokeWidth={3} />
+                  </div>
+                  <div className="text-left">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 leading-none mb-1">Execution Node</p>
+                     <p className="text-base font-black uppercase tracking-tight">Post Opportunity</p>
+                  </div>
+               </div>
+               <ArrowUpRight size={20} className="text-white/20 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            </button>
+         </div>
+
+         <div className="group/hub">
+            <h3 className="text-xl font-bold text-[#292828] uppercase tracking-tight">Regional Pulse</h3>
+            <div className="relative h-64 bg-[#292828] rounded-[2rem] overflow-hidden group">
+               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#E53935_1px,transparent_1px)] [background-size:20px_20px]" />
+               
+               {/* Map Activity Nodes */}
+               <div className="absolute inset-0">
+                  {[1,2,3,4,5].map(i => (
+                     <div 
+                        key={i}
+                        className="absolute h-1.5 w-1.5 rounded-full animate-ping opacity-60"
+                        style={{ 
+                           left: `${30 + (i * 13)%50}%`, 
+                           top: `${35 + (i * 9)%40}%`,
+                           backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
+                           animationDelay: `${i * 0.4}s`
+                        }} 
+                     />
+                  ))}
+               </div>
+
+               <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center space-y-2">
+                     <p className="text-5xl font-black text-white">08</p>
+                     <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Upcoming Events</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+
          <div className="p-10 bg-[#292828] rounded-[2.5rem] shadow-[0_40px_100px_rgba(41,40,40,0.3)] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-40 h-40 bg-[#E53935]/20 blur-[80px] pointer-events-none" />
             <TrendingUp size={200} className="absolute -right-10 -bottom-10 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[4s]" />
@@ -331,6 +387,13 @@ export default function BusinessExposPage() {
         </div>
       )}
 
+       {isPosting && (
+         <PostModal 
+           isOpen={isPosting} 
+           onClose={() => setIsPosting(false)} 
+           onPostSuccess={handlePostSuccess}
+         />
+       )}
     </div>
   );
 }

@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_PROFILES } from "@/lib/dummyData";
+import PostModal from "@/components/modals/PostModal";
+import { Plus } from "lucide-react";
 
 const CATEGORIES = ["All", "Strategy", "Tech", "Growth", "Logistics", "Sales", "Fintech"];
 
@@ -40,6 +42,12 @@ export default function BusinessAdvisorsPage() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handlePostSuccess = (post: any) => {
+    console.log("Advisor Page Post Success:", post);
+    setIsPosting(false);
+  };
 
   const filteredAdvisors = useMemo(() => {
     return DUMMY_PROFILES.filter(profile => {
@@ -248,8 +256,26 @@ export default function BusinessAdvisorsPage() {
       </div>
 
       {/* 2. ANALYTICS (RIGHT) */}
-      <aside className="hidden xl:flex flex-col w-[450px] h-screen sticky top-0 bg-[#FDFDFF] p-12 gap-12 overflow-y-auto no-scrollbar border-l border-[#292828]/10">
-         
+      <aside className="hidden lg:flex flex-col w-[380px] xl:w-[400px] 2xl:w-[450px] h-screen sticky top-0 bg-slate-50/50 p-6 xl:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-[#292828]/10 shrink-0">
+         {/* POST ENTRY POINT */}
+         <div className="px-2">
+            <button 
+              onClick={() => setIsPosting(true)}
+              className="w-full h-20 bg-[#292828] text-white rounded-[1.8rem] flex items-center justify-between px-8 group hover:bg-[#E53935] transition-all shadow-[0_20px_50px_rgba(41,40,40,0.2)] active:scale-95"
+            >
+               <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#E53935] transition-all">
+                     <Plus size={20} strokeWidth={3} />
+                  </div>
+                  <div className="text-left">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 leading-none mb-1">Execution Node</p>
+                     <p className="text-base font-black uppercase tracking-tight">Post Opportunity</p>
+                  </div>
+               </div>
+               <ArrowUpRight size={20} className="text-white/20 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            </button>
+         </div>
+
          <div className="p-10 bg-white border border-[#292828]/10 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(41,40,40,0.05)] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-[60px] pointer-events-none" />
             <h4 className="text-[10px] font-black text-[#292828]/30 uppercase tracking-[0.2em] mb-8">Node Reputation</h4>
@@ -404,6 +430,13 @@ export default function BusinessAdvisorsPage() {
         </div>
       )}
 
+       {isPosting && (
+         <PostModal 
+           isOpen={isPosting} 
+           onClose={() => setIsPosting(false)} 
+           onPostSuccess={handlePostSuccess}
+         />
+       )}
     </div>
   );
 }

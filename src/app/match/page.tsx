@@ -19,10 +19,12 @@ import {
   MoreHorizontal,
   Flag,
   UserX,
-  UserMinus
+  UserMinus,
+  ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DUMMY_PROFILES } from "@/lib/dummyData";
+import PostModal from "@/components/modals/PostModal";
 
 const PartnerCard = ({ p, viewMode }: { p: any, viewMode?: "grid" | "list" }) => {
   const [isBlocked, setIsBlocked] = useState(false);
@@ -216,6 +218,12 @@ export default function BusinessNetworkPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handlePostSuccess = (newPost: any) => {
+    console.log("Match Page New Post:", newPost);
+    setIsPosting(false);
+  };
   const [sortBy, setSortBy] = useState("Best Match");
   const [displayCount, setDisplayCount] = useState(12);
 
@@ -225,214 +233,344 @@ export default function BusinessNetworkPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] relative overflow-x-hidden selection:bg-[#E53935]/10">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#FDFDFF] relative overflow-x-hidden selection:bg-[#E53935]/10">
       {/* BACKGROUND GLOW */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-500/5 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#292828]/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* PAGE HEADER */}
-      <div className="relative z-20 px-6 lg:px-12 pt-16 pb-8">
-         <div className="max-w-[1600px] mx-auto">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-[#292828]/5 pb-10">
-               <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                     <div className="flex -space-x-3">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="h-9 w-9 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-2xl flex items-center justify-center">
-                             <Users size={14} className="text-[#292828]/20" />
-                          </div>
-                        ))}
-                     </div>
-                     <span className="text-[10px] font-black text-[#E53935] uppercase animate-pulse">420+ Members Online</span>
-                  </div>
-                  <h1 className="text-4xl lg:text-7xl font-black text-[#292828] uppercase flex items-center gap-4">
-                     Find 
-                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] via-[#E53935] to-[#292828]">People</span>
-                  </h1>
-               </div>
+      <main className="flex-1 min-h-screen lg:border-r border-[#292828]/10 overflow-y-auto no-scrollbar pb-32">
+        {/* PAGE HEADER */}
+        <div className="relative z-20 px-6 lg:px-12 pt-16 pb-8">
+           <div className="max-w-[1600px] mx-auto">
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-[#292828]/5 pb-10">
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="flex -space-x-3">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="h-9 w-9 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-2xl flex items-center justify-center">
+                               <Users size={14} className="text-[#292828]/20" />
+                            </div>
+                          ))}
+                       </div>
+                       <span className="text-[10px] font-black text-[#E53935] uppercase animate-pulse">420+ Members Online</span>
+                    </div>
+                    <h1 className="text-4xl lg:text-7xl font-black text-[#292828] uppercase flex items-center gap-4">
+                       Find 
+                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] via-[#E53935] to-[#292828]">People</span>
+                    </h1>
+                 </div>
 
-            </div>
-         </div>
-      </div>
+              </div>
+           </div>
+        </div>
 
-      <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-12 py-12">
-         
-         {/* SUGGESTED FOR YOU */}
-         <div className="mb-20">
-            <div className="flex items-center gap-5 mb-12">
-               <div className="h-16 w-16 bg-gradient-to-br from-[#E53935] to-[#C62828] text-white rounded-[1.3rem] flex items-center justify-center shadow-[0_25px_50px_-12px_rgba(229,57,53,0.4)]">
-                  <Target size={32} />
-               </div>
-               <div>
-                  <h3 className="text-3xl font-black text-[#292828] uppercase">People you should meet</h3>
-                  <div className="flex items-center gap-2 mt-2">
-                     <div className="h-1 w-8 bg-[#E53935] rounded-full" />
-                     <p className="text-[11px] font-black text-[#E53935] uppercase">Top picks for you</p>
-                  </div>
-               </div>
-            </div>
+        <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-12 py-12">
+           
+           {/* SUGGESTED FOR YOU */}
+           <div className="mb-20">
+              <div className="flex items-center gap-5 mb-12">
+                 <div className="h-16 w-16 bg-gradient-to-br from-[#E53935] to-[#C62828] text-white rounded-[1.3rem] flex items-center justify-center shadow-[0_25px_50px_-12px_rgba(229,57,53,0.4)]">
+                    <Target size={32} />
+                 </div>
+                 <div>
+                    <h3 className="text-3xl font-black text-[#292828] uppercase">People you should meet</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                       <div className="h-1 w-8 bg-[#E53935] rounded-full" />
+                       <p className="text-[11px] font-black text-[#E53935] uppercase">Top picks for you</p>
+                    </div>
+                 </div>
+              </div>
 
-            <div className="flex gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-10 no-scrollbar">
-               {DUMMY_PROFILES.slice(5, 11).map((p) => (
-                 <CompactSuggestedCard key={p.id} p={p} />
-               ))}
-               
-               {/* View All */}
-               <div className="min-w-[200px] flex items-center justify-center snap-start pl-4 pr-12">
-                  <button className="h-24 w-24 rounded-full bg-white border border-[#292828]/10 flex flex-col items-center justify-center gap-2 hover:bg-[#E53935] hover:border-transparent hover:text-white transition-all text-[#292828]/40 group shadow-[0_20px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(229,57,53,0.3)]">
-                     <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
-                     <span className="text-[10px] font-black uppercase">See All</span>
-                  </button>
-               </div>
-            </div>
-         </div>
-
-         {/* BROWSE EVERYONE */}
-         <div id="discovery-hub" className="mb-24">
-            {/* FILTER BAR */}
-            <div className="sticky top-6 z-40 mb-12 bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-[0.975rem] p-3 shadow-sm flex items-center gap-4 transition-all overflow-x-auto no-scrollbar">
-               <div className="flex items-center gap-1 px-1">
-                  {["All", "My Network", "Founders", "Investors", "Logistics", "MSME"].map(tab => (
-                    <button 
-                     key={tab} 
-                     onClick={() => setActiveTab(tab)}
-                     className={cn(
-                       "h-12 px-6 rounded-[0.65rem] text-[12px] font-bold uppercase transition-all whitespace-nowrap",
-                       activeTab === tab ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/60 hover:text-[#292828] hover:bg-slate-100"
-                     )}
-                    >
-                       {tab}
+              <div className="flex gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-10 no-scrollbar">
+                 {DUMMY_PROFILES.slice(5, 11).map((p) => (
+                   <CompactSuggestedCard key={p.id} p={p} />
+                 ))}
+                 
+                 {/* View All */}
+                 <div className="min-w-[200px] flex items-center justify-center snap-start pl-4 pr-12">
+                    <button className="h-24 w-24 rounded-full bg-white border border-[#292828]/10 flex flex-col items-center justify-center gap-2 hover:bg-[#E53935] hover:border-transparent hover:text-white transition-all text-[#292828]/40 group shadow-[0_20px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(229,57,53,0.3)]">
+                       <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+                       <span className="text-[10px] font-black uppercase">See All</span>
                     </button>
+                 </div>
+              </div>
+           </div>
+
+           {/* BROWSE EVERYONE */}
+           <div id="discovery-hub" className="mb-24">
+              {/* FILTER BAR */}
+              <div className="sticky top-6 z-40 mb-12 bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-[0.975rem] p-3 shadow-sm flex items-center gap-4 transition-all overflow-x-auto no-scrollbar">
+                 <div className="flex items-center gap-1 px-1">
+                    {["All", "My Network", "Founders", "Investors", "Logistics", "MSME"].map(tab => (
+                      <button 
+                       key={tab} 
+                       onClick={() => setActiveTab(tab)}
+                       className={cn(
+                         "h-12 px-6 rounded-[0.65rem] text-[12px] font-bold uppercase transition-all whitespace-nowrap",
+                         activeTab === tab ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/60 hover:text-[#292828] hover:bg-slate-100"
+                       )}
+                      >
+                         {tab}
+                      </button>
+                    ))}
+                 </div>
+              </div>
+
+              {/* VIEW CONTROLS */}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 mt-4">
+                 <h3 className="text-2xl font-black text-[#292828] uppercase shrink-0">Search for anyone</h3>
+                 
+                 <div className="flex flex-wrap items-center justify-end gap-4 w-full">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[200px] md:max-w-[300px]">
+                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/40" size={16} />
+                       <input 
+                         type="text" 
+                         value={search}
+                         onChange={(e) => setSearch(e.target.value)}
+                         placeholder="Type a name..." 
+                         className="w-full h-12 bg-white border border-slate-200/60 rounded-xl pl-10 pr-4 text-[13px] font-bold outline-none focus:border-[#E53935] focus:shadow-sm transition-all text-[#292828]" 
+                       />
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="flex items-center gap-1 p-1 bg-white border border-slate-200/60 rounded-xl shadow-sm">
+                       <button 
+                         onClick={() => setViewMode("grid")}
+                         className={cn(
+                           "h-10 px-4 rounded-lg flex items-center gap-2 text-[11px] font-black uppercase transition-all",
+                           viewMode === "grid" ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/40 hover:text-[#292828]"
+                         )}
+                       >
+                          <LayoutGrid size={14} /> Grid
+                       </button>
+                       <button 
+                         onClick={() => setViewMode("list")}
+                         className={cn(
+                           "h-10 px-4 rounded-lg flex items-center gap-2 text-[11px] font-black uppercase transition-all",
+                           viewMode === "list" ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/40 hover:text-[#292828]"
+                         )}
+                       >
+                          <List size={14} /> List
+                       </button>
+                    </div>
+
+                    {/* Sort */}
+                    <div className="relative h-12 bg-white border border-slate-200/60 rounded-xl px-6 flex items-center gap-3 min-w-[200px] shadow-sm hover:border-[#E53935]/40 transition-all">
+                       <span className="text-[10px] font-black text-[#292828]/40 uppercase leading-none mt-0.5">Sort:</span>
+                       <select 
+                         value={sortBy}
+                         onChange={(e) => setSortBy(e.target.value)}
+                         className="bg-transparent text-[11px] font-black uppercase outline-none cursor-pointer text-[#292828] flex-1 appearance-none pt-0.5"
+                       >
+                          <option>Best Match</option>
+                          <option>Name (A–Z)</option>
+                          <option>Recent Activity</option>
+                       </select>
+                       <SlidersHorizontal size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#292828]/40 pointer-events-none" />
+                    </div>
+                 </div>
+              </div>
+
+              {/* PEOPLE GRID */}
+              <div className={cn(
+                 "transition-all duration-1000",
+                 viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12" : "space-y-10"
+              )}>
+                 {(activeTab === "All" || activeTab === "My Network") && DUMMY_PROFILES.slice(10, 16).map(p => (
+                   <PartnerCard key={`own-${p.id}`} p={{...p, match: 100}} viewMode={viewMode} />
+                 ))}
+
+                 {activeTab !== "My Network" && filtered.slice(0, displayCount).map(p => (
+                   <PartnerCard key={`global-${p.id}`} p={p} viewMode={viewMode} />
+                 ))}
+              </div>
+
+              {/* LOAD MORE */}
+              {activeTab !== "My Network" && displayCount < filtered.length && (
+                 <div className="mt-20 flex flex-col items-center gap-10">
+                    <div className="h-px w-32 bg-gradient-to-r from-transparent via-[#292828]/10 to-transparent" />
+                    <button 
+                       onClick={() => setDisplayCount(prev => prev + 12)}
+                       className="group relative px-16 py-8 bg-white border border-[#292828]/5 rounded-[1.625rem] overflow-hidden transition-all hover:border-[#E53935] hover:shadow-[0_40px_80px_-20px_rgba(229,57,53,0.15)] active:scale-95"
+                    >
+                       <div className="absolute inset-0 bg-gradient-to-r from-[#E53935]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                       <span className="relative z-10 text-[12px] font-black text-[#292828] uppercase">See More</span>
+                    </button>
+                 </div>
+              )}
+           </div>
+        </div>
+
+        {/* FOOTER BANNER */}
+        <div className="px-6 lg:px-12 mb-16 relative z-10">
+           <div className="max-w-[1600px] mx-auto bg-gradient-to-br from-[#292828] to-[#121212] rounded-[3.25rem] p-12 lg:p-32 relative overflow-hidden group shadow-[0_80px_160px_-40px_rgba(41,40,40,0.5)] border border-white/5">
+              <div className="absolute top-0 right-0 w-[60%] h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+              
+              <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-24">
+                 <div className="max-w-2xl text-center lg:text-left space-y-10">
+                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/5 border border-white/10 rounded-full">
+                       <div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />
+                       <span className="text-[10px] font-black text-[#E53935] uppercase">Grow Your Network</span>
+                    </div>
+                    <h3 className="text-4xl lg:text-7xl font-black text-white uppercase leading-[0.9]">
+                       Expand your <br/>
+                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E53935] to-[#f87171]">Connections</span>.
+                    </h3>
+                    <p className="text-white/50 text-xl lg:text-2xl font-medium leading-relaxed">
+                       Complete your profile to get better matches and connect with the right people faster.
+                    </p>
+                    <Link 
+                      href="/profile" 
+                      className="inline-flex items-center gap-6 px-16 py-8 bg-[#E53935] text-white rounded-[1.625rem] font-black text-[13px] uppercase shadow-[0_30px_60px_-15px_rgba(229,57,53,0.5)] hover:bg-white hover:text-[#292828] transition-all transform hover:-translate-y-2 active:scale-95"
+                    >
+                      Complete Your Profile <ArrowRight size={20} />
+                    </Link>
+                 </div>
+                 
+                 <div className="relative h-64 w-64 lg:h-[450px] lg:w-[450px] flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#E53935]/20 rounded-full blur-[100px] animate-pulse" />
+                    <div className="relative z-10 p-12 bg-white/5 backdrop-blur-3xl rounded-[2.6rem] border border-white/5 shadow-2xl rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                       <Users size={140} className="text-[#E53935] drop-shadow-[0_0_30px_rgba(229,57,53,0.5)]" />
+                    </div>
+                 </div>
+              </div>
+              
+              <Star size={500} className="absolute -left-32 -bottom-32 text-white/[0.02] rotate-12 group-hover:rotate-45 transition-all duration-[20s]" />
+           </div>
+        </div>
+      </main>
+
+      {/* PERSISTENT RIGHT SIDEBAR */}
+      <aside className="hidden lg:flex flex-col w-[380px] xl:w-[400px] 2xl:w-[450px] h-screen sticky top-0 bg-slate-50/50 p-6 xl:p-8 gap-10 overflow-y-auto no-scrollbar border-l border-slate-100/50 shrink-0">
+         {/* POST ENTRY POINT */}
+         <div className="px-2">
+            <button 
+              onClick={() => setIsPosting(true)}
+              className="w-full h-20 bg-[#292828] text-white rounded-[1.8rem] flex items-center justify-between px-8 group hover:bg-[#E53935] transition-all shadow-[0_20px_50px_rgba(41,40,40,0.2)] active:scale-95"
+            >
+               <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#E53935] transition-all">
+                     <Plus size={20} strokeWidth={3} />
+                  </div>
+                  <div className="text-left">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 leading-none mb-1">Execution Node</p>
+                     <p className="text-base font-black uppercase tracking-tight">Post Opportunity</p>
+                  </div>
+               </div>
+               <ArrowUpRight size={20} className="text-white/20 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            </button>
+         </div>
+
+         <div className="group/hub">
+            <div className="flex items-center justify-between mb-6 px-1">
+               <div className="flex items-center gap-3">
+                  <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-ping" />
+                  <h4 className="text-xs font-bold text-[#292828] uppercase">Explore Channels</h4>
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[#292828]/10 rounded-xl shadow-sm">
+                  <span className="h-1.5 w-1.5 bg-green-500 rounded-full" />
+                  <span className="text-xs font-bold text-[#292828] uppercase">Opportunity Engine</span>
+               </div>
+            </div>
+            
+            <div className="relative h-[400px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(41,40,40,0.12)] group transition-all duration-700 ring-8 ring-white cursor-pointer hover:ring-[#E53935]/5 group-hover/hub:shadow-2xl">
+               <div className="absolute inset-0 opacity-[0.15] bg-[radial-gradient(#292828_1.2px,transparent_1.2px)] [background-size:24px_24px]" />
+               
+               {/* Map Activity Nodes */}
+               <div className="absolute inset-0">
+                  {[1,2,3,4,5].map(i => (
+                     <div 
+                        key={i}
+                        className="absolute h-1.5 w-1.5 rounded-full animate-ping opacity-60"
+                        style={{ 
+                           left: `${30 + (i * 13)%50}%`, 
+                           top: `${35 + (i * 9)%40}%`,
+                           backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
+                           animationDelay: `${i * 0.4}s`
+                        }} 
+                     />
+                  ))}
+                  {[1,2,3,4,5,6,7].map(i => (
+                     <div 
+                        key={i}
+                        className="absolute h-1.5 w-1.5 rounded-full shadow-lg"
+                        style={{ 
+                           left: `${30 + (i * 13)%50}%`, 
+                           top: `${35 + (i * 9)%40}%`,
+                           backgroundColor: i % 3 === 0 ? '#10B984' : i % 3 === 1 ? '#3B82F6' : '#E53935',
+                        }} 
+                     />
                   ))}
                </div>
-            </div>
 
-            {/* VIEW CONTROLS */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 mt-4">
-               <h3 className="text-2xl font-black text-[#292828] uppercase shrink-0">Search for anyone</h3>
-               
-               <div className="flex flex-wrap items-center justify-end gap-4 w-full">
-                  {/* Search */}
-                  <div className="relative flex-1 min-w-[200px] md:max-w-[300px]">
-                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/40" size={16} />
-                     <input 
-                       type="text" 
-                       value={search}
-                       onChange={(e) => setSearch(e.target.value)}
-                       placeholder="Type a name..." 
-                       className="w-full h-12 bg-white border border-slate-200/60 rounded-xl pl-10 pr-4 text-[13px] font-bold outline-none focus:border-[#E53935] focus:shadow-sm transition-all text-[#292828]" 
-                     />
-                  </div>
-
-                  {/* View Toggle */}
-                  <div className="flex items-center gap-1 p-1 bg-white border border-slate-200/60 rounded-xl shadow-sm">
-                     <button 
-                       onClick={() => setViewMode("grid")}
-                       className={cn(
-                         "h-10 px-4 rounded-lg flex items-center gap-2 text-[11px] font-black uppercase transition-all",
-                         viewMode === "grid" ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/40 hover:text-[#292828]"
-                       )}
-                     >
-                        <LayoutGrid size={14} /> Grid
-                     </button>
-                     <button 
-                       onClick={() => setViewMode("list")}
-                       className={cn(
-                         "h-10 px-4 rounded-lg flex items-center gap-2 text-[11px] font-black uppercase transition-all",
-                         viewMode === "list" ? "bg-[#292828] text-white shadow-md" : "text-[#292828]/40 hover:text-[#292828]"
-                       )}
-                     >
-                        <List size={14} /> List
-                     </button>
-                  </div>
-
-                  {/* Sort */}
-                  <div className="relative h-12 bg-white border border-slate-200/60 rounded-xl px-6 flex items-center gap-3 min-w-[200px] shadow-sm hover:border-[#E53935]/40 transition-all">
-                     <span className="text-[10px] font-black text-[#292828]/40 uppercase leading-none mt-0.5">Sort:</span>
-                     <select 
-                       value={sortBy}
-                       onChange={(e) => setSortBy(e.target.value)}
-                       className="bg-transparent text-[11px] font-black uppercase outline-none cursor-pointer text-[#292828] flex-1 appearance-none pt-0.5"
-                     >
-                        <option>Best Match</option>
-                        <option>Name (A–Z)</option>
-                        <option>Recent Activity</option>
-                     </select>
-                     <SlidersHorizontal size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#292828]/40 pointer-events-none" />
+               {/* Simplified Hub Indicator */}
+               <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-white via-white/80 to-transparent z-20">
+                  <div className="flex items-end justify-between">
+                     <div className="space-y-1">
+                        <h2 className="text-4xl font-black text-[#292828] uppercase tracking-tighter">Execution Hub</h2>
+                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">Live Match Nodes</p>
+                     </div>
                   </div>
                </div>
             </div>
+         </div>
 
-            {/* PEOPLE GRID */}
-            <div className={cn(
-               "transition-all duration-1000",
-               viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12" : "space-y-10"
-            )}>
-               {(activeTab === "All" || activeTab === "My Network") && DUMMY_PROFILES.slice(10, 16).map(p => (
-                 <PartnerCard key={`own-${p.id}`} p={{...p, match: 100}} viewMode={viewMode} />
-               ))}
-
-               {activeTab !== "My Network" && filtered.slice(0, displayCount).map(p => (
-                 <PartnerCard key={`global-${p.id}`} p={p} viewMode={viewMode} />
-               ))}
-            </div>
-
-            {/* LOAD MORE */}
-            {activeTab !== "My Network" && displayCount < filtered.length && (
-               <div className="mt-20 flex flex-col items-center gap-10">
-                  <div className="h-px w-32 bg-gradient-to-r from-transparent via-[#292828]/10 to-transparent" />
-                  <button 
-                     onClick={() => setDisplayCount(prev => prev + 12)}
-                     className="group relative px-16 py-8 bg-white border border-[#292828]/5 rounded-[1.625rem] overflow-hidden transition-all hover:border-[#E53935] hover:shadow-[0_40px_80px_-20px_rgba(229,57,53,0.15)] active:scale-95"
-                  >
-                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53935]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                     <span className="relative z-10 text-[12px] font-black text-[#292828] uppercase">See More</span>
+         <div className="relative group/sync overflow-hidden shrink-0">
+            <div className="absolute inset-0 bg-[#E53935] rounded-[1.625rem] blur-3xl opacity-10 group-hover/sync:opacity-20 transition-opacity" />
+            <div className="relative p-8 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-[1.625rem] shadow-2xl overflow-hidden group">
+               <TrendingUp size={140} className="absolute -right-10 -bottom-10 text-white/10 group-hover/sync:rotate-12 transition-transform duration-[4s]" />
+               <div className="relative z-10 space-y-6">
+                  <div className="flex items-center gap-4">
+                     <div className="h-12 w-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xl">
+                        <Users size={24} />
+                     </div>
+                     <div>
+                        <h3 className="text-lg font-bold text-white uppercase leading-tight">Smart Match Engine</h3>
+                        <p className="text-white/60 text-[10px] font-bold uppercase">6 High-Compatibility Leads Found</p>
+                     </div>
+                  </div>
+                  <button className="w-full py-4 bg-white text-[#E53935] rounded-xl font-bold text-[10px] uppercase shadow-xl hover:bg-[#292828] hover:text-white transition-all transform active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap">
+                     Sync Compatibility <ArrowRight size={16} />
                   </button>
                </div>
-            )}
+            </div>
          </div>
-      </div>
 
-      {/* FOOTER BANNER */}
-      <div className="px-6 lg:px-12 mb-16 relative z-10">
-         <div className="max-w-[1600px] mx-auto bg-gradient-to-br from-[#292828] to-[#121212] rounded-[3.25rem] p-12 lg:p-32 relative overflow-hidden group shadow-[0_80px_160px_-40px_rgba(41,40,40,0.5)] border border-white/5">
-            <div className="absolute top-0 right-0 w-[60%] h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-            
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-24">
-               <div className="max-w-2xl text-center lg:text-left space-y-10">
-                  <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/5 border border-white/10 rounded-full">
-                     <div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />
-                     <span className="text-[10px] font-black text-[#E53935] uppercase">Grow Your Network</span>
-                  </div>
-                  <h3 className="text-4xl lg:text-7xl font-black text-white uppercase leading-[0.9]">
-                     Expand your <br/>
-                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E53935] to-[#f87171]">Connections</span>.
-                  </h3>
-                  <p className="text-white/50 text-xl lg:text-2xl font-medium leading-relaxed">
-                     Complete your profile to get better matches and connect with the right people faster.
-                  </p>
-                  <Link 
-                    href="/profile" 
-                    className="inline-flex items-center gap-6 px-16 py-8 bg-[#E53935] text-white rounded-[1.625rem] font-black text-[13px] uppercase shadow-[0_30px_60px_-15px_rgba(229,57,53,0.5)] hover:bg-white hover:text-[#292828] transition-all transform hover:-translate-y-2 active:scale-95"
-                  >
-                    Complete Your Profile <ArrowRight size={20} />
-                  </Link>
-               </div>
-               
-               <div className="relative h-64 w-64 lg:h-[450px] lg:w-[450px] flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[#E53935]/20 rounded-full blur-[100px] animate-pulse" />
-                  <div className="relative z-10 p-12 bg-white/5 backdrop-blur-3xl rounded-[2.6rem] border border-white/5 shadow-2xl rotate-12 group-hover:rotate-0 transition-transform duration-1000">
-                     <Users size={140} className="text-[#E53935] drop-shadow-[0_0_30px_rgba(229,57,53,0.5)]" />
-                  </div>
-               </div>
+         {/* ACTIVE GURU NODES */}
+         <div className="space-y-6">
+            <div className="flex items-center justify-between px-1">
+               <h4 className="text-[10px] font-black text-[#292828]/40 uppercase tracking-widest">Active Guru Nodes</h4>
+               <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
             </div>
             
-            <Star size={500} className="absolute -left-32 -bottom-32 text-white/[0.02] rotate-12 group-hover:rotate-45 transition-all duration-[20s]" />
+            <div className="space-y-3">
+               {DUMMY_PROFILES.slice(1, 4).map((guru, idx) => (
+                  <div key={idx} className="group/guru p-4 bg-white border border-[#292828]/5 rounded-2xl hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer flex items-center gap-4">
+                     <div className="h-10 w-10 rounded-xl overflow-hidden grayscale group-hover/guru:grayscale-0 transition-all border border-[#292828]/5 shadow-sm">
+                        <img src={guru.avatar} className="w-full h-full object-cover" alt="" />
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-black text-[#292828] uppercase truncate leading-none mb-1">{guru.name}</p>
+                        <p className="text-[8px] font-bold text-[#E53935] uppercase truncate tracking-tight">Active for advisory</p>
+                     </div>
+                     <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover/guru:bg-[#E53935] group-hover/guru:text-white transition-all">
+                        <ArrowUpRight size={14} />
+                     </div>
+                  </div>
+               ))}
+            </div>
          </div>
-      </div>
-
+      </aside>
+       {isPosting && (
+         <PostModal 
+           isOpen={isPosting} 
+           onClose={() => setIsPosting(false)} 
+           onPostSuccess={handlePostSuccess}
+         />
+       )}
     </div>
   );
 }

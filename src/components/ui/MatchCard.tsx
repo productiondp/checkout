@@ -58,8 +58,8 @@ export default function MatchCard({
       </div>
 
       <div className="bg-[#292828]/5/50 rounded-2xl p-5 mb-8 border border-[#292828]/5">
-        <p className="text-[14px] text-text-main leading-relaxed italic">
-          "{reason}"
+        <p className="text-[14px] text-text-main leading-relaxed font-medium">
+          {reason}
         </p>
       </div>
 

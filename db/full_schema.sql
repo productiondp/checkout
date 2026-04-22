@@ -148,12 +148,29 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  v_role public.profile_role;
 BEGIN
-  INSERT INTO public.profiles (id, full_name, role, avatar_url, city, location)
+  -- 1. Safely parse role from metadata or fallback
+  BEGIN
+    v_role := (new.raw_user_meta_data->>'role')::public.profile_role;
+  EXCEPTION WHEN OTHERS THEN
+    v_role := 'PROFESSIONAL'::public.profile_role;
+  END;
+
+  -- 2. Atomic Profile Insertion
+  INSERT INTO public.profiles (
+    id, 
+    full_name, 
+    role, 
+    avatar_url, 
+    city, 
+    location
+  )
   VALUES (
     new.id,
-    COALESCE(new.raw_user_meta_data->>'full_name', 'Member'),
-    COALESCE((new.raw_user_meta_data->>'role')::profile_role, 'PROFESSIONAL'::profile_role),
+    COALESCE(new.raw_user_meta_data->>'full_name', 'Business Node'),
+    COALESCE(v_role, 'PROFESSIONAL'::public.profile_role),
     new.raw_user_meta_data->>'avatar_url',
     COALESCE(new.raw_user_meta_data->>'city', 'Trivandrum'),
     COALESCE(new.raw_user_meta_data->>'location', 'Trivandrum')

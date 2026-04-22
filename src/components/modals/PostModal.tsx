@@ -54,6 +54,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     }
     fetchAdvisors();
   }, []);
+  useEffect(() => {
+    if (isOpen) {
       if (editPost) {
         setFormType(editPost.type.charAt(0).toUpperCase() + editPost.type.slice(1).toLowerCase() as FormType);
         setFormData({

@@ -34,9 +34,10 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   
   const menuItems = [
     { label: "Home", href: "/home", icon: Home },
+    { label: "Partners", href: "/matches", icon: Users },
     { label: "Find", href: "/explore", icon: Search },
     { label: "Experts", href: "/advisors", icon: Award },
-    { label: "Communities", href: "/community", icon: Globe },
+    { label: "Communities", href: "/communities", icon: Globe },
   ];
 
   const handleLogout = async (e: React.MouseEvent) => {

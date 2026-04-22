@@ -28,7 +28,7 @@ const NAV_GROUPS = [
     group: "Network Hub",
     items: [
       { label: "Feeds", icon: Home, href: "/home" },
-      {label: "Neural Matches", icon: BrainCircuit, href: "/matches"},
+      {label: "Partners", icon: Users, href: "/matches"},
       {label: "Messages", icon: MessageSquare, href: "/chat", badge: "2"},
       {label: "Communities", icon: Globe, href: "/communities"},
     ]

@@ -351,7 +351,7 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
                     <div className="h-1 w-12 bg-white/10 rounded-full overflow-hidden">
                        <div className="h-full bg-[#E53935]" style={{ width: `${marker.matchScore}%` }} />
                     </div>
-                    <span className="text-[8px] uppercase tracking-widest text-white/40">Partner Match</span>
+                    <span className="text-[8px] uppercase tracking-widest text-white/40">Partner Strength</span>
                  </div>
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function LiveMap({ posts: propPosts }: { posts?: any[] }) {
                
                <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                     <p className="text-[8px] font-black text-white/30 uppercase mb-1 tracking-widest">Alignment</p>
+                     <p className="text-[8px] font-black text-white/30 uppercase mb-1 tracking-widest">Partner Score</p>
                      <p className="text-xl font-black text-white tabular-nums">{selectedMarker.matchScore}%</p>
                   </div>
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/5">

@@ -21,23 +21,28 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  user: any;
 }
 
-export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
+  const supabase = createClient();
+  
   const menuItems = [
     { label: "Home", href: "/home", icon: Home },
-    { label: "People", href: "/match", icon: Users },
     { label: "Find", href: "/explore", icon: Search },
-    { label: "Market", href: "/marketplace", icon: ShoppingBag },
-    { label: "Events", href: "/events", icon: Calendar },
-    { label: "Meetups", href: "/meetup", icon: MessageSquare },
     { label: "Experts", href: "/advisors", icon: Award },
     { label: "Communities", href: "/community", icon: Globe },
   ];
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   if (!isOpen) return null;
 
@@ -60,12 +65,12 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         {/* User Quick Profile */}
         <div className="p-6 bg-[#292828]/5 border-b border-[#292828]/5">
            <div className="flex items-center gap-4 mb-6">
-              <div className="h-14 w-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white">
-                 <img src="https://i.pravatar.cc/150?u=me" className="w-full h-full object-cover" alt="" />
+              <div className="h-14 w-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-slate-100">
+                 <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=me"} className="w-full h-full object-cover" alt="" />
               </div>
               <div>
-                 <p className="text-lg font-black text-[#292828] leading-tight">Arun Dev</p>
-                 <p className="text-[10px] font-bold text-[#E53935] uppercase">Verified Expert</p>
+                 <p className="text-lg font-black text-[#292828] leading-tight truncate max-w-[140px] uppercase">{user?.full_name || "Profile"}</p>
+                 <p className="text-[10px] font-bold text-[#E53935] uppercase">{user?.role || "Business Partner"}</p>
               </div>
            </div>
            <div className="grid grid-cols-2 gap-2">
@@ -100,7 +105,10 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           <Link href="/settings" onClick={onClose} className="flex items-center gap-4 px-4 py-2 text-sm font-bold text-slate-500 hover:text-[#292828] transition-colors">
             <Settings size={18} /> Settings
           </Link>
-          <button className="flex items-center gap-4 px-4 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors w-full text-left">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-4 px-4 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors w-full text-left"
+          >
             <LogOut size={18} /> Logout
           </button>
         </div>

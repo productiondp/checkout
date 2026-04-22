@@ -305,6 +305,7 @@ export default function FullyActiveGlobalHeader() {
       <MobileDrawer 
         isOpen={isDrawerOpen} 
         onClose={() => setIsDrawerOpen(false)} 
+        user={currentUser}
       />
     </>
   );

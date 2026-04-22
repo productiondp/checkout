@@ -120,22 +120,31 @@ export default function PremiumProfilePage() {
   }, []);
 
   const handleSaveProfile = async () => {
+    if (!userData.id) {
+       alert("Profile ID not found. Please refresh and try again.");
+       return;
+    }
+    
     setIsSaving(true);
+    
+    // Map UI roles to standard System Roles that the DB constraint likely expects
+    const systemRole = ["FOUNDER", "ADVISOR"].includes(userData.role.toUpperCase()) 
+      ? userData.role.toUpperCase() 
+      : "PROFESSIONAL";
+
     const { error } = await supabase
       .from('profiles')
       .update({
         full_name: userData.name,
-        role: userData.role,
+        role: systemRole, // Send valid system role to satisfy DB constraint
         bio: userData.bio,
         location: userData.location,
         avatar_url: userData.avatar_url,
-        // email: userData.email, // Assume these exist or add them
-        // phone: userData.phone,
-        // website: userData.website
       })
       .eq('id', userData.id);
 
     if (error) {
+      console.error("Save Error:", error);
       alert("Failed to save profile: " + error.message);
     } else {
       setShowEditModal(false);

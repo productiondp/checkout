@@ -60,8 +60,6 @@ export default function BusinessAdvisorsPage() {
           city: p.location || "Virtual"
         }));
         setAdvisors(mapped);
-      } else {
-        setAdvisors(DUMMY_PROFILES);
       }
       setIsLoading(false);
     }

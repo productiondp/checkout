@@ -32,18 +32,45 @@ import {
   BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DUMMY_PROFILES } from "@/lib/dummyData";
+import { createClient } from "@/utils/supabase/client";
 
 export default function DynamicProfilePage() {
   const params = useParams();
-  const profileId = parseInt(params.id as string);
-  
-  // Find the profile based on ID
-  const profile = useMemo(() => {
-    return DUMMY_PROFILES.find(p => p.id === profileId) || DUMMY_PROFILES[0];
+  const profileId = params.id as string;
+  const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createClient();
+
+  React.useEffect(() => {
+    async function fetchProfile() {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+      
+      if (data) {
+        setProfile({
+          ...data,
+          name: data.full_name || "Expert",
+          avatar: data.avatar_url || `https://i.pravatar.cc/150?u=${data.id}`,
+          role: data.role || "Professional",
+          company: data.location || "Global Hub",
+          city: data.location || "Virtual",
+          match: data.match_score || 95
+        });
+      }
+      setIsLoading(false);
+    }
+    if (profileId) fetchProfile();
   }, [profileId]);
 
   const [activeTab, setActiveTab] = useState("Overview");
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Loading Node...</div>;
+  if (!profile) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Node Not Found</div>;
 
   const performanceMetrics = [
     { label: "Trust Score", value: profile.match + 2, color: "bg-green-500", icon: ShieldCheck },

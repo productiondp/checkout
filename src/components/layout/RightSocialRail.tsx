@@ -19,11 +19,7 @@ import { cn } from "@/lib/utils";
 
 import { createClient } from "@/utils/supabase/client";
 
-const RECENT_ACTIVITY: any[] = [
-  { name: "Rahul S", role: "CEO, Zigma", avatar: "https://i.pravatar.cc/150?u=rahul", action: "Active now", color: "emerald" },
-  { name: "Sanya K", role: "Investor", avatar: "https://i.pravatar.cc/150?u=sanya", action: "Joined Meetup", color: "blue" },
-  { name: "Kevin P", role: "Logistics", avatar: "https://i.pravatar.cc/150?u=kevin", action: "Posted Lead", color: "amber" },
-];
+const RECENT_ACTIVITY: any[] = [];
 
 export default function RightSocialRail() {
   const router = useRouter();

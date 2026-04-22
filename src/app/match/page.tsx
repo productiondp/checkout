@@ -185,8 +185,6 @@ export default function BusinessNetworkPage() {
           match: p.match_score || 85
         }));
         setProfiles(mapped);
-      } else {
-        setProfiles(DUMMY_PROFILES);
       }
       setIsLoading(false);
     }

@@ -17,48 +17,10 @@ import {
   CheckCircle2,
   Bell
 } from "lucide-react";
-import { DUMMY_PROFILES } from "@/lib/dummyData";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-const NETWORK_GROUPS: any[] = [
-  {
-    id: 1,
-    name: "Founders Strategy Hub",
-    members: "1.2k",
-    topic: "New Business & Growth",
-    color: "bg-[#292828]",
-    threadTitle: "Going from Start to Success: Main challenges in 2026",
-    tags: ["Growth", "Success", "Funding"],
-    replies: [
-      { id: 101, user: DUMMY_PROFILES[0], text: "The biggest bottleneck is currently executive-level hiring in the AI sector.", time: "2h ago" },
-      { id: 102, user: DUMMY_PROFILES[1], text: "Agreed. We've also seen a shift in how founders approach unit economics.", time: "1h ago" }
-    ],
-    suggestions: DUMMY_PROFILES.slice(0, 4)
-  },
-  {
-    id: 2,
-    name: "Logistics Optimization",
-    members: "850",
-    topic: "Supply Chain",
-    color: "bg-[#E53935]",
-    threadTitle: "Optimizing Last-Mile Delivery for Pan-India Operations",
-    tags: ["Logistics", "Supply Chain", "India"],
-    replies: [],
-    suggestions: DUMMY_PROFILES.slice(4, 8)
-  },
-  {
-    id: 3,
-    name: "D2C Brand Builders",
-    members: "2.1k",
-    topic: "Growth & Marketing",
-    color: "bg-blue-600",
-    threadTitle: "Building Emotional Connectivity in a Digital-First Brand",
-    tags: ["D2C", "Branding", "Digital"],
-    replies: [],
-    suggestions: DUMMY_PROFILES.slice(8, 12)
-  }
-];
+const NETWORK_GROUPS: any[] = [];
 
 export default function CommunityPage() {
   const [activeGroup, setActiveGroup] = useState<any | null>(null);
@@ -81,7 +43,7 @@ export default function CommunityPage() {
           threadTitle: "Welcome, introduce your objectives here...",
           tags: newGroup.tags.split(',').map(t => t.trim()).filter(Boolean),
           replies: [],
-          suggestions: DUMMY_PROFILES.slice(1, 5)
+          suggestions: []
       };
       setGroups([created, ...groups]);
       setIsCreating(false);
@@ -95,7 +57,7 @@ export default function CommunityPage() {
         if (g.id === activeGroup.id) {
            const newReply: any = {
               id: Date.now(),
-              user: { ...DUMMY_PROFILES[0], name: "You" },
+              user: { name: "You", avatar: `https://i.pravatar.cc/150?u=you` },
               text: replyText,
               time: "Just now",
               subReplies: []
@@ -369,8 +331,7 @@ export default function CommunityPage() {
                 <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 w-full", viewMode === "list" && "lg:w-1/4 shrink-0")}>
                     <div className={cn("flex items-center gap-2", viewMode === "list" && "hidden lg:flex")}>
                       <div className="flex -space-x-2">
-                          <img src={DUMMY_PROFILES[0].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
-                          <img src={DUMMY_PROFILES[1].avatar} className="h-8 w-8 rounded-full border-2 border-white" alt=""/>
+                          {/* User avatars will appear here */}
                       </div>
                       <span className="text-xs font-bold text-slate-500 uppercase">{group.replies.length} Replies</span>
                     </div>
@@ -433,19 +394,7 @@ export default function CommunityPage() {
          <div className="space-y-6">
             <h4 className="text-[13px] font-bold text-[#292828] uppercase">Domain Experts</h4>
             <div className="space-y-4">
-               {DUMMY_PROFILES.slice(20, 23).map((expert, i) => (
-                 <div key={`Expert-${i}`} className="flex items-center gap-4 group">
-                    <div className="h-12 w-12 rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border border-[#292828]/10 shadow-sm relative">
-                       <img src={expert.avatar} className="w-full h-full object-cover" alt="" />
-                       <div className="absolute top-1 right-1 h-3 w-3 bg-emerald-500 rounded-full border-2 border-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                       <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">{expert.name}</p>
-                       <p className="text-[9px] font-bold text-[#E53935] uppercase truncate tracking-tight">{expert.role} node</p>
-                    </div>
-                    <button className="h-10 px-4 border border-[#292828]/10 rounded-xl text-[9px] font-black uppercase hover:bg-[#E53935] hover:text-white hover:border-transparent transition-all">Connect</button>
-                 </div>
-               ))}
+               {/* Expert suggestions would go here after fetching */}
             </div>
          </div>
 

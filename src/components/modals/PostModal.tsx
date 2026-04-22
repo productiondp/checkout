@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { DUMMY_PROFILES } from "@/lib/dummyData";
 
 interface PostModalProps {
   isOpen: boolean;
@@ -30,9 +29,31 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
   const [formType, setFormType] = useState<FormType>("Lead");
   const [isPosting, setIsPosting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [advisors, setAdvisors] = useState<any[]>([]);
+
+  const supabase = createClient();
 
   useEffect(() => {
-    if (isOpen) {
+    async function fetchAdvisors() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'ADVISOR')
+        .limit(4);
+      
+      if (data) {
+        setAdvisors(data.map(adv => ({
+          ...adv,
+          name: adv.full_name,
+          avatar: adv.avatar_url || `https://i.pravatar.cc/150?u=${adv.id}`,
+          checkoutScore: adv.match_score || 95,
+          checkoutBadge: 'Gold',
+          checkoutRank: 'Elite'
+        })));
+      }
+    }
+    fetchAdvisors();
+  }, []);
       if (editPost) {
         setFormType(editPost.type.charAt(0).toUpperCase() + editPost.type.slice(1).toLowerCase() as FormType);
         setFormData({
@@ -358,7 +379,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                            </div>
                            
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {DUMMY_PROFILES.slice(0, 2).map(adv => (
+                                                             {advisors.map(adv => (
                                  <button 
                                    key={adv.id} 
                                    onClick={() => {

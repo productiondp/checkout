@@ -36,7 +36,6 @@ import {
   Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DUMMY_MARKET, DUMMY_PROFILES } from "@/lib/dummyData";
 import PostModal from "@/components/modals/PostModal";
 
 export default function PremiumMarketplacePage() {
@@ -57,7 +56,9 @@ export default function PremiumMarketplacePage() {
     setIsPosting(false);
   };
 
-  const filteredItems = DUMMY_MARKET.filter(item => 
+  const [items, setItems] = useState<any[]>([]);
+
+  const filteredItems = items.filter(item => 
     (activeCategory === "All" || item.category === activeCategory) &&
     (item.item.toLowerCase().includes(search.toLowerCase())) &&
     (item.image)
@@ -335,18 +336,7 @@ export default function PremiumMarketplacePage() {
          <div className="space-y-6">
             <p className="subheading-editorial !text-slate-400">Saved for Later</p>
             <div className="grid grid-cols-2 gap-4">
-               {DUMMY_MARKET.slice(0, 2).map((item, i) => (
-                 <div key={i} className="group cursor-pointer">
-                    <div className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-[#292828]/5 relative mb-3">
-                       <img src={item.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt="" />
-                       <div className="absolute top-2 right-2 h-7 w-7 bg-white rounded-lg flex items-center justify-center text-[#E53935] shadow-lg scale-0 group-hover:scale-100 transition-transform">
-                          <Heart size={14} fill="currentColor" />
-                       </div>
-                    </div>
-                    <p className="text-[11px] font-black text-[#292828] uppercase truncate leading-tight">{item.item}</p>
-                    <p className="text-[10px] font-bold text-[#E53935]">{item.price}</p>
-                 </div>
-               ))}
+               {/* Saved items will appear here */}
             </div>
          </div>
 

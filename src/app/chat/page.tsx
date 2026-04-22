@@ -28,7 +28,6 @@ import {
   BrainCircuit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DUMMY_CHATS } from "@/lib/dummyData";
 import { getChatInsight } from "@/lib/ai";
 
 const MOCK_CURRENT_USER = {
@@ -38,11 +37,12 @@ const MOCK_CURRENT_USER = {
 };
 
 export default function PremiumMessagesPage() {
-  const [selectedChat, setSelectedChat] = useState<any>(DUMMY_CHATS[0]);
+  const [selectedChat, setSelectedChat] = useState<any>(null);
   const [message, setMessage] = useState("");
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [chats, setChats] = useState<any[]>([]);
 
   return (
     <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
@@ -77,7 +77,7 @@ export default function PremiumMessagesPage() {
            <div className="px-5 mb-4 mt-2">
               <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Recent Discussions</p>
            </div>
-           {DUMMY_CHATS.map((chat) => (
+           {chats.map((chat) => (
              <button 
                key={chat.id} 
                onClick={() => setSelectedChat(chat)}

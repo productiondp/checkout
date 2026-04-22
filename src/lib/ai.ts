@@ -81,7 +81,7 @@ export function getInternalIntent(user: any): UserIntent {
   
   return {
     action,
-    domains: [user.role]
+    domains: [(user.role || "Professional")]
   };
 }
 
@@ -100,8 +100,12 @@ export function optimizeFeedOrder(posts: any[], user: any): any[] {
  * Generates an internal AI insight for why one should connect with a specific user.
  */
 export function getChatInsight(user: any, partner: any): string {
-  if (user.role.toLowerCase() === partner.role.toLowerCase()) {
-    return `Peer matching detected. Strategic collaboration on ${user.role} possible.`;
+  if (!user || !partner) return "Match optimization active.";
+  const userRole = (user.role || "Professional").toLowerCase();
+  const partnerRole = (partner.role || "Professional").toLowerCase();
+
+  if (userRole === partnerRole) {
+    return `Peer matching detected. Strategic collaboration on ${user.role || "your domain"} possible.`;
   }
-  return `Complementary expertise detected. High potential for ${partner.role} - ${user.role} synergy.`;
+  return `Complementary expertise detected. High potential for ${partner.role || "this partner"} - ${user.role || "you"} synergy.`;
 }

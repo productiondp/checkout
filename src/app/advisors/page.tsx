@@ -71,8 +71,8 @@ export default function BusinessAdvisorsPage() {
     const filtered = advisors.filter(profile => {
       const matchesCategory = activeCategory === "All" || (profile.tags && profile.tags.includes(activeCategory));
       const matchesSearch = !query || 
-                            profile.name.toLowerCase().includes(query) || 
-                            profile.role.toLowerCase().includes(query) ||
+                            (profile.name || "").toLowerCase().includes(query) || 
+                            (profile.role || "").toLowerCase().includes(query) ||
                             (profile.company && profile.company.toLowerCase().includes(query));
       return matchesCategory && matchesSearch;
     });

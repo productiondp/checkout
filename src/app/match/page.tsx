@@ -193,10 +193,11 @@ export default function BusinessNetworkPage() {
 
   const filtered = useMemo(() => {
     const query = search.toLowerCase();
-    const list = profiles.filter(p => 
-      p.name.toLowerCase().includes(query) || 
-      (p.company && p.company.toLowerCase().includes(query))
-    );
+    const list = profiles.filter(p => {
+      const name = (p.name || "").toLowerCase();
+      const company = (p.company || "").toLowerCase();
+      return name.includes(query) || company.includes(query);
+    });
 
     return [...list].sort((a, b) => {
       if (sortBy === "Best Quality") {

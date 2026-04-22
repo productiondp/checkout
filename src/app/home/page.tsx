@@ -27,12 +27,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import UniversalFeedCard from "@/components/ui/UniversalFeedCard";
-import DealEngine from "@/components/modals/DealEngine";
-import PostModal from "@/components/modals/PostModal";
+import dynamic from "next/dynamic";
+const UniversalFeedCard = dynamic(() => import("@/components/ui/UniversalFeedCard"), { ssr: false });
+const DealEngine = dynamic(() => import("@/components/modals/DealEngine"), { ssr: false });
+const PostModal = dynamic(() => import("@/components/modals/PostModal"), { ssr: false });
+const ReviewModal = dynamic(() => import("@/components/modals/ReviewModal"), { ssr: false });
 import { calculateMatchScore, optimizeFeedOrder } from "@/lib/ai";
 import { Calendar, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
-import ReviewModal from "@/components/modals/ReviewModal";
 
 const MOCK_CURRENT_USER = {
   role: "Strategy",
@@ -69,24 +70,7 @@ export default function CheckoutHomeFeed() {
 
   const supabase = createClient();
 
-  const fetchPosts = async () => {
-    setIsLoading(true);
-    
-    // 1. Fetch Current User Identity and Embedding
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    
-    if (profile) setUser(profile);
-
+  const fetchPosts = async (profile: any) => {
     // 2. Call Neural Match RPC (or fallback to standard fetch)
     const { data: rankedData, error } = await supabase.rpc('match_posts', {
       query_embedding: profile?.embedding || null,
@@ -132,41 +116,47 @@ export default function CheckoutHomeFeed() {
         })));
       }
     }
-    setIsLoading(false);
   };
 
-  const checkSyndicateStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { count } = await supabase
-      .from('community_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+  const initTerminal = async () => {
+    setIsLoading(true);
     
-    setIsJoinedToSyndicate(count ? count > 0 : false);
-  };
+    // 1. Single Identity Mandate
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) {
+      setIsLoading(false);
+      return;
+    }
 
-  const fetchBookings = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // 2. Parallel Awareness Fetch
+    const [profileRes, bookingRes, syndicateRes] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+      supabase.from('bookings').select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)').or(`advisor_id.eq.${authUser.id},client_id.eq.${authUser.id}`).order('scheduled_at', { ascending: true }).limit(3),
+      supabase.from('community_members').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)
+    ]);
 
-    const { data } = await supabase
-      .from('bookings')
-      .select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)')
-      .or(`advisor_id.eq.${user.id},client_id.eq.${user.id}`)
-      .order('scheduled_at', { ascending: true })
-      .limit(3);
+    // 3. Process Profile & Identify Verified State
+    const profile = profileRes.data;
+    if (profile) setUser(profile);
+    else setUser(authUser);
     
-    if (data) {
-      setBookings(data);
-      // Calculate Simulated Revenue (Advisor role only)
-      const revenue = data
-        .filter((b: any) => b.advisor_id === user.id && b.status !== 'CANCELLED')
+    setIsVerified(!!authUser.email_confirmed_at);
+    setIsJoinedToSyndicate(syndicateRes.count ? syndicateRes.count > 0 : false);
+
+    // 4. Process Bookings & Revenue
+    if (bookingRes.data) {
+      setBookings(bookingRes.data);
+      const revenue = bookingRes.data
+        .filter((b: any) => b.advisor_id === authUser.id && b.status !== 'CANCELLED')
         .length * 2500;
       setTotalRevenue(revenue);
     }
+
+    // 5. Fetch Neural Ranked Posts (Requires Profile Embedding)
+    await fetchPosts(profile);
+    setIsLoading(false);
   };
+
 
   const handleBookingStatus = async (bookingId: string, status: 'CONFIRMED' | 'CANCELLED') => {
     const { error } = await supabase
@@ -193,20 +183,11 @@ export default function CheckoutHomeFeed() {
   };
 
   const checkIdentityStatus = async () => {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (authUser) {
-      setUser(authUser);
-      if (!authUser.email_confirmed_at) {
-        setIsVerified(false);
-      }
-    }
+    // Identity check moved to initTerminal for performance
   };
 
   React.useEffect(() => {
-    fetchPosts();
-    checkSyndicateStatus();
-    fetchBookings();
-    checkIdentityStatus();
+    initTerminal();
   }, []);
 
   const handleDeletePost = async (id: string) => {

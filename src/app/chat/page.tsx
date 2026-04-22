@@ -548,8 +548,4 @@ export default function PremiumMessagesPage() {
       <ChatTerminal />
     </Suspense>
   );
-        </div>
-      )}
-    </div>
-  );
 }

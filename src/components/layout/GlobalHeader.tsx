@@ -68,6 +68,7 @@ export default function FullyActiveGlobalHeader() {
         setNotifications(notes);
         setUnreadCount(notes.filter(n => !n.is_read).length);
       }
+    }
     initHeader();
 
     const handleProfileUpdate = () => {

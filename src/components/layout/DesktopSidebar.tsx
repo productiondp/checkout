@@ -36,8 +36,8 @@ const NAV_GROUPS = [
   {
     group: "Explore",
     items: [
+      { label: "Local Link", icon: Zap, href: "/explore" },
       { label: "Business Events", icon: LayoutGrid, href: "/events" },
-      { label: "Checkout Map", icon: Search, href: "/explore" },
       { label: "Advisors", icon: Target, href: "/advisors" },
     ]
   },

@@ -33,11 +33,6 @@ import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-const MOCK_CURRENT_USER = {
-  role: "Strategy",
-  bio: "Expert in scaling brands and regional growth.",
-  domains: ["Strategy", "Marketing"]
-};
 
 function ChatTerminal() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -441,7 +436,11 @@ function ChatTerminal() {
                        <Sparkles size={10} className="text-[#E53935]" /> Expert Tip
                     </h4>
                     <p className="text-[13px] font-bold text-[#292828] leading-tight relative z-10">
-                       {getChatInsight(MOCK_CURRENT_USER, selectedChat)}
+                       {getChatInsight({
+                         role: currentUser?.profile?.role || "Professional",
+                         bio: currentUser?.profile?.bio || "",
+                         domains: currentUser?.profile?.skills || []
+                       }, selectedChat)}
                      </p>
                   </div>
 

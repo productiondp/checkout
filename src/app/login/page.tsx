@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -10,14 +10,24 @@ import {
   Lock, 
   User, 
   Briefcase, 
-  GraduationCap, 
+  Target, 
   ShieldCheck,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Command,
+  Sparkles,
+  Search,
+  Globe,
+  Award,
+  Users,
+  Calendar,
+  Zap,
+  Fingerprint
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type AuthMode = "signin" | "signup";
-type Role = "Business" | "Professional" | "Student";
+type Role = "Business" | "Professional" | "Student" | "Advisor";
 
 function AuthContent() {
   const router = useRouter();
@@ -31,7 +41,6 @@ function AuthContent() {
     email: "",
     password: "",
     fullName: "",
-    companyName: ""
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -51,204 +60,249 @@ function AuthContent() {
     setIsLoading(true);
     setError(null);
 
-    // Basic Validation
-    if (!formData.email || !formData.password || (mode === "signup" && !formData.fullName)) {
-      setError("Please fill in all required fields.");
-      setIsLoading(false);
-      return;
-    }
-
+    // Mock API delayed response
     try {
-      // Mock API delayed response
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log(`${mode === 'signin' ? 'Signing in' : 'Signing up'} with:`, { ...formData, role });
-      
       setIsSuccess(true);
-      
-      // Redirect after success
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
+      setTimeout(() => router.push("/home"), 1000);
     } catch (err) {
-      setError("Authentication failed. Please check your credentials.");
+      setError("Authentication failure. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const VISUAL_CARDS = [
+     { label: "Networking", icon: Users, desc: "Connect with regional experts." },
+     { label: "Business Leads", icon: Target, desc: "Direct mandates & alliance opportunities." },
+     { label: "Meetups", icon: Calendar, desc: "High-density local business events." }
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#FDFDFF] text-[#292828] font-sans">
+    <div className="flex h-screen w-screen bg-[#FDFDFF] text-[#292828] font-sans overflow-hidden">
       
-      {/* Brand Header */}
-      <header className="p-8 lg:p-12 flex justify-between items-center relative z-20">
-         <Link href="/">
-            <Image src="/images/logo.png" alt="Checkout" width={120} height={40} className="h-10 w-auto" priority />
-         </Link>
-         <button 
-           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-           className="text-[12px] font-black uppercase text-[#E53935] hover:opacity-70 transition-all flex items-center gap-2"
-         >
-           {mode === "signin" ? "New here? Join Now" : "Already a member? Sign In"}
-           <ArrowRight size={14} />
-         </button>
-      </header>
-
-      {/* Auth Container */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 relative z-10">
+      {/* LEFT COLUMN: VISUAL BRAND HUB */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0A0A0A] relative flex-col justify-between p-16 overflow-hidden">
+         {/* Background Orbs */}
+         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E53935]/[0.05] rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
+         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:40px_40px]" />
          
-         {/* Background Decoration */}
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#E53935]/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+         {/* Brand Logo */}
+         <div className="relative z-10">
+            <Link href="/" className="flex items-center gap-3">
+               <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-2xl shadow-red-500/20">
+                  <Command size={22} strokeWidth={3} />
+               </div>
+               <h1 className="text-2xl font-black uppercase tracking-tighter text-white">Checkout</h1>
+            </Link>
+         </div>
 
-         <div className="w-full max-w-[480px] space-y-10">
+         {/* Content Nodes */}
+         <div className="relative z-10 space-y-12">
+            <div className="space-y-6">
+               <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+                  <Sparkles size={12} className="text-[#E53935]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Verified Local Link Standard</span>
+               </div>
+               <h2 className="text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.85] text-white">
+                  Join the <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/20">Elite Hub.</span>
+               </h2>
+               <p className="text-xl font-medium text-white/30 max-w-lg leading-relaxed">
+                  Authorize your presence in the most authoritative regional business node. Networking, Leads, and Meetings simplified.
+               </p>
+            </div>
+
+            <div className="space-y-4">
+               {VISUAL_CARDS.map((card, i) => (
+                 <div key={i} className="flex items-center gap-6 p-6 bg-white/5 border border-white/5 rounded-3xl group hover:bg-white/10 transition-all duration-500">
+                    <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:text-[#E53935] group-hover:bg-[#E53935]/5 transition-all">
+                       <card.icon size={24} />
+                    </div>
+                    <div>
+                       <h4 className="text-xl font-black uppercase tracking-tight text-white/80">{card.label}</h4>
+                       <p className="text-sm font-bold text-white/20 uppercase tracking-widest">{card.desc}</p>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         {/* Footer Sync */}
+         <div className="relative z-10 flex items-center gap-10">
+            <div className="flex items-center gap-3">
+               <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Mumbai Node Active</span>
+            </div>
+            <div className="h-1 w-1 bg-white/10 rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">v.8.0.01 Production</span>
+         </div>
+      </div>
+
+      {/* RIGHT COLUMN: AUTH TERMINAL */}
+      <div className="flex-1 flex flex-col justify-between p-10 lg:p-20 relative overflow-y-auto no-scrollbar">
+         
+         {/* Mobile Brand Link */}
+         <div className="lg:hidden mb-12">
+            <Link href="/" className="flex items-center gap-3">
+               <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white">
+                  <Command size={22} strokeWidth={3} />
+               </div>
+               <h1 className="text-2xl font-black uppercase tracking-tighter">Checkout</h1>
+            </Link>
+         </div>
+
+         <div className="max-w-md mx-auto w-full space-y-12 my-auto">
             
             {/* Header Content */}
-            <div className="space-y-4 text-center">
-               <h1 className="text-4xl lg:text-5xl font-black text-[#292828] transition-all">
-                  {mode === "signin" ? "Welcome Back." : "Create Account."}
-               </h1>
-               <p className="text-[#292828] font-bold opacity-70">
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                  <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">
+                     {mode === "signin" ? "Login" : "Join"}
+                  </h2>
+                  <button 
+                    onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                    className="text-[11px] font-black uppercase text-[#E53935] underline underline-offset-8"
+                  >
+                     {mode === "signin" ? "Need an Account?" : "Have an Account?"}
+                  </button>
+               </div>
+               <p className="text-lg font-bold text-[#292828]/40 uppercase tracking-tight leading-tight">
                   {mode === "signin" 
-                    ? "Access your city's local networking engine." 
-                    : "Join your local business node and start building."
+                    ? "Welcome back to the regional hub." 
+                    : "Become a verified node in your city network."
                   }
                </p>
             </div>
 
-            {/* Role Switcher (Only for signup) */}
-            <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase text-[#292828] text-center">Define Your Profile</p>
-              <div className="flex p-1.5 bg-[#292828]/10 rounded-2xl border border-slate-200/50">
-                 {(["Business", "Professional", "Student"] as const).map((r) => (
+            {/* Role Discovery (Only for Join) */}
+            <div className={cn("space-y-4 transition-all duration-500", mode === "signup" ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 h-0 overflow-hidden")}>
+               <p className="text-[10px] font-black uppercase text-[#292828]/20 tracking-[0.5em]">Initialization Perspective</p>
+               <div className="grid grid-cols-2 gap-3">
+                  {(["Business", "Professional", "Student", "Advisor"] as const).map((r) => (
                     <button
-                       key={r}
-                       type="button"
-                       onClick={() => setRole(r)}
-                       className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
-                          role === r ? "bg-white text-[#292828] shadow-xl border border-[#292828]/10" : "text-[#292828] hover:text-[#292828]"
-                       }`}
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r)}
+                      className={cn(
+                        "flex flex-col items-start p-6 rounded-3xl border-2 transition-all text-left group",
+                        role === r 
+                          ? "bg-[#292828] border-black text-white shadow-2xl" 
+                          : "bg-white border-slate-100 text-[#292828] hover:border-[#292828]/20"
+                      )}
                     >
-                       {r === "Business" && <Briefcase size={12} />}
-                       {r === "Professional" && <User size={12} />}
-                       {r === "Student" && <GraduationCap size={12} />}
-                       {r}
+                       <div className={cn(
+                         "h-10 w-10 mb-4 rounded-xl flex items-center justify-center transition-all",
+                         role === r ? "bg-white/10 text-white" : "bg-slate-50 text-slate-300 group-hover:text-[#E53935]"
+                       )}>
+                          {r === "Business" && <Briefcase size={18} />}
+                          {r === "Professional" && <User size={18} />}
+                          {r === "Student" && <Award size={18} />}
+                          {r === "Advisor" && <ShieldCheck size={18} />}
+                       </div>
+                       <span className="text-[11px] font-black uppercase tracking-widest">{r}</span>
                     </button>
-                 ))}
-              </div>
+                  ))}
+               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
                {error && (
-                 <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
-                   <AlertCircle size={18} />
-                   {error}
+                 <div className="p-5 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-4 text-red-600 text-sm font-bold animate-pulse">
+                    <AlertCircle size={20} /> {error}
                  </div>
                )}
 
                {isSuccess && (
-                 <div className="p-4 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
-                   <CheckCircle2 size={18} />
-                   Authentication successful. Redirecting...
+                 <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center gap-4 text-emerald-600 text-sm font-bold">
+                    <CheckCircle2 size={20} /> Success. Authorizing node access...
                  </div>
                )}
 
-               <div className="space-y-3">
-                 {mode === "signup" && (
-                   <div className="relative group">
-                      <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                         <User size={18} />
-                      </div>
-                      <input 
+               <div className="space-y-4">
+                  {mode === "signup" && (
+                    <div className="relative group">
+                       <input 
                          type="text" 
                          name="fullName"
                          value={formData.fullName}
                          onChange={handleInputChange}
-                         placeholder="Full Name"
-                         className="w-full bg-white border border-slate-200 rounded-2xl py-5 pl-14 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
+                         placeholder="FULL NAME"
+                         className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
                          required
-                      />
-                   </div>
-                 )}
-
-                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                       <Mail size={18} />
+                       />
+                       <User size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
                     </div>
-                    <input 
-                       type="email" 
-                       name="email"
-                       value={formData.email}
-                       onChange={handleInputChange}
-                       placeholder="Email Address"
-                       className="w-full bg-white border border-slate-200 rounded-2xl py-5 pl-14 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
-                       required
-                    />
-                 </div>
+                  )}
 
-                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-5 flex items-center text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors">
-                       <Lock size={18} />
-                    </div>
-                    <input 
-                       type="password" 
-                       name="password"
-                       value={formData.password}
-                       onChange={handleInputChange}
-                       placeholder="Password"
-                       className="w-full bg-white border border-slate-200 rounded-2xl py-5 pl-14 pr-6 text-[15px] font-bold outline-none focus:border-[#E53935] focus:ring-4 focus:ring-[#E53935]/5 transition-all shadow-sm"
-                       required
-                    />
-                 </div>
+                  <div className="relative group">
+                     <input 
+                        type="email" 
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="EMAIL ADDRESS"
+                        className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
+                        required
+                     />
+                     <Mail size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
+                  </div>
+
+                  <div className="relative group">
+                     <input 
+                        type="password" 
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="SECURITY KEY"
+                        className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all font-mono"
+                        required
+                     />
+                     <Lock size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
+                  </div>
                </div>
 
                {mode === "signin" && (
-                 <div className="flex justify-end pr-2">
-                    <button type="button" className="text-[10px] font-black text-[#E53935] uppercase hover:underline">
-                       Forgot Password?
-                    </button>
+                 <div className="flex justify-end px-2">
+                    <button type="button" className="text-[10px] font-black text-[#292828]/30 uppercase tracking-widest hover:text-[#E53935]">Forgot Credentials?</button>
                  </div>
                )}
 
-               {/* CTA Button */}
                <button 
                  type="submit"
                  disabled={isLoading || isSuccess}
-                 className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 mt-6 ${
-                   isLoading ? "bg-slate-800 text-white cursor-wait" : "bg-[#292828] text-white hover:bg-[#E53935]"
-                 }`}
+                 className={cn(
+                   "w-full h-20 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-4xl active:scale-95 transition-all flex items-center justify-center gap-5 mt-8",
+                   isLoading ? "bg-slate-100 text-slate-400" : "bg-[#292828] text-white hover:bg-[#E53935]"
+                 )}
                >
-                  {isLoading ? "Processing..." : (mode === "signin" ? "Sign In" : "Join Now")}
-                  {!isLoading && <ArrowRight size={18} />}
+                  {isLoading ? "Synchronizing..." : (mode === "signin" ? "Authorize" : "Initialize")}
+                  {!isLoading && <ArrowRight size={20} />}
                </button>
             </form>
 
-            {/* Social Divider */}
-            <div className="relative pt-6">
-               <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200/50"></div>
+            {/* Social Hub */}
+            <div className="space-y-6">
+               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                  <span className="relative bg-[#FDFDFF] px-8">Identity Sync</span>
                </div>
-               <div className="relative flex justify-center text-[10px] font-black uppercase">
-                  <span className="bg-[#FDFDFF] px-4 text-[#292828]/40">Fast Access via</span>
+               <div className="grid grid-cols-2 gap-4">
+                  <button className="h-16 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest hover:border-[#292828]/20 transition-all">
+                     <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="" className="h-5 w-5" />
+                     Google
+                  </button>
+                  <button className="h-16 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest hover:border-[#292828]/20 transition-all">
+                     <Fingerprint size={18} className="text-[#E53935]" />
+                     Passkey
+                  </button>
                </div>
             </div>
+         </div>
 
-            {/* Social Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3">
-                  <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google" className="h-4 w-4" />
-                  Google
-               </button>
-               <button className="py-4 border border-slate-200 bg-white shadow-sm rounded-2xl hover:border-[#E53935]/20 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3">
-                  <ShieldCheck size={16} className="text-[#E53935]" />
-                  Passkey
-               </button>
-            </div>
-
-            {/* Footer Note */}
-            <p className="text-center text-[10px] font-medium text-[#292828] max-w-[300px] mx-auto leading-relaxed">
-              By continuing, you agree to the Checkout <span className="underline cursor-pointer">Service Terms</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
-            </p>
+         {/* Final Footer Label */}
+         <div className="text-center mt-12 pb-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#292828]/20">Local Link Standard Terminal © 2026</p>
          </div>
       </div>
     </div>
@@ -257,7 +311,7 @@ function AuthContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#292828] flex items-center justify-center text-white">Loading Auth...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-black uppercase tracking-widest">Initialising Terminal...</div>}>
       <AuthContent />
     </Suspense>
   );

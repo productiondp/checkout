@@ -35,11 +35,6 @@ const ReviewModal = dynamic(() => import("@/components/modals/ReviewModal"), { s
 import { calculateMatchScore, optimizeFeedOrder } from "@/lib/ai";
 import { Calendar, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
 
-const MOCK_CURRENT_USER = {
-  role: "Strategy",
-  bio: "Expert in scaling brands and regional growth. Founder of scaling nodes.",
-  domains: ["Strategy", "Marketing", "FMCG"]
-};
 
 const SMART_FILTERS = [
   { id: 'All', label: 'Everything', icon: LayoutGrid },
@@ -121,34 +116,39 @@ export default function CheckoutHomeFeed() {
   const initTerminal = async () => {
     setIsLoading(true);
     
-    // 1. Single Identity Mandate
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) {
+    try {
+      // 1. Single Identity Mandate
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Parallel Awareness Fetch
+      const [profileRes, bookingRes, syndicateRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+        supabase.from('bookings').select('*, advisor:profiles(full_name), client:profiles(full_name)').or(`advisor_id.eq.${authUser.id},client_id.eq.${authUser.id}`).order('scheduled_at', { ascending: true }).limit(3),
+        supabase.from('memberships').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)
+      ]);
+
+      // 3. Process Profile & Identify Verified State
+      const profile = profileRes.data;
+      if (profile) setUser(profile);
+      else setUser(authUser);
+      
+      setIsVerified(!!authUser.email_confirmed_at);
+      setIsJoinedToSyndicate(syndicateRes.count ? syndicateRes.count > 0 : false);
+
+      // 4. Process Bookings & Revenue
+      await fetchBookings(authUser.id);
+
+      // 5. Fetch Ranked Partner Mandates
+      await fetchPosts(profile);
+    } catch (err) {
+      console.error("Terminal initialization failed:", err);
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // 2. Parallel Awareness Fetch
-    const [profileRes, bookingRes, syndicateRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', authUser.id).single(),
-      supabase.from('bookings').select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)').or(`advisor_id.eq.${authUser.id},client_id.eq.${authUser.id}`).order('scheduled_at', { ascending: true }).limit(3),
-      supabase.from('community_members').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)
-    ]);
-
-    // 3. Process Profile & Identify Verified State
-    const profile = profileRes.data;
-    if (profile) setUser(profile);
-    else setUser(authUser);
-    
-    setIsVerified(!!authUser.email_confirmed_at);
-    setIsJoinedToSyndicate(syndicateRes.count ? syndicateRes.count > 0 : false);
-
-    // 4. Process Bookings & Revenue
-    await fetchBookings(authUser.id);
-
-    // 5. Fetch Ranked Partner Mandates (Requires Profile Embedding)
-    await fetchPosts(profile);
-    setIsLoading(false);
   };
 
   const fetchBookings = async (userIdOverride?: string) => {
@@ -162,7 +162,7 @@ export default function CheckoutHomeFeed() {
 
     const { data } = await supabase
       .from('bookings')
-      .select('*, advisor:profiles!bookings_advisor_id_fkey(full_name), client:profiles!bookings_client_id_fkey(full_name)')
+      .select('*, advisor:profiles(full_name), client:profiles(full_name)')
       .or(`advisor_id.eq.${targetId},client_id.eq.${targetId}`)
       .order('scheduled_at', { ascending: true })
       .limit(3);
@@ -231,13 +231,20 @@ export default function CheckoutHomeFeed() {
       return true;
     });
 
-    // 2. Optimized Intelligence (Invisible Logic)
-    return optimizeFeedOrder(filtered, MOCK_CURRENT_USER).map(post => ({
+    if (!user) return filtered;
+
+    // 2. Optimized Intelligence (Live Profile logic)
+    const userContext = {
+      role: user.role || "Professional",
+      bio: user.bio || "",
+      domains: user.skills || []
+    };
+
+    return optimizeFeedOrder(filtered, userContext).map(post => ({
       ...post,
-      // Inject smarter internal score while keeping dummy structure
-      matchScore: Math.round((post.matchScore + calculateMatchScore(MOCK_CURRENT_USER, post)) / 2)
+      matchScore: Math.round((post.matchScore + calculateMatchScore(userContext, post)) / 2)
     }));
-  }, [activeFilter, posts]);
+  }, [activeFilter, posts, user]);
 
   const handlePostSuccess = (newPost: any) => {
     setPosts([newPost, ...posts]);
@@ -326,17 +333,20 @@ export default function CheckoutHomeFeed() {
 
       {/* 3. YOUR BEST FEED - CENTERED OPTIMIZATION */}
       <div className="w-full max-w-[730px] mx-auto space-y-6 pb-20 lg:pb-0">
-          {rankedPosts.map(post => (
-             <UniversalFeedCard 
-             key={post.id}
-             post={post}
-             isExpanded={expandedId === post.id}
-             onExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
-             onAction={() => { setSelectedDeal(post); setIsModalOpen(true); }}
-             onEdit={handleEditPost}
-             onDelete={handleDeletePost}
-             />
-          ))}
+          {rankedPosts.map(post => {
+             if (!post || !post.id) return null;
+             return (
+              <UniversalFeedCard 
+                key={post.id}
+                post={post}
+                isExpanded={expandedId === post.id}
+                onExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
+                onAction={() => { setSelectedDeal(post); setIsModalOpen(true); }}
+                onEdit={handleEditPost}
+                onDelete={handleDeletePost}
+              />
+             );
+          })}
       </div>
 
       {/* FLOAT ACTION */}

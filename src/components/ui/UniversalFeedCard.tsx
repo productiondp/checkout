@@ -40,6 +40,10 @@ export default function UniversalFeedCard({
   onDelete
 }: UniversalFeedCardProps) {
   const [showMenu, setShowMenu] = React.useState(false);
+
+  // Safety check for post data
+  if (!post) return null;
+
   const { type, title, author, avatar, time, location, matchScore, badge, rank, domain } = post;
 
   const isUpdate = type?.toUpperCase() === "UPDATE";

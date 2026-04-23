@@ -24,11 +24,6 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/ai";
 
-const MOCK_CURRENT_USER = {
-  role: "Strategy",
-  bio: "Expert in scaling brands and regional growth.",
-  domains: ["Strategy", "Marketing"]
-};
 
 const TOPICS = ["All", "Networking", "Investment", "Community", "Strategy", "Tech", "Logistics"];
 
@@ -38,13 +33,20 @@ export default function MeetupPage() {
   const [activeTopic, setActiveTopic] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showAiArchitect, setShowAiArchitect] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const supabase = createClient();
 
   React.useEffect(() => {
-    async function fetchMeetups() {
+    async function initMeetup() {
       setIsLoading(true);
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single();
+        setCurrentUser(profile || authUser);
+      }
+
       const { data } = await supabase
         .from('posts')
         .select('*, author:profiles(full_name, avatar_url)')
@@ -56,7 +58,7 @@ export default function MeetupPage() {
           ...m,
           author: m.author?.full_name || "Community Member",
           avatar: m.author?.avatar_url || `https://i.pravatar.cc/150?u=${m.id}`,
-          timeAgo: "Live in 2h", // Mocked for UI feel
+          timeAgo: "Live in 2h",
           matchPotential: m.match_score || 95,
           attendees: 12,
           category: m.domain || "Tech",
@@ -69,25 +71,33 @@ export default function MeetupPage() {
       }
       setIsLoading(false);
     }
-    fetchMeetups();
+    initMeetup();
   }, []);
 
   const filteredMeetups = useMemo(() => {
     const list = meetups.filter(m => activeTopic === "All" || m.category === activeTopic);
+    if (!currentUser) return list;
+
+    const userContext = {
+      role: currentUser.role || "Professional",
+      bio: currentUser.bio || "",
+      domains: currentUser.skills || []
+    };
     
     // AI Intelligence: Dynamically calculate match and sort by relevance + proximity
     return list.map(m => ({
       ...m,
-      matchPotential: calculateMatchScore(MOCK_CURRENT_USER, { ...m, type: "Meetup", domain: m.category })
+      matchPotential: calculateMatchScore(userContext, { ...m, type: "Meetup", domain: m.category })
     })).sort((a, b) => b.matchPotential - a.matchPotential || a.id.localeCompare(b.id));
-  }, [meetups, activeTopic]);
+  }, [meetups, activeTopic, currentUser]);
 
   const strategicRecommendations = useMemo(() => {
+    const role = currentUser?.role || "Business";
     return [
-      { title: `${MOCK_CURRENT_USER.role} Growth Sync`, time: "Tomorrow, 10:00", type: "Virtual", score: 99 },
+      { title: `${role} Growth Sync`, time: "Tomorrow, 10:00", type: "Virtual", score: 99 },
       { title: "Supply Chain Sync", time: "Friday, 14:30", type: "Technopark", score: 92 }
     ];
-  }, []);
+  }, [currentUser]);
 
   const handleJoin = (id: string) => {
     setMeetups(meetups.map(m => m.id === id ? { ...m, status: m.status === "none" ? "joined" : "none" } : m));

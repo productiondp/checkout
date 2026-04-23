@@ -1,166 +1,376 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
   Zap,
+  Target,
   Users,
-  MapPin,
-  Rocket,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Briefcase,
+  User,
+  GraduationCap,
   ShieldCheck,
-  Search
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
-import AuthModal from "../components/auth/AuthModal";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
-export default function BalancedGlobalLanding() {
-  const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: "signin" | "signup" }>({
-    isOpen: false,
-    mode: "signin"
+type Role = "BUSINESS" | "PROFESSIONAL" | "STUDENT" | "ADVISOR";
+
+export default function Page() {
+  const [authMode, setAuthMode] = useState<"signup" | "signin">("signup");
+  const [role, setRole] = useState<Role>("BUSINESS");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isNavVisible, setIsNavVisible] = useState(false);
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [isRolePeekActive, setIsRolePeekActive] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    fullName: ""
   });
 
-  const openAuth = (mode: "signin" | "signup") => {
-    setAuthModal({ isOpen: true, mode });
+  // Role Dropdown Peek Animation
+  useEffect(() => {
+    if (authMode === "signup") {
+      setIsRolePeekActive(true);
+      const timer = setTimeout(() => setIsRolePeekActive(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [authMode]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(null);
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
+    const supabase = createClient();
+
+    try {
+      if (authMode === "signup") {
+        if (!formData.fullName) throw new Error("Full name is required.");
+        
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: role,
+            },
+          },
+        });
+        
+        if (signUpError) throw signUpError;
+
+        // MANUAL PROFILE CREATION (Reliable Fix)
+        if (authData.user) {
+           await supabase
+             .from('profiles')
+             .upsert({
+               id: authData.user.id,
+               full_name: formData.fullName,
+               role: role,
+               city: "Trivandrum",
+               location: "Trivandrum"
+             });
+        }
+        
+        setIsSuccess(true);
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) throw signInError;
+        
+        setIsSuccess(true);
+        window.location.href = "/home";
+      }
+    } catch (err: any) {
+      setError(err.message || "Authentication failed. Check your data.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#292828] text-white font-sans overflow-x-hidden overflow-y-auto relative flex flex-col selection:bg-[#E53935]/40 no-scrollbar">
+    <div className="h-screen w-screen bg-white text-[#292828] font-inter overflow-hidden relative flex flex-col selection:bg-[#E53935]/10">
       
-      {/* 1. SIMPLE RELATABLE BACKGROUND IMAGE (OPTIMIZED) */}
-      <div className="fixed inset-0 z-0 bg-[#292828]">
-        <Image 
-          src="/images/hero-bg.jpg" 
-          alt="Hyper-local Business Environment" 
-          fill
-          priority
-          quality={70}
-          sizes="100vw"
-          className="object-cover"
-        />
-        {/* Refined Cinematic Overlay Optimized */}
-        <div className="absolute inset-0 bg-[#292828]/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-slate-950 to-transparent" />
+      {/* BACKGROUND LAYER */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-slate-50">
+         <img 
+            src="/images/concept_bg.png" 
+            className="w-full h-full object-cover opacity-[0.8] grayscale" 
+            alt="Business Network" 
+         />
+         <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]" />
+         <div className="absolute inset-0 bg-gradient-to-tr from-white via-white/40 to-white/10" />
       </div>
 
-      {/* 2. HEADER */}
-      <header className="relative z-50 h-20 lg:h-24 flex items-center justify-between px-6 lg:px-20">
-         <Image src="/images/logo.png" width={150} height={50} className="h-8 lg:h-12 w-auto brightness-0 invert" alt="Logo" priority />
-         <div className="flex items-center gap-4 lg:gap-10">
-            <button 
-              onClick={() => openAuth("signin")}
-              className="text-[9px] lg:text-[10px] font-black uppercase text-white/70 hover:text-[#E53935] transition-colors"
-            >
-               Login
-            </button>
-            <button 
-              onClick={() => openAuth("signup")}
-              className="px-5 lg:px-8 py-2.5 lg:py-3 bg-[#E53935] text-white rounded-full text-[9px] lg:text-[10px] font-black uppercase hover:scale-105 transition-all active:scale-95 shadow-lg shadow-red-500/20"
-            >
-               Join Now
-            </button>
-         </div>
-      </header>
-
-      {/* 3. REBALANCED CONTENT (CLEANER, SMALLER FONTS) */}
-      <main className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 items-center px-6 lg:px-24 py-12 lg:py-0 gap-12 lg:gap-20">
-         
-         {/* VALUE DISCOVERY (REBALANCED FONTS) */}
-         <div className="lg:col-span-7 space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-left-2 duration-700">
-            <div className="label-premium">
-               <Zap size={10} className="animate-pulse" /> Where Local Meets Business Lead
-            </div>
+      {/* TOP NAV */}
+      <nav 
+        onMouseEnter={() => setIsNavVisible(true)}
+        onMouseLeave={() => setIsNavVisible(false)}
+        className={cn(
+          "fixed top-0 inset-x-0 z-[100] h-20 transition-all duration-500 flex items-center",
+          isNavVisible ? "bg-white/80 backdrop-blur-2xl border-b border-black/5" : "bg-transparent"
+        )}
+      >
+         <div className="max-w-7xl mx-auto w-full px-6 lg:px-20 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-4 group">
+               <Image 
+                 src="/images/logo.png" 
+                 alt="Checkout" 
+                 width={200} 
+                 height={50} 
+                 priority
+                 className="h-12 lg:h-14 w-auto object-contain transition-transform group-hover:scale-105" 
+               />
+            </Link>
             
-            <h1>
-              Stop Networking. <br className="hidden sm:block" />
-              <span className="text-[#E53935]">Start Building.</span>
-            </h1>
-            
-            <p>
-               Checkout is a simple way for entrepreneurs and creators in your city to connect and get things done.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-4 lg:gap-8 pt-4">
+            <div className="flex items-center gap-6">
                <button 
-                 onClick={() => openAuth("signup")}
-                 className="group/btn relative w-full sm:w-auto text-left"
+                 onClick={() => setAuthMode("signin")} 
+                 className="hidden sm:block text-[11px] font-black uppercase text-[#292828] hover:text-[#E53935] transition-colors"
                >
-                  <div className="absolute inset-0 bg-[#E53935] blur-2xl opacity-10 group-hover/btn:opacity-30 transition-opacity" />
-                  <div className="relative w-full sm:px-10 py-5 bg-[#E53935] text-white rounded-2xl font-black text-lg shadow-2xl flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all border-b-4 border-red-800">
-                     <Zap size={22} fill="currentColor" /> Get Started
-                  </div>
+                 Log In
                </button>
-
-               <Link href="/explore" className="group/btn relative w-full sm:w-auto">
-                  <button className="relative w-full sm:px-10 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black text-lg shadow-2xl flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all border border-white/10 backdrop-blur-sm">
-                     <Search size={20} /> Explore
-                  </button>
-               </Link>
-            </div>
-
-            <div className="pt-4">
-               <p className="text-[9px] lg:text-[10px] font-black uppercase text-white/40">Built for builders, not browsers.</p>
+               <button 
+                 onClick={() => setAuthMode("signup")} 
+                 className="h-12 px-10 bg-[#292828] text-white rounded-xl text-[12px] font-black uppercase hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-900/10"
+               >
+                 Sign Up
+               </button>
             </div>
          </div>
+      </nav>
 
-         {/* REFINED VISUAL (NO CONTEST BLOCK) */}
-         <div className="lg:col-span-5 relative w-full flex justify-center lg:justify-end animate-in fade-in slide-in-from-right-2 duration-1000">
+      {/* MAIN CONTAINER */}
+      <main className="relative flex-1 z-10 flex items-center overflow-y-auto no-scrollbar lg:overflow-hidden">
+         <div className="max-w-7xl mx-auto w-full px-6 lg:px-20 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center py-20 lg:py-0">
             
-            <div className="relative w-full max-w-sm">
-               {/* Why Checkout Wins Differentiator Card */}
-               <div className="w-full bg-[#292828]/60 p-8 lg:p-10 rounded-[1.625rem] lg:rounded-[1.95rem] border border-white/10 shadow-3xl hover:border-[#E53935]/30 transition-all duration-700 relative z-20 backdrop-blur-md">
-                  <h3 className="text-white mb-6 lg:mb-8">Why <span className="text-[#E53935]">Checkout?</span></h3>
-                  
-                  <div className="space-y-4 lg:space-y-6">
-                    {[
-                      { text: "Real work for real people", icon: Users },
-                      { text: "Focus on your city, not the world", icon: MapPin },
-                      { text: "Get things done instantly", icon: Rocket },
-                      { text: "Zero social noise", icon: ShieldCheck }
-                    ].map((point, i) => (
-                      <div key={i} className="flex items-start gap-4 group/point">
-                        <div className="h-8 w-8 rounded-xl bg-[#E53935]/10 border border-[#E53935]/20 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover/point:bg-[#E53935] group-hover/point:text-white transition-all duration-300">
-                          <point.icon size={16} className="text-[#E53935] group-hover/point:text-white" />
-                        </div>
-                        <p className="text-white/70 text-[13px] lg:text-sm font-bold leading-tight uppercase pt-1">{point.text}</p>
-                      </div>
-                    ))}
-                  </div>
+            {/* LEFT SIDE SCREEN */}
+            <div className="lg:col-span-6 space-y-12 relative hidden lg:block">
+               <div className="absolute -left-12 top-0 w-[1px] h-[120px] bg-gradient-to-b from-[#E53935] to-transparent" />
 
-                  <button 
-                    onClick={() => openAuth("signup")}
-                    className="w-full mt-10 py-4 bg-[#E53935] text-white rounded-xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-red-500/10 flex items-center justify-center gap-3 border border-red-500/20"
-                  >
-                     Join Now <ArrowRight size={14} />
-                  </button>
+               <div className="space-y-8">
+                  <h1 className="text-6xl sm:text-7xl lg:text-[6.5rem] font-black uppercase tracking-tighter leading-[0.85] text-[#292828] font-outfit">
+                    CONNECT PEOPLE. <br /> 
+                    <span className="text-[#E53935]">GET LEADS.</span>
+                  </h1>
+                  
+                  <p className="text-xl sm:text-2xl font-medium text-slate-400 max-w-xl italic border-l-2 border-[#E53935]/30 pl-8">
+                     Meet real people. Get real business.
+                  </p>
                </div>
 
-               {/* Soft Red Ambient Glow */}
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] lg:w-[400px] h-[300px] lg:h-[400px] bg-[#E53935]/15 rounded-full blur-[80px] lg:blur-[120px] pointer-events-none" />
+               {/* Bottom Icons */}
+               <div className="flex gap-12 pt-10">
+                  {[
+                    { label: "Find people", key: "CONNECT", icon: Users },
+                    { label: "Get clients", key: "LEADS", icon: Target },
+                    { label: "Meet locally", key: "MEETUPS", icon: Zap }
+                  ].map((it, i) => (
+                    <div key={i} className="flex flex-col items-start gap-4 group relative md:flex-row md:items-center">
+                       <div className="text-[10px] font-black uppercase text-slate-300 group-hover:text-[#E53935] transition-colors flex items-center gap-3 cursor-default">
+                          <it.icon size={14} className="opacity-40 group-hover:opacity-100" />
+                          {it.key}
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            {/* RIGHT SIDE (FORM CARD) */}
+            <div className="lg:col-span-6 flex flex-col items-center">
+               <div className="w-full max-w-[500px] bg-white p-8 sm:p-12 lg:p-14 rounded-[3rem] lg:rounded-[4rem] shadow-[0_40px_80px_rgba(15,23,42,0.08)] border border-slate-100 relative">
+                  <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-[#E53935]/30 to-transparent" />
+                  
+                  <div className="relative z-10 space-y-10">
+                     <div className="space-y-2">
+                        <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-none text-[#292828] font-outfit">
+                          {authMode === "signup" ? "Join Now" : "Welcome Back"}
+                        </h3>
+                        <p className="text-[10px] font-bold text-slate-300 uppercase">Find partners and grow</p>
+                     </div>
+
+                     <form onSubmit={handleAuth} className="space-y-6">
+                        {error && (
+                           <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[12px] font-bold">
+                              <AlertCircle size={16} /> {error}
+                           </div>
+                        )}
+                        {isSuccess && (
+                           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600 text-[12px] font-bold">
+                              <CheckCircle2 size={16} /> Done! Redirecting...
+                           </div>
+                        )}
+
+                        <AnimatePresence mode="wait">
+                          {authMode === "signup" && (
+                             <motion.div
+                              key="signup-fields"
+                              initial={{ opacity: 0, opacity: 0 }}
+                              animate={{ opacity: 1, opacity: 1 }}
+                              exit={{ opacity: 0, opacity: 0 }}
+                              className="space-y-4"
+                             >
+                                {/* CUSTOM DROPDOWN ROLE SELECTOR */}
+                                <div className="relative mb-6">
+                                   <p className="text-[10px] font-black uppercase text-slate-300 mb-2 leading-none">Select your role</p>
+                                   <div className="relative flex flex-col">
+                                      <button
+                                         type="button"
+                                         onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                                         className="w-full h-16 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 flex items-center justify-between hover:border-[#292828]/20 transition-all group"
+                                      >
+                                         <div className="flex items-center gap-4 text-[#292828]">
+                                            {(() => {
+                                               const ActiveIcon = [
+                                                  { id: "BUSINESS", icon: Briefcase },
+                                                  { id: "PROFESSIONAL", icon: User },
+                                                  { id: "STUDENT", icon: GraduationCap },
+                                                  { id: "ADVISOR", icon: ShieldCheck }
+                                               ].find(r => r.id === role)?.icon || Briefcase;
+                                               return <ActiveIcon size={18} className="text-[#E53935]" />;
+                                            })()}
+                                            <span className="text-[13px] font-black uppercase">{role}</span>
+                                         </div>
+                                         <motion.div
+                                            animate={{ rotate: isRoleDropdownOpen ? 180 : 0 }}
+                                            className="text-slate-300"
+                                         >
+                                            <ChevronDown size={18} />
+                                         </motion.div>
+                                      </button>
+
+                                      <AnimatePresence shadow-2xl>
+                                         {(isRoleDropdownOpen || isRolePeekActive) && (
+                                            <motion.div
+                                               initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                               animate={{ opacity: 1, y: 0, scale: 1 }}
+                                               exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                               transition={{ duration: 0.2, ease: "easeOut" }}
+                                               className="absolute top-[105%] inset-x-0 bg-white border-2 border-slate-100 rounded-[1.5rem] shadow-2xl z-[200] overflow-hidden p-2"
+                                            >
+                                               {[
+                                                  { id: "BUSINESS", label: "Business", icon: Briefcase },
+                                                  { id: "PROFESSIONAL", label: "Professional", icon: User },
+                                                  { id: "STUDENT", label: "Student", icon: GraduationCap },
+                                                  { id: "ADVISOR", label: "Advisor", icon: ShieldCheck }
+                                               ].map((r) => (
+                                                  <button
+                                                     key={r.id}
+                                                     type="button"
+                                                     onClick={() => {
+                                                        setRole(r.id as Role);
+                                                        setIsRoleDropdownOpen(false);
+                                                     }}
+                                                     className={cn(
+                                                        "w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left group",
+                                                        role === r.id 
+                                                           ? "bg-[#292828] text-white" 
+                                                           : "hover:bg-slate-50 text-[#292828]/60 hover:text-[#292828]"
+                                                     )}
+                                                  >
+                                                     <r.icon size={16} className={role === r.id ? "text-[#E53935]" : "group-hover:text-[#E53935]"} />
+                                                     <span className="text-[12px] font-black uppercase">{r.label}</span>
+                                                  </button>
+                                               ))}
+                                            </motion.div>
+                                         )}
+                                      </AnimatePresence>
+                                   </div>
+                                </div>
+
+                                <input 
+                                  type="text" 
+                                  name="fullName"
+                                  value={formData.fullName}
+                                  onChange={handleInputChange}
+                                  placeholder="Full Name" 
+                                  className="w-full h-16 bg-slate-50 border border-slate-200/60 rounded-[1.5rem] px-8 text-black outline-none focus:bg-white focus:border-[#E53935]/30 focus:shadow-sm transition-all font-medium placeholder:text-slate-300" 
+                                  required 
+                                />
+                             </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
+                        <div className="space-y-4">
+                           <input 
+                            type="email" 
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="Email Address" 
+                            className="w-full h-16 bg-slate-50 border border-slate-200/60 rounded-[1.5rem] px-8 text-black outline-none focus:bg-white focus:border-[#E53935]/30 focus:shadow-sm transition-all font-medium placeholder:text-slate-300" 
+                            required 
+                           />
+                           <div className="relative group">
+                              <input 
+                               type={showPassword ? "text" : "password"} 
+                               name="password"
+                               value={formData.password}
+                               onChange={handleInputChange}
+                               placeholder="Password" 
+                               className="w-full h-16 bg-slate-50 border border-slate-200/60 rounded-[1.5rem] px-8 text-black outline-none focus:bg-white focus:border-[#E53935]/30 focus:shadow-sm transition-all font-medium placeholder:text-slate-300" 
+                               required 
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#292828] transition-colors"
+                              >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
+                           </div>
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          disabled={isLoading || isSuccess}
+                          className="w-full h-20 rounded-[2rem] font-black text-white bg-[#292828] uppercase flex items-center justify-center gap-6 mt-8 transition-all hover:bg-black active:scale-[0.98] shadow-2xl shadow-slate-900/20"
+                        >
+                           {isLoading ? "Loading..." : "Get Started"} <ArrowRight size={22} />
+                        </button>
+                     </form>
+
+                     <button 
+                      onClick={() => setAuthMode(authMode === "signup" ? "signin" : "signup")} 
+                      className="text-[10px] font-black uppercase text-slate-300 w-full text-center hover:text-[#E53935] transition-colors"
+                     >
+                        {authMode === "signup" ? "Already have an account?" : "Need an account? Join"}
+                     </button>
+                  </div>
+               </div>
             </div>
 
          </div>
-
       </main>
 
-      {/* 4. FOOTER */}
-      <footer className="relative z-50 py-8 lg:h-16 flex flex-col lg:flex-row items-center justify-between px-8 lg:px-20 border-t border-white/5 bg-[#292828]/10 backdrop-blur-md gap-6 lg:gap-0">
-         <p className="text-[9px] font-black uppercase text-white/30 text-center lg:text-left">© 2026 Checkout Network. <span className="text-white/50">Local Business Standard.</span></p>
-         <div className="flex gap-8 text-[9px] font-black uppercase text-white/30">
-            {["Privacy", "Safety", "Support"].map(it => (
-              <span key={it} className="hover:text-white transition-colors cursor-pointer">{it}</span>
-            ))}
-         </div>
+      <footer className="fixed bottom-10 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-40 hidden lg:block">
+         <p className="text-[10px] font-black uppercase text-slate-200">Made for local business</p>
       </footer>
-
-      <AuthModal 
-        isOpen={authModal.isOpen} 
-        onClose={() => setAuthModal({ ...authModal, isOpen: false })} 
-        initialMode={authModal.mode} 
-      />
 
     </div>
   );
 }
-

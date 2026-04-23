@@ -299,10 +299,10 @@ export default function FullyActiveGlobalHeader() {
                         if (error) throw error;
                         // Hard purge and redirect
                         window.localStorage.clear();
-                        window.location.href = "/";
+                        window.location.href = "/login";
                       } catch (err) {
                         console.error("Logout Protocol Failure:", err);
-                        window.location.href = "/";
+                        window.location.href = "/login";
                       }
                     }}
                     className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all text-left"

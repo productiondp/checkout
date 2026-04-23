@@ -45,10 +45,10 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
     try {
       await supabase.auth.signOut();
       window.localStorage.clear();
-      window.location.href = "/";
+      window.location.href = "/login";
     } catch (err) {
       console.error("Mobile Logout Failure:", err);
-      window.location.href = "/";
+      window.location.href = "/login";
     }
   };
 

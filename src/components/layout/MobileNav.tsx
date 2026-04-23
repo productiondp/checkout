@@ -20,7 +20,7 @@ export default function MobileNav() {
 
   const menu = [
     { label: "Feeds", href: "/home", icon: Home },
-    { label: "Partners", href: "/match", icon: Users },
+    { label: "Partners", href: "/matches", icon: Users },
     { label: "Find", href: "/explore", icon: Search },
     { label: "Chats", href: "/chat", icon: MessageSquare },
     { label: "Me", href: "/profile", icon: User },

@@ -137,39 +137,7 @@ export default function RightSocialRail() {
          </div>
       </section>
 
-      {/* 3. ELITE COMMAND (Function: Broadcast) */}
-      <section className="mt-auto">
-         <div className="bg-gradient-to-br from-[#292828] to-[#1a1a1a] rounded-[2.5rem] p-8 text-center shadow-3xl relative overflow-hidden group">
-            <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] group-hover:scale-110 transition-transform duration-[20s]" />
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#E53935]/20 rounded-full blur-[60px] animate-pulse" />
-            
-            <div className="relative z-10 space-y-6">
-               <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 mb-2">
-                  <ShieldCheck size={10} className="text-[#E53935]" />
-                  <span className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em]">Verified Elite Network</span>
-               </div>
-               
-               <div className="flex -space-x-3 justify-center">
-                  {[1,2,3,4,5].map(i => (
-                     <div key={i} className="w-10 h-10 rounded-2xl border-2 border-[#292828] bg-slate-800 overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 hover:z-20 cursor-pointer">
-                        <img src={`https://i.pravatar.cc/150?u=${i+15}`} alt="U" className="grayscale contrast-125 hover:grayscale-0 transition-all duration-500" />
-                     </div>
-                  ))}
-               </div>
 
-               <div className="space-y-2">
-                  <p className="text-[15px] font-bold text-white uppercase tracking-tight">Expand Your Node</p>
-                  <p className="text-[9px] font-medium text-white/40 uppercase tracking-widest leading-relaxed px-4">
-                     Broadcast your credentials to 1,200+ local decision makers instantly.
-                  </p>
-               </div>
-
-               <button className="w-full h-14 bg-[#E53935] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-red-500/20 hover:bg-white hover:text-[#E53935] hover:scale-[1.02] active:scale-95 transition-all duration-500 border border-red-500/20">
-                  Broadcast Invite
-               </button>
-            </div>
-         </div>
-      </section>
 
     </aside>
   );

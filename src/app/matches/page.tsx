@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   Users, 
   Sparkles, 
@@ -9,231 +9,598 @@ import {
   Briefcase, 
   ArrowUpRight, 
   ShieldCheck, 
-  Info,
-  Maximize2,
-  Bookmark,
-  ChevronRight,
-  Fingerprint,
-  Cpu,
+  Search, 
+  Filter, 
+  ChevronDown, 
+  X, 
+  CheckCircle2, 
+  MessageSquare,
+  MapPin,
+  TrendingUp,
+  Award,
+  Layers,
   BrainCircuit,
-  Shield,
-  Search
+  Fingerprint,
+  MoreVertical,
+  Clock,
+  ChevronRight,
+  Loader2,
+  Lock,
+  User,
+  MoreHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import UniversalFeedCard from "@/components/ui/UniversalFeedCard";
-import DealEngine from "@/components/modals/DealEngine";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function PartnerHubPage() {
-  const [matches, setMatches] = useState<any[]>([]);
+// --- TYPES ---
+type MatchProfile = {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+  role: string;
+  location: string;
+  skills: string[];
+  metadata?: {
+    match_score?: number;
+    industry?: string;
+    stage?: string;
+    experience?: string;
+    intents?: string[];
+    checkoutScore?: number;
+  };
+  connection_status?: "NONE" | "PENDING" | "ACCEPTED";
+};
+
+// --- CORE UTILS ---
+const calculateProfileMatch = (me: any, target: any) => {
+  let score = 65; // Base score
+  const reasons: string[] = [];
+
+  // 1. Skill Overlap
+  const mySkills = me?.skills || [];
+  const targetSkills = target?.skills || [];
+  const overlap = targetSkills.filter((s: string) => mySkills.includes(s));
+  if (overlap.length > 0) {
+    score += 15;
+    reasons.push(`${overlap[0]} expertise match`);
+  } else {
+    reasons.push("Complementary power-nodes detected");
+  }
+
+  // 2. Intent Alignment
+  const myIntents = me?.metadata?.intents || [];
+  const targetIntents = target?.metadata?.intents || [];
+  const intentOverlap = targetIntents.filter((i: string) => myIntents.includes(i));
+  if (intentOverlap.length > 0) {
+    score += 10;
+    reasons.push("Shared business intent");
+  }
+
+  // 3. Regional Priority
+  if (me?.location === target?.location) {
+    score += 5;
+    reasons.push("Regional proximity");
+  }
+
+  return { score: Math.min(score, 98), reasons: reasons.slice(0, 2) };
+};
+
+export default function PremiumPartnersPage() {
+  const [activeTab, setActiveTab] = useState<"DISCOVER" | "REQUESTS">("DISCOVER");
+  const [viewMode, setViewMode] = useState<"GRID" | "LIST">("GRID");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [selectedDeal, setSelectedDeal] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [partners, setPartners] = useState<MatchProfile[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [connectModal, setConnectModal] = useState<{ isOpen: boolean; user: MatchProfile | null }>({ isOpen: false, user: null });
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  
+  const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    async function loadPartners() {
-      setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  // ... (initTerminal and other logic remains same)
+  // --- DATA HYDRATION ---
+  const initTerminal = async () => {
+    setIsLoading(true);
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      setCurrentUser(profile);
+    // 1. Fetch Profile
+    const { data: myProfile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single();
+    setCurrentUser(myProfile);
 
-      // PARTNER DISCOVERY LOGIC
-      const { data: results, error } = await supabase.rpc('match_posts', {
-        query_embedding: profile?.embedding || null,
-        match_threshold: 0.5,
-        match_count: 10
+    // 2. Fetch Profiles + Connections Status
+    const [profilesRes, connectionsRes] = await Promise.all([
+      supabase.from('profiles').select('*').neq('id', authUser.id),
+      supabase.from('connections').select('*').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
+    ]);
+
+    if (profilesRes.data) {
+      const connections = connectionsRes.data || [];
+      const mapped = profilesRes.data.map(p => {
+        const conn = connections.find(c => c.sender_id === p.id || c.receiver_id === p.id);
+        const matchData = calculateProfileMatch(myProfile, p);
+        return {
+          ...p,
+          connection_status: conn ? (conn.status === 'PENDING' ? 'PENDING' : 'ACCEPTED') : 'NONE',
+          metadata: { ...p.metadata, match_score: matchData.score, reasons: matchData.reasons }
+        };
       });
-
-      if (!results || results.length === 0) {
-        // Fallback discovery
-        const { data: fallbackPosts } = await supabase
-          .from('posts')
-          .select('*, author:profiles(full_name, avatar_url, match_score, role)')
-          .limit(10)
-          .order('created_at', { ascending: false });
-        
-        if (fallbackPosts) {
-          const mapped = fallbackPosts.map(p => ({
-            ...p,
-            author: p.author?.full_name || "Community Partner",
-            avatar: p.author?.avatar_url || `https://i.pravatar.cc/150?u=${p.author_id}`,
-            matchScore: p.author?.match_score || 85,
-            badge: "Verified"
-          }));
-          setMatches(mapped);
-        }
-      } else {
-        setMatches(results);
-      }
-      
-      setIsLoading(false);
+      setPartners(mapped.sort((a,b) => (b.metadata?.match_score || 0) - (a.metadata?.match_score || 0)));
     }
-    loadPartners();
-  }, []);
+
+    // 3. Fetch Pending Requests
+    const { data: pendingReqs } = await supabase
+      .from('connections')
+      .select(`id, created_at, message, sender:profiles!connections_sender_id_fkey(*)`)
+      .eq('receiver_id', authUser.id)
+      .eq('status', 'PENDING');
+    
+    if (pendingReqs) setRequests(pendingReqs);
+
+    setIsLoading(false);
+  };
+
+  useEffect(() => { initTerminal(); }, []);
+
+  const handleConnect = async () => {
+    if (!connectModal.user || !currentUser) return;
+    setIsSending(true);
+    const { error } = await supabase.from('connections').insert({
+      sender_id: currentUser.id, receiver_id: connectModal.user.id, message: message, status: 'PENDING'
+    });
+    if (!error) {
+      setPartners(prev => prev.map(p => p.id === connectModal.user?.id ? { ...p, connection_status: 'PENDING' } : p));
+      setConnectModal({ isOpen: false, user: null }); setMessage("");
+    }
+    setIsSending(false);
+  };
+
+  const handleRequestAction = async (id: string, status: 'ACCEPTED' | 'REJECTED') => {
+    const { error } = await supabase.from('connections').update({ status }).eq('id', id);
+    if (!error) initTerminal();
+  };
+
+  const filteredPartners = useMemo(() => {
+    return partners.filter(p => 
+      p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [partners, searchQuery]);
+
+  const bestMatches = filteredPartners.slice(0, 6);
+  const complimentary = filteredPartners.filter(p => !p.skills.some(s => currentUser?.skills?.includes(s))).slice(0, 6);
+  const regional = filteredPartners.filter(p => p.location === currentUser?.location).slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] lg:p-10 selection:bg-[#E53935]/10">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-[440px_1fr] gap-12">
-        
-        {/* 1. PARTNER CAPACITY SIDEBAR */}
-        <aside className="space-y-8 animate-in slide-in-from-left duration-700">
-          <div className="bg-[#292828] p-10 rounded-[3rem] text-white shadow-4xl relative overflow-hidden group border border-white/5">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#E53935]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-[#E53935]/20 transition-all duration-1000" />
+    <div className="min-h-screen bg-[#FDFDFF] selection:bg-[#E53935]/10 pb-40">
+      
+      {/* 1. TACTICAL DISCOVERY HUD (Neutralized spatial architecture) */}
+      <header className="bg-white border-b border-slate-100 sticky top-0 z-[60] px-6 py-4 lg:px-10 lg:py-6">
+         <div className="max-w-none mx-auto flex flex-col xl:flex-row items-center justify-between gap-6">
             
-            <div className="flex items-center gap-5 mb-12 relative z-10">
-               <div className="h-16 w-16 bg-white/5 border border-white/10 backdrop-blur-3xl rounded-2xl flex items-center justify-center text-[#E53935] shadow-2xl">
-                  <Fingerprint size={32} />
-               </div>
-               <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight">Partner Hub</h2>
-                  <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em]">Strategic Capacity Analysis</p>
-               </div>
-            </div>
-
-            <div className="space-y-10 relative z-10">
-               <div>
-                  <p className="text-[10px] font-black text-white/20 uppercase mb-4 tracking-widest">Network Specialization</p>
-                  <div className="flex flex-wrap gap-2">
-                     {["Regional Scaling", "Capital Deployment", "Operational Intelligence"].map(tag => (
-                       <span key={tag} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[11px] font-black uppercase tracking-tight hover:bg-[#E53935] hover:border-[#E53935] transition-all cursor-default">{tag}</span>
-                     ))}
+            {/* LEADING: SYNDICATE IDENTITY */}
+            <div className="flex items-center gap-8 w-full xl:w-auto">
+               <div className="flex flex-col">
+                  <div className="flex items-center gap-3 mb-1">
+                     <div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />
+                     <h1 className="text-xl lg:text-2xl font-black text-[#292828] uppercase tracking-[-0.04em] leading-none font-outfit">Find Your Partner</h1>
                   </div>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] pl-5">Regional Node Discovery Terminal v.7</p>
                </div>
-
-               <div className="p-8 bg-white/[0.03] border border-white/5 rounded-3xl relative overflow-hidden group/intel">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-[#E53935] group-hover/intel:w-full transition-all duration-700 opacity-20" />
-                  <div className="flex items-center gap-3 mb-5 relative z-10">
-                     <ShieldCheck size={20} className="text-[#E53935]" />
-                     <p className="text-[11px] font-black uppercase tracking-widest text-white">Strategic Sync</p>
-                  </div>
-                  <p className="text-[15px] font-medium leading-relaxed text-white/60 relative z-10 italic">
-                    "Your mandate authority in <strong>{currentUser?.role || 'Business Logistics'}</strong> aligns with the current partnership demand for regional scaling partners."
-                  </p>
-               </div>
-
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 bg-white/5 border border-white/5 rounded-2xl text-center hover:bg-white/10 transition-all">
-                     <p className="text-2xl font-black tabular-nums">1.2K</p>
-                     <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1">Data Nodes</p>
-                  </div>
-                  <div className="p-6 bg-white/5 border border-white/5 rounded-2xl text-center hover:bg-white/10 transition-all">
-                     <p className="text-2xl font-black text-[#E53935] tabular-nums">98%</p>
-                     <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1">Precision</p>
-                  </div>
+               
+               <div className="hidden sm:flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200/50">
+                  <button 
+                    onClick={() => setViewMode("GRID")}
+                    className={cn("h-8 px-4 rounded-lg flex items-center justify-center transition-all", viewMode === "GRID" ? "bg-white text-[#E53935] shadow-sm border border-slate-200" : "text-slate-300 hover:text-[#292828]")}
+                  >
+                     <Layers size={14} />
+                  </button>
+                  <button 
+                    onClick={() => setViewMode("LIST")}
+                    className={cn("h-8 px-4 rounded-lg flex items-center justify-center transition-all", viewMode === "LIST" ? "bg-white text-[#E53935] shadow-sm border border-slate-200" : "text-slate-300 hover:text-[#292828]")}
+                  >
+                     <MoreHorizontal size={14} />
+                  </button>
                </div>
             </div>
-          </div>
 
-          <div className="bg-white p-10 rounded-[3.5rem] border border-[#292828]/5 shadow-sm overflow-hidden relative group">
-             <div className="absolute bottom-0 right-0 p-4 opacity-[0.03] -rotate-12 group-hover:rotate-0 transition-transform duration-1000">
-                <Users size={180} />
-             </div>
-             <h3 className="text-[11px] font-black text-[#292828]/20 uppercase tracking-[0.3em] mb-8">Regional Insights</h3>
-             <div className="space-y-3">
-                {[
-                  { label: "Market Demand", value: "Saturated", color: "text-emerald-600" },
-                  { label: "Partner Velocity", value: "+38.4%", color: "text-[#E53935]" },
-                  { label: "Global Mandates", value: "114", color: "#292828" }
-                ].map(stat => (
-                  <div key={stat.label} className="flex justify-between items-center p-5 rounded-2xl border border-transparent hover:border-[#292828]/5 hover:bg-slate-50 transition-all group/item">
-                     <span className="text-[13px] font-bold text-[#292828]/40 group-hover/item:text-[#292828] transition-colors">{stat.label}</span>
-                     <span className={cn("text-[14px] font-black tracking-tight", stat.color)}>{stat.value}</span>
+            {/* CENTER/TRAILING: INSTRUCTION DOCK & GLOBAL SYNC */}
+            <div className="flex flex-col lg:flex-row items-center gap-4 w-full xl:w-auto flex-1 xl:justify-end">
+               <div className="relative w-full lg:max-w-xl group">
+                  <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Authorize search across regional expertise nodes..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl pl-14 pr-6 text-[12px] font-bold text-[#292828] outline-none focus:bg-white focus:border-[#E53935]/20 focus:ring-4 focus:ring-[#E53935]/5 transition-all placeholder:text-slate-300 placeholder:italic"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2">
+                     <kbd className="h-6 px-2 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-300 flex items-center">CMD</kbd>
+                     <kbd className="h-6 px-2 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-300 flex items-center">K</kbd>
                   </div>
-                ))}
-             </div>
-          </div>
-        </aside>
+               </div>
 
-        {/* 2. RANKED PARTNER DISCOVERY */}
-        <main className="space-y-8 pb-32">
-           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-2 px-4 gap-6">
-              <div className="flex items-center gap-5">
-                 <div className="h-14 w-14 bg-[#292828] rounded-2xl flex items-center justify-center text-[#E53935] shadow-xl">
-                    <Sparkles size={28} />
+               <div className="flex items-center gap-3 w-full lg:w-auto">
+                  <button onClick={() => setIsFilterOpen(true)} className="h-12 w-full lg:w-auto px-6 bg-white border border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-[#292828] hover:bg-slate-50 hover:border-[#292828]/20 transition-all shadow-sm active:scale-95 group/f">
+                     <Filter size={14} className="group-hover/f:rotate-180 transition-transform duration-500" /> Filters
+                  </button>
+                  
+                  <div className="h-8 w-px bg-slate-200 hidden xl:block mx-1" />
+                  
+                  <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-2xl border border-slate-200/50 w-full lg:w-auto">
+                     <button 
+                       onClick={() => setActiveTab("DISCOVER")}
+                       className={cn("flex-1 lg:px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", activeTab === "DISCOVER" ? "bg-[#292828] text-white shadow-xl shadow-black/10" : "text-slate-400 hover:text-[#292828]")}
+                     >
+                        Discover
+                     </button>
+                     <button 
+                       onClick={() => setActiveTab("REQUESTS")}
+                       className={cn("flex-1 lg:px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative", activeTab === "REQUESTS" ? "bg-[#292828] text-white shadow-xl shadow-black/10" : "text-slate-400 hover:text-[#292828]")}
+                     >
+                        Requests
+                        {requests.length > 0 && <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-[#E53935] rounded-full ring-2 ring-white animate-pulse" />}
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </header>
+
+      <main className="max-w-none mx-auto px-6 lg:px-10 pt-10 lg:pt-16">
+         
+         <AnimatePresence mode="wait">
+            {activeTab === "DISCOVER" ? (
+              <motion.div 
+                key="discover" 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                className="space-y-20 lg:space-y-32"
+              >
+                 {/* SECTION: BEST MATCHES */}
+                 <section className="space-y-12">
+                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                       <Zap size={14} className="text-[#E53935]" /> Elite Alignment Matches
+                    </h2>
+                    <div className={cn(
+                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                    )}>
+                       {bestMatches.map((p) => (
+                         viewMode === "GRID" 
+                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                       ))}
+                    </div>
+                 </section>
+
+                 {/* SECTION: SKILLS */}
+                 <section className="space-y-12">
+                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                       <BrainCircuit size={14} className="text-emerald-600" /> Complementary Node Synergies
+                    </h2>
+                    <div className={cn(
+                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                    )}>
+                       {complimentary.map((p) => (
+                         viewMode === "GRID" 
+                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                       ))}
+                    </div>
+                 </section>
+
+                 {/* SECTION: REGIONAL */}
+                 <section className="space-y-12">
+                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                       <MapPin size={14} className="text-blue-500" /> Regional Network Nodes
+                    </h2>
+                    <div className={cn(
+                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                    )}>
+                       {regional.map((p) => (
+                         viewMode === "GRID" 
+                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                       ))}
+                    </div>
+                 </section>
+              </motion.div>
+            ) : (
+              // ... requests section remains similar
+<motion.div 
+                key="requests" 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-[1000px] mx-auto space-y-6"
+              >
+                 <div className="flex items-center justify-between mb-10">
+                    <h2 className="text-[11px] font-black text-slate-300 uppercase tracking-[0.4em]">Incoming Sync Requests</h2>
+                    <span className="text-[10px] font-black text-slate-400">{requests.length} Partners Waiting</span>
                  </div>
-                 <div>
-                    <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter">Ranked Partners</h2>
-                    <p className="text-[12px] font-bold text-slate-400 mt-1">High-alignment discovery based on current mandates.</p>
+
+                 {requests.length > 0 ? requests.map((req) => (
+                   <RequestCard key={req.id} request={req} onAction={handleRequestAction} />
+                 )) : (
+                   <div className="py-40 text-center bg-slate-50 border border-dashed border-slate-200 rounded-[3rem]">
+                      <Users size={40} className="mx-auto text-slate-200 mb-6" />
+                      <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest">No incoming sync requests</p>
+                   </div>
+                 )}
+              </motion.div>
+            )}
+         </AnimatePresence>
+
+      </main>
+
+      {/* FILTER PANEL */}
+      <AnimatePresence>
+         {isFilterOpen && (
+           <div className="fixed inset-0 z-[100] flex justify-end">
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-[#292828]/40 backdrop-blur-md" 
+                onClick={() => setIsFilterOpen(false)} 
+              />
+              <motion.aside 
+                initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25 }}
+                className="relative w-full max-w-[480px] bg-white h-full shadow-4xl p-12 overflow-y-auto"
+              >
+                 <div className="flex items-center justify-between mb-16">
+                    <h2 className="text-2xl font-black text-[#292828] uppercase tracking-tighter">Hard Filters</h2>
+                    <button onClick={() => setIsFilterOpen(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center"><X size={20} /></button>
                  </div>
-              </div>
-              <div className="flex items-center gap-3 px-6 h-12 bg-white border border-[#292828]/5 rounded-full shadow-sm">
-                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                 <span className="text-[10px] font-black text-[#292828] uppercase tracking-widest">Autonomous Sync Active</span>
-              </div>
+
+                 <div className="space-y-12">
+                     <FilterSection label="Role Archetype" options={["Student", "MSME", "Professional", "Entrepreneur"]} />
+                     <FilterSection label="Industry Node" options={["Technology", "Logistics", "Retail", "Manufacturing", "Finance"]} />
+                     <FilterSection label="Intent Specification" options={["Hiring", "Funding", "Scale", "Networking", "Learning"]} />
+                     <FilterSection label="Experience Level" options={["Founder", "Manager", "Expert", "Junior"]} />
+                 </div>
+
+                 <div className="mt-20 pt-10 border-t border-slate-100">
+                    <button className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl hover:bg-black transition-all">Apply Parameters</button>
+                 </div>
+              </motion.aside>
            </div>
+         )}
+      </AnimatePresence>
 
-           {isLoading ? (
-             <div className="space-y-8 px-2">
-                {[1, 2, 3].map(i => (
-                   <div key={i} className="h-72 bg-white border border-[#292828]/5 rounded-[3rem] animate-pulse" />
-                ))}
-             </div>
-           ) : (
-             <div className="space-y-12 animate-in fade-in slide-in-from-bottom-10 duration-1000 px-2 lg:px-0">
-                {matches.map((post) => (
-                  <div key={post.id} className="relative group/partner">
-                    {/* Partner Authority Badge Overlay */}
-                    <div className="absolute -top-4 left-10 lg:left-16 z-30 px-6 py-2.5 bg-[#292828] text-white rounded-[1.25rem] text-[11px] font-black flex items-center gap-3 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)] border border-white/5 group-hover/partner:bg-[#E53935] transition-all duration-700">
-                       <CheckCircle2 size={14} className="text-[#E53935] group-hover:text-white" />
-                       <span className="tracking-widest uppercase">{post.similarity ? Math.round(post.similarity * 100) : post.matchScore}% PARTNER ALIGNMENT</span>
+      {/* CONNECT MODAL */}
+      <AnimatePresence>
+         {connectModal.isOpen && (
+           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md" onClick={() => setConnectModal({ isOpen: false, user: null })} />
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[540px] bg-white rounded-[3rem] p-12 shadow-4xl">
+                 <div className="flex items-center gap-6 mb-10">
+                    <div className="h-20 w-20 rounded-[1.75rem] bg-slate-50 border border-slate-100 overflow-hidden shadow-2xl flex items-center justify-center bg-[#292828]/5">
+                       {connectModal.user?.avatar_url ? <img src={connectModal.user.avatar_url} className="w-full h-full object-cover" /> : <User size={30} className="text-[#292828]/20" />}
                     </div>
-                    
-                    <UniversalFeedCard 
-                      post={post}
-                      onAction={() => {
-                        setSelectedDeal(post);
-                        setIsModalOpen(true);
-                      }}
-                    />
-
-                    {/* Partner Insight Expansion */}
-                    <div className="mt-[-30px] mx-10 lg:mx-20 p-10 bg-white border border-[#292828]/5 rounded-b-[3.5rem] pt-16 relative z-0 flex flex-col lg:flex-row lg:items-center gap-8 shadow-2xl transition-all duration-700 hover:bg-[#292828] group/insight">
-                       <div className="h-14 w-14 shrink-0 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#292828] group-hover/insight:bg-[#E53935] group-hover/insight:text-white group-hover/insight:rotate-12 transition-all duration-700">
-                          <BrainCircuit size={24} />
-                       </div>
-                       <div className="flex-1">
-                          <h4 className="text-[10px] font-black uppercase text-[#E53935] tracking-widest mb-2">Strategy Insight</h4>
-                          <p className="text-[15px] font-bold text-[#292828]/40 group-hover/insight:text-white transition-all leading-relaxed">
-                            "This mandate aligns with your <strong>Strategic Hub</strong> expertise in regional deployment. High synergistic potential detected."
-                          </p>
-                       </div>
-                       <button className="h-12 px-6 border border-[#292828]/10 group-hover/insight:border-white/20 text-[#292828]/40 group-hover/insight:text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-[#E53935] hover:border-[#E53935] transition-all">
-                          Verify <ArrowUpRight size={14} />
-                       </button>
+                    <div>
+                       <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tight">Sync with {connectModal.user?.full_name}</h3>
+                       <p className="text-[11px] font-black text-[#E53935] uppercase tracking-widest">{connectModal.user?.role}</p>
                     </div>
-                  </div>
-                ))}
+                 </div>
 
-                {matches.length === 0 && (
-                  <div className="py-60 text-center bg-white rounded-[4rem] border border-[#292828]/5 shadow-2xl relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
-                     <div className="h-32 w-32 bg-[#292828]/5 rounded-full mx-auto flex items-center justify-center text-[#292828]/20 mb-10 group-hover:scale-110 transition-transform duration-700">
-                        <Users size={64} strokeWidth={1} />
-                     </div>
-                     <h2 className="text-3xl font-black uppercase text-[#292828] tracking-tighter">No Active Alliances</h2>
-                     <p className="text-slate-400 font-bold mt-4 max-w-md mx-auto text-lg leading-relaxed">Your neural scan found no mandates matching your current authority level. Expand your strategic profile to initialize discovery.</p>
+                 <div className="space-y-6">
+                    <div className="space-y-3">
+                       <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest px-1">Tactical Brief (Optional)</label>
+                       <textarea 
+                         value={message}
+                         onChange={(e) => setMessage(e.target.value)}
+                         placeholder="Why do you want to connect? Be surgical." 
+                         className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl p-6 text-[13px] font-bold outline-none focus:bg-white focus:border-[#E53935]/20 transition-all resize-none"
+                       />
+                    </div>
+                    <div className="p-5 bg-emerald-50 rounded-2xl flex gap-4">
+                       <ShieldCheck className="text-emerald-600 shrink-0" size={20} />
+                       <p className="text-[10px] font-bold text-emerald-600 uppercase leading-relaxed">Connecting creates a secure bilateral link. Chat will be enabled upon acceptance.</p>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4 mt-10">
+                    <button onClick={() => setConnectModal({ isOpen: false, user: null })} className="h-16 bg-slate-50 text-slate-400 rounded-2xl font-black text-[11px] uppercase hover:bg-slate-100 transition-all">Cancel</button>
+                    <button 
+                      onClick={handleConnect}
+                      disabled={isSending}
+                      className="h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                       {isSending ? <Loader2 className="animate-spin" size={18} /> : <>Send Request <Zap size={18} /></>}
+                    </button>
+                 </div>
+              </motion.div>
+           </div>
+         )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
+
+// --- SUB-COMPONENTS ---
+
+function PartnerCard({ partner, onConnect }: { partner: MatchProfile; onConnect: () => void }) {
+  const router = useRouter();
+  const score = partner.metadata?.match_score || 0;
+  const reasons = (partner as any).metadata?.reasons || [];
+
+  return (
+    <div className="group bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-[0_40px_60px_-15px_rgba(15,23,42,0.08)] hover:border-slate-200 transition-all duration-700 relative overflow-hidden">
+       {/* Ambient Backdrop */}
+       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_top_right,rgba(229,57,53,0.03),transparent_70%)]" />
+
+       <div className="flex flex-col h-full relative z-10">
+          <div className="flex items-start justify-between mb-8">
+             <div className="relative">
+                <div className="h-20 w-20 rounded-[2rem] bg-slate-50 border border-slate-100 overflow-hidden shadow-2xl transition-transform group-hover:scale-105 duration-700 flex items-center justify-center bg-[#292828]/5">
+                   {partner.avatar_url ? <img src={partner.avatar_url} className="w-full h-full object-cover" /> : <User size={30} className="text-[#292828]/20" />}
+                </div>
+                {partner.connection_status === 'ACCEPTED' && (
+                  <div className="absolute -bottom-1 -right-1 h-7 w-7 bg-emerald-500 border-4 border-white rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                     <CheckCircle2 size={12} strokeWidth={3} />
                   </div>
                 )}
              </div>
-           )}
-        </main>
-      </div>
 
-      <DealEngine 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        deal={selectedDeal}
-      />
+             {/* Match Visualizer */}
+             <div className="flex flex-col items-end">
+                <div className="h-14 w-14 rounded-full border-4 border-slate-50 flex items-center justify-center relative group/score">
+                   <svg className="absolute inset-0 -rotate-90">
+                      <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-50" />
+                      <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="150" strokeDashoffset={150 - (150 * score) / 100} className="text-[#E53935]" />
+                   </svg>
+                   <span className="text-[12px] font-black text-[#292828] tabular-nums">{score}%</span>
+                </div>
+             </div>
+          </div>
+
+          <div className="space-y-1 mb-6">
+             <h3 className="text-xl font-black text-[#292828] uppercase tracking-tight group-hover:text-[#E53935] transition-colors">{partner.full_name}</h3>
+             <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em]">{partner.role}</p>
+          </div>
+
+          <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-50 mb-8 space-y-3">
+             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Reason for Match</p>
+             <div className="space-y-2">
+                {reasons.map((r: string, i: number) => (
+                  <div key={i} className="flex items-center gap-3">
+                     <div className="h-1 w-1 rounded-full bg-[#E53935]" />
+                     <span className="text-[11px] font-bold text-[#292828]/70 leading-tight">{r}</span>
+                  </div>
+                ))}
+             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-10">
+             {partner.skills?.slice(0, 3).map(s => (
+               <span key={s} className="px-3 py-1.5 bg-white border border-slate-100 rounded-lg text-[9px] font-black uppercase text-slate-400 group-hover:text-slate-900 group-hover:border-slate-200 transition-all">{s}</span>
+             ))}
+          </div>
+
+          <div className="mt-auto grid grid-cols-1 gap-2">
+             {partner.connection_status === 'ACCEPTED' ? (
+                <button 
+                  onClick={() => router.push(`/chat?user=${partner.id}`)}
+                  className="w-full h-14 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all shadow-xl"
+                >
+                   Message Partner <MessageSquare size={16} />
+                </button>
+             ) : partner.connection_status === 'PENDING' ? (
+                <button className="w-full h-14 bg-slate-100 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 cursor-default">
+                   In Sync (Pending) <Clock size={16} />
+                </button>
+             ) : (
+                <div className="grid grid-cols-2 gap-2">
+                   <button onClick={onConnect} className="h-14 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 transition-all shadow-xl shadow-red-500/10">
+                      Connect <Zap size={14} />
+                   </button>
+                   <button onClick={() => router.push(`/profile/${partner.id}`)} className="h-14 bg-slate-50 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 hover:text-[#292828] transition-all">
+                      Profile
+                   </button>
+                </div>
+             )}
+          </div>
+       </div>
+    </div>
+  );
+}
+
+function RequestCard({ request, onAction }: { request: any; onAction: (id: string, s: any) => void }) {
+  return (
+    <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-xl transition-all group relative overflow-hidden">
+       <div className="flex items-center gap-8">
+          <div className="h-20 w-20 rounded-[1.75rem] bg-slate-50 border border-slate-100 overflow-hidden shadow-xl flex items-center justify-center bg-[#292828]/5">
+             {request.sender?.avatar_url ? <img src={request.sender.avatar_url} className="w-full h-full object-cover" /> : <User size={30} className="text-[#292828]/20" />}
+          </div>
+          
+          <div className="flex-1">
+             <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-black text-[#292828] uppercase tracking-tight">{request.sender?.full_name}</h3>
+                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{new Date(request.created_at).toLocaleDateString()}</span>
+             </div>
+             <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-4">{request.sender?.role} • {request.sender?.location}</p>
+             {request.message && (
+               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[12px] font-medium text-[#292828]/70 italic leading-tight">"{request.message}"</p>
+               </div>
+             )}
+          </div>
+
+          <div className="flex gap-4">
+             <button onClick={() => onAction(request.id, 'ACCEPTED')} className="h-14 px-8 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl">Activate Sync</button>
+             <button onClick={() => onAction(request.id, 'REJECTED')} className="h-14 px-8 bg-slate-50 text-slate-300 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-red-500 hover:border hover:border-red-100 transition-all">Ignore</button>
+          </div>
+       </div>
+    </div>
+  );
+}
+
+function FilterSection({ label, options }: { label: string; options: string[] }) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const toggle = (opt: string) => setSelected(prev => prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]);
+
+  return (
+    <div className="space-y-6">
+       <h4 className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">{label}</h4>
+       <div className="flex flex-wrap gap-2">
+          {options.map(opt => (
+            <button 
+              key={opt} 
+              onClick={() => toggle(opt)}
+              className={cn(
+                "px-5 py-3 rounded-xl text-[10px] font-black uppercase transition-all border-2",
+                selected.includes(opt) ? "bg-[#292828] border-black text-white shadow-lg" : "bg-white border-slate-50 text-slate-400 hover:border-slate-200"
+              )}
+            >
+               {opt}
+            </button>
+          ))}
+       </div>
+    </div>
+  );
+}
+
+function PartnerListRow({ partner, onConnect }: { partner: MatchProfile; onConnect: () => void }) {
+  const router = useRouter();
+  const score = partner.metadata?.match_score || 0;
+
+  return (
+    <div className="group bg-white border border-slate-100 rounded-2xl p-6 hover:shadow-lg transition-all flex items-center gap-8">
+       <div className="h-16 w-16 rounded-xl bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center bg-[#292828]/5 border border-slate-100">
+          {partner.avatar_url ? <img src={partner.avatar_url} className="w-full h-full object-cover" /> : <User size={24} className="text-[#292828]/20" />}
+       </div>
+       
+       <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-1">
+             <h3 className="text-base font-black text-[#292828] uppercase truncate">{partner.full_name}</h3>
+             <span className="px-2 py-0.5 bg-red-50 text-[#E53935] rounded-md text-[8px] font-black uppercase tracking-widest">{partner.role}</span>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{partner.location} • {partner.skills.slice(0, 3).join(', ')}</p>
+       </div>
+
+       <div className="flex items-center gap-8 px-8 border-x border-slate-100">
+          <div className="text-center">
+             <p className="text-[8px] font-black text-slate-300 uppercase mb-1">Alignment</p>
+             <p className="text-lg font-black text-[#292828]">{score}%</p>
+          </div>
+       </div>
+
+       <div className="flex gap-2">
+          {partner.connection_status === 'ACCEPTED' ? (
+             <button onClick={() => router.push(`/chat?user=${partner.id}`)} className="h-12 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase hover:bg-black transition-all">Message</button>
+          ) : partner.connection_status === 'PENDING' ? (
+             <button className="h-12 px-6 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase cursor-default">Pending</button>
+          ) : (
+             <button onClick={onConnect} className="h-12 px-6 bg-[#E53935] text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-600 transition-all shadow-lg shadow-red-500/10">Connect</button>
+          )}
+          <button onClick={() => router.push(`/profile/${partner.id}`)} className="h-12 w-12 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100"><ArrowUpRight size={16} /></button>
+       </div>
     </div>
   );
 }

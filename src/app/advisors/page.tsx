@@ -20,7 +20,8 @@ import {
   Shield,
   Target,
   Maximize2,
-  X
+  X,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -87,7 +88,7 @@ export default function AdvisorDirectoryPage() {
       await supabase.from('notifications').insert([{
          user_id: selectedExpert.id,
          title: 'Verified Mandate Received',
-         message: `${user.full_name || user.email} has initialized a tactical session. Payment Verified: ${simulatedPaymentId}`,
+         message: `${user.user_metadata?.full_name || user.email} has initialized a tactical session. Payment Verified: ${simulatedPaymentId}`,
          type: 'BOOKING',
          link: '/home'
       }]);
@@ -106,7 +107,7 @@ export default function AdvisorDirectoryPage() {
     <div className="min-h-screen bg-[#FDFDFF] pb-40 selection:bg-[#E53935]/10">
       
       {/* 1. PRISTINE EXPERT HERO - WHITE AESTHETIC */}
-      <section className="bg-white border-b border-slate-100 pt-32 pb-44 px-6 lg:px-10 relative overflow-hidden">
+      <section className="bg-white border-b border-slate-100 pt-20 pb-32 lg:pt-32 lg:pb-44 px-6 lg:px-10 relative overflow-hidden">
          {/* Background Subtle Accents */}
          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E53935]/[0.02] rounded-full blur-[160px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
          <div className="absolute top-1/4 left-0 w-2 h-24 bg-[#E53935] rounded-full opacity-10" />
@@ -118,7 +119,7 @@ export default function AdvisorDirectoryPage() {
                      <div className="h-0.5 w-16 bg-[#E53935]" />
                      <p className="text-[12px] font-black uppercase tracking-[0.5em] text-[#292828]/40">Expert Advisory Network</p>
                   </div>
-                  <h1 className="text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] text-[#292828] mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                  <h1 className="text-4xl sm:text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] text-[#292828] mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                      Strategic <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] to-[#292828]/40">Advisors</span>
                   </h1>
                   <p className="text-xl lg:text-2xl font-medium text-[#292828]/50 max-w-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-12 duration-1000">
@@ -146,13 +147,13 @@ export default function AdvisorDirectoryPage() {
          <div className="bg-white/80 backdrop-blur-2xl p-6 rounded-[3rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col lg:flex-row items-center gap-6 transition-all hover:shadow-[0_64px_128px_-16px_rgba(0,0,0,0.12)] group/dock">
             <div className="w-full relative">
                <Search size={22} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/dock:text-[#E53935] transition-colors" />
-               <input 
-                 type="text" 
-                 placeholder="Search by expertise (e.g. Scaling, Strategy, Mandates)..." 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 className="w-full h-20 bg-slate-50 border border-transparent rounded-[2rem] pl-20 pr-10 text-lg font-black text-[#292828] focus:bg-white focus:border-[#E53935] outline-none transition-all placeholder:text-[#292828]/10"
-               />
+                <input 
+                  type="text" 
+                  placeholder="Search by expertise (Scaling, Strategy)..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-16 lg:h-20 bg-slate-50 border border-transparent rounded-[2rem] pl-16 lg:pl-20 pr-6 text-base lg:text-lg font-black text-[#292828] focus:bg-white focus:border-[#E53935] outline-none transition-all placeholder:text-[#292828]/10"
+                />
             </div>
             <div className="flex gap-2 overflow-x-auto no-scrollbar py-2 w-full lg:w-auto px-4">
                {['All', 'Strategy', 'Tech', 'Scaling', 'Marketing'].map(cat => (
@@ -170,13 +171,17 @@ export default function AdvisorDirectoryPage() {
             ) : (
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-20 duration-1000">
                   {filteredAdvisors.map((advisor) => (
-                     <div key={advisor.id} className="bg-white rounded-[4rem] p-12 border border-slate-100 shadow-xl hover:shadow-[0_64px_128px_-32px_rgba(0,0,0,0.06)] hover:-translate-y-4 transition-all duration-700 group relative overflow-hidden h-full flex flex-col">
+                     <div key={advisor.id} className="bg-white rounded-[3rem] lg:rounded-[4rem] p-8 lg:p-12 border border-slate-100 shadow-xl hover:shadow-[0_64px_128px_-32px_rgba(0,0,0,0.06)] hover:-translate-y-4 transition-all duration-700 group relative overflow-hidden h-full flex flex-col">
                         
                         {/* Advisor Identity Hub */}
                         <div className="flex flex-col lg:flex-row gap-10 items-start relative z-10 mb-12 flex-1">
                            <div className="relative shrink-0 mx-auto lg:mx-0">
-                              <div className="h-44 w-44 rounded-[3.5rem] overflow-hidden border-[6px] border-slate-50 group-hover:scale-105 group-hover:rotate-3 transition-all duration-700 shadow-2xl relative">
-                                 <img src={advisor.avatar_url || `https://i.pravatar.cc/200?u=${advisor.id}`} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0" alt="" />
+                              <div className="h-44 w-44 rounded-[3.5rem] overflow-hidden border-[6px] border-slate-50 group-hover:scale-105 group-hover:rotate-3 transition-all duration-700 shadow-2xl relative flex items-center justify-center bg-white text-slate-200">
+                                 {advisor.avatar_url ? (
+                                    <img src={advisor.avatar_url} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0" alt="" />
+                                 ) : (
+                                    <User size={64} />
+                                 )}
                                  <div className="absolute inset-0 bg-gradient-to-t from-[#292828]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                               </div>
                               <div className="absolute -bottom-4 -right-4 h-14 w-14 bg-[#292828] rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl border-4 border-white group-hover:bg-[#E53935] transition-all duration-700 group-hover:rotate-12">
@@ -246,7 +251,7 @@ export default function AdvisorDirectoryPage() {
            {/* Backdrop Overlay */}
            <div className="absolute inset-0" onClick={() => setIsBookingModalOpen(false)} />
            
-           <div className="w-full max-w-2xl bg-white rounded-[4rem] p-12 lg:p-16 shadow-[0_64px_128px_-24px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar relative z-10 border border-white">
+           <div className="w-full max-w-2xl bg-white rounded-[2.5rem] lg:rounded-[4rem] p-8 lg:p-16 shadow-[0_64px_128px_-24px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar relative z-10 border border-white">
               
               <button 
                 onClick={() => setIsBookingModalOpen(false)} 
@@ -261,8 +266,12 @@ export default function AdvisorDirectoryPage() {
               </div>
               
               <div className="bg-slate-50/50 border border-slate-100 p-8 rounded-[3rem] flex items-center gap-8 mb-12 shadow-inner">
-                 <div className="h-24 w-24 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white shrink-0">
-                    <img src={selectedExpert.avatar_url || `https://i.pravatar.cc/200?u=${selectedExpert.id}`} className="w-full h-full object-cover grayscale" alt="" />
+                 <div className="h-24 w-24 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white shrink-0 flex items-center justify-center bg-white text-slate-200">
+                    {selectedExpert.avatar_url ? (
+                       <img src={selectedExpert.avatar_url} className="w-full h-full object-cover grayscale" alt="" />
+                    ) : (
+                       <User size={40} />
+                    )}
                  </div>
                  <div>
                     <h3 className="text-2xl font-black text-[#292828] leading-tight mb-2 uppercase tracking-tight">{selectedExpert.full_name}</h3>

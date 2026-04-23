@@ -54,7 +54,7 @@ export default function DesktopSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[300px] hidden lg:flex flex-col bg-white/80 backdrop-blur-xl border-r border-[#292828]/5 h-full sticky top-0 py-10 px-8 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10 z-50">
+    <aside className="w-[260px] hidden lg:flex flex-col bg-white border-r border-[#292828]/5 h-full sticky top-0 py-10 px-6 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10 z-50">
       
       {/* 1. NAVIGATION GROUPS */}
       <div className="flex-1 space-y-12">
@@ -71,10 +71,10 @@ export default function DesktopSidebar() {
                     key={item.label}
                     href={item.href}
                     className={cn(
-                      "group flex items-center gap-4 px-4 h-9 rounded-xl transition-all duration-500 relative overflow-hidden",
+                      "group flex items-center gap-4 px-4 h-11 rounded-xl transition-all duration-300 relative overflow-hidden",
                       isActive 
-                        ? "bg-[#292828] text-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.2)]" 
-                        : "text-zinc-600 hover:text-[#292828] hover:bg-slate-50/80"
+                        ? "bg-[#292828] text-white" 
+                        : "text-slate-500 hover:text-[#292828] hover:bg-slate-50"
                     )}
                   >
                     {isActive && (
@@ -82,28 +82,28 @@ export default function DesktopSidebar() {
                     )}
                     
                     <item.icon 
-                      size={20} 
+                      size={18} 
                       className={cn(
-                        "transition-all duration-500",
-                        isActive ? "text-[#E53935] scale-110 drop-shadow-[0_0_8px_rgba(229,57,53,0.4)]" : "group-hover:text-[#292828] group-hover:scale-110"
+                        "transition-all duration-300",
+                        isActive ? "text-[#E53935]" : "group-hover:text-[#292828]"
                       )} 
                     />
                     
                     <span className={cn(
-                      "text-[13px] font-light uppercase tracking-tight",
-                      isActive ? "text-white font-medium" : "text-slate-500"
+                      "text-[12px] font-bold uppercase tracking-tight",
+                      isActive ? "text-white" : "text-slate-500"
                     )}>
                       {item.label}
                     </span>
                     
                     {item.badge && (
-                      <div className="ml-auto h-5 px-2 rounded-lg bg-[#E53935] text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_15px_rgba(229,57,53,0.3)] animate-pulse">
+                      <div className="ml-auto h-5 px-2 rounded-lg bg-[#E53935] text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_15px_rgba(229,57,53,0.3)]">
                         {item.badge}
                       </div>
                     )}
 
                     {!isActive && (
-                      <ChevronRight size={14} className="ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 text-[#292828]/20" />
+                      <ChevronRight size={14} className="ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[#292828]/20" />
                     )}
                   </Link>
                 );

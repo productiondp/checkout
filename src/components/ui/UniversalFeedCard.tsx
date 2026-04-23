@@ -24,15 +24,17 @@ import { cn } from "@/lib/utils";
 
 interface UniversalFeedCardProps {
   post: any;
+  currentUserId?: string;
   isExpanded?: boolean;
   onExpand?: () => void;
   onAction?: () => void;
   onEdit?: (post: any) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (post: any) => void;
 }
 
 export default function UniversalFeedCard({ 
   post, 
+  currentUserId,
   isExpanded, 
   onExpand,
   onAction,
@@ -71,7 +73,7 @@ export default function UniversalFeedCard({
 
   return (
     <div className={cn(
-      "group relative bg-white border border-[#292828]/10 rounded-[28px] overflow-hidden transition-all duration-500",
+      "group relative bg-white border border-[#292828]/10 rounded-[28px] transition-all duration-500",
       isExpanded && "ring-2 ring-[#292828]/5",
       (isLead || isPartner) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
       (isHiring || isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
@@ -79,7 +81,7 @@ export default function UniversalFeedCard({
       {/* VERTICAL TACTICAL STRIP */}
       {(isLead || isPartner || isHiring || isMeetup) && (
         <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2",
+          "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[28px]",
           (isLead || isPartner) ? "bg-[#E53935]" : "bg-emerald-600"
         )} />
       )}
@@ -260,34 +262,48 @@ export default function UniversalFeedCard({
                   <Bookmark size={18} />
                </button>
                
-               <div className="relative">
-                  <button 
-                    onClick={() => setShowMenu(!showMenu)}
-                    className={cn(
-                      "h-12 w-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#292828] hover:border-[#292828] transition-all shrink-0",
-                      showMenu && "bg-[#292828] text-white border-[#292828]"
-                    )}
-                  >
-                     <MoreVertical size={18} />
-                  </button>
+               {/* Only show edit/delete for the post owner */}
+               {(currentUserId === post.user_id || currentUserId === post.author_id) && (
+                 <div className="relative">
+                    <button 
+                      onClick={() => setShowMenu(!showMenu)}
+                      className={cn(
+                        "h-12 w-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#292828] hover:border-[#292828] transition-all shrink-0",
+                        showMenu && "bg-[#292828] text-white border-[#292828]"
+                      )}
+                    >
+                       <MoreVertical size={18} />
+                    </button>
 
-                  {showMenu && (
-                    <div className="absolute bottom-full right-0 mb-3 w-40 bg-[#292828] rounded-2xl shadow-2xl overflow-hidden z-[60] animate-in slide-in-from-bottom-2 duration-200">
-                       <button 
-                         onClick={() => { onEdit?.(post); setShowMenu(false); }}
-                         className="w-full h-12 px-5 flex items-center gap-3 text-white hover:bg-white/10 transition-colors text-[10px] font-bold uppercase tracking-wider"
-                       >
-                          <Pencil size={14} /> Edit Post
-                       </button>
-                       <button 
-                         onClick={() => { onDelete?.(post.id); setShowMenu(false); }}
-                         className="w-full h-12 px-5 flex items-center gap-3 text-red-400 hover:bg-white/10 transition-colors text-[10px] font-bold uppercase tracking-wider border-t border-white/5"
-                       >
-                          <Trash2 size={14} /> Delete
-                       </button>
-                    </div>
-                  )}
-               </div>
+                    {showMenu && (
+                      <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#292828]/10 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
+                         <div className="px-4 py-3 border-b border-slate-50 bg-slate-50/50">
+                            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Feed Actions</p>
+                         </div>
+                         <div className="p-1.5">
+                            <button 
+                              onClick={() => { onEdit?.(post); setShowMenu(false); }}
+                              className="w-full h-11 px-4 flex items-center gap-3 text-[#292828] hover:bg-slate-50 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider"
+                            >
+                               <div className="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-[#292828]">
+                                  <Pencil size={12} />
+                               </div>
+                               Edit Mandate
+                            </button>
+                            <button 
+                              onClick={() => { onDelete?.(post); setShowMenu(false); }}
+                              className="w-full h-11 px-4 flex items-center gap-3 text-red-600 hover:bg-red-50 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider"
+                            >
+                               <div className="h-7 w-7 bg-red-100/50 rounded-lg flex items-center justify-center text-red-500">
+                                  <Trash2 size={12} />
+                               </div>
+                               Delete Node
+                            </button>
+                         </div>
+                      </div>
+                    )}
+                 </div>
+               )}
                
                <button 
                  onClick={onExpand}

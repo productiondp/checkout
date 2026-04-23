@@ -43,179 +43,195 @@ function ChatTerminal() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [chats, setChats] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
-  const roomParam = searchParams.get('room');
+  const userParam = searchParams.get('user');
 
   const supabase = createClient();
 
-  // 1. IDENTITY & ROOM FETCHING
+  // 1. IDENTITY & NETWORK FETCHING
   React.useEffect(() => {
-    async function initChat() {
+    async function initNetwork() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setCurrentUser(user);
 
-      // Fetch rooms where user is a participant
-      const { data: rooms, error } = await supabase
-        .from('participants')
-        .select(`
-          room:chat_rooms (
-            id,
-            title,
-            is_group,
-            participants:participants (
-              profile:profiles (id, full_name, avatar_url, role, match_score)
-            )
-          )
-        `)
-        .eq('user_id', user.id);
+      // Fetch All Profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', user.id)
+        .order('full_name', { ascending: true });
+      
+      if (profiles) {
+        const formattedUsers = profiles.map(p => ({
+          id: p.id,
+          partnerId: p.id,
+          name: p.full_name || "Partner",
+          avatar: p.avatar_url,
+          role: p.role || "Verified Partner",
+          online: true,
+          time: "node",
+          last: "Initiate secure link"
+        }));
+        setAllUsers(formattedUsers);
 
-      if (rooms) {
-        const formattedChats = rooms.map((r: any) => {
-          const otherParticipant = r.room.participants.find((p: any) => p.profile.id !== user.id);
-          return {
-            id: r.room.id,
-            name: otherParticipant?.profile.full_name || "Community Chat",
-            avatar: otherParticipant?.profile.avatar_url || `https://i.pravatar.cc/150?u=${r.room.id}`,
-            role: otherParticipant?.profile.role || "Partner",
-            checkoutScore: otherParticipant?.profile.match_score || 90,
-            online: true,
-            last: "New thread started",
-            time: "now"
-          };
-        });
-        setChats(formattedChats);
-
-        // 3. Handle Direct Link (Syndicate Room Selection)
-        if (roomParam) {
-           const targetChat = formattedChats.find(c => c.id === roomParam);
-           if (targetChat) {
-              setSelectedChat(targetChat);
-           }
+        if (userParam) {
+           const target = formattedUsers.find(u => u.partnerId === userParam);
+           if (target) setSelectedChat(target);
         }
+      }
+
+      // Fetch Existing Conversations
+      const { data: connections } = await supabase
+        .from('connections')
+        .select(`
+          id,
+          status,
+          sender:profiles!connections_sender_id_fkey (id, full_name, avatar_url, role),
+          receiver:profiles!connections_receiver_id_fkey (id, full_name, avatar_url, role)
+        `)
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
+      if (connections) {
+        setChats(connections.map((conn: any) => {
+          const partner = conn.sender.id === user.id ? conn.receiver : conn.sender;
+          return {
+            id: conn.id,
+            partnerId: partner.id,
+            name: partner.full_name,
+            avatar: partner.avatar_url,
+            role: partner.role,
+            online: true,
+            time: "active"
+          };
+        }));
       }
       setIsLoading(false);
     }
-    initChat();
-  }, [roomParam]);
+    initNetwork();
+  }, [userParam]);
 
   // 2. MESSAGE LOADING & REALTIME SUBSCRIPTION
   React.useEffect(() => {
-    if (!selectedChat) return;
+    if (!selectedChat || selectedChat.id === "temp") return;
 
-    // Initial Load
     async function loadMessages() {
       const { data } = await supabase
         .from('messages')
         .select('*')
-        .eq('room_id', selectedChat.id)
+        .eq('connection_id', selectedChat.id)
         .order('created_at', { ascending: true });
       if (data) setMessages(data);
     }
     loadMessages();
 
-    // Subscribe to new messages
     const channel = supabase
-      .channel(`chat_room_${selectedChat.id}`)
+      .channel(`connection_${selectedChat.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'messages',
-        filter: `room_id=eq.${selectedChat.id}`
+        filter: `connection_id=eq.${selectedChat.id}`
       }, (payload) => {
         setMessages(prev => [...prev, payload.new]);
       })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [selectedChat]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !selectedChat || !currentUser) return;
 
+    // Logic to create connection if "temp"
+    // For now, assume connection exists or just list "everyone" for UI testing
     const newMessage = {
-      room_id: selectedChat.id,
+      connection_id: selectedChat.id === "temp" ? null : selectedChat.id,
       sender_id: currentUser.id,
       content: message
     };
-
     setMessage("");
 
-    const { error } = await supabase
-      .from('messages')
-      .insert([newMessage]);
-
-    if (error) {
-      console.error("Message failed:", error);
-      alert("Failed to send message.");
+    if (selectedChat.id !== "temp") {
+       await supabase.from('messages').insert([newMessage]);
     }
   };
+
+  const filteredNodes = allUsers.filter(u => 
+    u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    u.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
       
       {/* 1. THREAD LIST SIDEBAR */}
       <aside className={cn(
-        "w-full md:w-[380px] border-r border-[#292828]/10 flex flex-col bg-white transition-all",
+        "w-full md:w-80 lg:w-[380px] border-r border-slate-100 flex flex-col bg-white transition-all shrink-0",
         selectedChat && "hidden md:flex"
       )}>
-        <div className="p-8 pb-6 bg-white/100 z-10 sticky top-0">
+        <div className="p-8 pb-6 bg-white z-10 sticky top-0">
            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-[#292828] leading-none font-outfit uppercase">Chats</h1>
+              <h1 className="text-3xl font-black text-[#292828] uppercase tracking-tighter">Messages</h1>
               <button 
                 onClick={() => setShowSettings(true)}
-                className="h-10 w-10 bg-[#292828]/5 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828]/10 hover:text-[#292828] transition-all"
+                className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all shadow-sm"
               >
                  <Settings size={18} />
               </button>
            </div>
            
            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/40 group-focus-within:text-[#E53935] transition-colors" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" size={18} />
               <input 
                 type="text" 
-                placeholder="Search conversations..." 
-                className="w-full h-12 bg-[#292828]/5 border border-transparent rounded-2xl pl-12 pr-4 text-[13px] font-medium outline-none focus:bg-white focus:border-[#292828]/10 focus:shadow-sm" 
+                placeholder="Search everyone..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-[13px] font-bold text-[#292828] outline-none focus:bg-white focus:ring-2 focus:ring-[#E53935]/10 focus:border-[#E53935] transition-all" 
               />
            </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
            <div className="px-5 mb-4 mt-2">
-              <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Recent Discussions</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Directory</p>
            </div>
-           {chats.map((chat) => (
+           {filteredNodes.map((chat) => (
              <button 
-               key={chat.id} 
+               key={chat.partnerId} 
                onClick={() => setSelectedChat(chat)}
                className={cn(
-                 "w-full flex items-center gap-4 p-4 rounded-3xl transition-all group",
-                 selectedChat?.id === chat.id ? "bg-[#292828] shadow-2xl shadow-slate-900/10" : "hover:bg-[#292828]/5"
+                 "w-full flex items-center gap-4 p-4 rounded-[2rem] transition-all group relative",
+                 selectedChat?.partnerId === chat.partnerId ? "bg-[#292828] text-white shadow-2xl" : "hover:bg-slate-50"
                )}
              >
-                <Link href={`/profile/${chat.id}`} className="relative shrink-0 block hover:scale-105 transition-transform active:scale-95">
-                   <div className="h-14 w-14 rounded-2xl overflow-hidden border-2 border-transparent group-hover:border-[#292828]/10 transition-all">
+                <div className="relative shrink-0">
+                   <div className="h-14 w-14 rounded-2xl overflow-hidden border-2 border-transparent group-hover:border-slate-200 transition-all">
                       <img src={chat.avatar} className="w-full h-full object-cover" alt="" />
                    </div>
-                   {chat.online && <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />}
-                </Link>
+                   <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />
+                </div>
                 <div className="flex-1 min-w-0 text-left">
                    <div className="flex justify-between items-center mb-1">
-                      <h4 className={cn("text-[15px] font-bold truncate", selectedChat?.id === chat.id ? "text-white" : "text-[#292828]")}>
+                      <h4 className="text-[15px] font-bold truncate tracking-tight uppercase">
                          {chat.name}
                       </h4>
-                      <span className={cn("text-[10px] font-bold", selectedChat?.id === chat.id ? "text-white/40" : "text-[#292828]")}>
+                      <span className="text-[9px] font-black opacity-40 uppercase tracking-widest whitespace-nowrap">
                          {chat.time}
                       </span>
                    </div>
-                   <p className={cn("text-[13px] font-medium truncate", selectedChat?.id === chat.id ? "text-white/60" : "text-[#292828]")}>
-                      {chat.last}
+                   <p className="text-[11px] font-bold opacity-60 truncate uppercase tracking-tight">
+                      {chat.role}
                    </p>
                 </div>
+                {selectedChat?.partnerId === chat.partnerId && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-[#E53935] rounded-r-full" />
+                )}
              </button>
            ))}
         </div>
@@ -229,37 +245,37 @@ function ChatTerminal() {
         {selectedChat ? (
           <>
             {/* Thread Header */}
-            <header className="h-20 lg:h-24 px-6 lg:px-10 flex items-center justify-between bg-white border-b border-[#292828]/5 sticky top-0 z-20">
+            <header className="h-16 lg:h-24 px-4 lg:px-10 flex items-center justify-between bg-white border-b border-slate-100 sticky top-0 z-20">
                <div className="flex items-center gap-4">
                   <button onClick={() => setSelectedChat(null)} className="md:hidden h-10 w-10 rounded-xl flex items-center justify-center text-[#292828] hover:text-[#292828]">
                      <ChevronLeft size={20} />
                   </button>
                   <div className="flex items-center gap-4">
-                     <Link href={`/profile/${selectedChat.id}`} className="h-12 w-12 rounded-2xl overflow-hidden shadow-md block hover:scale-105 transition-transform active:scale-95">
+                     <Link href={`/profile/${selectedChat.partnerId}`} className="h-12 w-12 rounded-2xl overflow-hidden shadow-md block hover:scale-105 transition-transform active:scale-95">
                         <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
                      </Link>
                      <div>
-                        <h2 className="text-[17px] font-bold text-[#292828] leading-tight font-outfit uppercase">{selectedChat.name}</h2>
+                        <h2 className="text-[17px] font-black text-[#292828] leading-tight uppercase">{selectedChat.name}</h2>
                         <div className="flex items-center gap-2">
                            <span className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-green-500" : "bg-slate-300")} />
-                           <span className="text-[11px] font-bold text-[#292828] uppercase">{selectedChat.online ? "Online Now" : "Inactive"}</span>
+                           <span className="text-[11px] font-black text-[#292828] uppercase">{selectedChat.online ? "Online Now" : "Inactive"}</span>
                         </div>
                      </div>
                   </div>
                </div>
                
                <div className="flex items-center gap-2">
-                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-[#292828]/5 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
                      <Phone size={20} />
                   </button>
-                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-[#292828]/5 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
                      <Video size={20} />
                   </button>
                   <button 
                     onClick={() => setShowProfile(!showProfile)}
                     className={cn(
                       "h-12 w-12 items-center justify-center rounded-2xl transition-all shadow-sm",
-                      showProfile ? "bg-[#292828] text-white" : "bg-[#292828]/5 text-[#292828] hover:bg-[#292828] hover:text-white"
+                      showProfile ? "bg-[#292828] text-white" : "bg-slate-50 text-[#292828] hover:bg-[#292828] hover:text-white"
                     )}
                   >
                      <Info size={22} />
@@ -268,9 +284,9 @@ function ChatTerminal() {
             </header>
 
              {/* MESSAGE STREAM */}
-            <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#FDFDFF] no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-6 lg:space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828]/10 rounded-full text-[10px] font-bold text-[#292828] uppercase">Secure Connection</span>
+                  <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Secure Connection</span>
                </div>
 
                {/* Live Message Stream */}
@@ -280,13 +296,13 @@ function ChatTerminal() {
                     return (
                       <div key={msg.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn(
-                          "p-5 rounded-[1.3rem] shadow-sm max-w-[80%] leading-relaxed text-[15px] font-medium",
-                          isMe ? "bg-[#E53935] text-white rounded-tr-lg shadow-red-500/10" : "bg-white border border-[#292828]/10 text-slate-700 rounded-tl-lg"
+                          "p-5 rounded-[1.3rem] shadow-sm max-w-[80%] leading-relaxed text-[15px] font-bold",
+                          isMe ? "bg-[#E53935] text-white rounded-tr-lg shadow-red-500/10" : "bg-white border border-slate-100 text-slate-700 rounded-tl-lg"
                         )}>
                           {msg.content}
                         </div>
                         <div className={cn("flex items-center gap-2 mt-2", isMe ? "mr-4" : "ml-4")}>
-                           <span className="text-[10px] font-bold text-[#292828]/40">
+                           <span className="text-[10px] font-bold text-slate-400">
                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                            </span>
                            {isMe && <CheckCheck size={14} className="text-[#E53935]" />}
@@ -299,23 +315,23 @@ function ChatTerminal() {
                   )}
                </div>
             </div>
->             {/* COMPOSER (BOTTOM) */}
-            <div className="p-6 lg:p-8 bg-white border-t border-[#292828]/5 pb-24 lg:pb-8">
-               <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-[#292828]/5 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-[#292828]/10/50 group focus-within:bg-white focus-within:shadow-xl transition-all">
+            {/* COMPOSER (BOTTOM) */}
+            <div className="p-4 lg:p-8 bg-white border-t border-slate-100 pb-32 lg:pb-8">
+               <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 group focus-within:bg-white focus-within:shadow-xl transition-all">
                   <div className="relative">
                      <button 
                        type="button"
                        onClick={() => setShowAttachMenu(!showAttachMenu)}
                        className={cn(
                          "h-12 w-12 flex items-center justify-center rounded-2xl transition-all",
-                         showAttachMenu ? "bg-[#292828] text-white rotate-45" : "text-[#292828]/40 hover:text-[#292828]"
+                         showAttachMenu ? "bg-[#292828] text-white rotate-45" : "text-slate-300 hover:text-[#292828]"
                        )}
                      >
                         <Plus size={24} />
                      </button>
 
                      {showAttachMenu && (
-                       <div className="absolute bottom-[130%] left-0 w-56 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                       <div className="absolute bottom-[130%] left-0 w-56 bg-white rounded-3xl shadow-4xl border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-300">
                           {[
                             { icon: ImageIcon, label: "Photos & Videos", color: "text-red-500", bg: "bg-red-50" },
                             { icon: FileText, label: "Documents", color: "text-blue-500", bg: "bg-blue-50" },
@@ -326,7 +342,7 @@ function ChatTerminal() {
                               key={i} 
                               type="button"
                               onClick={() => setShowAttachMenu(false)}
-                              className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group"
+                              className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-black text-[#292828] hover:bg-slate-50 transition-all group"
                             >
                                <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", it.bg, it.color)}>
                                   <it.icon size={18} />
@@ -342,10 +358,10 @@ function ChatTerminal() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Type your message..." 
-                    className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium text-[#292828] py-4"
+                    className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
                   />
                   <div className="flex items-center gap-2 pr-2">
-                     <button type="button" className="h-10 w-10 flex items-center justify-center text-[#292828]/40 hover:text-[#292828] transition-colors">
+                     <button type="button" className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-[#292828] transition-colors">
                         <ImageIcon size={20} />
                      </button>
                      <button 
@@ -360,22 +376,22 @@ function ChatTerminal() {
                   </div>
                </form>
             </div>
->
+
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#FDFDFF]">
              <div className="h-24 w-24 bg-white rounded-[1.625rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
                 <MessageSquare size={40} />
              </div>
-             <h2 className="text-2xl font-bold text-[#292828] group-hover:text-white leading-tight">Messages</h2>
-             <p className="text-[#292828] max-w-sm mt-4 font-medium leading-relaxed">Select a conversation to start chatting with others and discuss detail.</p>
+             <h2 className="text-2xl font-black text-[#292828] uppercase tracking-tighter">Secure Messages</h2>
+             <p className="text-slate-400 max-w-sm mt-4 font-bold leading-relaxed uppercase text-[11px] tracking-widest">Select a node from the directory to initialize tactical communications.</p>
           </div>
         )}
       </main>
 
       {/* 3. PROFILE / CONTEXT DRAWER (RIGHT) */}
       {selectedChat && showProfile && (
-        <aside className="hidden lg:flex flex-col w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300">
+        <aside className="hidden xl:flex flex-col w-80 lg:w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300 shrink-0">
            <div className="p-8 h-full overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center mb-8">
                  <h3 className="text-[11px] font-bold text-[#292828] group-hover:text-white/30 uppercase tracking-widest">Partner Info</h3>

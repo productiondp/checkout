@@ -27,8 +27,16 @@ const STAGES = ["Idea", "Early", "Growth", "Scale"];
 
 export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormType, editPost }: PostModalProps) {
   const [formType, setFormType] = useState<FormType>("Lead");
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+
+  const formTypes = [
+    { label: "Lead", icon: Target, id: "Lead", desc: "Post a specific requirement" },
+    { label: "Hiring", icon: Briefcase, id: "Hiring", desc: "Broadcast a job opening" },
+    { label: "Partner", icon: Sparkles, id: "Partner", desc: "Seek a strategic alliance" },
+    { label: "Meetup", icon: Users, id: "Meetup", desc: "Plan a local deep-dive sync" }
+  ];
   const [advisors, setAdvisors] = useState<any[]>([]);
 
   const supabase = createClient();
@@ -146,7 +154,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         return;
       }
       
-      let authorId = editPost?.author_id || user.id;
+      // Ownership check for editing
+      if (editPost && editPost.author_id !== user.id && editPost.user_id !== user.id) {
+        alert("Action denied: You are not the owner of this feed item.");
+        onClose();
+        return;
+      }
+
+      const authorId = user.id; // Always use the authenticated user's ID for creation/update tracking
 
       const postData: any = {
         author_id: authorId,
@@ -258,7 +273,6 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
              {/* TYPE SELECTOR - SLIM */}
              <div className="flex items-center gap-1.5 p-1.5 bg-[#292828]/5 rounded-[1.25rem]">
                 {[
-                  { label: "Update", icon: Zap, id: "Update" },
                   { label: "Lead", icon: Target, id: "Lead" },
                   { label: "Hiring", icon: Briefcase, id: "Hiring" },
                   { label: "Partner", icon: Sparkles, id: "Partner" },
@@ -271,7 +285,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                       "flex-1 flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-bold uppercase text-[9px] tracking-widest",
                       formType === item.id 
                         ? ((item.id === "Hiring" || item.id === "Meetup") ? "bg-emerald-600 text-white shadow-md" : "bg-[#292828] text-white shadow-md")
-                        : "text-[#292828]/30 hover:bg-[#292828]/5"
+                        : "text-[#292828]/40 hover:bg-[#292828]/5"
                     )}
                   >
                     <item.icon size={14} />

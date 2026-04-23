@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function purge() {
-  const targets = ['achu', 'efsxc']
+  const targets = ['achu']
   
   for (const name of targets) {
     console.log(`--- Purging: ${name} ---`)

@@ -372,8 +372,26 @@ export default function PremiumProfilePage() {
                </div>
             </div>
 
-            {/* COLUMN 3: PERFORMANCE */}
+            {/* COLUMN 3: PERFORMANCE & WALLET */}
             <div className="lg:col-span-3 space-y-8 animate-in fade-in slide-in-from-right-6 duration-700 delay-200">
+               
+               {/* FINANCIAL HUB (Integrated Wallet) */}
+               <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                  <div className="absolute -right-10 -top-10 h-32 w-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
+                  <div className="relative z-10">
+                     <div className="flex items-center justify-between mb-8">
+                        <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Financial Hub</p>
+                        <Wallet size={18} className="text-white/40" />
+                     </div>
+                     <p className="text-[9px] font-black uppercase text-white/40 mb-1">Available Liquidity</p>
+                     <h4 className="text-3xl font-black mb-10">₹0.00</h4>
+                     <div className="flex gap-2">
+                        <Link href="/wallet" className="flex-1 h-10 bg-white text-[#292828] rounded-xl flex items-center justify-center text-[9px] font-black uppercase shadow-xl hover:scale-105 transition-all">Manage</Link>
+                        <button className="flex-1 h-10 bg-[#292828] text-white rounded-xl flex items-center justify-center text-[9px] font-black uppercase hover:bg-white hover:text-[#292828] transition-all">Add</button>
+                     </div>
+                  </div>
+               </div>
+
                <div className="space-y-4">
                   {performanceMetrics.map((met, i) => (
                      <div key={i} className="bg-white p-6 rounded-[1.3rem] border border-[#292828]/10 shadow-lg group hover:bg-[#292828] transition-all duration-500 cursor-default">

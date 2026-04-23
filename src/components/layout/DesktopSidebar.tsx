@@ -20,7 +20,9 @@ import {
   ChevronRight,
   Target,
   Activity,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  UserPlus
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -29,15 +31,17 @@ const NAV_GROUPS = [
     items: [
       { label: "Feeds", icon: Home, href: "/home" },
       {label: "Partners", icon: Users, href: "/matches"},
-      {label: "Messages", icon: MessageSquare, href: "/chat", badge: "2"},
+      {label: "Connections", icon: UserPlus, href: "/connections", badge: "2" },
+      {label: "Messages", icon: MessageSquare, href: "/chat"},
       {label: "Communities", icon: Globe, href: "/communities"},
     ]
   },
   {
     group: "Explore",
     items: [
-      { label: "Local Link", icon: Zap, href: "/explore" },
+      { label: "Checkout Map", icon: Zap, href: "/explore" },
       { label: "Business Events", icon: LayoutGrid, href: "/events" },
+      { label: "Business Directory", icon: Building2, href: "/directory" },
       { label: "Advisors", icon: Target, href: "/advisors" },
     ]
   },
@@ -45,7 +49,6 @@ const NAV_GROUPS = [
     group: "Settings",
     items: [
       { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
-      { label: "Wallet", icon: Zap, href: "/wallet" },
     ]
   }
 ];

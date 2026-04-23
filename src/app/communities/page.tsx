@@ -1,275 +1,415 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
-  Users, 
-  MapPin, 
-  Globe, 
-  ShieldCheck, 
+  Search, 
   Plus, 
-  MessageSquare,
-  Search,
-  Activity,
-  Zap,
-  Lock,
-  ArrowUpRight,
-  TrendingUp,
-  Filter,
-  Shield,
-  Compass,
+  Filter, 
+  Users, 
+  TrendingUp, 
+  Zap, 
+  ChevronRight,
   ArrowRight,
-  CheckCircle2,
   Sparkles,
-  Command,
-  Maximize2
+  MapPin,
+  Lock,
+  Globe
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
+import { MOCK_COMMUNITIES } from "@/data/communities";
+import { Community, CommunityCategory } from "@/types/communities";
 
 export default function CommunitiesPage() {
-  const [communities, setCommunities] = useState<any[]>([]);
-  const [myMemberships, setMyMemberships] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<CommunityCategory>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const router = useRouter();
-  
-  const supabase = createClient();
 
-  useEffect(() => {
-    async function initCommunities() {
-      setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: members } = await supabase.from('community_members').select('community_id').eq('user_id', user.id);
-        if (members) setMyMemberships(members.map(m => m.community_id));
-      }
-      const { data: allComms } = await supabase.from('communities').select('*, community_members(count)').order('name');
-      if (allComms) setCommunities(allComms);
-      setIsLoading(false);
-    }
-    initCommunities();
-  }, []);
+  const categories: CommunityCategory[] = ["All", "Hiring", "Partnership", "Leads", "Meetup", "Local"];
 
-  const handleJoin = async (commId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert("Executive Identity Required. Please login.");
-      return;
-    }
-    const isMember = myMemberships.includes(commId);
-    if (isMember) {
-      await supabase.from('community_members').delete().eq('community_id', commId).eq('user_id', user.id);
-      setMyMemberships(prev => prev.filter(id => id !== commId));
-    } else {
-      await supabase.from('community_members').insert([{ community_id: commId, user_id: user.id, role: 'MEMBER' }]);
-      setMyMemberships(prev => [...prev, commId]);
-    }
-  };
+  const filteredCommunities = MOCK_COMMUNITIES.filter(comm => {
+    const matchesSearch = comm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         comm.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = activeTab === "All" || comm.category === activeTab;
+    return matchesSearch && matchesTab;
+  });
 
-  const filteredCommunities = communities.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const featuredCommunities = MOCK_COMMUNITIES.filter(c => c.isFeatured);
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] pb-40 selection:bg-[#E53935]/10">
-      
-      {/* 1. PRISTINE SYNDICATE HERO - WHITE AESTHETIC */}
-      <section className="bg-white border-b border-slate-100 pt-32 pb-44 px-6 lg:px-10 relative overflow-hidden">
-         {/* Background Subtle Neural Patterns */}
-         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E53935]/[0.02] rounded-full blur-[160px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(#292828_1px,transparent_1px)] [background-size:40px_40px]" />
-         </div>
-
-         <div className="max-w-7xl mx-auto relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-               <div className="max-w-4xl">
-                  <div className="flex items-center gap-4 mb-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                     <div className="h-0.5 w-16 bg-[#E53935]" />
-                     <p className="text-[12px] font-black uppercase tracking-[0.5em] text-[#292828]/40">Regional Syndicate Expansion</p>
-                  </div>
-                  <h1 className="text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] text-[#292828] mb-12 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-                     Strategic <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#292828] to-[#292828]/40">Alliances</span>
-                  </h1>
-                  <p className="text-xl lg:text-2xl font-medium text-[#292828]/50 max-w-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-16 duration-1000">
-                     Sync with high-authority regional business nodes. <br className="hidden lg:block" /> Gain absolute situational awareness through shared domain intelligence.
-                  </p>
-               </div>
-
-               <div className="flex flex-col lg:items-end gap-6 animate-in fade-in slide-in-from-right-12 duration-1000">
-                  <div className="flex items-center gap-6">
-                     <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center text-[#E53935] shadow-2xl backdrop-blur-3xl"><Activity size={28} /></div>
-                        <div className="text-left">
-                           <p className="text-3xl font-black text-[#292828] leading-none">{communities.length}</p>
-                           <p className="text-[10px] font-black uppercase text-[#292828]/20 tracking-widest mt-1">Operational Hubs</p>
-                        </div>
-                     </div>
-                     <div className="h-12 w-[1px] bg-slate-100" />
-                     <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center text-emerald-500 shadow-2xl backdrop-blur-3xl"><Zap size={28} /></div>
-                        <div className="text-left">
-                           <p className="text-3xl font-black text-[#292828] leading-none">High</p>
-                           <p className="text-[10px] font-black uppercase text-[#292828]/20 tracking-widest mt-1">Network Density</p>
-                        </div>
-                     </div>
-                  </div>
-                  <button onClick={() => router.push('/profile')} className="h-16 px-10 bg-[#292828] text-white rounded-[1.75rem] font-black text-xs uppercase tracking-widest hover:bg-[#E53935] shadow-4xl transition-all active:scale-95 flex items-center gap-4">
-                     Found a Syndicate <Plus size={18} />
-                  </button>
-               </div>
-            </div>
-         </div>
-      </section>
-
-      {/* 2. SYNDICATE DISCOVERY HUB - WHITE GLASSMORPHISM */}
-      <div className="max-w-7xl mx-auto px-6 -mt-24 lg:-mt-28 relative z-20">
-         
-         {/* FLOATING SEARCH HUD */}
-         <div className="bg-white/90 backdrop-blur-3xl p-6 rounded-[3rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.1)] border border-slate-100 flex flex-col lg:flex-row items-center gap-6 transition-all hover:shadow-[0_64px_128px_-16px_rgba(0,0,0,0.14)] group/dock">
-            <div className="w-full relative">
-               <Search size={22} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/dock:text-[#E53935] transition-colors" />
-               <input 
-                 type="text" 
-                 placeholder="Search by syndicate name or regional expertise..." 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 className="w-full h-20 bg-slate-50 border border-transparent rounded-[2rem] pl-20 pr-10 text-lg font-black text-[#292828] focus:bg-white focus:border-[#E53935] outline-none transition-all placeholder:text-[#292828]/10"
-               />
-            </div>
-            <button className="h-20 w-full lg:w-auto px-10 bg-white border border-slate-100 text-[#292828] rounded-[2rem] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group/f shadow-sm shrink-0 active:scale-95">
-               <Filter size={20} className="group-hover/f:rotate-180 transition-transform duration-700" />
-               <span className="text-[13px] font-black uppercase tracking-widest">Network Filter</span>
+    <div className="min-h-screen bg-[#FDFDFF] pb-24">
+      {/* HEADER SECTION */}
+      <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3">Communities</h1>
+            <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Join focused spaces that match your goals</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="h-14 px-8 bg-[#292828] text-white rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95 shrink-0"
+            >
+              <Plus size={18} /> Create Community
             </button>
-         </div>
+          </div>
+        </div>
+      </header>
 
-         {/* SYNDICATE NODES GRID */}
-         <div className="mt-20">
-            {isLoading ? (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-[480px] bg-white border border-slate-50 rounded-[4.5rem] animate-pulse" />
-                  ))}
-               </div>
-            ) : (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-24 duration-1200">
-                  {filteredCommunities.map((comm) => {
-                    const isMember = myMemberships.includes(comm.id);
-                    return (
-                      <div key={comm.id} className="bg-white rounded-[4.5rem] p-12 lg:p-14 border border-slate-100 shadow-xl hover:shadow-[0_64px_128px_-32px_rgba(0,0,0,0.06)] hover:-translate-y-5 transition-all duration-700 overflow-hidden relative group h-full flex flex-col">
-                         
-                         {/* Syndicate Identity */}
-                         <div className="flex items-start justify-between mb-14 relative z-10 w-full">
-                            <div className="h-24 w-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all duration-700 shadow-2xl border-4 border-white">
-                               <Globe size={44} />
-                            </div>
-                            <div className="flex flex-col items-end">
-                               <p className="text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] leading-none mb-3">Authority</p>
-                               <div className="flex items-center gap-2">
-                                  <TrendingUp size={18} className="text-[#E53935] animate-pulse" />
-                                  <p className="text-4xl font-black text-[#292828] tracking-tighter tabular-nums">{comm.community_members?.[0]?.count ? Math.min(comm.community_members[0].count * 8 + 55, 99) : 60}%</p>
-                               </div>
-                            </div>
-                         </div>
-
-                         <div className="mb-12 relative z-10 flex-1">
-                            <h3 className="text-4xl font-black text-[#292828] tracking-tighter leading-[0.95] mb-6 group-hover:text-[#E53935] transition-colors duration-500">{comm.name}</h3>
-                            <div className="flex flex-wrap gap-2 mb-8">
-                               <div className="h-7 px-4 bg-emerald-500/5 border border-emerald-500/10 text-emerald-600 rounded-full text-[9px] font-black uppercase flex items-center gap-2 shadow-sm"><ShieldCheck size={12} /> Regional Hub</div>
-                               <div className="h-7 px-4 bg-[#292828]/5 border border-[#292828]/5 text-[#292828]/30 rounded-full text-[9px] font-black uppercase flex items-center gap-2"><Users size={12} /> {comm.community_members?.[0]?.count || 0} Partners</div>
-                            </div>
-                            <p className="text-[15px] font-semibold text-slate-400 leading-relaxed italic">
-                               "{comm.description || "Synthesizing regional operational intelligence and high-authority business relationships within this syndicate hub."}"
-                            </p>
-                         </div>
-
-                         <div className="space-y-4 pt-10 border-t border-slate-50 relative z-10 mt-auto">
-                            <button 
-                              onClick={() => handleJoin(comm.id)}
-                              className={cn(
-                                "w-full h-16 rounded-[1.75rem] flex items-center justify-center gap-5 font-black text-xs uppercase tracking-[0.3em] transition-all shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] active:scale-95 group/btn overflow-hidden relative",
-                                isMember 
-                                  ? "bg-slate-100 text-slate-400 group-hover:bg-red-50 group-hover:text-[#E53935]" 
-                                  : "bg-[#292828] text-white hover:bg-[#E53935]"
-                              )}
-                            >
-                               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
-                               {isMember ? (
-                                 <><CheckCircle2 size={20} className="relative z-10" /> Authorized Member</>
-                               ) : (
-                                 <><Plus size={20} className="relative z-10" /> Join Syndicate</>
-                               )}
-                            </button>
-
-                            {isMember && comm.room_id && (
-                              <button 
-                                onClick={() => router.push(`/chat?room=${comm.room_id}`)}
-                                className="w-full h-14 bg-white border-2 border-[#292828] text-[#292828] rounded-[1.5rem] flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest hover:bg-[#292828] hover:text-white transition-all shadow-xl group/chat"
-                              >
-                                 Broadcast Command <MessageSquare size={18} className="group-hover/chat:scale-110 transition-transform" />
-                              </button>
-                            )}
-                         </div>
-
-                         {/* Backdrop Decal Decal */}
-                         <div className="absolute -bottom-24 -right-24 text-[#292828]/[0.01] group-hover:text-[#E53935]/[0.03] transition-all duration-1500 -rotate-12 group-hover:rotate-12 pointer-events-none">
-                            <Users size={340} strokeWidth={1} />
-                         </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* FOUND A NEW NODE - WHITE CTX */}
-                  <div 
-                    className="bg-white rounded-[4.5rem] p-14 border border-dashed border-[#292828]/20 flex flex-col justify-center items-center text-center group cursor-pointer hover:border-[#E53935] hover:bg-[#E53935]/5 transition-all duration-1000 shadow-sm h-full min-h-[480px] relative overflow-hidden"
-                    onClick={() => router.push('/profile')}
-                  >
-                     <div className="h-28 w-28 bg-white shadow-4xl rounded-[2.75rem] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:-rotate-90 transition-all duration-700 border border-slate-50">
-                        <Plus size={54} className="text-[#E53935]" />
-                     </div>
-                     <h3 className="text-4xl font-black text-[#292828] uppercase tracking-tighter mb-6 underline decoration-[#E53935]/10 underline-offset-8 group-hover:decoration-[#E53935]/40 transition-all">Found a Node</h3>
-                     <p className="text-[16px] font-bold text-slate-400 leading-relaxed mb-12 max-w-[280px]">
-                        Architect a new syndicate node for your industry or regional operational hub.
-                     </p>
-                     <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.3em] text-[#292828] group-hover:text-[#E53935] transition-all">
-                        Initiate Protocol <ArrowRight size={20} className="group-hover:translate-x-3 transition-transform" />
-                     </div>
-                     
-                     <div className="absolute inset-x-0 bottom-0 h-2 bg-slate-50 group-hover:bg-[#E53935] transition-all duration-1000" />
-                  </div>
-               </div>
-            )}
-
-            {filteredCommunities.length === 0 && !isLoading && (
-               <div className="py-64 text-center bg-white rounded-[5rem] border border-slate-50 shadow-3xl relative overflow-hidden group">
-                  <div className="h-40 w-40 bg-slate-50 rounded-full mx-auto flex items-center justify-center text-[#292828]/5 group-hover:scale-110 group-hover:text-[#E53935]/10 transition-all duration-1000">
-                     <Globe size={96} strokeWidth={1} />
-                  </div>
-                  <h3 className="text-5xl font-black text-[#292828] uppercase tracking-tighter mt-12">Zero Alliances Found</h3>
-                  <p className="max-w-md mx-auto text-slate-300 font-bold mt-6 text-xl leading-relaxed italic">Your situational scan returned no matching syndicate nodes. Adjust your discovery parameters or initiate a new node founding protocol.</p>
-               </div>
-            )}
-         </div>
-
-         {/* TERMINAL FOOTER - OS V.7 */}
-         <div className="mt-48 text-center pb-24 border-t border-slate-50 pt-16">
-            <p className="text-[12px] font-black text-slate-200 uppercase tracking-[0.5em] mb-6">Checkout Operating System V.7</p>
-            <div className="flex items-center justify-center gap-10">
-               <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                  <span className="text-[11px] font-black text-[#292828]/20 uppercase tracking-widest">Network Verified</span>
-               </div>
-               <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
-                  <span className="text-[11px] font-black text-[#292828]/20 uppercase tracking-widest">Global Sync</span>
-               </div>
-            </div>
-         </div>
+      {/* CONTROLS SECTION */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-10">
+        <div className="flex flex-col lg:flex-row items-center gap-4">
+          <div className="relative w-full">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+            <input 
+              type="text" 
+              placeholder="Search by community name or topic..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-16 bg-white border border-slate-100 rounded-2xl pl-16 pr-6 text-sm font-bold text-[#292828] focus:border-[#E53935] outline-none transition-all shadow-sm"
+            />
+          </div>
+          <button className="h-16 px-6 bg-white border border-slate-100 text-[#292828] rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm shrink-0">
+            <Filter size={18} />
+          </button>
+        </div>
       </div>
 
+      {/* FEATURED SECTION */}
+      <section className="mt-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
+          <div className="flex items-center gap-3 text-[#E53935]">
+            <Sparkles size={20} fill="currentColor" />
+            <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Communities</h2>
+          </div>
+        </div>
+        
+        <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 lg:px-10 pb-10 max-w-7xl mx-auto">
+          {featuredCommunities.map((comm) => (
+            <div 
+              key={comm.id}
+              onClick={() => router.push(`/communities/${comm.id}`)}
+              className="min-w-[300px] sm:min-w-[340px] md:min-w-[420px] bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
+            >
+              <div className="flex items-start justify-between mb-8">
+                <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+                  <Users size={32} />
+                </div>
+                <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  {comm.activity}
+                </div>
+              </div>
+              <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors">{comm.name}</h3>
+              <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-2">{comm.description}</p>
+              
+              <div className="flex flex-wrap gap-2 mb-8">
+                {comm.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-2">
+                  <Users size={14} className="text-slate-300" />
+                  <span className="text-xs font-black text-[#292828]">{comm.memberCount.toLocaleString()} Members</span>
+                </div>
+                <button className="h-10 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CATEGORY TABS & MAIN LIST */}
+      <main className="max-w-7xl mx-auto px-6 lg:px-10 mt-12">
+        <div className="flex items-center gap-2 mb-10 overflow-x-auto no-scrollbar pb-2">
+          {categories.map(cat => (
+            <button 
+              key={cat}
+              onClick={() => setActiveTab(cat)}
+              className={cn(
+                "h-12 px-6 sm:px-8 rounded-2xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
+                activeTab === cat 
+                  ? "bg-[#292828] text-white shadow-xl scale-105" 
+                  : "bg-white border border-slate-100 text-slate-400 hover:text-[#292828] hover:border-[#292828]/20 shadow-sm"
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredCommunities.map((comm) => (
+            <CommunityCard key={comm.id} community={comm} />
+          ))}
+        </div>
+
+        {filteredCommunities.length === 0 && (
+          <div className="py-32 text-center bg-white rounded-[3rem] border border-slate-50 shadow-sm">
+            <div className="h-24 w-24 bg-slate-50 rounded-full mx-auto flex items-center justify-center text-slate-200 mb-8">
+              <Globe size={48} />
+            </div>
+            <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tight">No Communities Found</h3>
+            <p className="text-slate-400 font-bold mt-2">Try adjusting your search or filters.</p>
+          </div>
+        )}
+      </main>
+
+      {/* DISCOVERY LOGIC - SMART SECTIONS */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-32 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Recommended for You</h2>
+            <button className="text-[10px] font-black text-[#E53935] uppercase tracking-widest hover:underline">See All</button>
+          </div>
+          <div className="space-y-4">
+            {MOCK_COMMUNITIES.slice(0, 3).map(comm => (
+              <div key={comm.id} className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-[#E53935]/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-5">
+                  <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                    <Zap size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors">{comm.name}</h4>
+                    <p className="text-xs font-bold text-slate-400 uppercase">{comm.category} • {comm.memberCount} Members</p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-slate-300 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Near Bangalore</h2>
+            <button className="text-[10px] font-black text-[#E53935] uppercase tracking-widest hover:underline">See All</button>
+          </div>
+          <div className="space-y-4">
+            {MOCK_COMMUNITIES.slice(3, 6).map(comm => (
+              <div key={comm.id} className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-[#E53935]/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-5">
+                  <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                    <MapPin size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors">{comm.name}</h4>
+                    <p className="text-xs font-bold text-slate-400 uppercase">{comm.category} • {comm.memberCount} Members</p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-slate-300 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CREATE MODAL */}
+      {isCreateModalOpen && (
+        <CreateCommunityFlow onClose={() => setIsCreateModalOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+function CommunityCard({ community }: { community: Community }) {
+  const router = useRouter();
+  return (
+    <div 
+      onClick={() => router.push(`/communities/${community.id}`)}
+      className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full"
+    >
+      <div className="flex items-start justify-between mb-8">
+        <div className="h-14 w-14 bg-slate-50 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+          <Users size={24} />
+        </div>
+        <div className={cn(
+          "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider",
+          community.activity === "Active" ? "bg-emerald-50 text-emerald-600" :
+          community.activity === "Trending" ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"
+        )}>
+          {community.activity}
+        </div>
+      </div>
+      <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors">{community.name}</h3>
+      <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-3">{community.description}</p>
+      
+      <div className="flex flex-wrap gap-2 mb-10 mt-auto">
+        {community.tags.map(tag => (
+          <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+        <div className="flex items-center gap-2">
+          <Users size={14} className="text-slate-300" />
+          <span className="text-xs font-black text-[#292828]">{community.memberCount.toLocaleString()}</span>
+        </div>
+        <button className="h-11 px-6 bg-white border border-slate-200 text-[#292828] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] hover:text-white hover:border-[#292828] transition-all">Join</button>
+      </div>
+    </div>
+  );
+}
+
+function CreateCommunityFlow({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    category: "Hiring",
+    tags: "",
+    visibility: "Public"
+  });
+
+  const nextStep = () => setStep(s => s + 1);
+  const prevStep = () => setStep(s => s - 1);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 lg:p-10">
+      <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md" onClick={onClose} />
+      
+      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] sm:rounded-[3rem] shadow-4xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div className="bg-[#292828] p-6 sm:p-10 text-white relative">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Step {step} of 3</span>
+            <button onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all">×</button>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter">Create Community</h2>
+          <div className="flex gap-2 mt-6 sm:mt-8">
+            {[1, 2, 3].map(s => (
+              <div key={s} className={cn("h-1 flex-1 rounded-full transition-all duration-500", s <= step ? "bg-[#E53935]" : "bg-white/10")} />
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 sm:p-10">
+          {step === 1 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Community Name</label>
+                <input 
+                  type="text" 
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  placeholder="e.g. Bangalore Founders Network" 
+                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all"
+                />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Description</label>
+                <textarea 
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  placeholder="What is the primary intent of this community?" 
+                  className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all resize-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Primary Category</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {["Hiring", "Partnership", "Leads", "Meetup"].map(cat => (
+                    <button 
+                      key={cat}
+                      onClick={() => setFormData({...formData, category: cat})}
+                      className={cn(
+                        "h-14 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all",
+                        formData.category === cat ? "bg-[#292828] text-white shadow-xl" : "bg-slate-50 border border-slate-100 text-slate-400 hover:text-[#292828]"
+                      )}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Tags (Comma separated)</label>
+                <input 
+                  type="text" 
+                  value={formData.tags}
+                  onChange={e => setFormData({...formData, tags: e.target.value})}
+                  placeholder="e.g. Tech, Scaling, B2B" 
+                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Visibility</label>
+                <div className="space-y-4">
+                  <div 
+                    onClick={() => setFormData({...formData, visibility: "Public"})}
+                    className={cn(
+                      "p-6 rounded-3xl border-2 transition-all cursor-pointer flex items-center justify-between group",
+                      formData.visibility === "Public" ? "border-[#E53935] bg-red-50/30" : "border-slate-100 hover:border-[#292828]/20"
+                    )}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-all", formData.visibility === "Public" ? "bg-[#E53935] text-white" : "bg-slate-100 text-[#292828]")}>
+                        <Globe size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Public</h4>
+                        <p className="text-xs font-bold text-slate-400 uppercase">Anyone can join instantly</p>
+                      </div>
+                    </div>
+                    <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all", formData.visibility === "Public" ? "border-[#E53935] bg-[#E53935]" : "border-slate-200")}>
+                      <div className="h-2 w-2 bg-white rounded-full" />
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => setFormData({...formData, visibility: "Private"})}
+                    className={cn(
+                      "p-6 rounded-3xl border-2 transition-all cursor-pointer flex items-center justify-between group",
+                      formData.visibility === "Private" ? "border-[#E53935] bg-red-50/30" : "border-slate-100 hover:border-[#292828]/20"
+                    )}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-all", formData.visibility === "Private" ? "bg-[#E53935] text-white" : "bg-slate-100 text-[#292828]")}>
+                        <Lock size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Private</h4>
+                        <p className="text-xs font-bold text-slate-400 uppercase">Approval required to join</p>
+                      </div>
+                    </div>
+                    <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all", formData.visibility === "Private" ? "border-[#E53935] bg-[#E53935]" : "border-slate-200")}>
+                      <div className="h-2 w-2 bg-white rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-4 mt-12">
+            {step > 1 && (
+              <button 
+                onClick={prevStep}
+                className="h-16 px-10 bg-slate-100 text-[#292828] rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+              >
+                Back
+              </button>
+            )}
+            <button 
+              onClick={step === 3 ? onClose : nextStep}
+              className="flex-1 h-16 bg-[#292828] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#E53935] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              {step === 3 ? "Create Community" : "Next Step"} <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

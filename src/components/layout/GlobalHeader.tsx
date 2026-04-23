@@ -180,7 +180,7 @@ export default function FullyActiveGlobalHeader() {
             className="hidden lg:flex items-center gap-2 px-4 h-9 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all group"
           >
              <Zap size={14} className="text-emerald-600 fill-emerald-600" />
-             <span className="text-[11px] font-bold text-emerald-700">₹14,500</span>
+             <span className="text-[11px] font-bold text-emerald-700">₹0</span>
           </Link>
 
           {/* NOTIFICATIONS & PROFILE */}

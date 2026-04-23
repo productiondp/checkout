@@ -81,9 +81,8 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
                  <p className="text-[10px] font-bold text-[#E53935] uppercase">{user?.role || "Business Partner"}</p>
               </div>
            </div>
-           <div className="grid grid-cols-2 gap-2">
-              <Link href="/profile" onClick={onClose} className="h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black uppercase text-[#292828] border border-[#292828]/10 shadow-sm">Me</Link>
-              <Link href="/wallet" onClick={onClose} className="h-10 bg-[#E53935] rounded-xl flex items-center justify-center text-[10px] font-black uppercase text-white shadow-md">Wallet</Link>
+           <div className="grid grid-cols-1">
+              <Link href="/profile" onClick={onClose} className="h-10 bg-[#E53935] text-white rounded-xl flex items-center justify-center text-[10px] font-black uppercase shadow-md">My Profile</Link>
            </div>
         </div>
 

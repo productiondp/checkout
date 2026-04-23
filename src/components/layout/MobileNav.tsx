@@ -21,7 +21,7 @@ export default function MobileNav() {
   const menu = [
     { label: "Feeds", href: "/home", icon: Home },
     { label: "Partners", href: "/matches", icon: Users },
-    { label: "Find", href: "/explore", icon: Search },
+    { label: "Map", href: "/explore", icon: Search },
     { label: "Chats", href: "/chat", icon: MessageSquare },
     { label: "Me", href: "/profile", icon: User },
   ];
@@ -63,7 +63,6 @@ export default function MobileNav() {
         >
           <div className="relative">
              <MessageSquare size={22} className={cn("transition-all", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[3].href ? 2.5 : 2} />
-             <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-[#E53935] rounded-full border border-white" />
           </div>
           <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")}>Chats</span>
         </Link>

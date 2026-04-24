@@ -26,7 +26,8 @@ import {
   ArrowRight, 
   CheckCircle2,
   User,
-  ChevronDown
+  ChevronDown,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";

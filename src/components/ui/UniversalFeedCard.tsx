@@ -18,7 +18,8 @@ import {
   BrainCircuit,
   Pencil,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/utils/analytics";

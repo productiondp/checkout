@@ -34,12 +34,18 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isFirstPost, setIsFirstPost] = useState(true);
+
+  useEffect(() => {
+    const hasPosted = localStorage.getItem('checkout_has_posted');
+    if (hasPosted) setIsFirstPost(false);
+  }, []);
 
   const mandateTypes = [
-    { label: "Mandate", icon: Target, id: "Lead", desc: "Post a specific business requirement" },
+    { label: "Requirement", icon: Target, id: "Lead", desc: "Post what you need" },
     { label: "Hiring", icon: Briefcase, id: "Hiring", desc: "Broadcast a job opening" },
-    { label: "Partner", icon: Sparkles, id: "Partner", desc: "Seek a strategic alliance" },
-    { label: "Meetup", icon: Users, id: "Meetup", desc: "Plan a local deep-dive sync" }
+    { label: "Partner", icon: Sparkles, id: "Partner", desc: "Seek a partnership" },
+    { label: "Meetup", icon: Users, id: "Meetup", desc: "Plan a meeting" }
   ];
   const [advisors, setAdvisors] = useState<any[]>([]);
 
@@ -131,7 +137,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
   };
 
   const checkoutScore = useMemo(() => {
-    let score = 50; // Radical starting point
+    let score = 50; 
     // Specificity Multipliers
     if (formData.meetupTitle.length > 10) score += 10;
     if (formData.meetupDescription.length > 30) score += 15;
@@ -217,6 +223,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
       analytics.track('FIRST_MANDATE_CREATED', authorId, { type: formType, postId: result.data.id });
 
       onPostSuccess?.(result.data);
+      localStorage.setItem('checkout_has_posted', 'true');
       onClose();
     } catch (err) {
       console.error("Post failed:", err);
@@ -269,8 +276,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                 <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="h-full w-full object-cover" alt="" />
              </div>
              <div>
-                <h2 className="text-[13px] font-bold text-[#292828] uppercase tracking-wider leading-none mb-1">Create a Mandate</h2>
-                <p className="text-[8px] font-bold text-[#292828]/30 uppercase">As {authUser?.full_name || "Partner"} • Mandate = your requirement (hiring, leads, etc.)</p>
+                <h2 className="text-[13px] font-bold text-[#292828] uppercase tracking-wider leading-none mb-1">Create Requirement</h2>
+                <p className="text-[8px] font-bold text-[#292828]/30 uppercase">As {authUser?.full_name || "Partner"} {isFirstPost && "• Requirement = what you need"}</p>
              </div>
           </div>
           <button onClick={onClose} className="h-10 w-10 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 hover:text-[#292828] transition-all">
@@ -284,10 +291,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
              {/* TYPE SELECTOR - SLIM */}
              <div className="flex items-center gap-1.5 p-1.5 bg-[#292828]/5 rounded-[1.25rem]">
                 {[
-                  { label: "Mandate", icon: Target, id: "Lead" },
+                  { label: "Requirement", icon: Target, id: "Lead" },
                   { label: "Hiring", icon: Briefcase, id: "Hiring" },
                   { label: "Partner", icon: Sparkles, id: "Partner" },
-                  { label: "Meetups", icon: Users, id: "Meetup" }
+                  { label: "Events", icon: Users, id: "Meetup" }
                 ].map((item) => (
                   <button 
                     key={item.id}
@@ -316,7 +323,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
 
                  {formType === "Lead" && (
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">{input("Exact Requirement", "leadTitle", "Title - One line focus")}</div>
+                      <div className="md:col-span-2">{input("Requirement Title", "leadTitle", "What do you need?")}</div>
                       <div className="md:col-span-2">{input("Problem / Expected Output", "leadProblem", "Describe what should be solved...", "textarea")}</div>
                       {input("Type", "leadReqType", "", "select", ["Service", "Product", "Freelancer"])}
                       {input("Budget Range", "leadBudget", "₹20K - 40K")}
@@ -369,14 +376,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                  <Sparkles size={16} className="text-emerald-600" />
-                                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Problem Clarity Score: {checkoutScore}%</span>
+                                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Clarity Score: {checkoutScore}%</span>
                               </div>
                               {checkoutScore < 70 && (
-                                 <span className="text-[8px] font-bold text-emerald-400 uppercase">Pro Tip: Add more detail to attract elite advisors</span>
+                                 <span className="text-[8px] font-bold text-emerald-400 uppercase">Pro Tip: Add more detail to attract more people</span>
                               )}
                            </div>
 
-                           <button onClick={() => setCurrentStep(2)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Map Context</button>
+                           <button onClick={() => setCurrentStep(2)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Details</button>
                         </div>
                      )}
 
@@ -388,13 +395,13 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                               {input("Urgency", "meetupUrgency", "", "select", ["Flexible", "Soon", "Urgent"])}
                            </div>
 
-                           {/* CLUSTERING INDICATOR */}
+                           {/* ACTIVITY INDICATOR */}
                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl text-center">
-                              <p className="text-[10px] font-bold text-[#292828] uppercase mb-1">Clustering Active...</p>
-                              <p className="text-[8px] font-bold text-[#292828]/40 uppercase tracking-wider">Pattern Match: 3 People with similar {formData.meetupDomain} problems are active</p>
+                              <p className="text-[10px] font-bold text-[#292828] uppercase mb-1">Looking for matches...</p>
+                              <p className="text-[8px] font-bold text-[#292828]/40 uppercase tracking-wider">Matches: 3 People with similar {formData.meetupDomain} problems are active</p>
                            </div>
 
-                           <button onClick={() => setCurrentStep(3)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Select Advisor Hub</button>
+                           <button onClick={() => setCurrentStep(3)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Select Advisor</button>
                         </div>
                      )}
 
@@ -425,7 +432,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                                        <p className="text-[12px] font-bold text-[#292828] uppercase leading-none mb-1 truncate">{adv.name}</p>
                                        <div className="flex items-center gap-2">
                                           <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">{adv.checkoutBadge}</p>
-                                          <p className="text-[8px] font-bold text-[#292828]/40 uppercase">Rank: {adv.checkoutRank}</p>
+                                          <p className="text-[8px] font-bold text-[#292828]/40 uppercase">Status: {adv.checkoutRank}</p>
                                        </div>
                                     </div>
                                     <div className="text-right">
@@ -447,7 +454,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                               
                               {formData.meetupPayment === "Paid" && (
                                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                                    <p className="text-[7px] font-bold text-emerald-600 uppercase mb-1">Cost Split (Max 8 Members)</p>
+                                    <p className="text-[7px] font-bold text-emerald-600 uppercase mb-1">Cost Split (Max 8 People)</p>
                                     <p className="text-[12px] font-bold text-emerald-700">₹{(formData.advisorFee / 8).toFixed(0)} <span className="text-[8px] opacity-60">/PERSON</span></p>
                                  </div>
                               )}
@@ -455,7 +462,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
 
                            <div className="p-4 bg-[#292828] rounded-2xl text-center">
                               <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">System Logic</p>
-                              <p className="text-[10px] font-bold text-white uppercase">Meeting cluster activates only after Advisor acceptance</p>
+                              <p className="text-[10px] font-bold text-white uppercase">Meeting is confirmed after Advisor accepts</p>
                            </div>
                         </div>
                      )}
@@ -468,7 +475,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         {/* FOOTER - COMPACT */}
         <div className="px-8 py-6 border-t border-[#292828]/5 flex items-center justify-between shrink-0 bg-slate-50/30">
             <div className="flex flex-col">
-               <span className="text-[7px] font-bold text-[#292828]/30 uppercase tracking-widest mb-0.5">Post Quality</span>
+               <span className="text-[7px] font-bold text-[#292828]/30 uppercase tracking-widest mb-0.5">Requirement Quality</span>
                <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[11px] font-bold text-[#292828] uppercase">{checkoutScore}% Match Score</span>
@@ -479,7 +486,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
               disabled={isPosting}
               className="h-14 px-10 bg-[#292828] text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center gap-3"
             >
-               {isPosting ? "Posting..." : "Post Now"} <ArrowUpRight size={16} />
+               {isPosting ? "Creating..." : (isFirstPost ? "Create Requirement (Post)" : "Create Requirement")} <ArrowUpRight size={16} />
             </button>
         </div>
 

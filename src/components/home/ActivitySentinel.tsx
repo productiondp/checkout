@@ -74,7 +74,7 @@ export default function ActivitySentinel() {
           <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed mb-8">
             {promptType === 'post' 
               ? optimization.getConfig().promptConfig.onboardingText
-              : "Expand your local cluster. Start connecting with matched professionals in your city."
+              : "Expand your directory. Start connecting with matched professionals in your city."
             }
           </p>
 
@@ -89,7 +89,7 @@ export default function ActivitySentinel() {
                 }}
                 className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] transition-all group/btn shadow-xl shadow-slate-900/10"
               >
-                Launch Mandate <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                Create Requirement (Post) <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
               </button>
             ) : (
               <Link 

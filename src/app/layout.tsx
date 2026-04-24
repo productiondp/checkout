@@ -17,7 +17,7 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Checkout Terminal",
+  title: "Checkout",
   description: "The premium Business OS for local commerce.",
   appleWebApp: {
     capable: true,

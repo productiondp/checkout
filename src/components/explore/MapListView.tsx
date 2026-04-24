@@ -34,11 +34,11 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
           profiles.forEach((p, i) => {
             listEntities.push({
               id: p.id,
-              name: p.full_name || "Regional Node",
-              type: 'Person',
+              name: p.full_name || "Profile",
+              type: 'Profile',
               role: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
               avatar: p.avatar_url || DEFAULT_AVATAR,
-              description: p.bio || "Active professional business node.",
+              description: p.bio || "Active business professional.",
               matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
             });
           });
@@ -48,8 +48,8 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
           posts.forEach((p, i) => {
             listEntities.push({
               id: p.id,
-              name: p.title || "Mandate",
-              type: 'Post',
+              name: p.title || "Requirement",
+              type: 'Requirement',
               role: p.type || "Update",
               description: p.content,
               matchScore: p.match_score || 90,
@@ -59,7 +59,7 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
 
         setEntities(listEntities);
       } catch (err) {
-        console.error("List Discovery Protocol Failure:", err);
+        console.error("List Discovery Failure:", err);
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
     return (
       <div className="max-w-4xl mx-auto px-6 pt-32 pb-40 text-center">
          <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin mx-auto mb-6" />
-         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Synthesizing Node Rankings...</p>
+         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Fetching matches...</p>
       </div>
     );
   }
@@ -92,12 +92,12 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
     <div className="max-w-4xl mx-auto px-6 pt-32 pb-40 space-y-8 overflow-y-auto h-full no-scrollbar">
       <div className="flex items-center justify-between mb-12">
         <div>
-          <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tight">Ranked Node Intelligence</h2>
-          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2">Discovery prioritized by high structural match scores</p>
+          <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tight">Top Matches</h2>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2">Discover relevant partners and opportunities</p>
         </div>
         <div className="h-14 px-6 bg-white border border-slate-100 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase text-[#292828] shadow-sm">
            <span className="text-emerald-500 flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-           {entities.length} Nodes Found
+           {entities.length} Matches Found
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
       {filteredEntities.length === 0 && (
         <div className="py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
           <Search size={48} className="mx-auto text-slate-100 mb-6" />
-          <p className="text-slate-400 font-bold uppercase tracking-widest">No matching nodes found in regional hub.</p>
+          <p className="text-slate-400 font-bold uppercase tracking-widest">No matches found in your area.</p>
         </div>
       )}
     </div>
@@ -118,18 +118,18 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
 function ListViewCard({ entity }: { entity: any }) {
   const getIcon = () => {
     switch (entity.type) {
-      case 'Person': return <Users size={24} />;
+      case 'Profile': return <Users size={24} />;
       case 'Community': return <Globe size={24} />;
-      case 'Post': return <Zap size={24} />;
+      case 'Requirement': return <Zap size={24} />;
       default: return null;
     }
   };
 
   const getColors = () => {
     switch (entity.type) {
-      case 'Person': return 'bg-red-50 text-[#E53935]';
+      case 'Profile': return 'bg-red-50 text-[#E53935]';
       case 'Community': return 'bg-slate-50 text-[#292828]';
-      case 'Post': return 'bg-blue-50 text-blue-600';
+      case 'Requirement': return 'bg-blue-50 text-blue-600';
       default: return 'bg-slate-50 text-slate-400';
     }
   };
@@ -166,17 +166,17 @@ function ListViewCard({ entity }: { entity: any }) {
           {entity.name || entity.title || entity.author}
         </h3>
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
-          {entity.role || entity.category || "Professional Mandate"}
+          {entity.role || entity.category || "Professional Requirement"}
         </p>
 
         <p className="mt-6 text-[15px] font-semibold text-slate-400 leading-relaxed italic line-clamp-2">
-           "{entity.description || "Active regional business expansion mandate focused on high-authority node creation."}"
+           "{entity.description || "Active business opportunity."}"
         </p>
       </div>
 
       <div className="flex flex-col gap-3 w-full md:w-auto shrink-0">
         <button className="h-14 px-8 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">
-           {entity.type === 'Person' ? 'Connect' : entity.type === 'Community' ? 'Join' : 'Apply'}
+           {entity.type === 'Profile' ? 'Connect' : entity.type === 'Community' ? 'Join' : 'Apply'}
            <ChevronRight size={14} />
         </button>
         <button className="h-14 px-8 bg-slate-50 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:border-slate-200 transition-all">

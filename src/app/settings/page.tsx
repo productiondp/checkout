@@ -39,7 +39,7 @@ export default function SettingsHub() {
   };
 
   const sections = [
-    { id: 'privacy', icon: User, label: "Account Privacy", desc: "Manage who sees your node data" },
+    { id: 'privacy', icon: User, label: "Account Privacy", desc: "Manage who sees your profile data" },
     { id: 'notifications', icon: Bell, label: "Simple Notifications", desc: "Control how you hear from people" },
     { id: 'security', icon: Shield, label: "Security & Safety", desc: "Two-factor and trusted devices" },
     { id: 'mobile', icon: Smartphone, label: "Mobile Experience", desc: "Refined dock and gesture settings" },
@@ -64,7 +64,7 @@ export default function SettingsHub() {
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
           </Link>
           <div className="px-3 py-1 bg-[#292828]/5 rounded-full text-[9px] font-black uppercase text-[#292828]/40 border border-[#292828]/5">
-            Operational Hub: {authUser?.city || 'Trivandrum'}
+            City: {authUser?.city || 'Trivandrum'}
           </div>
         </div>
         
@@ -76,7 +76,7 @@ export default function SettingsHub() {
            </div>
            <div>
               <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase tracking-tighter">Settings</h1>
-              <p className="text-[13px] font-bold text-[#666666] mt-2">Manage your node configuration and network identity.</p>
+              <p className="text-[13px] font-bold text-[#666666] mt-2">Manage your profile settings and network identity.</p>
            </div>
         </div>
 
@@ -90,7 +90,7 @@ export default function SettingsHub() {
           </div>
         )}
 
-        {/* Tactical Sections */}
+        {/* Sections */}
         <div className="grid grid-cols-1 gap-4 mb-20">
            {sections.map(s => (
              <button 
@@ -112,12 +112,12 @@ export default function SettingsHub() {
 
            {/* Emergency Actions */}
            <div className="mt-8 pt-8 border-t border-[#292828]/5 space-y-4">
-              <p className="px-4 text-[10px] font-black text-[#292828]/20 uppercase tracking-widest mb-4">Authority Controls</p>
+              <p className="px-4 text-[10px] font-black text-[#292828]/20 uppercase tracking-widest mb-4">Account Controls</p>
               
               <Link href="/profile" className="w-full bg-white border border-[#292828]/5 rounded-2xl p-6 flex items-center justify-between group hover:bg-[#292828] transition-all">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-[#292828]/5 flex items-center justify-center text-[#292828] group-hover:bg-white/10 group-hover:text-white transition-all"><User size={20} /></div>
-                  <span className="text-sm font-bold text-[#292828] group-hover:text-white uppercase transition-all">Edit Mandate Profile</span>
+                  <span className="text-sm font-bold text-[#292828] group-hover:text-white uppercase transition-all">Edit Profile</span>
                 </div>
                 <ChevronRight size={20} className="text-[#292828]/20 group-hover:text-white/40 transition-all" />
               </Link>
@@ -128,10 +128,10 @@ export default function SettingsHub() {
               >
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center text-[#E53935] group-hover:bg-white/20 group-hover:text-white transition-all"><LogOut size={20} /></div>
-                  <span className="text-sm font-bold text-[#E53935] group-hover:text-white uppercase transition-all">Terminate Authority (Logout)</span>
+                  <span className="text-sm font-bold text-[#E53935] group-hover:text-white uppercase transition-all">Logout</span>
                 </div>
                 <div className="px-3 py-1.5 bg-red-500/10 rounded-lg group-hover:bg-white/10">
-                   <p className="text-[9px] font-black text-[#E53935] group-hover:text-white uppercase">Security Protocol</p>
+                   <p className="text-[9px] font-black text-[#E53935] group-hover:text-white uppercase">Security</p>
                 </div>
               </button>
            </div>
@@ -140,7 +140,7 @@ export default function SettingsHub() {
         {/* Footer Audit */}
         <div className="mt-20 text-center pb-20">
            <p className="text-[10px] font-black text-[#292828]/10 uppercase tracking-widest mb-2">Checkout Operating System V.7</p>
-           <p className="text-[9px] font-bold text-slate-300 uppercase">Authorized Node Access Only</p>
+           <p className="text-[9px] font-bold text-slate-300 uppercase">Authorized Access Only</p>
         </div>
       </div>
     </div>

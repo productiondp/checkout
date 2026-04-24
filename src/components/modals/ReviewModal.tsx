@@ -85,7 +85,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
 
         <div className="flex items-center justify-between mb-10 relative z-10">
           <h2 className="text-2xl font-black text-[#292828] uppercase">
-            Tactical <span className="text-[#E53935]">Review</span>
+            Performance <span className="text-[#E53935]">Review</span>
           </h2>
           <button onClick={onClose} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
             <X size={20} />
@@ -93,7 +93,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
         </div>
 
         <div className="text-center mb-10 relative z-10">
-          <p className="text-[10px] font-black uppercase text-[#292828]/40 tracking-[0.3em] mb-4">Finalizing Mandate With</p>
+          <p className="text-[10px] font-black uppercase text-[#292828]/40 tracking-[0.3em] mb-4">Reviewing Session With</p>
           <div className="flex items-center justify-center gap-4 mb-4">
              <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-lg border-2 border-slate-50">
                 <img src={booking.advisor?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover grayscale" alt="" />
@@ -108,7 +108,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
         </div>
 
         <div className="space-y-10 relative z-10">
-          {/* STAR RATING NODE */}
+          {/* STAR RATING AREA */}
           <div className="flex flex-col items-center">
              <span className="text-[9px] font-black uppercase text-slate-400 mb-6 tracking-widest">Performance Score</span>
              <div className="flex gap-3">
@@ -133,17 +133,17 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
                 ))}
              </div>
              <p className="mt-4 text-[11px] font-bold text-[#292828]/60 italic h-4">
-                {rating === 5 ? "Exceptional Strategic Value" : 
-                 rating === 4 ? "High Performance" : 
-                 rating === 3 ? "Standard Delivery" : 
-                 rating === 2 ? "Below Threshold" : 
-                 rating === 1 ? "Mission Failure" : ""}
+                 {rating === 5 ? "Exceptional Value" : 
+                  rating === 4 ? "High Performance" : 
+                  rating === 3 ? "Standard Delivery" : 
+                  rating === 2 ? "Below Threshold" : 
+                  rating === 1 ? "Needs Improvement" : ""}
              </p>
           </div>
 
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest flex items-center gap-2">
-               <MessageSquare size={12} /> Strategic Feedback
+               <MessageSquare size={12} /> Session Feedback
             </label>
             <textarea 
               rows={3} 
@@ -159,8 +159,8 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
             disabled={isSubmitting}
             className="w-full h-16 bg-[#292828] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-[#E53935] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
           >
-             {isSubmitting ? "Recalibrating Trust..." : (
-                <>Recalibrate Trust Score <Zap size={18} className="fill-white" /></>
+             {isSubmitting ? "Submitting..." : (
+                <>Submit Review <Zap size={18} className="fill-white" /></>
              )}
           </button>
         </div>

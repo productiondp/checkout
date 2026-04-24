@@ -44,7 +44,7 @@ import { optimization } from "@/utils/optimization_engine";
 const UniversalFeedCard = dynamic(() => import("@/components/ui/UniversalFeedCard"), { ssr: false });
 const DealEngine = dynamic(() => import("@/components/modals/DealEngine"), { ssr: false });
 const PostModal = dynamic(() => import("@/components/modals/PostModal"), { ssr: false });
-const NeuralFeed = dynamic(() => import("@/components/home/NeuralFeed"), { ssr: false });
+const Feed = dynamic(() => import("@/components/home/HomeFeed"), { ssr: false });
 
 const SMART_FILTERS = [
   { id: 'All', label: 'Everything', icon: LayoutGrid },
@@ -71,10 +71,67 @@ export default function CheckoutHomeFeed() {
   // RETENTION STATES
   const [returnStatus, setReturnStatus] = useState<{ type: 'NEW_ACTIVITY' | 'NEW_MATCHES' | 'CONTINUE' | 'STREAK' | null }>({ type: null });
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const profileStrength = useMemo(() => {
+    if (!authUser) return "Low";
+    let score = 0;
+    if (authUser?.full_name) score += 20;
+    if (authUser?.bio) score += 20;
+    if (authUser?.avatar_url) score += 20;
+    if (authUser?.expertise?.length) score += 20;
+    if (authUser?.intents?.length) score += 20;
+    
+    if (score >= 100) return "High";
+    if (score >= 60) return "Medium";
+    return "Low";
+  }, [authUser]);
+
+  const profileWeak = profileStrength === "Low";
+  const isReady = !!authUser;
+
+  const actionCount = useMemo(() => {
+     if (!authUser) return 0;
+     const events = ['FIRST_MANDATE_CREATED', 'CONNECT_REQUEST_SENT', 'MESSAGE_INITIATED'];
+     return events.filter(e => analytics.hasAction([e])).length;
+  }, [authUser]);
+  
+  const hasTakenAction = actionCount > 0;
+  const showActivationCard = actionCount < 3;
+
+  const [activationState, setActivationState] = useState<'NEW' | 'EXPLORING' | 'RETURNING' | 'MOMENTUM'>('NEW');
+  const hasInitialized = React.useRef(false);
+
+  useEffect(() => {
+    // 1. Initial State Selection (Priority Order)
+    const visits = parseInt(localStorage.getItem('checkout_visit_count') || '1');
+    const actions = actionCount;
+    
+    let initialState: 'NEW' | 'EXPLORING' | 'RETURNING' | 'MOMENTUM' = 'NEW';
+    if (actions === 1) initialState = 'MOMENTUM';
+    else if (visits > 1) initialState = 'RETURNING';
+    else initialState = 'NEW';
+
+    // 2. Lock / Session Check
+    const sessionState = sessionStorage.getItem('activation_state') as any;
+    if (sessionState && sessionState !== 'EXPLORING' && actionCount === 0) {
+       setActivationState(sessionState);
+    } else {
+       setActivationState(initialState);
+       sessionStorage.setItem('activation_state', initialState);
+    }
+
+    // 3. Delayed "Exploring" State (Only for NEW users)
+    if (initialState === 'NEW' && !sessionState) {
+       const timer = setTimeout(() => {
+          setActivationState('EXPLORING');
+          sessionStorage.setItem('activation_state', 'EXPLORING');
+       }, 8000); // Stable 8s delay
+       return () => clearTimeout(timer);
+    }
+  }, [actionCount]); // Allow major milestone (action) to break lock
 
   const supabase = createClient();
 
-  const initTerminal = async () => {
+  const initHome = async () => {
     setIsLoading(true);
     if (!authUser) {
       setIsLoading(false);
@@ -82,7 +139,7 @@ export default function CheckoutHomeFeed() {
     }
 
     try {
-      // 1. PRIMARY INTELLIGENCE FETCH (High Match)
+      // 1. PRIMARY DATA FETCH (High Match)
       const { data: postsData, error: primaryError } = await supabase
         .from('posts')
         .select(`
@@ -98,7 +155,7 @@ export default function CheckoutHomeFeed() {
 
       let processedPosts = postsData || [];
 
-      // 2. FALLBACK PROTOCOL: If no matches, explore regional opportunities
+      // 2. FALLBACK: If no matches, explore regional opportunities
       if (processedPosts.length < 5) {
         const { data: fallbackData } = await supabase
           .from('posts')
@@ -136,14 +193,24 @@ export default function CheckoutHomeFeed() {
       const ranked = rankEntities(authUser, mapped);
       setPosts(ranked);
     } catch (err) {
-      console.error("Neural Feed Critical Failure:", err);
+      console.error("Feed Loading Error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    initTerminal();
+    if (!authUser) {
+       hasInitialized.current = false;
+       setIsLoading(false);
+       return;
+    }
+
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    console.log("[HOME] Profile Identified - Loading Page...");
+    initHome();
     analytics.trackScreen('HOME', authUser?.id);
     
     if (authUser) {
@@ -156,7 +223,7 @@ export default function CheckoutHomeFeed() {
        if (lastVisit) {
           const timeDiff = now - parseInt(lastVisit);
           if (timeDiff > 3600000) { // More than 1 hour
-             if (lastAction === 'MANDATE') setReturnStatus({ type: 'NEW_MATCHES' });
+             if (lastAction === 'POST') setReturnStatus({ type: 'NEW_MATCHES' });
              else if (lastAction === 'CONNECT') setReturnStatus({ type: 'NEW_ACTIVITY' });
              else setReturnStatus({ type: 'CONTINUE' });
           }
@@ -200,31 +267,42 @@ export default function CheckoutHomeFeed() {
     }
   }, [authUser]);
 
-  const profileStrength = useMemo(() => {
-    if (!authUser) return "Low";
-    let score = 0;
-    if (authUser.full_name) score += 20;
-    if (authUser.bio) score += 20;
-    if (authUser.avatar_url) score += 20;
-    if (authUser.expertise?.length) score += 20;
-    if (authUser.intents?.length) score += 20;
-    
-    if (score >= 100) return "High";
-    if (score >= 60) return "Medium";
-    return "Low";
-  }, [authUser]);
 
-  const profileWeak = profileStrength === "Low";
-
-  const hasTakenAction = useMemo(() => {
-     if (!authUser) return true;
-     return analytics.hasAction(['FIRST_MANDATE_CREATED', 'CONNECT_REQUEST_SENT', 'MESSAGE_INITIATED']);
-  }, [authUser]);
+  const activationCardContent = useMemo(() => {
+    switch (activationState) {
+      case 'MOMENTUM':
+        return {
+          title: "Keep going",
+          subtext: "Take your next step to grow",
+          ctaPrimary: "Create Requirement",
+          ctaSecondary: "See people →"
+        };
+      case 'RETURNING':
+        return {
+          title: "Network growing",
+          subtext: "People nearby are active now",
+          ctaPrimary: "Create Requirement",
+          ctaSecondary: "See people →"
+        };
+      case 'EXPLORING':
+        return {
+          title: "Finding something?",
+          subtext: "Post a requirement to get matches",
+          ctaPrimary: "Create Requirement",
+          ctaSecondary: "See people →"
+        };
+      default:
+        return {
+          title: "Find people",
+          subtext: "Create a requirement or connect with others",
+          ctaPrimary: "Create Requirement",
+          ctaSecondary: "See people →"
+        };
+    }
+  }, [activationState]);
 
   const hasEarlySuccess = useMemo(() => {
      if (!authUser) return false;
-     // Check if user has at least 1 mandate OR 1 connection
-     const actions = analytics.getSessionEvents();
      return analytics.hasAction(['FIRST_MANDATE_CREATED', 'CONNECT_REQUEST_SENT']);
   }, [authUser]);
 
@@ -261,6 +339,11 @@ export default function CheckoutHomeFeed() {
         {/* CENTER FEED */}
         <div className="w-full max-w-4xl space-y-12">
           
+          <div className="px-2">
+             <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3 uppercase">Feed</h1>
+             <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Stay updated with your business directory.</p>
+          </div>
+          
           {/* RETENTION & CONTINUITY BANNERS */}
           {returnStatus.type && (
             <div className="mx-2 p-6 bg-[#292828] text-white rounded-[2rem] flex items-center justify-between shadow-4xl animate-in slide-in-from-top-4 duration-700">
@@ -270,13 +353,13 @@ export default function CheckoutHomeFeed() {
                   </div>
                   <div>
                      <p className="text-[11px] font-black uppercase tracking-wider">
-                        {returnStatus.type === 'NEW_MATCHES' && "New matches available for your mandate"}
-                        {returnStatus.type === 'NEW_ACTIVITY' && "Your network has new activity since you last visited"}
-                        {returnStatus.type === 'CONTINUE' && "Continue building your network momentum"}
-                        {returnStatus.type === 'STREAK' && "Active yesterday • Node Link Growing"}
+                        {returnStatus.type === 'NEW_MATCHES' && "New matches for your requirement"}
+                        {returnStatus.type === 'NEW_ACTIVITY' && "New network activity found"}
+                        {returnStatus.type === 'CONTINUE' && "Keep growing your network"}
+                        {returnStatus.type === 'STREAK' && "Active yesterday • Profile growing"}
                      </p>
                      <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-1">
-                        {returnStatus.type === 'STREAK' ? "Keep your network growing to maintain trust velocity." : "You may have missed new opportunities in your regional hub."}
+                        {returnStatus.type === 'STREAK' ? "Keep active to grow your network." : "Don't miss new opportunities nearby."}
                      </p>
                   </div>
                </div>
@@ -288,7 +371,7 @@ export default function CheckoutHomeFeed() {
             <div className="mx-2 p-5 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between animate-in fade-in duration-500">
                <div className="flex items-center gap-3">
                   <Clock size={16} className="text-blue-600" />
-                  <p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Your connection request is still active</p>
+                  <p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Your request is still active</p>
                </div>
                <button onClick={() => window.location.href = '/matches'} className="text-[9px] font-black text-blue-600 uppercase border-b border-blue-200">Explore more matches</button>
             </div>
@@ -299,9 +382,9 @@ export default function CheckoutHomeFeed() {
              <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[10px] font-black text-[#292828] uppercase tracking-[0.2em]">120+ Professionals in your network</span>
+                   <span className="text-[10px] font-black text-[#292828] uppercase tracking-[0.2em]">120+ People in your network</span>
                 </div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Growing network in your city hub • 3 active nearby</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Network growing nearby • 3 active now</p>
              </div>
              <div className="text-right">
                 <p className="text-[8px] font-black text-[#E53935] uppercase tracking-widest">People like you are connecting here</p>
@@ -315,8 +398,8 @@ export default function CheckoutHomeFeed() {
                    <Zap size={16} fill="currentColor" />
                 </div>
                 <div>
-                   <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">Network Activity</p>
-                   <p className="text-[9px] font-bold text-[#E53935]/60 uppercase tracking-widest">You have new activity in your regional cluster</p>
+                   <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">Activity</p>
+                   <p className="text-[9px] font-bold text-[#E53935]/60 uppercase tracking-widest">New activity found nearby</p>
                 </div>
              </div>
              <button onClick={() => window.location.href = '/history'} className="h-8 px-4 bg-[#E53935] text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-[#292828] transition-all">View</button>
@@ -330,8 +413,8 @@ export default function CheckoutHomeFeed() {
                      <Users size={20} />
                   </div>
                   <div>
-                     <p className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Connection Established</p>
-                     <p className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest mt-1">You can now start a conversation with your new partner.</p>
+                     <p className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Connected</p>
+                     <p className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest mt-1">You can now message your connection.</p>
                   </div>
                </div>
                <button onClick={() => window.location.href = '/chat'} className="h-12 px-6 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] transition-all flex items-center gap-2">
@@ -345,7 +428,7 @@ export default function CheckoutHomeFeed() {
              <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                    <div className="h-2 w-2 rounded-full bg-[#E53935]" />
-                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Node Vitality</span>
+                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Profile Status</span>
                 </div>
                 <div className="flex flex-col gap-2">
                    <div className="flex items-center gap-2">
@@ -357,7 +440,7 @@ export default function CheckoutHomeFeed() {
                       )}>{profileStrength}</span>
                    </div>
                    {profileStrength === "Low" && (
-                      <p className="text-[8px] font-bold text-[#E53935] uppercase tracking-tighter">Improve profile to increase match quality</p>
+                      <p className="text-[8px] font-bold text-[#E53935] uppercase tracking-tighter">Improve profile for better matches</p>
                    )}
                 </div>
              </div>
@@ -370,8 +453,8 @@ export default function CheckoutHomeFeed() {
                         <TrendingUp size={20} />
                      </div>
                      <div>
-                        <p className="text-[11px] font-black text-[#292828] uppercase tracking-wider">Your network is active</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Keep building momentum. New nodes are aligning.</p>
+                        <p className="text-[11px] font-black text-[#292828] uppercase tracking-wider">Network active</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Keep going. New people are joining.</p>
                      </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -383,27 +466,48 @@ export default function CheckoutHomeFeed() {
                         ))}
                      </div>
                      <ArrowRight size={16} className="text-slate-300 group-hover:text-[#E53935] transition-colors" />
-                  </div>
-               </div>
-             )}
+                   </div>
+                </div>
+              )}
 
-             {!hasTakenAction && (
-               <div className="p-8 bg-[#292828] rounded-[2.5rem] text-white shadow-4xl relative overflow-hidden animate-in slide-in-from-top-4 duration-700">
-                  <Zap size={120} className="absolute -right-10 -bottom-10 text-white/5 opacity-20 rotate-12" />
-                  <div className="relative z-10">
-                     <h3 className="text-2xl font-black uppercase tracking-tighter mb-2">Initialize your network</h3>
-                     <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-10 leading-relaxed">Start here: Create your first mandate or connect with someone relevant to activate your neural feed.</p>
-                     <div className="flex flex-col sm:flex-row gap-4">
-                        <button onClick={() => { setEditPost(null); setFormType("Lead"); setIsPosting(true); }} className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white hover:text-[#292828] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">
-                           Create Mandate <ArrowRight size={16} />
-                        </button>
-                        <button onClick={() => window.location.href = '/matches'} className="h-16 px-10 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center">
-                           Explore Matches
-                        </button>
-                     </div>
-                  </div>
-               </div>
-             )}
+              {showActivationCard && (
+                <div className="bg-white border border-slate-100 rounded-2xl p-5 mb-8 animate-in fade-in slide-in-from-top-2 duration-500 relative group hover:border-[#292828]/10 transition-colors">
+                   <div className="absolute top-4 right-4 bg-[#E53935]/10 text-[#E53935] text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                      {actionCount === 1 ? "Momentum" : "New"}
+                   </div>
+                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="flex items-center gap-4">
+                         <div className="h-11 w-11 bg-red-50 rounded-xl flex items-center justify-center text-[#E53935] shrink-0">
+                            <Sparkles size={20} />
+                         </div>
+                         <div>
+                            <h3 className="text-[14px] font-black text-[#292828] uppercase tracking-tight">{activationCardContent.title}</h3>
+                            <div className="space-y-0.5">
+                               <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{activationCardContent.subtext}</p>
+                               {!hasTakenAction && (
+                                  <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">People nearby are already active</p>
+                               )}
+                            </div>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-5">
+                         <button 
+                           onClick={() => { setEditPost(null); setFormType("Lead"); setIsPosting(true); }} 
+                           className="h-9 px-5 bg-[#292828] text-white rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-[#E53935] transition-all active:scale-95"
+                         >
+                            {activationCardContent.ctaPrimary}
+                         </button>
+                         <button 
+                           onClick={() => window.location.href = '/matches'} 
+                           className="text-[9px] font-black text-[#292828]/40 uppercase tracking-widest hover:text-[#292828] transition-colors flex items-center gap-1.5 group/btn"
+                         >
+                            {activationCardContent.ctaSecondary} <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                         </button>
+                      </div>
+                   </div>
+                </div>
+              )}
+
 
              {isPostActionLoop && (
                <div className="p-8 bg-emerald-50 border border-emerald-100 rounded-[2.5rem] relative overflow-hidden animate-in zoom-in-95 duration-500">
@@ -419,8 +523,8 @@ export default function CheckoutHomeFeed() {
                         <X size={20} />
                      </button>
                   </div>
-                  <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Your mandate is live</h3>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-8">Your mandate is now visible to relevant nodes. {matchCount} potential matches identified in your city hub.</p>
+                  <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Requirement is live</h3>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-8">Requirement visible to others. {matchCount} matches found nearby.</p>
                   <button onClick={() => { setIsPostActionLoop(false); window.scrollTo({ top: 1000, behavior: 'smooth' }); }} className="h-14 px-8 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#292828] transition-all shadow-xl flex items-center justify-center gap-2">
                      View Matches <ArrowRight size={14} />
                   </button>
@@ -439,8 +543,8 @@ export default function CheckoutHomeFeed() {
                   className="flex-1 h-14 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-2xl px-6 text-left text-xs font-bold uppercase transition-all flex items-center justify-between"
                 >
                    <div>
-                      <span className="block">Create your first mandate...</span>
-                      <span className="text-[8px] font-bold text-slate-300 normal-case lowercase italic">Mandate = your requirement (hiring, leads, partnership, etc.)</span>
+                      <span className="block">Create a requirement...</span>
+                      <span className="text-[8px] font-bold text-slate-300 normal-case lowercase italic">Requirement = what you need (hiring, leads, etc.)</span>
                    </div>
                    <Zap size={20} className="text-[#E53935]" />
                 </button>
@@ -450,8 +554,8 @@ export default function CheckoutHomeFeed() {
                   <div className="flex items-center gap-3">
                      <BrainCircuit size={16} className="text-[#E53935]" />
                      <div>
-                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-wider">Optimize your node</p>
-                        <p className="text-[9px] font-bold text-[#E53935]/60 uppercase">Add a short bio to improve your matches and trust velocity</p>
+                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-wider">Update your profile</p>
+                        <p className="text-[9px] font-bold text-[#E53935]/60 uppercase">Add a bio to get better matches</p>
                      </div>
                   </div>
                   <button onClick={() => window.location.href = '/settings'} className="h-10 px-6 bg-[#E53935] text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-red-500/10">Add Now</button>
@@ -459,9 +563,9 @@ export default function CheckoutHomeFeed() {
              )}
              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-2 pb-2">
                 {[
-                   { id: 'Lead', icon: Target, label: "Post a Mandate" },
+                   { id: 'Lead', icon: Target, label: "Requirement" },
                    { id: 'Hiring', icon: Briefcase, label: "Hiring" },
-                   { id: 'Partner', icon: Sparkles, label: "Partnership" },
+                   { id: 'Partner', icon: Sparkles, label: "Partner" },
                    { id: 'Meetup', icon: Users, label: "Meetup" }
                 ].map((btn) => (
                    <button 
@@ -522,19 +626,26 @@ export default function CheckoutHomeFeed() {
           </div>
 
           {/* FEED AREA */}
-          <NeuralFeed 
-            posts={filteredPosts} 
-            isLoading={isLoading} 
-            currentUserId={authUser?.id}
-            onAction={(post) => { setSelectedDeal(post); setIsModalOpen(true); }}
-            onEdit={(p) => { setEditPost(p); setFormType(p.type as any); setIsPosting(true); }}
-            onDelete={async (p) => {
-               if(confirm("Delete this post?")) {
-                  await supabase.from('posts').delete().eq('id', p.id);
-                  initTerminal();
-               }
-            }}
-          />
+          {!isReady ? (
+            <div className="py-20 text-center animate-pulse bg-white rounded-[3rem] border border-slate-50">
+               <BrainCircuit size={48} className="mx-auto text-slate-100 mb-6" />
+               <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.4em]">Loading your network...</p>
+            </div>
+          ) : (
+            <Feed 
+              posts={filteredPosts} 
+              isLoading={isLoading} 
+              currentUserId={authUser?.id}
+              onAction={(post) => { setSelectedDeal(post); setIsModalOpen(true); }}
+              onEdit={(p) => { setEditPost(p); setFormType(p.type as any); setIsPosting(true); }}
+              onDelete={async (p) => {
+                 if(confirm("Delete this requirement?")) {
+                    await supabase.from('posts').delete().eq('id', p.id);
+                    initHome();
+                 }
+              }}
+            />
+          )}
         </div>
 
         {/* BOTTOM SIDEBAR (CENTERED) */}
@@ -566,7 +677,7 @@ export default function CheckoutHomeFeed() {
              setIsPostActionLoop(true);
              
              // STORE LAST ACTION
-             localStorage.setItem('checkout_last_action', 'MANDATE');
+             localStorage.setItem('checkout_last_action', 'POST');
              localStorage.setItem('checkout_last_action_time', Date.now().toString());
 
              analytics.track('FIRST_MANDATE_CREATED', authUser?.id, { type: newPost.type });

@@ -53,7 +53,7 @@ export default function AdvisorsPage() {
             expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
             avatar: p.avatar_url || DEFAULT_AVATAR,
             matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
-            bestFor: p.bio?.substring(0, 100) || "Strategic scaling and tactical deployment.",
+            bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
             bio: p.bio || "",
             highlights: [],
             focus: [],
@@ -62,7 +62,7 @@ export default function AdvisorsPage() {
           setAdvisors(mapped);
         }
       } catch (err) {
-        console.error("Advisor Fetch Protocol Failure:", err);
+        console.error("Advisor Fetch Failure:", err);
       } finally {
         setLoading(false);
       }
@@ -80,7 +80,7 @@ export default function AdvisorsPage() {
     return (
       <div className="min-h-screen bg-[#FDFDFF] flex flex-col items-center justify-center gap-6">
         <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Synchronizing Advisor Ledger...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Loading Advisors...</p>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function AdvisorsPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
             <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3 uppercase">Advisors</h1>
-            <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Access the regional authority network.</p>
+            <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Access the network of experts.</p>
           </div>
           <div className="flex bg-slate-50 p-1 rounded-2xl overflow-x-auto no-scrollbar w-full md:w-auto">
             {["Best Match", "Most Experienced", "Recently Active"].map(sort => (
@@ -118,7 +118,7 @@ export default function AdvisorsPage() {
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
             <input 
               type="text" 
-              placeholder="Filter by mandate, industry, or name..." 
+              placeholder="Filter by industry or name..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-16 bg-white border border-slate-100 rounded-2xl pl-16 pr-6 text-sm font-bold text-[#292828] focus:border-[#E53935] outline-none transition-all shadow-sm"
@@ -135,7 +135,7 @@ export default function AdvisorsPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-20 text-center py-24 bg-white rounded-[4rem] border border-dashed border-slate-200">
            <Zap size={64} className="mx-auto text-slate-100 mb-8" />
            <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 tracking-tight">No advisors available</h3>
-           <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Expand your regional search hub or try a different professional mandate.</p>
+           <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Try a different search or category.</p>
            <button 
              onClick={() => setSearchQuery("")}
              className="h-16 px-12 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all shadow-4xl"
@@ -151,7 +151,7 @@ export default function AdvisorsPage() {
           <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
             <div className="flex items-center gap-3 text-[#E53935]">
               <Sparkles size={20} fill="currentColor" />
-              <h2 className="text-xs font-black uppercase tracking-[0.2em]">Top Tactical Matches</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.2em]">Top Matches</h2>
             </div>
           </div>
           
@@ -203,7 +203,7 @@ export default function AdvisorsPage() {
                       <Award size={16} className="text-emerald-500" />
                       <span className="text-[10px] font-black text-[#292828] uppercase">{advisor.experience} Exp</span>
                     </div>
-                    <ConnectButton userId={advisor.id} userName={advisor.name} label="Request Advice" />
+                    <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" />
                 </div>
               </div>
             ))}
@@ -250,7 +250,7 @@ function AdvisorCard({ advisor }: { advisor: Advisor }) {
       </div>
 
       <div className="shrink-0">
-        <ConnectButton userId={advisor.id} userName={advisor.name} label="Request Advice" />
+        <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" />
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
 
 
-function ChatTerminal() {
+function Chat() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [message, setMessage] = useState("");
@@ -57,7 +57,7 @@ function ChatTerminal() {
 
   // 1. IDENTITY & NETWORK FETCHING
   React.useEffect(() => {
-    async function initNetwork() {
+    async function initChat() {
       if (!user) return;
       analytics.trackScreen('CHAT', user.id);
 
@@ -76,8 +76,8 @@ function ChatTerminal() {
           avatar: p.avatar_url || DEFAULT_AVATAR,
           role: p.role || "Verified Partner",
           online: true,
-          time: "node",
-          last: "Initiate secure link"
+          time: "connected",
+          last: "Start a conversation"
         }));
         setAllUsers(formattedUsers);
 
@@ -106,16 +106,16 @@ function ChatTerminal() {
             partnerId: partner.id,
             name: partner.full_name || "Partner",
             avatar: partner.avatar_url || DEFAULT_AVATAR,
-            role: partner.role || "Verified Partner",
+            role: partner.role || "Verified Profile",
             online: true,
-            last: "Secure node established",
+            last: "Connected",
             time: "10:32 AM"
           };
         }));
       }
       setIsLoading(false);
     }
-    initNetwork();
+    initChat();
   }, [userParam]);
 
   // 2. MESSAGE LOADING & REALTIME SUBSCRIPTION
@@ -166,7 +166,7 @@ function ChatTerminal() {
     }
   };
 
-  const filteredNodes = allUsers.filter(u => 
+   const filteredUsers = allUsers.filter(u => 
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     u.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -181,7 +181,7 @@ function ChatTerminal() {
       )}>
         <div className="p-8 pb-6 bg-white z-10 sticky top-0">
            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-black text-[#292828] uppercase tracking-tighter">Messages</h1>
+              <h1 className="text-3xl font-black text-[#292828] uppercase tracking-tighter">Chat</h1>
               <button 
                 onClick={() => setShowSettings(true)}
                 className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all shadow-sm"
@@ -194,7 +194,7 @@ function ChatTerminal() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" size={18} />
               <input 
                 type="text" 
-                placeholder="Search everyone..." 
+                placeholder="Search people..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-[13px] font-bold text-[#292828] outline-none focus:bg-white focus:ring-2 focus:ring-[#E53935]/10 focus:border-[#E53935] transition-all" 
@@ -204,7 +204,7 @@ function ChatTerminal() {
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
            <div className="px-5 mb-4 mt-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Connections</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Chats</p>
            </div>
            {chats.filter(c => 
              c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -244,7 +244,7 @@ function ChatTerminal() {
            ))}
            {chats.length === 0 && !isLoading && (
               <div className="p-10 text-center opacity-20 italic text-[10px] uppercase font-black tracking-widest">
-                 No active nodes
+                 No active chats
               </div>
            )}
         </div>
@@ -299,7 +299,7 @@ function ChatTerminal() {
              {/* MESSAGE STREAM */}
             <div className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-6 lg:space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Secure Connection</span>
+                  <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Connected</span>
                </div>
 
                {/* Live Message Stream */}
@@ -333,7 +333,7 @@ function ChatTerminal() {
                {!selectedChat.id || selectedChat.id === "temp" ? (
                   <div className="h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 border-dashed">
                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] flex items-center gap-3">
-                        Connect to start conversation
+                        Connect to chat
                      </p>
                   </div>
                ) : (
@@ -356,7 +356,7 @@ function ChatTerminal() {
                                { icon: ImageIcon, label: "Photos & Videos", color: "text-red-500", bg: "bg-red-50" },
                                { icon: FileText, label: "Documents", color: "text-blue-500", bg: "bg-blue-50" },
                                { icon: User, label: "Share Contact", color: "text-green-500", bg: "bg-green-50" },
-                               { icon: Paperclip, label: "Business ID", color: "text-amber-500", bg: "bg-amber-50" },
+                               { icon: Paperclip, label: "Profile", color: "text-amber-500", bg: "bg-amber-50" },
                              ].map((it, i) => (
                                <button 
                                  key={i} 
@@ -404,8 +404,8 @@ function ChatTerminal() {
              <div className="h-24 w-24 bg-white rounded-[1.625rem] shadow-2xl flex items-center justify-center text-[#E53935] mb-8 animate-bounce-subtle">
                 <MessageSquare size={40} />
              </div>
-             <h2 className="text-2xl font-black text-[#292828] uppercase tracking-tighter">Secure Messages</h2>
-             <p className="text-slate-400 max-w-sm mt-4 font-bold leading-relaxed uppercase text-[11px] tracking-widest">Select a node from the directory to initialize tactical communications.</p>
+             <h2 className="text-2xl font-black text-[#292828] uppercase tracking-tighter">Chat</h2>
+             <p className="text-slate-400 max-w-sm mt-4 font-bold leading-relaxed uppercase text-[11px] tracking-widest">Select a person to start messaging.</p>
           </div>
         )}
       </main>
@@ -415,7 +415,7 @@ function ChatTerminal() {
         <aside className="hidden xl:flex flex-col w-80 lg:w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300 shrink-0">
            <div className="p-8 h-full overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center mb-8">
-                 <h3 className="text-[11px] font-bold text-[#292828] group-hover:text-white/30 uppercase tracking-widest">Partner Info</h3>
+                 <h3 className="text-[11px] font-bold text-[#292828] group-hover:text-white/30 uppercase tracking-widest">Profile Info</h3>
                  <button onClick={() => setShowProfile(false)} className="h-9 w-9 bg-[#292828]/5 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828]/10 transition-colors">
                     <X size={18} />
                  </button>
@@ -432,7 +432,7 @@ function ChatTerminal() {
                  </div>
                  
                  <h2 className="text-2xl font-bold text-[#292828] group-hover:text-white leading-tight mb-1 font-outfit uppercase tracking-tight">{selectedChat.name}</h2>
-                 <p className="text-[13px] font-bold text-[#E53935] mb-6 uppercase tracking-widest">{selectedChat.role || "Verified Partner"}</p>
+                 <p className="text-[13px] font-bold text-[#E53935] mb-6 uppercase tracking-widest">{selectedChat.role || "Verified Profile"}</p>
                  
                  <div className="flex justify-center gap-2 mb-8">
                     <div className="px-4 py-2 bg-[#292828] text-white rounded-xl flex items-center gap-2 shadow-lg shadow-slate-900/10">
@@ -495,7 +495,7 @@ function ChatTerminal() {
                     <div>
                         <div className="flex items-center gap-2 mb-6">
                            <Target size={16} className="text-[#E53935]" />
-                           <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest">Active Needs</h4>
+                           <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest">Requirements</h4>
                         </div>
                         <div className="flex flex-wrap gap-2">
                            {selectedChat.requirements.map((req: string, i: number) => (
@@ -551,9 +551,9 @@ function ChatTerminal() {
                     <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Privacy & Security</p>
                     <div className="space-y-1">
                        {[
-                         { label: "End-to-End Encryption", desc: "Always active for all connections", active: true },
+                         { label: "Privacy", desc: "Always active for all chats", active: true },
                          { label: "Read Receipts", desc: "Show when you've seen messages", active: true },
-                         { label: "Online Status", desc: "Show active status to partners", active: false }
+                         { label: "Status", desc: "Show active status to others", active: false }
                        ].map((s, i) => (
                          <div key={i} className="flex items-center justify-between p-4 rounded-2xl hover:bg-[#292828]/5 transition-all">
                             <div>
@@ -580,8 +580,8 @@ function ChatTerminal() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 tracking-widest animate-pulse">Synchronizing Tactical Channels...</div>}>
-      <ChatTerminal />
+    <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 tracking-widest animate-pulse">Loading...</div>}>
+      <Chat />
     </Suspense>
   );
 }

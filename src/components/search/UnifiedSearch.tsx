@@ -63,7 +63,7 @@ export default function UnifiedSearch() {
       {query && (
         <div className="mt-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-4xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 max-h-[60vh] overflow-y-auto no-scrollbar">
           <div className="p-4 border-b border-slate-50 flex items-center justify-between px-8 bg-slate-50/50">
-             <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">{searchResults.length} Neural Matches</p>
+             <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">{searchResults.length} Matches</p>
              <Zap size={14} className="text-[#E53935]" />
           </div>
 
@@ -97,7 +97,7 @@ export default function UnifiedSearch() {
 
             {searchResults.length === 0 && (
               <div className="py-20 text-center">
-                 <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.4em]">Zero structural matches.</p>
+                  <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.4em]">No matches found.</p>
               </div>
             )}
           </div>

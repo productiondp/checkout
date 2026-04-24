@@ -56,10 +56,10 @@ export default function EventDetailPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl tracking-widest">Live Summit</div>
+                <div className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl tracking-widest">Live Event</div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 text-[10px] font-bold uppercase">
                    <TrendingUp size={14} className="text-emerald-400" />
-                   {event.matchScore}% Structure Match
+                   {event.matchScore}% Match
                 </div>
               </div>
               <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black text-white tracking-tighter leading-[0.9] uppercase mb-8">{event.name}</h1>
@@ -96,7 +96,7 @@ export default function EventDetailPage() {
               </button>
               <div className="flex items-center justify-center gap-3 text-white/40">
                  <Users size={16} />
-                 <span className="text-[10px] font-black uppercase tracking-widest">{event.attendeeCount.toLocaleString()} Nodes Attending</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest">{event.attendeeCount.toLocaleString()} People Attending</span>
               </div>
             </div>
           </div>
@@ -133,11 +133,11 @@ export default function EventDetailPage() {
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                   <div>
-                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Live Opportunity Feed</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time mandates from attendees</p>
+                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Live Post Feed</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time posts from attendees</p>
                   </div>
                   <button className="h-12 px-8 bg-[#292828] text-white rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
-                    <Plus size={16} /> Post Intent
+                    <Plus size={16} /> Add Post
                   </button>
                 </div>
                 
@@ -153,7 +153,7 @@ export default function EventDetailPage() {
                   <Search size={20} className="text-slate-300" />
                   <input 
                     type="text" 
-                    placeholder="Search attendees by mandate, role or company..." 
+                    placeholder="Search attendees..." 
                     className="flex-1 bg-transparent outline-none text-sm font-bold text-[#292828]"
                   />
                 </div>
@@ -169,7 +169,7 @@ export default function EventDetailPage() {
             {activeTab === "About" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm">
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Summit Overview</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Event Overview</h3>
                   <p className="text-2xl font-bold text-[#292828] leading-relaxed italic">
                     "{event.description}"
                   </p>
@@ -177,7 +177,7 @@ export default function EventDetailPage() {
 
                 {event.agenda && (
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Execution Agenda</h3>
+                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Agenda</h3>
                     <div className="space-y-6">
                       {event.agenda.map((item, i) => (
                         <div key={i} className="flex items-start gap-6 group">
@@ -221,7 +221,7 @@ export default function EventDetailPage() {
                    <h3 className="text-[11px] font-black uppercase tracking-widest">Pre-Event Matching</h3>
                 </div>
                 <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-10">
-                  Based on your business intent, we've identified 12 strategic nodes you must connect with at this summit.
+                  Based on your business goals, we've identified 12 people you must connect with at this event.
                 </p>
                 <div className="space-y-4 mb-10">
                    {MOCK_MEMBERS.slice(0, 2).map(m => (
@@ -229,7 +229,7 @@ export default function EventDetailPage() {
                         <img src={m.avatar} className="h-10 w-10 rounded-xl" alt="" />
                         <div>
                            <p className="text-[11px] font-black text-white uppercase leading-none mb-1">{m.name}</p>
-                           <p className="text-[9px] font-bold text-emerald-400 uppercase">{m.matchScore}% Structural Match</p>
+                           <p className="text-[9px] font-bold text-emerald-400 uppercase">{m.matchScore}% Match</p>
                         </div>
                      </div>
                    ))}
@@ -239,7 +239,7 @@ export default function EventDetailPage() {
             </div>
 
             <div className="space-y-8">
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Mandates</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Posts</h3>
               <div className="space-y-4">
                 {MOCK_POSTS.slice(0, 3).map(post => (
                   <div key={post.id} className="p-6 bg-white border border-slate-100 rounded-3xl group cursor-pointer hover:border-[#E53935]/20 transition-all shadow-sm">
@@ -249,7 +249,7 @@ export default function EventDetailPage() {
                     </div>
                     <p className="text-sm font-bold text-[#292828] leading-snug line-clamp-2 mb-4">"{post.description}"</p>
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#E53935] group-hover:translate-x-2 transition-transform">
-                      View Mandate <ArrowRight size={14} />
+                      View Post <ArrowRight size={14} />
                     </div>
                   </div>
                 ))}
@@ -266,7 +266,7 @@ function OpportunityCard({ post }: { post: any }) {
   return (
     <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
       <div className="absolute top-0 right-0 p-6 sm:p-8 text-right">
-        <p className="text-[8px] sm:text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1 sm:mb-2">Structural Match</p>
+        <p className="text-[8px] sm:text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1 sm:mb-2">Match Score</p>
         <p className="text-xl sm:text-3xl font-black text-[#292828] tracking-tighter tabular-nums group-hover:text-[#E53935] transition-colors">{post.matchScore}%</p>
       </div>
 
@@ -298,7 +298,7 @@ function OpportunityCard({ post }: { post: any }) {
         </div>
 
         <button className="h-12 px-8 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg active:scale-95">
-           Connect & Execute
+           Connect
         </button>
       </div>
     </div>
@@ -320,7 +320,7 @@ function AttendeeCard({ member }: { member: any }) {
           </p>
           <div className="flex items-center gap-2 mt-3">
              <TrendingUp size={12} className="text-emerald-500" />
-             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{member.matchScore}% Structural Match</span>
+             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{member.matchScore}% Match Score</span>
           </div>
         </div>
       </div>

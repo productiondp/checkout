@@ -36,10 +36,10 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   const { logout } = useAuth();
   
   const menuItems = [
-    { label: "Home", href: "/home", icon: Home },
+    { label: "Feed", href: "/home", icon: Home },
     { label: "Directory", href: "/matches", icon: Users },
-    { label: "Local Link", href: "/explore", icon: Zap },
-    { label: "Experts", href: "/advisors", icon: Award },
+    { label: "Map", href: "/explore", icon: Zap },
+    { label: "Advisors", href: "/advisors", icon: Award },
     { label: "Communities", href: "/communities", icon: Globe },
   ];
 
@@ -74,7 +74,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
               </div>
               <div>
                  <p className="text-lg font-black text-[#292828] leading-tight truncate max-w-[140px] uppercase">{user?.full_name || "Profile"}</p>
-                 <p className="text-[10px] font-bold text-[#E53935] uppercase">{user?.role || "Business Partner"}</p>
+                 <p className="text-[10px] font-bold text-[#E53935] uppercase">{user?.role || "Verified Profile"}</p>
               </div>
            </div>
            <div className="grid grid-cols-1">

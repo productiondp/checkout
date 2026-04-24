@@ -20,7 +20,7 @@ import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/match_engine";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function DiscoveryTerminal() {
+export default function PartnerDiscovery() {
    const { user: authUser } = useAuth();
    const [searchQuery, setSearchQuery] = useState("");
    const [activeIntent, setActiveIntent] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export default function DiscoveryTerminal() {
          <div className="bg-white rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden flex flex-col h-full">
             <div className="p-8 pb-4">
                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Partner <span className="text-[#E53935]">Discovery</span></h2>
+                  <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Directory <span className="text-[#E53935]">Discovery</span></h2>
                   <div className="h-8 w-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
                      <Search size={16} />
                   </div>
@@ -103,7 +103,7 @@ export default function DiscoveryTerminal() {
 
             {/* INTENT CHIPS */}
             <div className="px-8 flex gap-2 overflow-x-auto no-scrollbar pb-6 mt-2">
-               {["Lead", "Partner", "Hiring", "Meetup"].map(intent => (
+               {["Requirement", "Collaboration", "Hiring", "Events"].map(intent => (
                   <button 
                      key={intent}
                      onClick={() => setActiveIntent(activeIntent === intent ? null : intent)}
@@ -122,7 +122,7 @@ export default function DiscoveryTerminal() {
                {isLoading ? (
                   <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300">
                      <div className="h-4 w-4 border-2 border-slate-200 border-t-[#E53935] rounded-full animate-spin" />
-                     <p className="text-[10px] font-black uppercase tracking-widest">Neural Scan Active...</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest">Searching directory...</p>
                   </div>
                ) : results.length > 0 ? (
                   results.map((profile) => (
@@ -158,7 +158,7 @@ export default function DiscoveryTerminal() {
                            onClick={() => window.location.href = `/profile/${profile.id}`}
                            className="w-full h-12 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-[#E53935] transition-all"
                         >
-                           Examine Node <ArrowRight size={14} />
+                           View Profile <ArrowRight size={14} />
                         </button>
                      </div>
                   ))
@@ -167,7 +167,7 @@ export default function DiscoveryTerminal() {
                      <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mb-4">
                         <Sparkles size={24} />
                      </div>
-                     <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed">No high-signal matches found for your current intent scan.</p>
+                     <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed">No matches found for your current search.</p>
                   </div>
                )}
             </div>

@@ -71,9 +71,9 @@ export default function BusinessProfilePage() {
             </div>
 
             <div className="flex flex-col gap-4 w-full sm:w-auto">
-              <button className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-4xl hover:bg-[#E53935] transition-all active:scale-95">
-                 Initialize Connection
-              </button>
+               <button className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-4xl hover:bg-[#E53935] transition-all active:scale-95">
+                  Connect
+               </button>
               <button className="h-16 px-12 border-2 border-slate-100 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
                  View on City Map <ArrowUpRight size={16} />
               </button>
@@ -89,7 +89,7 @@ export default function BusinessProfilePage() {
           <div className="lg:col-span-2 space-y-20">
             <section>
               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-8 flex items-center gap-3">
-                 <Info size={18} /> About Entity
+                 <Info size={18} /> About Business
               </h3>
               <p className="text-2xl lg:text-3xl font-bold text-[#292828] leading-relaxed italic">
                  "{business.description}"
@@ -127,7 +127,7 @@ export default function BusinessProfilePage() {
              <div className="bg-[#292828] p-10 rounded-[3rem] text-white relative overflow-hidden group shadow-2xl">
                 <ShieldCheck size={200} className="absolute -right-20 -bottom-20 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[5s]" />
                 <div className="relative z-10">
-                   <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10">Verification Intel</h3>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10">Verification Info</h3>
                    <div className="space-y-8">
                       <div className="flex items-center gap-5">
                          <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-emerald-400">
@@ -135,7 +135,7 @@ export default function BusinessProfilePage() {
                          </div>
                          <div>
                             <p className="text-xs font-black uppercase tracking-tight">KYC Verified</p>
-                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Protocol 12.0 Clean</p>
+                             <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Verified Profile</p>
                          </div>
                       </div>
                       <div className="flex items-center gap-5">
@@ -148,7 +148,7 @@ export default function BusinessProfilePage() {
                          </div>
                       </div>
                    </div>
-                   <button className="w-full mt-12 h-14 bg-white text-[#292828] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all">Download Audit</button>
+                    <button className="w-full mt-12 h-14 bg-white text-[#292828] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all">Download Profile</button>
                 </div>
              </div>
 

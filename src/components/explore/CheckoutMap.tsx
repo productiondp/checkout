@@ -44,11 +44,11 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
           profiles.forEach((p, i) => {
             mapEntities.push({
               id: p.id,
-              name: p.full_name || "Regional Node",
+              name: p.full_name || "Person",
               type: 'Person',
               role: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
               avatar: p.avatar_url || DEFAULT_AVATAR,
-              description: p.bio || "Active professional business node.",
+              description: p.bio || "Active professional.",
               matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
               // Deterministic but distributed random placement for demo
               x: 25 + (Math.sin(i * 123.456) * 35 + 35),
@@ -61,7 +61,7 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
           posts.forEach((p, i) => {
             mapEntities.push({
               id: p.id,
-              name: p.title || "Mandate",
+              name: p.title || "Requirement",
               type: 'Post',
               role: p.type || "Update",
               description: p.content,
@@ -74,7 +74,7 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
 
         setEntities(mapEntities);
       } catch (err) {
-        console.error("Map Intelligence Protocol Failure:", err);
+        console.error("Map Error:", err);
       }
     }
     fetchMapData();
@@ -225,7 +225,7 @@ function MapMarker({ entity, onClick, isSelected }: { entity: any, onClick: () =
       {/* Mini Label */}
       <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
          <div className="bg-[#292828] text-white text-[9px] font-black uppercase px-3 py-1 rounded-lg whitespace-nowrap shadow-xl">
-            {entity.name || entity.author || "Mandate"}
+            {entity.name || entity.author || "Post"}
          </div>
       </div>
     </div>
@@ -245,7 +245,7 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
          <div className="w-12 h-1.5 bg-slate-100 rounded-full mb-6" />
          <div className="flex items-center gap-2 text-slate-300">
             <Sparkles size={16} />
-            <p className="text-xs font-black uppercase tracking-widest">Select a node to view intelligence</p>
+            <p className="text-xs font-black uppercase tracking-widest">Select a marker to view details</p>
          </div>
       </div>
     );
@@ -291,7 +291,7 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
 
           <div className="flex flex-wrap gap-4">
              <button className="h-16 px-10 bg-[#292828] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
-                {entity.type === 'Person' ? 'Connect' : entity.type === 'Community' ? 'Join Syndicate' : 'Apply'}
+                {entity.type === 'Person' ? 'Connect' : entity.type === 'Community' ? 'Join Community' : 'Apply'}
              </button>
              <button className="h-16 px-10 bg-white border border-slate-100 text-[#292828] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
                 View Profile
@@ -301,9 +301,9 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-slate-50">
            <div className="space-y-6">
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935]">Intel Overview</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935]">Description</h3>
               <p className="text-xl font-bold text-[#292828] leading-relaxed italic">
-                 "{entity.description || "Synthesizing regional operational intelligence and high-authority business relationships."}"
+                 "{entity.description || "Building regional business relationships."}"
               </p>
               <div className="flex flex-wrap gap-2 pt-4">
                 {(entity.tags || ["Strategy", "Network", "Growth"]).map((tag: string) => (
@@ -314,14 +314,14 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
 
            <div className="space-y-8 bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
               <div className="flex items-center justify-between">
-                 <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest">Mandate Protocol</h4>
+                 <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest">Rules</h4>
                  <ShieldCheck size={18} className="text-emerald-500" />
               </div>
               <div className="space-y-4">
                  {[
                    { label: "Distance", value: "1.2km", icon: MapPin },
                    { label: "Active Since", value: "2h ago", icon: Clock },
-                   { label: "Verification", value: "Executive", icon: ShieldCheck }
+                   { label: "Verification", value: "Verified", icon: ShieldCheck }
                  ].map((stat, i) => (
                    <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-slate-400">
@@ -333,7 +333,7 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
                  ))}
               </div>
               <button className="w-full h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] hover:text-white transition-all shadow-sm">
-                 Execute Mandate <ArrowRight size={16} />
+                 Connect <ArrowRight size={16} />
               </button>
            </div>
         </div>

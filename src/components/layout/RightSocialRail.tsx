@@ -26,9 +26,9 @@ export default function RightSocialRail() {
   const [insightIndex, setInsightIndex] = useState(0);
   const [nodes, setNodes] = useState<any[]>([]);
   const [aiInsights, setAiInsights] = useState<string[]>([
-    "Scanning Global Partnership Nodes...",
-    "3 New Logistics Leads matched",
-    "Partner network expanded by 12%"
+    "Scanning Global Profiles...",
+    "3 New Logistics Requirements matched",
+    "Profile directory expanded by 12%"
   ]);
 
   const supabase = createClient();
@@ -38,7 +38,7 @@ export default function RightSocialRail() {
       const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5);
       if (data && data.length > 0) {
         setNodes(data);
-        const insights = data.map(n => `Active node: ${n.full_name}`);
+        const insights = data.map(n => `Active profile: ${n.full_name}`);
         setAiInsights(prev => [...insights, ...prev]);
       }
     }
@@ -55,11 +55,11 @@ export default function RightSocialRail() {
   return (
     <aside className="w-[340px] hidden xl:flex flex-col bg-[#FDFDFF] border-l border-[#292828]/5 h-full sticky top-0 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10 p-6 gap-8">
       
-      {/* 1. AI NEURAL SCAN (Replaces City Distribution) */}
+      {/* 1. MARKET INSIGHTS */}
       <section className="space-y-4">
          <div className="flex items-center justify-between">
             <h4 className="text-[10px] font-black text-[#292828]/20 uppercase tracking-[0.2em] flex items-center gap-2">
-               <BrainCircuit size={12} className="text-[#E53935]" /> Neural Scan
+               <BrainCircuit size={12} className="text-[#E53935]" /> Market Insights
             </h4>
             <div className="flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 rounded-full">
                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
@@ -80,7 +80,7 @@ export default function RightSocialRail() {
                <circle cx="45" cy="40" r="15" fill="currentColor" className="animate-pulse" />
             </svg>
 
-            {/* Neural Nodes */}
+            {/* Network */}
             <div className="absolute top-[35%] left-[40%] h-2.5 w-2.5 bg-[#E53935] rounded-full shadow-[0_0_20px_rgba(229,57,53,0.6)] animate-ping" />
             <div className="absolute top-[55%] left-[65%] h-2 w-2 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
             <div className="absolute top-[70%] left-[25%] h-1.5 w-1.5 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
@@ -90,7 +90,7 @@ export default function RightSocialRail() {
                <div className="bg-white/90 backdrop-blur-md border border-[#292828]/5 p-4 rounded-2xl shadow-xl transform group-hover:-translate-y-1 transition-transform">
                   <div className="flex items-center gap-3 mb-2">
                      <Sparkles size={12} className="text-[#E53935]" />
-                     <p className="text-[9px] font-black text-[#292828]/30 uppercase tracking-widest">Global Insight</p>
+                     <p className="text-[9px] font-black text-[#292828]/30 uppercase tracking-widest">Opportunity</p>
                   </div>
                   <p className="text-[11px] font-bold text-[#292828] uppercase leading-tight animate-in fade-in slide-in-from-bottom-1 duration-500" key={insightIndex}>
                      {aiInsights[insightIndex]}
@@ -107,11 +107,11 @@ export default function RightSocialRail() {
          </div>
       </section>
 
-      {/* 2. ACTIVE HUB (Neural Activity Feed) */}
+      {/* 2. ACTIVE HUB (Activity Feed) */}
       <section className="space-y-6">
          <div className="flex items-center justify-between">
             <h4 className="text-[10px] font-black text-[#292828]/20 uppercase tracking-[0.2em] flex items-center gap-2">
-               <Activity size={12} /> Active Network
+               <Activity size={12} /> Active Directory
             </h4>
          </div>
 

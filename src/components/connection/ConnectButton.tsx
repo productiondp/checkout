@@ -85,16 +85,16 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
         <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
            <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-8">
-                 <h2 className="text-xl font-black uppercase text-[#292828]">Initialize <span className="text-[#E53935]">Connection</span></h2>
+                 <h2 className="text-xl font-black uppercase text-[#292828]">Connect</h2>
                  <button onClick={() => setShowModal(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center"><X size={20} /></button>
               </div>
               
               <div className="p-6 bg-slate-50 rounded-3xl mb-8 flex items-center gap-4 border border-slate-100">
                  <Sparkles className="text-[#E53935]" size={20} />
                  <div>
-                    <p className="text-[11px] font-black text-[#292828] uppercase tracking-wider">Formal Intent Required</p>
+                    <p className="text-[11px] font-black text-[#292828] uppercase tracking-wider">Message Required</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase leading-relaxed mt-1">
-                       Connecting with <span className="text-[#292828]">{userName}</span> establishes a secure bilateral node link.
+                       Connecting with <span className="text-[#292828]">{userName}</span> establishes a secure connection.
                     </p>
                  </div>
               </div>
@@ -102,12 +102,12 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
               {!isSuccess ? (
                  <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                       <label className="text-[9px] font-black uppercase text-slate-300">Tactical Message (Optional)</label>
+                       <label className="text-[9px] font-black uppercase text-slate-300">Message (Optional)</label>
                        <span className="text-[8px] font-bold text-slate-300 uppercase italic">Increase acceptance by 40%</span>
                     </div>
                     <textarea 
                       rows={4}
-                      placeholder="Briefly describe your intent for establishing this connection..."
+                      placeholder="Write a brief message to connect..."
                       className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none italic"
                     />
                     <p className="text-[8px] font-bold text-slate-300 uppercase text-center">You’ll be able to message once accepted</p>

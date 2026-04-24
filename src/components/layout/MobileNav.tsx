@@ -19,11 +19,11 @@ export default function MobileNav() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const menu = [
-    { label: "Feeds", href: "/home", icon: Home },
-    { label: "Partners", href: "/matches", icon: Users },
+    { label: "Feed", href: "/home", icon: Home },
+    { label: "Directory", href: "/matches", icon: Users },
     { label: "Map", href: "/explore", icon: Search },
-    { label: "Chats", href: "/chat", icon: MessageSquare },
-    { label: "Me", href: "/profile", icon: User },
+    { label: "Chat", href: "/chat", icon: MessageSquare },
+    { label: "Profile", href: "/profile", icon: User },
   ];
 
   return (
@@ -35,7 +35,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Home size={22} className={cn("transition-all", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[0].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Feeds</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Feed</span>
         </Link>
 
         <Link 
@@ -43,7 +43,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Partners</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Directory</span>
         </Link>
 
         {/* 2. CENTER ACTION (ADD) */}
@@ -64,7 +64,7 @@ export default function MobileNav() {
           <div className="relative">
              <MessageSquare size={22} className={cn("transition-all", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[3].href ? 2.5 : 2} />
           </div>
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")}>Chats</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")}>Chat</span>
         </Link>
 
         <Link 
@@ -72,7 +72,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <User size={22} className={cn("transition-all", pathname === menu[4].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[4].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[4].href ? "text-[#E53935]" : "text-[#292828]")}>Me</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[4].href ? "text-[#E53935]" : "text-[#292828]")}>Profile</span>
         </Link>
       </div>
 

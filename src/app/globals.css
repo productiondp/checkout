@@ -73,6 +73,14 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.1);
   }
+
+  .font-inter {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  .font-outfit {
+    font-family: var(--font-outfit), sans-serif;
+  }
 }
 
 @layer utilities {

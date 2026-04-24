@@ -22,9 +22,9 @@ export default function ErrorFallback({ onRetry, onLogout, error }: ErrorFallbac
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Identification Failure</h2>
+          <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Authentication Error</h2>
           <p className="text-[13px] font-bold text-slate-400 uppercase leading-relaxed tracking-wide">
-            {error || "The platform was unable to synchronize your professional ledger. This may be due to high network latency or session expiration."}
+            {error || "The platform was unable to verify your account. This may be due to high network latency or session expiration."}
           </p>
         </div>
 
@@ -33,19 +33,19 @@ export default function ErrorFallback({ onRetry, onLogout, error }: ErrorFallbac
             onClick={onRetry}
             className="w-full h-18 bg-[#292828] text-white rounded-2xl flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95"
           >
-            <RefreshCcw size={16} /> Retry Identification
+            <RefreshCcw size={16} /> Retry
           </button>
           
           <button 
             onClick={onLogout}
             className="w-full h-16 border-2 border-slate-100 text-slate-400 rounded-2xl flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 hover:text-[#292828] transition-all active:scale-95"
           >
-            <LogOut size={16} /> Logout Node
+            <LogOut size={16} /> Log Out
           </button>
         </div>
 
         <div className="pt-6 border-t border-slate-50">
-          <span className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em]">Protocol Fail-Safe V.12.0</span>
+          <span className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em]">System Error Protection</span>
         </div>
       </div>
     </div>

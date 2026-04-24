@@ -5,7 +5,7 @@ import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function FilterPanel({ onClose }: { onClose: () => void }) {
-  const [activeFilters, setActiveFilters] = useState<string[]>(["People", "Posts", "Communities"]);
+  const [activeFilters, setActiveFilters] = useState<string[]>(["Profiles", "Requirements", "Communities"]);
 
   const toggleFilter = (f: string) => {
     setActiveFilters(prev => 
@@ -16,11 +16,11 @@ export default function FilterPanel({ onClose }: { onClose: () => void }) {
   const sections = [
     {
       title: "Content Type",
-      options: ["People", "Posts", "Communities"]
+      options: ["Profiles", "Requirements", "Communities"]
     },
     {
       title: "Intent",
-      options: ["Hiring", "Leads", "Partnership", "Meetup"]
+      options: ["Hiring", "Requirements", "Collaboration", "Events"]
     },
     {
       title: "Match Threshold",

@@ -41,12 +41,12 @@ export default function EventsPage() {
       <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3">Events & Expos</h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3">Events</h1>
             <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Where opportunities happen in real time</p>
           </div>
           <div className="flex items-center gap-4">
             <button className="h-14 px-8 bg-[#292828] text-white rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95 shrink-0">
-              <Plus size={18} /> Host Event
+              <Plus size={18} /> Add Event
             </button>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function EventsPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
           <div className="flex items-center gap-3 text-[#E53935]">
             <Zap size={20} fill="currentColor" />
-            <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Summits</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Events</h2>
           </div>
         </div>
         
@@ -116,7 +116,7 @@ export default function EventsPage() {
                 <div className="flex items-center justify-between mt-10 pt-8 border-t border-slate-50">
                    <div className="flex items-center gap-2">
                       <Users size={16} className="text-slate-300" />
-                      <span className="text-xs font-black text-[#292828] uppercase">{event.attendeeCount.toLocaleString()} Nodes</span>
+                      <span className="text-xs font-black text-[#292828] uppercase">{event.attendeeCount.toLocaleString()} People</span>
                    </div>
                    <button className="h-12 px-8 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join Event</button>
                 </div>

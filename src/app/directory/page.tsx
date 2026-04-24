@@ -48,10 +48,10 @@ export default function DirectoryPage() {
         if (data) {
           const mapped: BusinessListing[] = data.map(p => ({
             id: p.id,
-            name: p.full_name || "Anonymous Node",
+            name: p.full_name || "Anonymous Profile",
             logo: p.avatar_url || DEFAULT_AVATAR,
             category: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
-            description: p.bio || "Professional business node in the regional network.",
+            description: p.bio || "Professional in the network.",
             services: p.skills || [],
             location: p.city || p.location || "Regional Hub",
             matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
@@ -61,7 +61,7 @@ export default function DirectoryPage() {
           setAdvisors(mapped);
         }
       } catch (err) {
-        console.error("Directory Sync Failure:", err);
+        console.error("Directory Fetch Failure:", err);
       } finally {
         setLoading(false);
       }
@@ -80,7 +80,7 @@ export default function DirectoryPage() {
     return (
       <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-6">
         <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Accessing Global Directory...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Loading Directory...</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function DirectoryPage() {
       {/* TOP GLOW ACCENT */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-b from-[#E53935]/5 to-transparent blur-[150px] pointer-events-none" />
 
-      {/* MAIN CONTENT TERMINAL */}
+      {/* MAIN CONTENT AREA */}
       <main className="max-w-7xl mx-auto px-6 lg:px-10 pt-20">
          {/* SEARCH & TITLE INTEGRATION */}
          <div className="mb-20 space-y-12 text-center md:text-left">
@@ -101,15 +101,15 @@ export default function DirectoryPage() {
                <div className="space-y-4 animate-in fade-in slide-in-from-left-8 duration-700">
                   <div className="flex items-center gap-3 justify-center md:justify-start">
                      <div className="h-px w-12 bg-[#E53935]" />
-                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935]">Neural Index</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935]">Directory</p>
                   </div>
-                  <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.9] uppercase">Professional <br /><span className="text-slate-200">Directory</span></h1>
+                  <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.9] uppercase">Business <br /><span className="text-slate-200">Directory</span></h1>
                </div>
                <button 
                  onClick={() => setIsCreateModalOpen(true)}
                  className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] flex items-center gap-4 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl active:scale-95 mx-auto md:mx-0"
                >
-                  <Plus size={24} /> Register Hub
+                  <Plus size={24} /> Add Listing
                </button>
             </div>
 
@@ -119,7 +119,7 @@ export default function DirectoryPage() {
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
                   <input 
                     type="text" 
-                    placeholder="Search regional business nodes..." 
+                    placeholder="Search business profiles..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full h-16 bg-transparent pl-16 pr-6 text-base font-bold text-[#292828] outline-none"
@@ -166,7 +166,7 @@ export default function DirectoryPage() {
             <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700 bg-white rounded-[4rem] border border-dashed border-slate-200">
                <Zap size={64} className="mx-auto text-slate-100 mb-8" />
                <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 tracking-tight">No professionals found</h3>
-               <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Expand your search intelligence or try a different professional category.</p>
+               <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Try a different search or category.</p>
                <button 
                   onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
                   className="h-16 px-12 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all shadow-4xl"
@@ -183,7 +183,7 @@ export default function DirectoryPage() {
           onClose={() => setIsCreateModalOpen(false)}
           onPostSuccess={() => {
              setIsCreateModalOpen(false);
-             alert("Business mandate created successfully!");
+             alert("Post created!");
           }}
           initialFormType="Lead"
         />
@@ -255,7 +255,7 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
                 +12
              </div>
           </div>
-        <ConnectButton userId={business.id} userName={business.name} label="Connect Protocols" />
+        <ConnectButton userId={business.id} userName={business.name} label="Connect" />
        </div>
     </div>
   );

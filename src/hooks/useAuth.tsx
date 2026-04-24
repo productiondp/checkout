@@ -10,12 +10,12 @@ import ErrorFallback from "@/components/auth/ErrorFallback";
 import { analytics } from "@/utils/analytics";
 
 interface AuthContextType {
-  user: UserProfile | null;
+  user: UserProfile | null | undefined;
   login: (credentials: any) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   loading: boolean;
-  session: any;
+  session: any | undefined;
   initAuth: () => Promise<void>;
 }
 
@@ -24,14 +24,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const supabase = createClient();
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<any>(undefined);
   const [error, setError] = useState<string | null>(null);
+
+  const isAuthReady = !loading && (
+    (session && user !== undefined) || 
+    (session === null)
+  );
   const router = useRouter();
   const pathname = usePathname();
   const initialized = useRef(false);
   const routingHandled = useRef(false);
+  const hasRouted = useRef(false);
 
   const handleRouting = useCallback(async (currentSession: any, profile: any, currentPath: string) => {
     try {
@@ -118,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setLoading(false);
           setError("Identification verification required. Please confirm your email link.");
-          await handleRouting(null, null, window.location.pathname);
+
           return;
         }
 
@@ -131,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
       
-      await handleRouting(currentSession, profile, window.location.pathname);
+
     } catch (err) {
       console.error("[AUTH] Identity Sync Crash:", err);
       setError("Failed to synchronize professional ledger.");
@@ -145,8 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       setLoading(true);
 
-      const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Identification Timeout')), 10000)
+      const timeout = new Promise((resolve) =>
+        setTimeout(() => resolve('TIMEOUT'), 30000)
       );
 
       const initCore = async () => {
@@ -157,30 +163,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             setUser(null);
             setSession(null);
-            await handleRouting(null, null, window.location.pathname);
+
           }
-        } finally {
-          setLoading(false);
+          return 'SUCCESS';
+        } catch (e) {
+          throw e;
         }
       };
 
-      await Promise.race([initCore(), timeout]);
+      const result = await Promise.race([initCore(), timeout]);
+      
+      if (result === 'TIMEOUT') {
+        console.warn("[AUTH] Identification Timeout - Fallback Mode Active");
+        // Safe Fallback: Stop loading but don't trigger hard error
+        setLoading(false);
+      }
     } catch (err: any) {
       console.error("[AUTH] Handshake Failure:", err);
-      // Failsafe: Reset state on critical failure to prevent lock
+      // Only trigger hard error for actual failures, not timeouts
       setUser(null);
       setSession(null);
       setError(err.message || "Identification Handshake Failed");
       setLoading(false);
     } finally {
-      // Final guard to ensure loading always resolves
-      setTimeout(() => setLoading(false), 500);
+      setLoading(false);
     }
   }, [syncProfile, handleRouting]);
 
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
+
+    // 🛡️ GLOBAL SAFETY GUARD: Force loading to resolve after 5s
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
 
     initAuth();
 
@@ -208,14 +225,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         if (currentSession) {
-          routingHandled.current = false; // Allow re-routing on new session
+          routingHandled.current = false;
           await syncProfile(currentSession);
         }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, [initAuth, syncProfile]);
+
+  // 🧠 CENTRALIZED REACTIVE ROUTING SENTINEL
+  useEffect(() => {
+    if (!session) {
+       hasRouted.current = false;
+    }
+
+    if (!isAuthReady || hasRouted.current) return;
+
+    const publicRoutes = ['/', '/login', '/auth', '/onboarding'];
+    const currentPath = window.location.pathname;
+
+    hasRouted.current = true;
+
+    // 1. GUEST LOGIC
+    if (!session) {
+       if (!publicRoutes.includes(currentPath)) {
+          router.replace('/login');
+       }
+       return;
+    }
+
+    // 2. AUTHENTICATED LOGIC
+    if (session && user !== undefined) {
+       if (!user?.onboarding_completed && currentPath !== '/onboarding') {
+          router.replace('/onboarding');
+       } else if (user?.onboarding_completed && publicRoutes.includes(currentPath)) {
+          router.replace('/home');
+       }
+    }
+  }, [isAuthReady, session, user, router]);
 
   const logout = async () => {
     try {

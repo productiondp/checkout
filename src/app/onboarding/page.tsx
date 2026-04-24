@@ -227,13 +227,13 @@ export default function OnboardingPage() {
            <div className="space-y-2">
               <div className="flex items-center gap-3">
                  <div className="h-2 w-2 rounded-full bg-[#E53935] animate-ping" />
-                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#292828]/30 italic">Step {step}.0 Protocol</span>
+                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#292828]/30 italic">Step {step}</span>
               </div>
               <h1 className="text-5xl font-black uppercase tracking-tighter text-[#292828] leading-none">
-                 {step === 1 && "Basic Node"}
-                 {step === 2 && "Contextual"}
-                 {step === 3 && "Alignment"}
-                 {step === 4 && "Final Sync"}
+                 {step === 1 && "Basics"}
+                 {step === 2 && "Role"}
+                 {step === 3 && "Experience"}
+                 {step === 4 && "Final Step"}
               </h1>
            </div>
            {(isSaving || isUploading) && (
@@ -257,7 +257,7 @@ export default function OnboardingPage() {
                  {step === 1 && (
                     <div className="space-y-10">
                        <div className="space-y-4">
-                          <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Identity Hub</p>
+                          <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Name</p>
                           <input 
                             type="text" 
                             value={onboardingData.name}
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                        
                        <div className="space-y-4">
                           <div className="flex items-center justify-between px-1">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Operational Role</p>
+                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Role</p>
                              <span className="text-[8px] font-bold text-slate-300 uppercase italic">Choose how you primarily operate</span>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
@@ -300,7 +300,7 @@ export default function OnboardingPage() {
                        {(onboardingData.role === 'business' || onboardingData.role === 'msme') ? (
                           <>
                              <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Entity Identity</p>
+                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Company Name</p>
                                 <input 
                                   type="text" 
                                   value={onboardingData.company_name}
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
                                 />
                              </div>
                              <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Entity Type</p>
+                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Company Type</p>
                                 <div className="flex flex-wrap gap-2.5">
                                    {PRESETS.BUSINESS_TYPES.map(bt => (
                                      <button key={bt} onClick={() => updateData({ business_type: bt })} className={cn("px-7 py-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all", onboardingData.business_type === bt ? "bg-[#292828] text-white border-black" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{bt}</button>
@@ -318,7 +318,7 @@ export default function OnboardingPage() {
                                 </div>
                              </div>
                              <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Neural Skills</p>
+                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Skills</p>
                                 <div className="flex flex-wrap gap-3">
                                    {PRESETS.SKILLS.map(s => (
                                      <button key={s} onClick={() => { const current = onboardingData.skills; updateData({ skills: current.includes(s) ? current.filter(x => x !== s) : [...current, s] }); }} className={cn("px-8 py-5 rounded-[1.5rem] border-2 text-[11px] font-black uppercase tracking-widest transition-all", onboardingData.skills.includes(s) ? "bg-[#E53935] text-white border-[#E53935] shadow-xl" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{s}</button>
@@ -328,7 +328,7 @@ export default function OnboardingPage() {
                           </>
                        ) : (
                           <div className="space-y-6">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Neural Skills</p>
+                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Skills</p>
                              <div className="flex flex-wrap gap-3">
                                 {PRESETS.SKILLS.map(s => (
                                   <button key={s} onClick={() => { const current = onboardingData.skills; updateData({ skills: current.includes(s) ? current.filter(x => x !== s) : [...current, s] }); }} className={cn("px-8 py-5 rounded-[1.5rem] border-2 text-[11px] font-black uppercase tracking-widest transition-all", onboardingData.skills.includes(s) ? "bg-[#E53935] text-white border-[#E53935] shadow-xl" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{s}</button>
@@ -343,7 +343,7 @@ export default function OnboardingPage() {
                     <div className="space-y-12">
                        <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Seniority (Years)</p>
+                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Experience (Years)</p>
                              <div className="relative">
                                 <select value={onboardingData.experience_years} onChange={e => updateData({ experience_years: parseInt(e.target.value) })} className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-8 text-lg font-black text-[#292828] outline-none appearance-none focus:border-[#E53935]/20">
                                    {[...Array(21)].map((_, i) => <option key={i} value={i}>{i} YEARS</option>)}
@@ -365,7 +365,7 @@ export default function OnboardingPage() {
                        <div className="space-y-6">
                           <div className="flex items-center justify-between">
                              <div>
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Target Intent (MAX 4)</p>
+                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Goals (MAX 4)</p>
                                 <p className="text-[8px] font-bold text-slate-300 uppercase italic mt-1">These help us match you with the right people</p>
                              </div>
                              <span className={cn("text-[10px] font-black", onboardingData.intent_tags.length >= 4 ? "text-[#E53935]" : "text-slate-200")}>{onboardingData.intent_tags.length}/4</span>
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                           <div className="relative group">
                              <div className="h-44 w-44 rounded-[4rem] overflow-hidden bg-slate-50 border-4 border-white shadow-2xl group-hover:border-[#E53935]/20 transition-all duration-500 ring-8 ring-slate-50/50 relative">
                                 {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><Loader2 className="animate-spin text-white" size={32} /></div>}
-                                <img src={onboardingData.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`} alt="Identity" className="w-full h-full object-cover" />
+                                <img src={onboardingData.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`} alt="Photo" className="w-full h-full object-cover" />
                              </div>
                              <button 
                                onClick={() => fileInputRef.current?.click()}
@@ -400,14 +400,14 @@ export default function OnboardingPage() {
 
                        <div className="space-y-8">
                           <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Communication Node (Phone)</p>
+                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Phone Number</p>
                              <div className="relative">
                                 <Phone size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-200" />
                                 <input type="tel" value={onboardingData.phone} onChange={e => updateData({ phone: e.target.value })} placeholder="+91 9XX XXXXXXX" className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[2rem] pl-20 pr-8 text-lg font-black text-[#292828] outline-none focus:border-[#E53935]/20" />
                              </div>
                           </div>
                           <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Deployment Territory (Location)</p>
+                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Location</p>
                              <div className="relative">
                                 <MapPin size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-[#E53935]" />
                                 <input type="text" value={onboardingData.location} onChange={e => updateData({ location: e.target.value })} placeholder="BANGALORE, KA" className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[2rem] pl-20 pr-8 text-lg font-black text-[#292828] outline-none focus:border-[#E53935]/20 uppercase" />
@@ -423,11 +423,11 @@ export default function OnboardingPage() {
         <div className="px-12 lg:px-20 py-12 bg-slate-50/30 border-t border-slate-100 flex items-center gap-6 shrink-0 relative">
            {error && <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white px-8 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-2xl animate-in slide-in-from-bottom-2">{error}</div>}
            {step > 1 && <button onClick={() => setStep(step - 1)} className="h-24 w-24 bg-white border-2 border-slate-100 rounded-[2.25rem] flex items-center justify-center text-[#292828]/20 hover:text-[#292828] hover:border-[#292828]/10 hover:shadow-xl transition-all active:scale-95"><ChevronLeft size={28} /></button>}
-           <button onClick={step === 4 ? completeOnboarding : nextStep} disabled={isSubmitting || isUploading} className="flex-1 h-24 bg-[#292828] text-white rounded-[2.5rem] text-sm font-black uppercase tracking-[0.4em] hover:bg-[#E53935] shadow-4xl active:scale-[0.98] transition-all flex items-center justify-center gap-6 group disabled:opacity-50">{isSubmitting ? "Finalizing Sync..." : (step === 4 ? "Enter Checkout" : "Continue Protocol")}{!isSubmitting && <ArrowRight size={22} className="group-hover:translate-x-3 transition-transform duration-500" />}</button>
+           <button onClick={step === 4 ? completeOnboarding : nextStep} disabled={isSubmitting || isUploading} className="flex-1 h-24 bg-[#292828] text-white rounded-[2.5rem] text-sm font-black uppercase tracking-[0.4em] hover:bg-[#E53935] shadow-4xl active:scale-[0.98] transition-all flex items-center justify-center gap-6 group disabled:opacity-50">{isSubmitting ? "Finishing..." : (step === 4 ? "Enter Checkout" : "Continue")}{!isSubmitting && <ArrowRight size={22} className="group-hover:translate-x-3 transition-transform duration-500" />}</button>
         </div>
 
         <div className="px-12 py-6 border-t border-slate-50 flex items-center justify-between bg-white shrink-0">
-           <div className="flex items-center gap-3"><ShieldCheck className="text-emerald-500" size={16} /><span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Neural Encryption: Phase 8 Active</span></div>
+           <div className="flex items-center gap-3"><ShieldCheck className="text-emerald-500" size={16} /><span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Secure connection active</span></div>
            <div className="flex items-center gap-1">{[1,2,3,4].map(i => (<div key={i} className={cn("h-1 w-4 rounded-full transition-all", i === step ? "bg-[#E53935] w-8" : "bg-slate-100")} />))}</div>
         </div>
       </div>

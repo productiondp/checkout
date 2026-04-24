@@ -5,8 +5,8 @@ import { Loader2 } from "lucide-react";
 
 export default function FullScreenLoader() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[#292828] z-[99999] selection:bg-[#E53935]/20">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-[#1a1a1a] to-[#E53935]/5" />
+    <div className="fixed inset-0 flex items-center justify-center bg-[#0A0A0A] z-[99999] selection:bg-[#E53935]/20">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#121212] to-[#E53935]/5" />
       
       <div className="relative flex flex-col items-center gap-8">
         <div className="relative">
@@ -18,12 +18,12 @@ export default function FullScreenLoader() {
 
         <div className="space-y-3 text-center">
           <div className="text-[10px] font-black text-white uppercase tracking-[0.7em] animate-in slide-in-from-bottom-2 duration-1000">
-            Neural Identification
+            Identifying...
           </div>
           <div className="flex items-center justify-center gap-2">
             <div className="h-1 w-1 rounded-full bg-[#E53935] animate-ping" />
             <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.4em] italic">
-              Synchronizing Ledger...
+              Loading profile...
             </p>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function FullScreenLoader() {
       {/* SECURE LAYER DECORATION */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-3 opacity-20">
         <div className="h-[1px] w-8 bg-white/30" />
-        <span className="text-[8px] font-black text-white uppercase tracking-widest">Protocol 12.0 Active</span>
+        <span className="text-[8px] font-black text-white uppercase tracking-widest">Secure Login</span>
         <div className="h-[1px] w-8 bg-white/30" />
       </div>
     </div>

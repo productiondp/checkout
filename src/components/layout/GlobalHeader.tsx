@@ -244,67 +244,77 @@ export default function FullyActiveGlobalHeader() {
 
           {/* PROFILE */}
           <div className="relative">
-            <Link 
-              href="/profile"
-              className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl hover:shadow-slate-200/20 transition-all transition-duration-300"
-            >
-              <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shadow-sm">
-                <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
-              </div>
-              <div 
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsProfileOpen(!isProfileOpen);
-                  setIsNotificationsOpen(false);
-                  setIsLocationOpen(false);
-                }}
-                className="flex items-center"
-              >
-                <ChevronDown size={12} className={cn("text-[#292828]/40 transition-transform duration-500", isProfileOpen && "rotate-180")} />
-              </div>
-            </Link>
-
-            {isProfileOpen && (
-              <div className="absolute top-[130%] right-0 w-64 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
-                <div className="px-4 py-4 mb-2 border-b border-[#292828]/5">
-                  <p className="text-[14px] font-bold text-[#292828] leading-tight">{authUser?.full_name || "Member"}</p>
-                  <p className="text-[11px] font-medium text-[#292828] capitalize">{authUser?.role || "Verified Partner"}</p>
-                </div>
-                <div className="space-y-0.5">
-                  {[
-                    { icon: UserIcon, label: "My Profile", href: "/profile" },
-                    { icon: Globe, label: "Directory", href: "/matches" },
-                    { icon: GraduationCap, label: "Advisors", href: "/advisors" },
-                    { icon: Zap, label: "Wallet", href: "/wallet" },
-                    { icon: Settings, label: "Settings", href: "/settings" },
-                  ].map(it => (
-                    <Link key={it.label} href={it.href} className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-medium text-slate-700 hover:bg-[#292828]/5 hover:text-[#292828] transition-all">
-                      <it.icon size={16} className="text-[#292828] group-hover:text-[#E53935]" />
-                      {it.label}
-                    </Link>
-                  ))}
-                  <div className="h-px bg-[#292828]/5 my-2 mx-2" />
-                  <button 
-                    onClick={async (e) => {
+            {!authUser ? (
+               <Link 
+                 href="/login"
+                 className="h-9 px-4 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-lg"
+               >
+                 Sign In
+               </Link>
+            ) : (
+              <>
+                <Link 
+                  href="/profile"
+                  className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl hover:shadow-slate-200/20 transition-all transition-duration-300"
+                >
+                  <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shadow-sm">
+                    <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <div 
+                    onClick={(e) => {
                       e.preventDefault();
-                      try {
-                        const { error } = await supabase.auth.signOut();
-                        if (error) throw error;
-                        // Hard purge and redirect
-                        window.localStorage.clear();
-                        window.location.href = "/login";
-                      } catch (err) {
-                        console.error("Logout Protocol Failure:", err);
-                        window.location.href = "/login";
-                      }
+                      e.stopPropagation();
+                      setIsProfileOpen(!isProfileOpen);
+                      setIsNotificationsOpen(false);
+                      setIsLocationOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all text-left"
+                    className="flex items-center"
                   >
-                    <LogOut size={16} /> Logout
-                  </button>
-                </div>
-              </div>
+                    <ChevronDown size={12} className={cn("text-[#292828]/40 transition-transform duration-500", isProfileOpen && "rotate-180")} />
+                  </div>
+                </Link>
+
+                {isProfileOpen && (
+                  <div className="absolute top-[130%] right-0 w-64 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
+                    <div className="px-4 py-4 mb-2 border-b border-[#292828]/5">
+                      <p className="text-[14px] font-bold text-[#292828] leading-tight truncate">{authUser?.full_name || "Profile"}</p>
+                      <p className="text-[11px] font-medium text-[#292828] capitalize">{authUser?.role || "Verified Profile"}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      {[
+                        { icon: UserIcon, label: "My Profile", href: "/profile" },
+                        { icon: Globe, label: "Directory", href: "/matches" },
+                        { icon: GraduationCap, label: "Advisors", href: "/advisors" },
+                        { icon: Zap, label: "Wallet", href: "/wallet" },
+                        { icon: Settings, label: "Settings", href: "/settings" },
+                      ].map(it => (
+                        <Link key={it.label} href={it.href} className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-medium text-slate-700 hover:bg-[#292828]/5 hover:text-[#292828] transition-all">
+                          <it.icon size={16} className="text-[#292828] group-hover:text-[#E53935]" />
+                          {it.label}
+                        </Link>
+                      ))}
+                      <div className="h-px bg-[#292828]/5 my-2 mx-2" />
+                      <button 
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          try {
+                            const { error } = await supabase.auth.signOut();
+                            if (error) throw error;
+                            window.localStorage.clear();
+                            window.location.href = "/login";
+                          } catch (err) {
+                            console.error("Logout Failure:", err);
+                            window.location.href = "/login";
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all text-left"
+                      >
+                        <LogOut size={16} /> Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

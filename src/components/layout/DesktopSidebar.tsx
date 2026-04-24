@@ -27,11 +27,11 @@ import {
 
 const NAV_GROUPS = [
   {
-    group: "Network Hub",
+    group: "Directory",
     items: [
-      { label: "Feeds", icon: Home, href: "/home" },
+      { label: "Feed", icon: Home, href: "/home" },
       { label: "Connections", icon: UserPlus, href: "/connections", badge: "2" },
-      { label: "Messages", icon: MessageSquare, href: "/chat" },
+      { label: "Chat", icon: MessageSquare, href: "/chat" },
       { label: "Communities", icon: Globe, href: "/communities" },
     ]
   },
@@ -40,9 +40,9 @@ const NAV_GROUPS = [
     items: [
       { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
       { label: "Advisors", icon: Target, href: "/advisors" },
-      { label: "Business Directory", icon: Building2, href: "/directory" },
-      { label: "Checkout Map", icon: Zap, href: "/explore" },
-      { label: "Business Events", icon: LayoutGrid, href: "/events" },
+      { label: "Directory", icon: Building2, href: "/directory" },
+      { label: "Map", icon: Zap, href: "/explore" },
+      { label: "Events", icon: LayoutGrid, href: "/events" },
     ]
   }
 ];

@@ -78,7 +78,7 @@ export default function PremiumProfilePage() {
   const contactInfo = useMemo(() => [
     { label: "Email", value: userData.email || "Verification Pending", icon: Mail },
     { label: "Phone", value: userData.phone || "+91 XXXXXXXXXX", icon: Phone },
-    { label: "Website", value: userData.website || "No Node Active", icon: Globe, link: !!userData.website },
+    { label: "Website", value: userData.website || "No Website", icon: Globe, link: !!userData.website },
   ], [userData.email, userData.phone, userData.website]);
 
   const performanceMetrics = [
@@ -134,7 +134,7 @@ export default function PremiumProfilePage() {
               title: p.title,
               type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNER" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
               priority: "High",
-              node: "General"
+              status: "General"
             })));
           }
         }
@@ -215,7 +215,7 @@ export default function PremiumProfilePage() {
           title: data.title,
           type: newDep.type,
           priority: "High",
-          node: "General"
+          status: "General"
         },
         ...dependencyList
       ]);
@@ -239,21 +239,21 @@ export default function PremiumProfilePage() {
     return (
       <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
         <Loader2 className="animate-spin text-[#E53935]" size={48} />
-        <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em] italic animate-pulse">Synchronizing Profile Ledger</p>
+        <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em] italic animate-pulse">Loading Profile...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10">
-      {/* HEADER ARCHITECTURE (Black Terminal) */}
+      {/* HEADER AREA */}
       <div className="bg-[#292828] h-[500px] relative overflow-hidden">
          <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-[#1a1a1a] to-[#E53935]/10" />
          <div className="absolute top-[-20%] right-[-10%] h-[800px] w-[800px] bg-[#E53935]/5 blur-[200px] rounded-full animate-pulse" />
          
          <div className="max-w-[1440px] mx-auto px-6 pt-16 relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-12">
-               {/* IDENTITY NODE */}
+               {/* IDENTITY */}
                <div className="relative group">
                   <div className="h-44 w-44 rounded-[4rem] overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/30 transition-all duration-700 shadow-4xl relative">
                      <img 
@@ -308,17 +308,17 @@ export default function PremiumProfilePage() {
             {/* COLUMN 1: SIDEBAR */}
             <div className="lg:col-span-3 space-y-8">
                
-               {/* STRATEGIC INTERESTS (Neural Input) */}
+               {/* Skills */}
                <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                   <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-6 flex items-center gap-3">
-                     <BrainCircuit size={16} className="text-[#E53935]" /> Strategic Nodes
+                     <BrainCircuit size={16} className="text-[#E53935]" /> Skills
                   </h3>
                   <div className="flex flex-wrap gap-2">
                       {userData.expertise && userData.expertise.length > 0 ? userData.expertise.map(skill => (
                         <span key={skill} className="px-4 py-2 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[11px] font-bold text-[#292828] uppercase">{skill}</span>
                       )) : (
-                        <p className="text-[11px] font-bold text-slate-300 italic px-2">No nodes defined.</p>
+                        <p className="text-[11px] font-bold text-slate-300 italic px-2">No skills defined.</p>
                       )}
                   </div>
                </div>
@@ -346,13 +346,13 @@ export default function PremiumProfilePage() {
                </div>
             </div>
 
-            {/* COLUMN 2: COMMAND FEED */}
+            {/* FEED */}
             <div className="lg:col-span-6 space-y-8">
                <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-xl relative overflow-hidden">
                   <div className="flex items-center justify-between mb-8">
                      <div>
                         <h3 className="text-xs font-black uppercase text-[#292828] flex items-center gap-3"><Target size={18} className="text-[#E53935]" /> Current Needs</h3>
-                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none opacity-60">Broadcasting leads to your network</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none opacity-60">Showing posts to your network</p>
                      </div>
                      <button onClick={() => setIsAddingDep(!isAddingDep)} className="h-10 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-2 shadow-xl">
                         {isAddingDep ? <X size={14} /> : <Plus size={14} />} {isAddingDep ? "Cancel" : "Add Need"}
@@ -392,7 +392,7 @@ export default function PremiumProfilePage() {
                                     <h4 className="text-[14px] font-black text-[#292828]">{dep.title}</h4>
                                  </div>
                                  <div className="flex items-center gap-3">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase">{dep.node} Node</p>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase">{dep.status}</p>
                                     <div className="h-1 w-1 bg-slate-200 rounded-full" />
                                     <p className="text-[9px] font-black text-[#E53935] uppercase">{dep.priority} Priority</p>
                                  </div>
@@ -411,12 +411,12 @@ export default function PremiumProfilePage() {
 
             {/* COLUMN 3: PERFORMANCE & WALLET */}
             <div className="lg:col-span-3 space-y-8">
-               {/* FINANCIAL HUB */}
+               {/* WALLET */}
                <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
                   <div className="absolute -right-10 -top-10 h-32 w-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
                   <div className="relative z-10">
                      <div className="flex items-center justify-between mb-8">
-                        <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Financial Hub</p>
+                        <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Wallet</p>
                         <Wallet size={16} className="text-white/40" />
                      </div>
                      <h4 className="text-[10px] font-black uppercase text-white/40 mb-2">Available Balance</h4>
@@ -425,7 +425,7 @@ export default function PremiumProfilePage() {
                         <span className="text-[10px] font-black text-white/40">INR</span>
                      </div>
                      <Link href="/wallet" className="w-full h-14 bg-white text-[#292828] rounded-2xl flex items-center justify-center text-[10px] font-black uppercase hover:bg-[#292828] hover:text-white transition-all shadow-xl">
-                        Open Ledger
+                        Open Wallet
                      </Link>
                   </div>
                </div>
@@ -460,7 +460,7 @@ export default function PremiumProfilePage() {
          </div>
       </div>
 
-      {/* EDIT MODAL (Surgical Interface) */}
+      {/* EDIT MODAL */}
       {showEditModal && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
             <motion.div 
@@ -469,29 +469,29 @@ export default function PremiumProfilePage() {
               className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-4xl flex flex-col max-h-[90vh]"
             >
                <div className="p-10 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Edit Profile Protocol</h2>
+                  <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Edit Profile</h2>
                   <button onClick={() => setShowEditModal(false)} className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-[#E53935] hover:text-white transition-all"><X size={20} /></button>
                </div>
                <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar">
                   <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Node Name</p>
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Name</p>
                      <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                   </div>
                   <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Entity Role</p>
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Role</p>
                      <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                   </div>
                   <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Identity Bio</p>
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Bio</p>
                      <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-40 p-6 rounded-2xl bg-slate-50 border border-slate-100 font-medium outline-none focus:border-[#E53935] resize-none" />
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Location Node</p>
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Location</p>
                         <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                      </div>
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Entity Node (Company)</p>
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Company</p>
                         <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                      </div>
                   </div>
@@ -501,7 +501,7 @@ export default function PremiumProfilePage() {
                         <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                      </div>
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Web Domain</p>
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Website</p>
                         <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
                      </div>
                   </div>
@@ -509,7 +509,7 @@ export default function PremiumProfilePage() {
                <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex gap-4">
                   <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border-2 border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all">Cancel</button>
                   <button onClick={() => handleSaveProfile()} disabled={isSaving} className="flex-[2] h-16 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50">
-                     {isSaving ? "Synchronizing..." : "Commit Changes"}
+                     {isSaving ? "Saving..." : "Save Changes"}
                   </button>
                </div>
             </motion.div>

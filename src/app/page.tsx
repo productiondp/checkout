@@ -198,9 +198,9 @@ export default function Page() {
                {/* Bottom Icons */}
                <div className="flex gap-12 pt-10">
                   {[
-                    { label: "Find people", key: "CONNECT", icon: Users },
-                    { label: "Get clients", key: "LEADS", icon: Target },
-                    { label: "Meet locally", key: "MEETUPS", icon: Zap }
+                    { label: "Directory", key: "DIRECTORY", icon: Users },
+                    { label: "Requirements", key: "REQUIREMENTS", icon: Target },
+                    { label: "Events", key: "EVENTS", icon: Zap }
                   ].map((it, i) => (
                     <div key={i} className="flex flex-col items-start gap-4 group relative md:flex-row md:items-center">
                        <div className="text-[10px] font-black uppercase text-slate-300 group-hover:text-[#E53935] transition-colors flex items-center gap-3 cursor-default">
@@ -222,7 +222,7 @@ export default function Page() {
                         <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-none text-[#292828] font-outfit">
                           {authMode === "signup" ? "Join Now" : "Welcome Back"}
                         </h3>
-                        <p className="text-[10px] font-bold text-slate-300 uppercase">Find partners and grow</p>
+                        <p className="text-[10px] font-bold text-slate-300 uppercase">Find profiles and grow</p>
                      </div>
 
                      <form onSubmit={handleAuth} className="space-y-6">

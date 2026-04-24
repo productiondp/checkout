@@ -72,11 +72,17 @@ export default function ClientLayout({
   const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/onboarding";
 
   if (!mounted) {
-    const isDarkTarget = pathname === "/";
     return (
-      <div className={`h-[100dvh] w-screen flex items-center justify-center ${isDarkTarget ? 'bg-[#292828]' : 'bg-white'}`}>
-         <div className="h-12 w-32 relative animate-pulse">
-            <img src="/images/logo.png" alt="Loading..." className={`h-full object-contain ${isDarkTarget ? 'opacity-20 brightness-0 invert' : 'opacity-20'}`} />
+      <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20">
+         <div className="h-12 w-32 relative animate-pulse mb-4">
+            <img 
+              src="/images/logo.png" 
+              alt="Loading..." 
+              className="h-full object-contain opacity-20 brightness-0 invert" 
+            />
+         </div>
+         <div className="animate-pulse text-[9px] font-black text-white/20 uppercase tracking-[0.5em]">
+            Initializing your network...
          </div>
       </div>
     );

@@ -216,13 +216,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
               Join the Network
             </div>
             <h2 className="text-4xl font-black text-white tracking-tighter">
-              {isResetting ? "Reset Authority" : mode === "signin" ? "Welcome Back" : "Create Account"}
+              {isResetting ? "Reset Password" : mode === "signin" ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="text-white/40 font-bold text-[13px]">
               {resetSent 
-                ? "Recovery link dispatched." 
+                ? "Recovery link sent." 
                 : isResetting 
-                  ? "Enter your email to restore access."
+                  ? "Enter your email to reset your password."
                   : mode === "signin"
                     ? "Sign in to your local account."
                     : "Join the local business network."
@@ -239,8 +239,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                    <h3 className="text-xl font-black text-white mb-2 uppercase">{resetSent ? "Reset Link Sent" : "Check Your Inbox"}</h3>
                    <p className="text-white/40 text-[13px] font-medium leading-relaxed mb-6">
                       {resetSent 
-                       ? `We've sent a recovery link to ${formData.email}. Access it to reset your password.`
-                       : `We've sent a verification link to ${formData.email}. Confirm your identity to activate your node.`
+                       ? `We've sent a reset link to ${formData.email}. Access it to reset your password.`
+                       : `We've sent a verification link to ${formData.email}. Confirm your identity to get started.`
                       }
                    </p>
                    
@@ -291,7 +291,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                 disabled={isLoading}
                 className="w-full py-5 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4"
               >
-                {isLoading ? "Dispatching..." : "Send Reset Link"}
+                {isLoading ? "Sending..." : "Send Reset Link"}
               </button>
               <button
                 type="button"
@@ -451,7 +451,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
               onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setIsResetting(false); }}
               className="text-[11px] font-black uppercase text-white/30 hover:text-[#E53935] transition-all"
             >
-              {mode === "signin" ? "No account? Start Building" : "Registered? Sign In Instead"}
+              {mode === "signin" ? "No account? Join Now" : "Registered? Sign In Instead"}
             </button>
           </div>
           </>

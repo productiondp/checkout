@@ -57,7 +57,7 @@ const DEFAULT_CONFIG: SystemConfig = {
   promptConfig: {
     ttfaThreshold: 60,
     urgencyLevel: 'medium',
-    onboardingText: "Broadcasting your first mandate activates your city cluster."
+    onboardingText: "Posting your first requirement activates your city network."
   },
   feedConfig: {
     maxItemsPassive: 10,
@@ -209,7 +209,7 @@ class OptimizationEngine {
     const ttfa = parseFloat(report.avg_ttfa);
     if (ttfa > 60) {
       this.config.promptConfig.urgencyLevel = 'high';
-      this.config.promptConfig.onboardingText = "Post your first mandate now to activate your network and unlock city matches.";
+      this.config.promptConfig.onboardingText = "Post your first requirement now to activate your network and unlock city matches.";
     } else {
       this.config.promptConfig.urgencyLevel = 'medium';
     }

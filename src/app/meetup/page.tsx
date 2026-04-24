@@ -111,7 +111,7 @@ export default function MeetupPage() {
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-10">
                <div>
                   <div className="label-premium">
-                     <Target size={12} className="text-[#E53935]" /> Area Proximity Active
+                     <Target size={12} className="text-[#E53935]" /> Area Discovery Active
                   </div>
                   <h1 className="text-xl md:text-2xl lg:text-3xl mb-0 tracking-tight font-black uppercase">
                      Meetups<span className="text-[#E53935]">.</span>
@@ -213,7 +213,7 @@ export default function MeetupPage() {
                                    <MapPin size={18} />
                                 </div>
                                 <div className="min-w-0">
-                                   <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Strategic Venue</p>
+                                   <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Venue</p>
                                    <p className="text-[12px] font-bold text-[#292828] uppercase truncate">{m.location}</p>
                                 </div>
                              </div>
@@ -223,7 +223,7 @@ export default function MeetupPage() {
                                    <Clock size={18} />
                                 </div>
                                 <div>
-                                   <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Meeting Time</p>
+                                   <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Time</p>
                                    <p className="text-[12px] font-bold text-[#292828] uppercase">TODAY, 18:30</p>
                                 </div>
                              </div>
@@ -261,7 +261,7 @@ export default function MeetupPage() {
          </div>
       </main>
 
-      {/* 2. AI ANALYTICS SIDEBAR (RIGHT) */}
+      {/* 2. ANALYTICS SIDEBAR (RIGHT) */}
       <aside className="hidden xl:flex flex-col w-[420px] bg-[#FDFDFF] border-l border-[#292828]/10 p-10 gap-10 overflow-y-auto no-scrollbar">
          
          {/* AI PLANNER STATUS */}
@@ -331,7 +331,7 @@ export default function MeetupPage() {
          </section>
 
           <section className="mt-auto space-y-6">
-            <p className="subheading-editorial !text-slate-400">Upcoming Strategic Sections</p>
+            <p className="subheading-editorial !text-slate-400">Upcoming Sessions</p>
             <div className="space-y-4">
                {strategicRecommendations.map((block, i) => (
                  <div key={i} className="p-5 bg-white border border-[#292828]/5 rounded-3xl hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer group/block">
@@ -384,7 +384,7 @@ export default function MeetupPage() {
 
                  <section className="p-8 bg-[#E53935] rounded-[2.5rem] text-white space-y-6 relative overflow-hidden">
                     <Sparkles size={120} className="absolute -top-12 -right-12 text-white/10 rotate-12" />
-                    <p className="subheading-editorial !text-white/40 mb-6">Neural Suggestion</p>
+                    <p className="subheading-editorial !text-white/40 mb-6">Smart Suggestion</p>
                     <p className="text-[17px] font-bold leading-relaxed relative z-10">
                        "Based on your {filteredMeetups[0]?.matchPotential}% score with local hubs, I recommend joining the <span className="underline decoration-white/30 underline-offset-4">{filteredMeetups[0]?.title}</span> today."
                      </p>
@@ -417,8 +417,8 @@ export default function MeetupPage() {
            <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
            <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="text-center mb-10">
-                 <h2>Activate <span className="text-[#E53935]">Meet Up</span></h2>
-                 <p className="subheading-editorial mt-2 px-10">Broadcast your meeting post to the local business network.</p>
+                 <h2>Post <span className="text-[#E53935]">Meet Up</span></h2>
+                 <p className="subheading-editorial mt-2 px-10">Show your meeting post to the local business network.</p>
               </div>
 
               <div className="space-y-6">

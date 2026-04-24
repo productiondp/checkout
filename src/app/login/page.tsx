@@ -14,13 +14,10 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  Command,
-  Sparkles,
-  Search,
-  Globe,
-  Award,
   Users,
-  Calendar,
+  Award,
+  ChevronDown,
+  Globe,
   Zap,
   Fingerprint
 } from "lucide-react";
@@ -34,9 +31,11 @@ type Role = "Business" | "Professional" | "Student" | "Advisor";
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialMode = (searchParams.get("mode") as AuthMode) || "signin";
+  const initialMode = (searchParams.get("mode") as AuthMode) || "signup";
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<Role>("Business");
+  const [isRoleOpen, setIsRoleOpen] = useState(false);
+  
   // Form State
   const [formData, setFormData] = useState({
     email: "",
@@ -66,8 +65,6 @@ function AuthContent() {
 
   if (loading || !mounted) return null;
 
-  // Routing is managed exclusively by useAuth sentinel
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -75,14 +72,12 @@ function AuthContent() {
 
     try {
       if (mode === "signup") {
-        if (!formData.fullName) throw new Error("Full name is required.");
-        
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
-              full_name: formData.fullName,
+              full_name: formData.fullName || "New Partner",
               role: role.toUpperCase(),
             },
           },
@@ -95,7 +90,7 @@ function AuthContent() {
              .from('profiles')
              .upsert({
                id: authData.user.id,
-               full_name: formData.fullName,
+               full_name: formData.fullName || "New Partner",
                role: role.toUpperCase(),
                city: "Trivandrum",
                location: "Trivandrum"
@@ -120,234 +115,211 @@ function AuthContent() {
     }
   };
 
-  const VISUAL_CARDS = [
-    { label: "Neural Matchmaking", desc: "Meet high-authority partners.", icon: Sparkles },
-    { label: "Lead Distribution", desc: "Surgical mandate discovery.", icon: Target },
-    { label: "Secure Link", desc: "End-to-end encrypted node connection.", icon: Command }
+  const roles: { label: Role; icon: any }[] = [
+    { label: "Business", icon: Briefcase },
+    { label: "Professional", icon: User },
+    { label: "Student", icon: Award },
+    { label: "Advisor", icon: ShieldCheck },
   ];
 
+  const currentRoleIcon = roles.find(r => r.label === role)?.icon;
+
   return (
-    <div className="h-[100dvh] w-screen flex bg-[#FDFDFF] font-inter overflow-hidden">
+    <div className="h-[100dvh] w-screen flex bg-white font-sans overflow-hidden relative">
       
-      {/* LEFT COLUMN: VISUAL CONTEXT */}
-      <div className="hidden lg:flex flex-1 bg-[#292828] relative flex-col justify-between p-20 overflow-hidden">
-         <div className="absolute inset-0 z-0">
+      {/* HEADER OVERLAY */}
+      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-8">
+        <Link href="/" className="flex items-center gap-0 group">
+           <Image 
+             src="/images/logo.png" 
+             alt="CheckOut" 
+             width={150} 
+             height={40} 
+             className="h-10 w-auto object-contain"
+           />
+        </Link>
+        <div className="flex items-center gap-8">
+           <button 
+             onClick={() => setMode("signin")}
+             className="text-[10px] font-black uppercase tracking-widest text-[#292828] hover:text-[#E53935] transition-colors"
+           >
+              Log In
+           </button>
+           <button 
+             onClick={() => setMode("signup")}
+             className="h-10 px-6 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg active:scale-95"
+           >
+              Sign Up
+           </button>
+        </div>
+      </header>
+
+      {/* LEFT SECTION: BRANDING */}
+      <div className="hidden lg:flex flex-1 relative flex-col justify-center px-20 bg-white">
+         <div className="absolute inset-0 z-0 overflow-hidden">
             <img 
-               src="/images/concept_bg.png" 
-               className="w-full h-full object-cover opacity-20 grayscale" 
+               src="/login_background_1777062678077.png" 
+               className="w-full h-full object-cover opacity-40 grayscale scale-110" 
                alt="" 
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-transparent to-[#E53935]/10" />
-         </div>
-
-         <div className="relative z-10 flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3 group">
-               <div className="h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                  <Command size={32} strokeWidth={3} />
-               </div>
-               <h1 className="text-3xl font-black uppercase tracking-tighter text-white">Checkout</h1>
-            </Link>
          </div>
 
          <div className="relative z-10 space-y-12">
-            <div className="space-y-6">
-               <h2 className="text-6xl font-black uppercase tracking-tighter leading-none text-white font-outfit">
-                  THE OPERATING <br /> 
-                  <span className="text-[#E53935]">SYSTEM FOR BUSINESS.</span>
-               </h2>
-               <p className="text-xl font-medium text-white/30 max-w-lg leading-relaxed">
-                  Authorize your presence in the most authoritative regional business node. Networking, Leads, and Meetings simplified.
-               </p>
+            <div className="space-y-0">
+               <h1 className="text-[120px] font-black uppercase tracking-tighter leading-[0.8] text-[#292828]">
+                  CONNECT<br />
+                  PEOPLE.
+               </h1>
+               <h1 className="text-[120px] font-black uppercase tracking-tighter leading-[0.8] text-[#E53935]">
+                  GET<br />
+                  LEADS.
+               </h1>
             </div>
-
-            <div className="space-y-4">
-               {VISUAL_CARDS.map((card, i) => (
-                 <div key={i} className="flex items-center gap-6 p-6 bg-white/5 border border-white/5 rounded-3xl group hover:bg-white/10 transition-all duration-500">
-                    <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:text-[#E53935] group-hover:bg-[#E53935]/5 transition-all">
-                       <card.icon size={24} />
-                    </div>
-                    <div>
-                       <h4 className="text-xl font-black uppercase tracking-tight text-white/80">{card.label}</h4>
-                       <p className="text-sm font-bold text-white/20 uppercase tracking-widest">{card.desc}</p>
-                    </div>
-                 </div>
-               ))}
+            <div className="flex items-center gap-4 border-l-2 border-[#E53935] pl-6">
+               <p className="text-3xl font-medium italic text-[#292828]/40">
+                  Meet real people. Get real business.
+               </p>
             </div>
          </div>
 
-         {/* Footer Sync */}
-         <div className="relative z-10 flex items-center gap-10">
-            <div className="flex items-center gap-3">
-               <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Mumbai Node Active</span>
-            </div>
-            <div className="h-1 w-1 bg-white/10 rounded-full" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">v.8.0.01 Production</span>
+         <div className="absolute bottom-12 left-20 z-10 flex items-center gap-12">
+            {[
+              { label: 'CONNECT', icon: Users },
+              { label: 'LEADS', icon: Target },
+              { label: 'MEETUPS', icon: Zap }
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 opacity-20 hover:opacity-100 transition-opacity cursor-default">
+                 <item.icon size={16} />
+                 <span className="text-[11px] font-black uppercase tracking-[0.3em]">{item.label}</span>
+              </div>
+            ))}
          </div>
       </div>
 
-      {/* RIGHT COLUMN: AUTH TERMINAL */}
-      <div className="flex-1 flex flex-col justify-between p-10 lg:p-20 relative overflow-y-auto no-scrollbar">
-         
-         {/* Mobile Brand Link */}
-         <div className="lg:hidden mb-12">
-            <Link href="/" className="flex items-center gap-3">
-               <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white">
-                  <Command size={22} strokeWidth={3} />
-               </div>
-               <h1 className="text-2xl font-black uppercase tracking-tighter">Checkout</h1>
-            </Link>
-         </div>
-
-         <div className="max-w-md mx-auto w-full space-y-12 my-auto">
+      {/* RIGHT SECTION: AUTH CARD */}
+      <div className="flex-1 flex items-center justify-center bg-white lg:bg-transparent relative z-20">
+         <div className="w-full max-w-[500px] bg-white rounded-[4rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] p-12 lg:p-16 space-y-10 animate-in fade-in zoom-in-95 duration-700">
             
-            {/* Header Content */}
-            <div className="space-y-4">
-               <div className="flex items-center justify-between">
-                  <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">
-                     {mode === "signin" ? "Login" : "Join"}
-                  </h2>
-                  <button 
-                    onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                    className="text-[11px] font-black uppercase text-[#E53935] underline underline-offset-8"
-                  >
-                     {mode === "signin" ? "Need an Account?" : "Have an Account?"}
-                  </button>
-               </div>
-               <p className="text-lg font-bold text-[#292828]/40 uppercase tracking-tight leading-tight">
-                  {mode === "signin" 
-                    ? "Welcome back to the regional hub." 
-                    : "Become a verified node in your city network."
-                  }
+            <div className="space-y-1">
+               <h2 className="text-[44px] font-black uppercase tracking-tight text-[#292828] leading-none">
+                  {mode === "signup" ? "Join Now" : "Welcome Back"}
+               </h2>
+               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">
+                  {mode === "signup" ? "Find partners and grow" : "Continue your journey"}
                </p>
             </div>
 
-            {/* Role Discovery (Only for Join) */}
-            <div className={cn("space-y-4 transition-all duration-500", mode === "signup" ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 h-0 overflow-hidden")}>
-               <p className="text-[10px] font-black uppercase text-[#292828]/20 tracking-[0.5em]">Initialization Perspective</p>
-               <div className="grid grid-cols-2 gap-3">
-                  {(["Business", "Professional", "Student", "Advisor"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={cn(
-                        "flex flex-col items-start p-6 rounded-3xl border-2 transition-all text-left group",
-                        role === r 
-                          ? "bg-[#292828] border-black text-white shadow-2xl" 
-                          : "bg-white border-slate-100 text-[#292828] hover:border-[#292828]/20"
-                      )}
-                    >
-                       <div className={cn(
-                         "h-10 w-10 mb-4 rounded-xl flex items-center justify-center transition-all",
-                         role === r ? "bg-white/10 text-white" : "bg-slate-50 text-slate-300 group-hover:text-[#E53935]"
-                       )}>
-                          {r === "Business" && <Briefcase size={18} />}
-                          {r === "Professional" && <User size={18} />}
-                          {r === "Student" && <Award size={18} />}
-                          {r === "Advisor" && <ShieldCheck size={18} />}
-                       </div>
-                       <span className="text-[11px] font-black uppercase tracking-widest">{r}</span>
-                    </button>
-                  ))}
-               </div>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-8">
                {error && (
-                  <div className="p-5 bg-red-50 border border-red-100 rounded-[1.5rem] flex items-center gap-3 text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-2">
-                     <AlertCircle size={18} /> {error}
-                  </div>
-               )}
-               {isSuccess && (
-                  <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-[1.5rem] flex items-center gap-3 text-emerald-600 text-xs font-bold animate-in fade-in slide-in-from-top-2">
-                     <CheckCircle2 size={18} /> Node Verified. Redirecting...
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[10px] font-black uppercase tracking-widest animate-in shake duration-500">
+                     <AlertCircle size={16} /> {error}
                   </div>
                )}
 
-               <div className="space-y-4">
+               <div className="space-y-6">
+                  {/* Role Selector (Dropdown style from image) */}
                   {mode === "signup" && (
+                    <div className="space-y-2 relative">
+                       <p className="text-[9px] font-black uppercase tracking-widest text-slate-300 ml-2">Select Your Role</p>
+                       <button
+                         type="button"
+                         onClick={() => setIsRoleOpen(!isRoleOpen)}
+                         className={cn(
+                           "w-full h-16 bg-white border-2 rounded-2xl px-6 flex items-center justify-between transition-all",
+                           isRoleOpen ? "border-blue-500 shadow-lg shadow-blue-500/10" : "border-slate-100"
+                         )}
+                       >
+                          <div className="flex items-center gap-3">
+                             <div className="h-8 w-8 bg-slate-50 rounded-lg flex items-center justify-center text-[#E53935]">
+                                {React.createElement(currentRoleIcon)}
+                             </div>
+                             <span className="text-[11px] font-black uppercase tracking-widest text-[#292828]">{role}</span>
+                          </div>
+                          <ChevronDown size={16} className={cn("text-slate-300 transition-transform duration-300", isRoleOpen && "rotate-180")} />
+                       </button>
+
+                       {isRoleOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-3xl shadow-4xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                             {roles.map((r) => (
+                               <button
+                                 key={r.label}
+                                 type="button"
+                                 onClick={() => { setRole(r.label); setIsRoleOpen(false); }}
+                                 className={cn(
+                                   "w-full h-14 px-6 flex items-center gap-4 hover:bg-slate-50 transition-all",
+                                   role === r.label ? "bg-[#292828] text-white" : "text-[#292828]"
+                                 )}
+                               >
+                                  <r.icon size={16} className={cn(role === r.label ? "text-white" : "text-slate-300")} />
+                                  <span className="text-[10px] font-black uppercase tracking-widest">{r.label}</span>
+                               </button>
+                             ))}
+                          </div>
+                       )}
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                     {mode === "signup" && (
+                        <div className="relative group">
+                           <input 
+                              type="text" 
+                              name="fullName"
+                              value={formData.fullName}
+                              onChange={handleInputChange}
+                              placeholder="Full Name" 
+                              className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
+                              required
+                           />
+                        </div>
+                     )}
                      <div className="relative group">
                         <input 
-                           type="text" 
-                           name="fullName"
-                           value={formData.fullName}
+                           type="email" 
+                           name="email"
+                           value={formData.email}
                            onChange={handleInputChange}
-                           placeholder="FULL NAME" 
-                           className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
+                           placeholder="Email Address" 
+                           className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
                            required
                         />
-                        <User size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
                      </div>
-                  )}
-                  <div className="relative group">
-                     <input 
-                        type="email" 
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="EMAIL ADDRESS" 
-                        className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
-                        required
-                     />
-                     <Mail size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
-                  </div>
-                  <div className="relative group">
-                     <input 
-                        type="password" 
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        placeholder="PASSWORD" 
-                        className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
-                        required
-                     />
-                     <Lock size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
+                     <div className="relative group">
+                        <input 
+                           type="password" 
+                           name="password"
+                           value={formData.password}
+                           onChange={handleInputChange}
+                           placeholder="Password" 
+                           className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
+                           required
+                        />
+                     </div>
                   </div>
                </div>
-
-               {mode === "signin" && (
-                 <div className="flex justify-end px-2">
-                    <button type="button" className="text-[10px] font-black text-[#292828]/30 uppercase tracking-widest hover:text-[#E53935]">Forgot Credentials?</button>
-                 </div>
-               )}
 
                <button 
                  type="submit"
                  disabled={isLoading || isSuccess}
                  className={cn(
-                   "w-full h-20 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-4xl active:scale-95 transition-all flex items-center justify-center gap-5 mt-8",
-                   isLoading ? "bg-slate-100 text-slate-400" : "bg-[#292828] text-white hover:bg-[#E53935]"
+                   "w-full h-20 bg-[#292828] text-white rounded-3xl font-black text-xs uppercase tracking-[0.4em] shadow-4xl active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-[#E53935]",
+                   isLoading && "opacity-50 cursor-wait"
                  )}
                >
-                  {isLoading ? "Synchronizing..." : (mode === "signin" ? "Authorize" : "Initialize")}
+                  {isLoading ? "Processing..." : "Get Started"}
                   {!isLoading && <ArrowRight size={20} />}
                </button>
+
+               <div className="text-center pt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+                    className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-[#292828] transition-colors"
+                  >
+                     {mode === "signup" ? "Already have an account?" : "Need an account? Join now"}
+                  </button>
+               </div>
             </form>
-
-            {/* Social Hub */}
-            <div className="space-y-6">
-               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-                  <span className="relative bg-[#FDFDFF] px-8">Identity Sync</span>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                  <button className="h-16 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest hover:border-[#292828]/20 transition-all">
-                     <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="" className="h-5 w-5" />
-                     Google
-                  </button>
-                  <button className="h-16 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest hover:border-[#292828]/20 transition-all">
-                     <Fingerprint size={18} className="text-[#E53935]" />
-                     Passkey
-                  </button>
-               </div>
-            </div>
-         </div>
-
-         {/* Final Footer Label */}
-         <div className="text-center mt-12 pb-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#292828]/20">Local Link Standard Terminal © 2026</p>
          </div>
       </div>
     </div>
@@ -356,7 +328,7 @@ function AuthContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-black uppercase tracking-widest">Initialising Terminal...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-[#292828] font-black uppercase tracking-widest">Loading...</div>}>
       <AuthContent />
     </Suspense>
   );

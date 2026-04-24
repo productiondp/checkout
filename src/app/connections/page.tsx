@@ -35,7 +35,7 @@ export default function ConnectionsPage() {
 
   const incomingRequests = [
     { id: "u1", name: "Sarah Jensen", role: "Design Director", match: 98, message: "Interested in collaborating on the regional infra project.", avatar: "https://i.pravatar.cc/150?u=sarah" },
-    { id: "u2", name: "David Chen", role: "Venture Capitalist", match: 92, message: "Reviewing your latest mandate. Let's discuss equity.", avatar: "https://i.pravatar.cc/150?u=david" },
+    { id: "u2", name: "David Chen", role: "Venture Capitalist", match: 92, message: "Reviewing your requirement.", avatar: "https://i.pravatar.cc/150?u=david" },
   ];
 
   return (
@@ -44,8 +44,8 @@ export default function ConnectionsPage() {
       <header className="bg-white border-b border-slate-100 py-12 px-6 lg:px-10">
          <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div>
-               <h1 className="text-4xl font-black text-[#292828] tracking-tight mb-2 uppercase">Connection <span className="text-[#E53935]">Ledger</span></h1>
-               <p className="text-slate-400 font-bold text-sm uppercase tracking-tight">Manage your professional network mandates</p>
+               <h1 className="text-4xl font-black text-[#292828] tracking-tight mb-2 uppercase">Connections</h1>
+               <p className="text-slate-400 font-bold text-sm uppercase tracking-tight">Manage your network</p>
             </div>
             <div className="flex bg-slate-50 p-1 rounded-2xl shrink-0 shadow-sm">
                {["Incoming", "Sent"].map((tab: any) => (
@@ -89,7 +89,7 @@ export default function ConnectionsPage() {
                       </div>
                       <div className="flex gap-4">
                          <button onClick={() => handleAccept(req.id)} className="flex-1 h-14 bg-[#292828] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] transition-all flex items-center justify-center gap-3">
-                            Accept Connection <Check size={16} />
+                            Accept <Check size={16} />
                          </button>
                          <button onClick={() => ignoreRequest(req.id)} className="h-14 px-8 border border-slate-100 text-slate-300 rounded-xl font-black text-[10px] uppercase tracking-widest hover:text-[#292828] transition-all">
                             Ignore
@@ -102,7 +102,7 @@ export default function ConnectionsPage() {
          ) : (
            <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700">
               <ArrowUpRight size={48} className="mx-auto text-slate-100 mb-6" />
-              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">No outgoing mandates recorded.</p>
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">No requests sent yet.</p>
            </div>
          )}
       </main>

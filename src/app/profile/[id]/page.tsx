@@ -57,7 +57,7 @@ export default function DynamicProfilePage() {
           name: data.full_name || "Expert",
           avatar: data.avatar_url || `https://i.pravatar.cc/150?u=${data.id}`,
           role: data.role || "Professional",
-          company: data.location || "Global Hub",
+          company: data.location || "Global",
           city: data.location || "Virtual",
           match: data.match_score || 95
         });
@@ -69,8 +69,8 @@ export default function DynamicProfilePage() {
 
   const [activeTab, setActiveTab] = useState("Overview");
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Loading Node...</div>;
-  if (!profile) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Node Not Found</div>;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Loading Profile...</div>;
+  if (!profile) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Profile Not Found</div>;
 
   const performanceMetrics = [
     { label: "Trust Score", value: profile.match + 2, color: "bg-green-500", icon: ShieldCheck },
@@ -97,7 +97,7 @@ export default function DynamicProfilePage() {
          {/* Identity Container */}
          <div className="max-w-[1240px] mx-auto px-6 h-full flex items-center relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-12 w-full pt-10">
-               {/* Avatar Hub */}
+               {/* Avatar */}
                <div className="relative shrink-0">
                   <div className="h-44 w-44 lg:h-52 lg:w-52 rounded-[1.95rem] bg-white p-3 shadow-4xl relative z-10 overflow-hidden border border-white/20">
                      <img src={profile.avatar} className="w-full h-full object-cover rounded-[1.625rem]" alt="Profile" />
@@ -179,8 +179,8 @@ export default function DynamicProfilePage() {
                            <Zap size={28} />
                         </div>
                         <div>
-                           <p className="text-[10px] font-black text-white/30 uppercase">Authority Status</p>
-                           <h4 className="text-xl font-black text-white uppercase">Checkout Rank</h4>
+                           <p className="text-[10px] font-black text-white/30 uppercase">Status</p>
+                           <h4 className="text-xl font-black text-white uppercase">Global Rank</h4>
                         </div>
                      </div>
 
@@ -197,7 +197,7 @@ export default function DynamicProfilePage() {
 
                      <div className="space-y-6">
                         <p className="text-[10px] font-black text-white uppercase flex items-center gap-2 mb-2">
-                           Targets
+                           Goals
                         </p>
                         {[
                            { label: "Completed Projects", val: `${30 + (profile.id % 20)}/50`, progress: 60 + (profile.id % 40) },
@@ -239,7 +239,7 @@ export default function DynamicProfilePage() {
                   ))}
                </div>
 
-               {/* A. INTRO VIDEO HUB */}
+               {/* INTRO VIDEO */}
                <div className="bg-[#292828] rounded-[2rem] overflow-hidden relative group aspect-video shadow-4xl border border-white/5">
                   <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1200" className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-1000" alt="Video Placeholder" />
                   <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-[#292828] via-[#292828]/60 to-transparent flex items-end justify-between">
@@ -253,7 +253,7 @@ export default function DynamicProfilePage() {
                   </div>
                </div>
 
-               {/* B. EXPERTISE BREAKDOWN (Detailed Score) */}
+               {/* Skills */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {performanceMetrics.map((met, i) => (
                     <div key={i} className="bg-white p-10 rounded-[1.625rem] border border-[#292828]/5 shadow-xl group hover:border-[#E53935]/20 transition-all duration-500">

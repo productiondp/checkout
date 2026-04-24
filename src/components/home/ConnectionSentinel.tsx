@@ -98,7 +98,7 @@ export default function ConnectionSentinel() {
                         <h4 className="text-[13px] font-black text-[#292828] uppercase truncate">{req.sender.full_name}</h4>
                         <div className="flex items-center gap-2">
                            <span className="text-[9px] font-bold text-slate-400 uppercase">{req.sender.role}</span>
-                           <span className="text-[9px] font-black text-[#E53935]">{req.sender.match_score}% MATCH</span>
+                           <span className="text-[9px] font-black text-[#E53935]">{req.sender.match_score}% MATCH SCORE</span>
                         </div>
                      </div>
                   </div>

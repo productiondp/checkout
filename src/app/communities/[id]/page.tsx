@@ -69,7 +69,7 @@ export default function CommunityDetailPage() {
                 <div className="flex flex-wrap items-center gap-6">
                   <div className="flex items-center gap-2">
                     <Users size={16} className="text-slate-300" />
-                    <span className="text-xs font-black text-[#292828] uppercase tracking-wider">{community.memberCount.toLocaleString()} High-Authority Nodes</span>
+                    <span className="text-xs font-black text-[#292828] uppercase tracking-wider">{community.memberCount.toLocaleString()} Members</span>
                   </div>
                   <div className="h-4 w-[1px] bg-slate-100 hidden sm:block" />
                   <div className="flex items-center gap-2">
@@ -93,11 +93,11 @@ export default function CommunityDetailPage() {
                   isJoined ? "bg-white border-2 border-slate-100 text-slate-400" : "bg-[#292828] text-white hover:bg-[#E53935]"
                 )}
               >
-                {isJoined ? "Authorized Member" : "Join Community"}
+                {isJoined ? "Member" : "Join Community"}
                 {!isJoined && <Plus size={20} />}
               </button>
               <p className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
-                {community.visibility === "Private" ? "Requires Executive Approval" : "Instant Syndicate Access"}
+                {community.visibility === "Private" ? "Requires Approval" : "Instant Access"}
               </p>
             </div>
           </div>
@@ -134,11 +134,11 @@ export default function CommunityDetailPage() {
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                   <div>
-                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Structured Intent Feed</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Outcome-driven mandates only</p>
+                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Post Feed</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Relevant posts only</p>
                   </div>
                   <button className="h-12 px-8 bg-[#292828] text-white rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
-                    <Plus size={16} /> Post Intent
+                    <Plus size={16} /> Add Post
                   </button>
                 </div>
                 
@@ -149,7 +149,7 @@ export default function CommunityDetailPage() {
                 {posts.length === 0 && (
                   <div className="py-24 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
                     <Zap size={48} className="mx-auto text-slate-100 mb-6" />
-                    <p className="text-slate-400 font-bold uppercase tracking-widest">No active intents found in this node.</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest">No active posts found in this community.</p>
                   </div>
                 )}
               </div>
@@ -177,7 +177,7 @@ export default function CommunityDetailPage() {
             {activeTab === "About" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-[3rem] border border-slate-100">
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Mission Protocol</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Mission</h3>
                   <p className="text-2xl font-bold text-[#292828] leading-relaxed italic">
                     "{community.description}"
                   </p>
@@ -187,10 +187,10 @@ export default function CommunityDetailPage() {
                   <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Engagement Rules</h3>
                   <div className="space-y-6">
                     {[
-                      "Absolute focus on structured intents (Leads, Hiring, Partners).",
+                      "Absolute focus on relevant posts (Leads, Hiring, Partners).",
                       "Zero tolerance for generic chat noise or self-promotion.",
                       "All interactions must be high-authority and outcome-driven.",
-                      "Privacy and data integrity of fellow nodes is paramount."
+                      "Privacy and data integrity of fellow members is paramount."
                     ].map((rule, i) => (
                       <div key={i} className="flex items-start gap-4">
                         <div className="h-6 w-6 bg-slate-50 rounded-lg flex items-center justify-center text-[10px] font-black text-[#292828] shrink-0">{i+1}</div>
@@ -207,7 +207,7 @@ export default function CommunityDetailPage() {
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Verified Creator</p>
-                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">Executive Node Alpha</h4>
+                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">Creator</h4>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl">
@@ -224,23 +224,23 @@ export default function CommunityDetailPage() {
             <div className="bg-[#292828] p-10 rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
               <Zap size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
               <div className="relative z-10">
-                <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Syndicate Power</p>
+                <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Match Score</p>
                 <div className="flex items-center gap-4 mb-8">
                   <h3 className="text-5xl font-black tabular-nums">94%</h3>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">Match Score</span>
-                    <span className="text-[9px] font-bold text-white/40 uppercase">Global Node Rank</span>
+                    <span className="text-[9px] font-bold text-white/40 uppercase">Rank</span>
                   </div>
                 </div>
                 <p className="text-[11px] font-medium text-white/60 uppercase leading-relaxed mb-10">
-                  This node has high structural overlap with your expertise and current business intents.
+                  This community has high structural overlap with your expertise and current business posts.
                 </p>
-                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all">Optimize Sync</button>
+                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all">Connect</button>
               </div>
             </div>
 
             <div className="space-y-8">
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Mandates</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Posts</h3>
               <div className="space-y-4">
                 {MOCK_POSTS.slice(0, 2).map(post => (
                   <div key={post.id} className="p-6 bg-white border border-slate-100 rounded-3xl group cursor-pointer hover:border-[#E53935]/20 transition-all">
@@ -250,7 +250,7 @@ export default function CommunityDetailPage() {
                     </div>
                     <p className="text-sm font-bold text-[#292828] leading-snug line-clamp-2 mb-4">"{post.description}"</p>
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#E53935] group-hover:translate-x-2 transition-transform">
-                      View Protocol <ArrowRight size={14} />
+                      View Post <ArrowRight size={14} />
                     </div>
                   </div>
                 ))}

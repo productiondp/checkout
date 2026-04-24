@@ -57,7 +57,7 @@ export default function UniversalFeedCard({
   const isMeetup = type?.toUpperCase() === "MEETUP";
 
   const typeConfig: any = {
-    LEAD: { icon: Target, label: "BUSINESS MANDATE", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
+    LEAD: { icon: Target, label: "Requirement • by", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
     HIRING: { icon: Briefcase, label: "HIRING", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
     PARTNER: { icon: Sparkles, label: "PARTNERSHIP", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
     MEETUP: { icon: LayoutGrid, label: "EXPERT SESSION", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
@@ -80,7 +80,7 @@ export default function UniversalFeedCard({
       (isLead || isPartner) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
       (isHiring || isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
     )}>
-      {/* VERTICAL TACTICAL STRIP */}
+      {/* Highlight Strip */}
       {(isLead || isPartner || isHiring || isMeetup) && (
         <div className={cn(
           "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[14px]",
@@ -93,7 +93,7 @@ export default function UniversalFeedCard({
         {/* 1. CORE CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-10">
            
-           {/* IDENTITY HUB */}
+           {/* Identity */}
            <div className="flex flex-col gap-6">
               <div className="flex items-center gap-4">
                  <div className="relative">
@@ -111,7 +111,7 @@ export default function UniversalFeedCard({
                  </div>
               </div>
 
-              {/* TACTICAL METRICS */}
+              {/* Metrics */}
               <div className="space-y-3 pt-4 border-t border-[#292828]/5">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {badge && (
@@ -189,7 +189,7 @@ export default function UniversalFeedCard({
                        5 professionals viewed recently
                     </div>
                     <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935]/60 uppercase">
-                       {Math.random() > 0.5 ? "Recently posted" : "Recently active"}
+                       {Math.random() > 0.5 ? "Recently created" : "Recently active"}
                     </div>
                   </div>
                   
@@ -210,10 +210,10 @@ export default function UniversalFeedCard({
                   )}
                   {isLead && (
                      <>
-                        <DataField label="Requirement" value={post.content} highlight />
+                        <DataField label="Description" value={post.content} highlight />
                         <DataField label="Budget range" value={post.budget} color="text-blue-600" />
                         <DataField label="Deadline" value={post.due_date} color="text-[#E53935]" />
-                        <DataField label="Verified hub" value={location} icon={<MapPin size={12} />} />
+                        <DataField label="Verified Location" value={location} icon={<MapPin size={12} />} />
                      </>
                   )}
                   {isMeetup && (
@@ -237,22 +237,22 @@ export default function UniversalFeedCard({
                         <DataField label="B2B offer" value={post.offer} highlight />
                         <DataField label="Resource need" value={post.need} highlight />
                         <DataField label="Partnership term" value={post.timeline} />
-                        <DataField label="Local hub" value={location} />
+                        <DataField label="Local Location" value={location} />
                      </>
                   )}
                   {isUpdate && (
                      <>
-                        <DataField label="Current status" value={post.content} highlight />
-                        <DataField label="Operational goal" value={post.need} />
-                        <DataField label="City hub" value={location} />
-                        <DataField label="Intel source" value="Verified update" />
+                        <DataField label="Status" value={post.content} highlight />
+                        <DataField label="Goal" value={post.need} />
+                        <DataField label="City" value={location} />
+                        <DataField label="Source" value="Verified update" />
                      </>
                   )}
                </div>
             </div>
          </div>
 
-         {/* 3. TACTICAL FOOTER */}
+         {/* Footer */}
          <div className="mt-8 pt-6 border-t border-[#292828]/5 flex flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
                   <div className="flex flex-col items-start selection:bg-none relative group/ai">
@@ -304,7 +304,7 @@ export default function UniversalFeedCard({
                                 {reason}
                              </li>
                            ))}
-                           {!post.matchReasons?.length && <li>Synthesizing regional alignment...</li>}
+                           {!post.matchReasons?.length && <li>Calculating match...</li>}
                         </ul>
                         <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
                            {post.priorityLabels?.map((label: string, i: number) => (
@@ -372,7 +372,7 @@ export default function UniversalFeedCard({
                                <div className="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-[#292828]">
                                   <Pencil size={12} />
                                </div>
-                               Edit Post
+                               Edit Requirement
                             </button>
                             <button 
                               onClick={() => { onDelete?.(post); setShowMenu(false); }}
@@ -381,7 +381,7 @@ export default function UniversalFeedCard({
                                <div className="h-7 w-7 bg-red-100/50 rounded-lg flex items-center justify-center text-red-500">
                                   <Trash2 size={12} />
                                </div>
-                               Delete Post
+                               Delete Requirement
                             </button>
                          </div>
                       </div>

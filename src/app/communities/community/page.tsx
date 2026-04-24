@@ -100,7 +100,7 @@ export default function CommunityPage() {
                     <div>
                        <h1 className="text-3xl font-bold text-[#292828] leading-tight">{activeGroup.name}</h1>
                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold text-[#E53935] uppercase">{activeGroup.members} Live Capacity</span>
+                          <span className="text-xs font-bold text-[#E53935] uppercase">{activeGroup.members} People Online</span>
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
                           <span className="text-xs font-bold text-slate-500 uppercase">{activeGroup.topic}</span>
                        </div>
@@ -214,7 +214,7 @@ export default function CommunityPage() {
                     <Sparkles size={18} />
                     <h3 className="text-[11px] font-black uppercase text-[#292828]">People to meet</h3>
                  </div>
-                 <p className="text-xs font-medium text-slate-500 mb-8">Profiles structurally matched to this thread's domain logic.</p>
+                 <p className="text-xs font-medium text-slate-500 mb-8">Profiles structurally matched to this thread's expertise.</p>
                  
                  <div className="space-y-4">
                     {activeGroup.suggestions.map((prof: any) => (
@@ -249,7 +249,7 @@ export default function CommunityPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div>
               <h1 className="text-4xl font-bold text-[#292828] mb-2 leading-tight">Groups</h1>
-              <p className="text-slate-500 font-bold text-sm uppercase mt-2 block tracking-tight">Join industry clusters and talk to people in your domain.</p>
+              <p className="text-slate-500 font-bold text-sm uppercase mt-2 block tracking-tight">Join industry groups and talk to people in your field.</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
@@ -279,7 +279,7 @@ export default function CommunityPage() {
                 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Cluster Name</label>
+                      <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Group Name</label>
                       <input type="text" value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})} placeholder="e.g. Export Logistics Strategy" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all" />
                   </div>
                   <div className="space-y-2">
@@ -349,7 +349,7 @@ export default function CommunityPage() {
       {/* COMMUNITY CONTEXT SIDEBAR */}
       <aside className="hidden lg:flex flex-col w-[380px] xl:w-[420px] h-screen sticky top-0 bg-white p-8 gap-10 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10">
          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-bold text-[#292828]/30 uppercase tracking-widest">Community Hub</h3>
+            <h3 className="text-[11px] font-bold text-[#292828]/30 uppercase tracking-widest">Communities</h3>
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase">
                <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" /> Live Now
             </div>
@@ -361,7 +361,7 @@ export default function CommunityPage() {
                {["#IndiaScaling", "#VentureCap2026", "#LogisticsAudit", "#D2CGrowth"].map((tag, i) => (
                  <div key={i} className="flex items-center justify-between p-4 bg-[#292828]/5 rounded-2xl group cursor-pointer hover:bg-[#E53935] hover:text-white transition-all">
                     <span className="text-[11px] font-black uppercase tracking-tight">{tag}</span>
-                    <span className="text-[10px] font-bold opacity-40 group-hover:opacity-100">{Math.floor(Math.random()*500 + 100)} nodes</span>
+                    <span className="text-[10px] font-bold opacity-40 group-hover:opacity-100">{Math.floor(Math.random()*500 + 100)} people</span>
                  </div>
                ))}
             </div>
@@ -372,10 +372,10 @@ export default function CommunityPage() {
             <Users size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
             
             <div className="relative z-10">
-               <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Network Density</p>
+               <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Network Size</p>
                <h3 className="text-4xl font-black mb-4">42,841 <span className="text-emerald-400 text-sm">↑</span></h3>
                <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-8">
-                  Verified professional nodes currently interacting across global hubs.
+                  Verified professionals currently interacting across cities.
                </p>
                <div className="flex -space-x-4 mb-8">
                   {[...Array(5)].map((_, i) => (
@@ -387,7 +387,7 @@ export default function CommunityPage() {
                      +12K
                   </div>
                </div>
-               <button className="w-full h-12 border-2 border-white/10 bg-white/5 backdrop-blur-md rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-[#292828] transition-all">Explore Global Index</button>
+               <button className="w-full h-12 border-2 border-white/10 bg-white/5 backdrop-blur-md rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-[#292828] transition-all">Explore All</button>
             </div>
          </div>
 
@@ -399,8 +399,8 @@ export default function CommunityPage() {
          </div>
 
          <div className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-center">
-            <p className="text-[11px] font-bold text-slate-500 uppercase leading-relaxed mb-4">You are currently in the <span className="text-[#292828]">Standard Node Pool</span>.</p>
-            <button className="w-full h-14 bg-white border-2 border-[#292828] text-[#292828] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#292828] hover:text-white transition-all">Verify Node Status</button>
+            <p className="text-[11px] font-bold text-slate-500 uppercase leading-relaxed mb-4">You are currently in the <span className="text-[#292828]">Member List</span>.</p>
+            <button className="w-full h-14 bg-white border-2 border-[#292828] text-[#292828] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#292828] hover:text-white transition-all">Verify Profile</button>
          </div>
       </aside>
     </div>

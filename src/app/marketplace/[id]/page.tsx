@@ -37,7 +37,7 @@ export default function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-white pb-32">
-      {/* 1. HERO TERMINAL (DARK) */}
+      {/* 1. HERO AREA (DARK) */}
       <header className="bg-[#292828] py-24 relative overflow-hidden">
          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-[#E53935]/10 opacity-60" />
          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426')] bg-cover bg-center mix-blend-overlay opacity-10 grayscale" />
@@ -47,14 +47,14 @@ export default function ListingDetailPage() {
              onClick={() => router.push('/marketplace')}
              className="flex items-center gap-3 text-white/40 font-black uppercase text-[10px] tracking-widest mb-12 hover:text-[#E53935] transition-all group"
            >
-             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Terminal
+             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Marketplace
            </button>
 
            <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-12">
              <div className="flex-1 max-w-4xl">
                <div className="flex flex-wrap items-center gap-4 mb-8">
                   <div className="px-5 py-2 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-xl shadow-2xl tracking-[0.2em] flex items-center gap-2">
-                     <Zap size={14} /> High Impact Node
+                     <Zap size={14} /> High Impact Listing
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white uppercase">
                      <Sparkles size={14} className="text-[#E53935]" /> {listing.matchScore}% Match Score
@@ -67,13 +67,13 @@ export default function ListingDetailPage() {
                         <img src={listing.provider.avatar} className="h-full w-full object-cover" alt="" />
                      </div>
                      <div>
-                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Provider Node</p>
+                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Provider</p>
                         <span className="text-xl font-bold text-white uppercase tracking-tight">{listing.provider.name}</span>
                      </div>
                   </div>
                   <div className="h-10 w-px bg-white/10 hidden sm:block" />
                   <div>
-                     <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Geographical Hub</p>
+                     <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Location</p>
                      <p className="text-xl font-bold text-white uppercase tracking-tight">{listing.location}</p>
                   </div>
                </div>
@@ -83,10 +83,10 @@ export default function ListingDetailPage() {
                <ConnectButton 
                   userId={listing.id} 
                   userName={listing.provider.name} 
-                  label="Initialize Sync" 
+                  label="Connect" 
                   className="!h-24 !px-16 !bg-white !text-[#292828] !rounded-[2rem] !font-black !text-xs !uppercase !tracking-[0.2em] !shadow-4xl hover:!bg-[#E53935] hover:!text-white transition-all active:scale-95" 
                />
-               <p className="text-center text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol Sync Required</p>
+               <p className="text-center text-[10px] font-black text-white/20 uppercase tracking-widest">Connection required</p>
              </div>
            </div>
          </div>
@@ -101,7 +101,7 @@ export default function ListingDetailPage() {
             {/* DESCRIPTION */}
             <section>
               <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10 flex items-center gap-3">
-                 <Info size={18} /> Strategic Context
+                 <Info size={18} /> Description
               </h3>
               <p className="text-3xl lg:text-4xl font-bold text-[#292828] leading-[1.4] italic">
                  "{listing.description}"
@@ -112,7 +112,7 @@ export default function ListingDetailPage() {
             <section className="pt-16 border-t border-slate-100">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                   <div>
-                     <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Tags & Taxonomy</h4>
+                     <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Tags</h4>
                      <div className="flex flex-wrap gap-3">
                         {listing.tags.map(tag => (
                           <span key={tag} className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-black uppercase text-[#292828] shadow-sm hover:bg-[#292828] hover:text-white transition-all cursor-default">{tag}</span>
@@ -120,13 +120,13 @@ export default function ListingDetailPage() {
                      </div>
                   </div>
                   <div>
-                     <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Structural Impact</h4>
+                     <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Impact</h4>
                      <div className="space-y-6">
                         {[
-                           "Zero-friction protocol initialization",
-                           "Direct expertise gap fulfillment",
-                           "Verified regional node connection",
-                           "Secured communication ledger"
+                           "Quick connection",
+                           "Get help directly",
+                           "Connect with locals",
+                           "Secure messaging"
                         ].map((impact, i) => (
                            <div key={i} className="flex items-center gap-5 text-[#292828] font-bold text-sm">
                               <CheckCircle2 size={20} className="text-emerald-500 shrink-0" /> {impact}
@@ -137,12 +137,12 @@ export default function ListingDetailPage() {
                </div>
             </section>
 
-            {/* USE CASES TERMINAL */}
+            {/* USE CASES AREA */}
             <section className="bg-[#292828] rounded-[3rem] p-12 lg:p-20 text-white relative overflow-hidden group">
                <Target size={300} className="absolute -right-20 -bottom-20 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[10s]" />
                <div className="relative z-10">
                   <div className="flex items-center justify-between mb-16">
-                     <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935]">Execution Use Cases</h3>
+                     <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935]">Use Cases</h3>
                      <div className="h-px w-32 bg-white/10" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -153,7 +153,7 @@ export default function ListingDetailPage() {
                           </div>
                           <div>
                              <p className="text-xl font-black uppercase tracking-tight leading-tight mb-2">{uc}</p>
-                             <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Validated Protocol</p>
+                             <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Verified</p>
                           </div>
                        </div>
                      ))}
@@ -167,13 +167,13 @@ export default function ListingDetailPage() {
              <div className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-premium relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-12 flex items-center gap-3">
-                   <Target size={18} className="text-[#E53935]" /> Match Matrix
+                   <Target size={18} className="text-[#E53935]" /> Matching
                 </h3>
                 <div className="space-y-10">
                    {[
-                      { label: "Intent Alignment", val: 96 },
+                      { label: "Goal Alignment", val: 96 },
                       { label: "Regional Proximity", val: 88 },
-                      { label: "Trust Velocity", val: 100 }
+                      { label: "Reliability", val: 100 }
                    ].map((it, i) => (
                       <div key={i} className="space-y-3">
                          <div className="flex items-end justify-between">
@@ -193,14 +193,14 @@ export default function ListingDetailPage() {
 
              <div className="p-12 bg-slate-50 border border-slate-100 rounded-[3rem] shadow-sm">
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-10 flex items-center gap-3">
-                   <Lock size={18} className="text-[#E53935]" /> Protocol Rules
+                   <Lock size={18} className="text-[#E53935]" /> Rules
                 </h3>
                 <ul className="space-y-6">
                    {[
-                      "No direct commerce initialization.",
-                      "Connection sync mandatory before chat.",
-                      "All interactions recorded in ledger.",
-                      "Intent-verified participants only."
+                      "No direct sales initializations.",
+                      "Connect before chat.",
+                      "All interactions are secure.",
+                      "Verified members only."
                    ].map((rule, i) => (
                       <li key={i} className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-4">
                          <div className="h-2 w-2 rounded-full bg-[#E53935] mt-1 shrink-0 shadow-[0_0_8px_rgba(229,57,53,0.4)]" />

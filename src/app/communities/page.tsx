@@ -19,12 +19,19 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MOCK_COMMUNITIES } from "@/data/communities";
 import { Community, CommunityCategory } from "@/types/communities";
+import { analytics } from "@/utils/analytics";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CommunitiesPage() {
   const [activeTab, setActiveTab] = useState<CommunityCategory>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
+
+  React.useEffect(() => {
+    if (user) analytics.trackScreen('COMMUNITIES', user.id);
+  }, [user]);
 
   const categories: CommunityCategory[] = ["All", "Hiring", "Partnership", "Leads", "Meetup", "Local"];
 

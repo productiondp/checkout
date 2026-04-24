@@ -21,6 +21,7 @@ import {
   MoreVertical
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/utils/analytics";
 
 interface UniversalFeedCardProps {
   post: any;
@@ -55,8 +56,8 @@ export default function UniversalFeedCard({
   const isMeetup = type?.toUpperCase() === "MEETUP";
 
   const typeConfig: any = {
-    LEAD: { icon: Target, label: "BUSINESS LEAD", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
-    HIRING: { icon: Briefcase, label: "OPEN MANDATE", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
+    LEAD: { icon: Target, label: "BUSINESS MANDATE", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
+    HIRING: { icon: Briefcase, label: "HIRING", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
     PARTNER: { icon: Sparkles, label: "PARTNERSHIP", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
     MEETUP: { icon: LayoutGrid, label: "EXPERT SESSION", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
     UPDATE: { icon: Zap, label: "CHECKOUT NOW", color: "bg-slate-600", light: "bg-slate-50 text-slate-600" }
@@ -73,7 +74,7 @@ export default function UniversalFeedCard({
 
   return (
     <div className={cn(
-      "group relative bg-white border border-[#292828]/10 rounded-[28px] transition-all duration-500",
+      "group relative bg-white border border-[#292828]/10 rounded-[14px] transition-all duration-500",
       isExpanded && "ring-2 ring-[#292828]/5",
       (isLead || isPartner) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
       (isHiring || isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
@@ -81,7 +82,7 @@ export default function UniversalFeedCard({
       {/* VERTICAL TACTICAL STRIP */}
       {(isLead || isPartner || isHiring || isMeetup) && (
         <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[28px]",
+          "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[14px]",
           (isLead || isPartner) ? "bg-[#E53935]" : "bg-emerald-600"
         )} />
       )}
@@ -101,10 +102,11 @@ export default function UniversalFeedCard({
                     <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
                  </div>
                  <div>
-                    <h4>{author}</h4>
+                    <h4 className="text-[14px] font-black text-[#292828] uppercase tracking-tight leading-none mb-1">{author}</h4>
                     <div className="subheading-editorial !mb-0 flex items-center gap-1.5 !text-[11px]">
                        <Clock size={10} /> {time}
                     </div>
+                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-1.5">Connected with 12 professionals</p>
                  </div>
               </div>
 
@@ -123,7 +125,7 @@ export default function UniversalFeedCard({
                         <Medal size={16} />
                      </div>
                      <div>
-                        <p className="text-[8px] font-bold text-[#666666] uppercase leading-none mb-0.5">Positional rank</p>
+                        <p className="text-[8px] font-bold text-[#666666] uppercase leading-none mb-0.5">Local rank</p>
                         <p className="text-[10px] font-bold text-[#E53935] uppercase">{rank}</p>
                      </div>
                   </div>
@@ -133,12 +135,61 @@ export default function UniversalFeedCard({
             {/* DATA BLOCK */}
             <div className="space-y-6">
                <div className="space-y-3">
-                  <div className={cn(
-                    "h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-white shadow-sm mb-1",
-                    config.color
-                  )}>
-                     <config.icon size={10} className="mr-1.5" />
-                     {config.label}
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className={cn(
+                      "h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-white shadow-sm",
+                      config.color
+                    )}>
+                       <config.icon size={10} className="mr-1.5" />
+                       {config.label}
+                    </div>
+                    {domain && domain !== type && (
+                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-[#292828] bg-slate-100 border border-slate-200 uppercase">
+                         <BrainCircuit size={10} className="mr-1.5 text-[#E53935]" />
+                         {domain}
+                      </div>
+                    )}
+                    
+                    {/* DISCOVERY VALIDATION */}
+                    {matchScore > 85 && (
+                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase">
+                         <Star size={10} className="mr-1.5 fill-emerald-600" />
+                         Recommended for you
+                      </div>
+                    )}
+                    
+                    {/* MICRO URGENCY NUDGES */}
+                    {matchScore > 90 && (
+                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935] bg-red-50 border border-[#E53935]/20 uppercase animate-pulse">
+                         <Zap size={10} className="mr-1.5 fill-[#E53935]" />
+                         High match for you
+                      </div>
+                    )}
+                    {new Date().getTime() - new Date(post.created_at).getTime() < 86400000 && (
+                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase">
+                         New opportunity
+                      </div>
+                    )}
+                    {Math.random() > 0.7 && (
+                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-blue-600 bg-blue-50 border border-blue-200 uppercase">
+                         <div className="h-1.5 w-1.5 rounded-full bg-blue-600 mr-1.5 animate-pulse" />
+                         Active now
+                      </div>
+                    )}
+
+                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-slate-400 border border-slate-100 uppercase">
+                       <MapPin size={10} className="mr-1.5" />
+                       {location}
+                    </div>
+                    
+                    {/* HUMAN PRESENCE SIGNALS */}
+                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-slate-300 uppercase">
+                       <Users size={10} className="mr-1.5" />
+                       5 professionals viewed recently
+                    </div>
+                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935]/60 uppercase">
+                       {Math.random() > 0.5 ? "Recently posted" : "Recently active"}
+                    </div>
                   </div>
                   
                   <h3 className={cn(
@@ -149,7 +200,7 @@ export default function UniversalFeedCard({
                   </h3>
                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 p-6 bg-[#F8FAFC] border border-[#292828]/5 rounded-[20px] relative">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 p-6 bg-[#F8FAFC] border border-[#292828]/5 rounded-[10px] relative">
                   {isMeetup && (
                      <div className="absolute top-4 right-6 flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -160,7 +211,7 @@ export default function UniversalFeedCard({
                      <>
                         <DataField label="Requirement" value={post.content} highlight />
                         <DataField label="Budget range" value={post.budget} color="text-blue-600" />
-                        <DataField label="Mandated deadline" value={post.due_date} color="text-[#E53935]" />
+                        <DataField label="Deadline" value={post.due_date} color="text-[#E53935]" />
                         <DataField label="Verified hub" value={location} icon={<MapPin size={12} />} />
                      </>
                   )}
@@ -174,7 +225,7 @@ export default function UniversalFeedCard({
                   )}
                   {isHiring && (
                      <>
-                        <DataField label="Core mandate" value={post.skills_required?.join(', ') || 'General Help'} highlight />
+                        <DataField label="Key Skills" value={post.skills_required?.join(', ') || 'General Help'} highlight />
                         <DataField label="Work structure" value={post.work_type} />
                         <DataField label="Project duration" value={post.duration} />
                         <DataField label="Hub location" value={location} />
@@ -206,7 +257,7 @@ export default function UniversalFeedCard({
                   <div className="flex flex-col items-start selection:bg-none relative group/ai">
                      <div className="flex items-center gap-1.5 mb-1.5 opacity-0 group-hover/ai:opacity-100 transition-opacity">
                         <Sparkles size={8} className="text-[#E53935] animate-pulse" />
-                        <span className="text-[7px] font-black text-[#E53935] uppercase tracking-widest">Partner Score</span>
+                        <span className="text-[7px] font-black text-[#E53935] uppercase tracking-widest">Match Score</span>
                      </div>
                      <p className="subheading-editorial !text-[#666666] !mb-1">
                         Alignment
@@ -223,14 +274,42 @@ export default function UniversalFeedCard({
                           isMeetup ? "text-emerald-600/30" : "text-[#666666]/30"
                         )}>%</span>
                      </div>
+
+                     {/* INLINE MATCH REASONING */}
+                     <div className="mt-2 space-y-1">
+                        <div className="flex items-center justify-between">
+                           <p className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Why this match:</p>
+                           {matchScore > 80 && (
+                              <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest animate-pulse">High alignment with your goals</span>
+                           )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-2 gap-y-1">
+                           {post.matchReasons?.slice(0, 2).map((reason: string, i: number) => (
+                              <span key={i} className="text-[8px] font-bold text-[#E53935] uppercase">{reason}</span>
+                           )) || <span className="text-[8px] font-bold text-slate-300 uppercase">Regional Alignment</span>}
+                        </div>
+                     </div>
                      
                      {/* AI Insight Tooltip/Bubble */}
                      <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-48 bg-[#292828] text-white p-3 rounded-xl text-[9px] font-medium leading-relaxed opacity-0 group-hover/ai:opacity-100 transition-all pointer-events-none z-50 shadow-2xl translate-x-2 group-hover/ai:translate-x-0">
                         <div className="flex items-center gap-2 mb-1.5 text-[#E53935]">
                            <BrainCircuit size={10} />
-                           <span className="font-black uppercase tracking-widest text-[8px]">Partner Insight</span>
+                           <span className="font-black uppercase tracking-widest text-[8px]">Match Insight</span>
                         </div>
-                        "This {type} aligns with your {domain || 'core'} expertise. High probability of strategic fit."
+                        <ul className="space-y-1 list-none p-0 m-0">
+                           {post.matchReasons?.map((reason: string, i: number) => (
+                             <li key={i} className="flex items-start gap-1.5">
+                                <span className="text-[#E53935]">•</span>
+                                {reason}
+                             </li>
+                           ))}
+                           {!post.matchReasons?.length && <li>Synthesizing regional alignment...</li>}
+                        </ul>
+                        <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
+                           {post.priorityLabels?.map((label: string, i: number) => (
+                             <span key={i} className="px-1.5 py-0.5 bg-white/10 rounded text-[6px] font-black uppercase tracking-tighter">{label}</span>
+                           ))}
+                        </div>
                      </div>
                   </div>
                </div>
@@ -247,7 +326,11 @@ export default function UniversalFeedCard({
                   </div>
                ) : (
                   <button 
-                    onClick={onAction}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      analytics.track('FEED_CLICK', currentUserId, { postId: post.id, action: isLead ? 'view_more' : isHiring ? 'apply' : 'connect', type: post.type });
+                      onAction?.();
+                    }}
                     className={cn(
                       "h-12 px-8 rounded-xl text-[10px] font-bold uppercase tracking-[0.1em] shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
                       "bg-[#292828] text-white hover:bg-[#E53935]"
@@ -288,7 +371,7 @@ export default function UniversalFeedCard({
                                <div className="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-[#292828]">
                                   <Pencil size={12} />
                                </div>
-                               Edit Mandate
+                               Edit Post
                             </button>
                             <button 
                               onClick={() => { onDelete?.(post); setShowMenu(false); }}
@@ -297,7 +380,7 @@ export default function UniversalFeedCard({
                                <div className="h-7 w-7 bg-red-100/50 rounded-lg flex items-center justify-center text-red-500">
                                   <Trash2 size={12} />
                                </div>
-                               Delete Node
+                               Delete Post
                             </button>
                          </div>
                       </div>

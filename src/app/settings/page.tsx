@@ -16,35 +16,26 @@ import {
   AlertCircle
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/utils/analytics";
 
 export default function SettingsHub() {
-  const [user, setUser] = useState<any>(null);
+  const { user: authUser, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    async function fetchUser() {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .single();
-        setUser(profile || authUser);
-      }
+    if (authUser) {
+      analytics.trackScreen('SETTINGS', authUser.id);
       setIsLoading(false);
     }
-    fetchUser();
-  }, []);
+  }, [authUser]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.localStorage.clear();
-    window.location.href = "/";
+    await logout();
   };
 
   const sections = [
@@ -73,7 +64,7 @@ export default function SettingsHub() {
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
           </Link>
           <div className="px-3 py-1 bg-[#292828]/5 rounded-full text-[9px] font-black uppercase text-[#292828]/40 border border-[#292828]/5">
-            Operational Hub: {user?.city || 'Trivandrum'}
+            Operational Hub: {authUser?.city || 'Trivandrum'}
           </div>
         </div>
         

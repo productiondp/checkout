@@ -13,14 +13,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ConnectionSentinel() {
+   const { user } = useAuth();
    const [requests, setRequests] = useState<any[]>([]);
    const [isLoading, setIsLoading] = useState(true);
    const supabase = createClient();
 
    const fetchRequests = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data } = await supabase
@@ -71,11 +72,11 @@ export default function ConnectionSentinel() {
    if (isLoading || requests.length === 0) return null;
 
    return (
-      <section className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden p-8 animate-in slide-in-from-right duration-500">
+      <section className="bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden p-8 animate-in slide-in-from-right duration-500">
          <div className="flex items-center justify-between mb-8">
             <div>
-               <h3 className="text-sm font-black text-[#292828] uppercase tracking-tight">Sync <span className="text-[#E53935]">Requests</span></h3>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{requests.length} partners waiting</p>
+               <h3 className="text-sm font-black text-[#292828] uppercase tracking-tight">Connection <span className="text-[#E53935]">Requests</span></h3>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{requests.length} people waiting</p>
             </div>
             <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#E53935] animate-pulse">
                <Zap size={18} fill="currentColor" />
@@ -84,7 +85,7 @@ export default function ConnectionSentinel() {
 
          <div className="space-y-4">
             {requests.map((req) => (
-               <div key={req.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-[#E53935]/20 transition-all">
+               <div key={req.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-[#E53935]/20 transition-all">
                   <div className="flex items-center gap-4 mb-4">
                      <div className="h-12 w-12 rounded-xl bg-white overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center text-slate-300">
                         {req.sender.avatar_url ? (

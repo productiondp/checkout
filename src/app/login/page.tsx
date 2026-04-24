@@ -25,6 +25,8 @@ import {
   Fingerprint
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student" | "Advisor";
@@ -35,17 +37,21 @@ function AuthContent() {
   const initialMode = (searchParams.get("mode") as AuthMode) || "signin";
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<Role>("Business");
-  
   // Form State
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     fullName: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -54,58 +60,100 @@ function AuthContent() {
     });
     if (error) setError(null);
   };
+  
+  const { user: authUser, loading } = useAuth();
+  const supabase = createClient();
+
+  if (loading || !mounted) return null;
+
+  // Routing is managed exclusively by useAuth sentinel
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Mock API delayed response
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsSuccess(true);
-      setTimeout(() => router.push("/home"), 1000);
-    } catch (err) {
-      setError("Authentication failure. Please check your credentials.");
+      if (mode === "signup") {
+        if (!formData.fullName) throw new Error("Full name is required.");
+        
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: role.toUpperCase(),
+            },
+          },
+        });
+        
+        if (signUpError) throw signUpError;
+
+        if (authData.user) {
+           await supabase
+             .from('profiles')
+             .upsert({
+               id: authData.user.id,
+               full_name: formData.fullName,
+               role: role.toUpperCase(),
+               city: "Trivandrum",
+               location: "Trivandrum"
+             });
+        }
+        
+        setIsSuccess(true);
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) throw signInError;
+        
+        setIsSuccess(true);
+      }
+    } catch (err: any) {
+      setError(err.message || "Authentication failed. Check your data.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const VISUAL_CARDS = [
-     { label: "Networking", icon: Users, desc: "Connect with regional experts." },
-     { label: "Business Leads", icon: Target, desc: "Direct mandates & alliance opportunities." },
-     { label: "Meetups", icon: Calendar, desc: "High-density local business events." }
+    { label: "Neural Matchmaking", desc: "Meet high-authority partners.", icon: Sparkles },
+    { label: "Lead Distribution", desc: "Surgical mandate discovery.", icon: Target },
+    { label: "Secure Link", desc: "End-to-end encrypted node connection.", icon: Command }
   ];
 
   return (
-    <div className="flex h-screen w-screen bg-[#FDFDFF] text-[#292828] font-sans overflow-hidden">
+    <div className="h-[100dvh] w-screen flex bg-[#FDFDFF] font-inter overflow-hidden">
       
-      {/* LEFT COLUMN: VISUAL BRAND HUB */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0A0A0A] relative flex-col justify-between p-16 overflow-hidden">
-         {/* Background Orbs */}
-         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E53935]/[0.05] rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
-         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:40px_40px]" />
-         
-         {/* Brand Logo */}
-         <div className="relative z-10">
-            <Link href="/" className="flex items-center gap-3">
-               <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-2xl shadow-red-500/20">
-                  <Command size={22} strokeWidth={3} />
+      {/* LEFT COLUMN: VISUAL CONTEXT */}
+      <div className="hidden lg:flex flex-1 bg-[#292828] relative flex-col justify-between p-20 overflow-hidden">
+         <div className="absolute inset-0 z-0">
+            <img 
+               src="/images/concept_bg.png" 
+               className="w-full h-full object-cover opacity-20 grayscale" 
+               alt="" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-transparent to-[#E53935]/10" />
+         </div>
+
+         <div className="relative z-10 flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-3 group">
+               <div className="h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                  <Command size={32} strokeWidth={3} />
                </div>
-               <h1 className="text-2xl font-black uppercase tracking-tighter text-white">Checkout</h1>
+               <h1 className="text-3xl font-black uppercase tracking-tighter text-white">Checkout</h1>
             </Link>
          </div>
 
-         {/* Content Nodes */}
          <div className="relative z-10 space-y-12">
             <div className="space-y-6">
-               <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
-                  <Sparkles size={12} className="text-[#E53935]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Verified Local Link Standard</span>
-               </div>
-               <h2 className="text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.85] text-white">
-                  Join the <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/20">Elite Hub.</span>
+               <h2 className="text-6xl font-black uppercase tracking-tighter leading-none text-white font-outfit">
+                  THE OPERATING <br /> 
+                  <span className="text-[#E53935]">SYSTEM FOR BUSINESS.</span>
                </h2>
                <p className="text-xl font-medium text-white/30 max-w-lg leading-relaxed">
                   Authorize your presence in the most authoritative regional business node. Networking, Leads, and Meetings simplified.
@@ -208,54 +256,51 @@ function AuthContent() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
                {error && (
-                 <div className="p-5 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-4 text-red-600 text-sm font-bold animate-pulse">
-                    <AlertCircle size={20} /> {error}
-                 </div>
+                  <div className="p-5 bg-red-50 border border-red-100 rounded-[1.5rem] flex items-center gap-3 text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-2">
+                     <AlertCircle size={18} /> {error}
+                  </div>
                )}
-
                {isSuccess && (
-                 <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center gap-4 text-emerald-600 text-sm font-bold">
-                    <CheckCircle2 size={20} /> Success. Authorizing node access...
-                 </div>
+                  <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-[1.5rem] flex items-center gap-3 text-emerald-600 text-xs font-bold animate-in fade-in slide-in-from-top-2">
+                     <CheckCircle2 size={18} /> Node Verified. Redirecting...
+                  </div>
                )}
 
                <div className="space-y-4">
                   {mode === "signup" && (
-                    <div className="relative group">
-                       <input 
-                         type="text" 
-                         name="fullName"
-                         value={formData.fullName}
-                         onChange={handleInputChange}
-                         placeholder="FULL NAME"
-                         className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
-                         required
-                       />
-                       <User size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
-                    </div>
+                     <div className="relative group">
+                        <input 
+                           type="text" 
+                           name="fullName"
+                           value={formData.fullName}
+                           onChange={handleInputChange}
+                           placeholder="FULL NAME" 
+                           className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
+                           required
+                        />
+                        <User size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
+                     </div>
                   )}
-
                   <div className="relative group">
                      <input 
                         type="email" 
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="EMAIL ADDRESS"
-                        className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
+                        placeholder="EMAIL ADDRESS" 
+                        className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
                         required
                      />
                      <Mail size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />
                   </div>
-
                   <div className="relative group">
                      <input 
                         type="password" 
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        placeholder="SECURITY KEY"
-                        className="w-full h-20 bg-white border-2 border-slate-100 rounded-[2rem] px-10 text-[14px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all font-mono"
+                        placeholder="PASSWORD" 
+                        className="w-full h-18 bg-white border-2 border-slate-100 rounded-[1.5rem] px-8 text-[12px] font-black uppercase tracking-widest outline-none focus:border-[#292828] transition-all"
                         required
                      />
                      <Lock size={20} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#292828] transition-colors" />

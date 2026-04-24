@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 type Role = "BUSINESS" | "PROFESSIONAL" | "STUDENT" | "ADVISOR";
 
@@ -41,6 +43,13 @@ export default function Page() {
     password: "",
     fullName: ""
   });
+
+  const { user: authUser, loading } = useAuth();
+  const router = useRouter();
+
+  if (loading) return null;
+
+  // Routing is managed exclusively by useAuth sentinel in AuthGate
 
   // Role Dropdown Peek Animation
   useEffect(() => {
@@ -94,6 +103,9 @@ export default function Page() {
         }
         
         setIsSuccess(true);
+        setTimeout(() => {
+          window.location.href = "/home";
+        }, 1500);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -103,7 +115,7 @@ export default function Page() {
         if (signInError) throw signInError;
         
         setIsSuccess(true);
-        window.location.href = "/home";
+        // useAuth will handle redirect via useEffect/subscription
       }
     } catch (err: any) {
       setError(err.message || "Authentication failed. Check your data.");

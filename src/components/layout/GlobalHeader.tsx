@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 import { 
  Search, 
  Bell, 
@@ -26,41 +28,31 @@ import {
  Users,
  MessageSquare
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import MobileDrawer from "./MobileDrawer";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function FullyActiveGlobalHeader() {
   const router = useRouter();
+  const { user: authUser, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const supabase = createClient();
 
-  // 1. IDENTITY & INITIAL FETCH
+  // 1. NOTIFICATIONS INITIAL FETCH
   React.useEffect(() => {
-    async function initHeader() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    async function fetchNotifications() {
+      if (!authUser) return;
       
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      setCurrentUser(profile || user);
-
-      // Initial Notifications
       const { data: notes } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', authUser.id)
         .order('created_at', { ascending: false })
         .limit(10);
       
@@ -69,29 +61,29 @@ export default function FullyActiveGlobalHeader() {
         setUnreadCount(notes.filter(n => !n.is_read).length);
       }
     }
-    initHeader();
+    fetchNotifications();
 
     const handleProfileUpdate = () => {
-      initHeader();
+      fetchNotifications();
     };
 
     window.addEventListener('profile-updated', handleProfileUpdate);
     return () => {
       window.removeEventListener('profile-updated', handleProfileUpdate);
     };
-  }, []);
+  }, [authUser]);
 
   // 2. REAL-TIME SUBSCRIPTION
   React.useEffect(() => {
-    if (!currentUser) return;
+    if (!authUser) return;
 
     const channel = supabase
-      .channel(`user_notes_${currentUser.id}`)
+      .channel(`user_notes_${authUser.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'notifications',
-        filter: `user_id=eq.${currentUser.id}`
+        filter: `user_id=eq.${authUser.id}`
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev]);
         setUnreadCount(prev => prev + 1);
@@ -101,16 +93,16 @@ export default function FullyActiveGlobalHeader() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUser]);
+  }, [authUser]);
 
   const markAllAsRead = async () => {
-    if (!currentUser) return;
+    if (!authUser) return;
     setUnreadCount(0);
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     await supabase
       .from('notifications')
       .update({ is_read: true })
-      .eq('user_id', currentUser.id);
+      .eq('user_id', authUser.id);
   };
 
   return (
@@ -130,16 +122,26 @@ export default function FullyActiveGlobalHeader() {
             <Image 
               src="/images/logo.png" 
               alt="Logo" 
-              width={180} 
-              height={40} 
+              width={150} 
+              height={35} 
               priority 
-              className="h-11 lg:h-14 w-auto object-contain" 
+              className="h-10 lg:h-12 w-auto object-contain" 
             />
           </Link>
         </div>
 
         {/* 2. RIGHT HUB (ACTIVE BUTTONS) */}
-        <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-end">
+        <div className="flex items-center gap-2 lg:gap-3 justify-end flex-1">
+          
+          {/* RIGHT ALIGNED SEARCH */}
+          <div className="hidden md:flex max-w-[280px] w-full relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full h-10 bg-[#292828]/5 border border-[#292828]/10 rounded-xl pl-11 pr-4 text-[13px] font-bold text-[#292828] focus:bg-white focus:border-[#E53935] transition-all outline-none shadow-sm"
+            />
+          </div>
           
           <div className="relative hidden sm:block">
             <button 
@@ -164,23 +166,15 @@ export default function FullyActiveGlobalHeader() {
             )}
           </div>
 
-          {/* SEARCH */}
-          <div className="hidden md:flex items-center w-full max-w-[280px] relative group h-9">
-            <input 
-              type="text" 
-              placeholder="Find anything..." 
-              className="w-full h-full bg-[#292828]/5 border border-[#292828]/10 rounded-lg pl-8 pr-3 text-[12px] font-medium text-[#292828] focus:bg-white focus:border-slate-200 transition-all outline-none"
-            />
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#292828] group-focus-within:text-[#E53935] transition-colors" />
-          </div>
-
-          {/* WALLET */}
           <Link 
             href="/wallet"
-            className="hidden lg:flex items-center gap-2 px-4 h-9 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all group"
+            className="hidden lg:flex flex-col items-center justify-center px-4 h-12 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all group"
           >
-             <Zap size={14} className="text-emerald-600 fill-emerald-600" />
-             <span className="text-[11px] font-bold text-emerald-700">₹0</span>
+             <div className="flex items-center gap-2">
+                <Zap size={14} className="text-emerald-600 fill-emerald-600" />
+                <span className="text-[11px] font-black text-emerald-700">₹0</span>
+             </div>
+             <span className="text-[7px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Your Wallet</span>
           </Link>
 
           {/* NOTIFICATIONS & PROFILE */}
@@ -255,7 +249,7 @@ export default function FullyActiveGlobalHeader() {
               className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl hover:shadow-slate-200/20 transition-all transition-duration-300"
             >
               <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shadow-sm">
-                <img src={currentUser?.avatar_url || "https://i.pravatar.cc/150?u=me"} className="w-full h-full object-cover" alt="" />
+                <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
               </div>
               <div 
                 onClick={(e) => {
@@ -274,14 +268,14 @@ export default function FullyActiveGlobalHeader() {
             {isProfileOpen && (
               <div className="absolute top-[130%] right-0 w-64 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
                 <div className="px-4 py-4 mb-2 border-b border-[#292828]/5">
-                  <p className="text-[14px] font-bold text-[#292828] leading-tight">{currentUser?.full_name || "Member"}</p>
-                  <p className="text-[11px] font-medium text-[#292828] capitalize">{currentUser?.role || "Verified Partner"}</p>
+                  <p className="text-[14px] font-bold text-[#292828] leading-tight">{authUser?.full_name || "Member"}</p>
+                  <p className="text-[11px] font-medium text-[#292828] capitalize">{authUser?.role || "Verified Partner"}</p>
                 </div>
                 <div className="space-y-0.5">
                   {[
                     { icon: UserIcon, label: "My Profile", href: "/profile" },
+                    { icon: Globe, label: "Directory", href: "/matches" },
                     { icon: GraduationCap, label: "Advisors", href: "/advisors" },
-                    { icon: Zap, label: "History", href: "/history" },
                     { icon: Zap, label: "Wallet", href: "/wallet" },
                     { icon: Settings, label: "Settings", href: "/settings" },
                   ].map(it => (
@@ -320,7 +314,7 @@ export default function FullyActiveGlobalHeader() {
       <MobileDrawer 
         isOpen={isDrawerOpen} 
         onClose={() => setIsDrawerOpen(false)} 
-        user={currentUser}
+        user={authUser}
       />
     </>
   );

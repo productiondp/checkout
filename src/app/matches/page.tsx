@@ -87,13 +87,15 @@ const calculateProfileMatch = (me: any, target: any) => {
   return { score: Math.min(score, 98), reasons: reasons.slice(0, 2) };
 };
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function PremiumPartnersPage() {
+  const { user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState<"DISCOVER" | "REQUESTS">("DISCOVER");
   const [viewMode, setViewMode] = useState<"GRID" | "LIST">("GRID");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [partners, setPartners] = useState<MatchProfile[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [connectModal, setConnectModal] = useState<{ isOpen: boolean; user: MatchProfile | null }>({ isOpen: false, user: null });
@@ -103,16 +105,13 @@ export default function PremiumPartnersPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  // ... (initTerminal and other logic remains same)
   // --- DATA HYDRATION ---
   const initTerminal = async () => {
-    setIsLoading(true);
-    const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser) return;
+    setIsLoading(true);
 
     // 1. Fetch Profile
-    const { data: myProfile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single();
-    setCurrentUser(myProfile);
+    const myProfile = authUser;
 
     // 2. Fetch Profiles + Connections Status
     const [profilesRes, connectionsRes] = await Promise.all([
@@ -149,10 +148,10 @@ export default function PremiumPartnersPage() {
   useEffect(() => { initTerminal(); }, []);
 
   const handleConnect = async () => {
-    if (!connectModal.user || !currentUser) return;
+    if (!connectModal.user || !authUser) return;
     setIsSending(true);
     const { error } = await supabase.from('connections').insert({
-      sender_id: currentUser.id, receiver_id: connectModal.user.id, message: message, status: 'PENDING'
+      sender_id: authUser.id, receiver_id: connectModal.user.id, message: message, status: 'PENDING'
     });
     if (!error) {
       setPartners(prev => prev.map(p => p.id === connectModal.user?.id ? { ...p, connection_status: 'PENDING' } : p));
@@ -174,8 +173,8 @@ export default function PremiumPartnersPage() {
   }, [partners, searchQuery]);
 
   const bestMatches = filteredPartners.slice(0, 6);
-  const complimentary = filteredPartners.filter(p => !p.skills.some(s => currentUser?.skills?.includes(s))).slice(0, 6);
-  const regional = filteredPartners.filter(p => p.location === currentUser?.location).slice(0, 6);
+  const complimentary = filteredPartners.filter(p => !p.skills.some(s => authUser?.skills?.includes(s))).slice(0, 6);
+  const regional = filteredPartners.filter(p => p.location === authUser?.location).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] selection:bg-[#E53935]/10 pb-40">

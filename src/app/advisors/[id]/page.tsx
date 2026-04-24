@@ -25,6 +25,8 @@ import {
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MOCK_ADVISORS } from "@/data/advisors";
+import { useConnections } from "@/hooks/useConnections";
+import { ConnectButton } from "@/components/connection/ConnectButton";
 
 export default function AdvisorProfilePage() {
   const params = useParams();
@@ -35,12 +37,15 @@ export default function AdvisorProfilePage() {
 
   const advisorId = params.id as string;
   const advisor = MOCK_ADVISORS.find(a => a.id === advisorId) || MOCK_ADVISORS[0];
+  const { sendRequest, getConnectionState } = useConnections();
+  const connectionState = getConnectionState(advisorId);
 
   const handleSendRequest = () => {
     setRequestStatus("Sending");
+    sendRequest(advisorId);
     setTimeout(() => {
       setRequestStatus("Sent");
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -76,12 +81,12 @@ export default function AdvisorProfilePage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => setIsRequestModalOpen(true)}
-                className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-4xl hover:bg-[#E53935] transition-all active:scale-95"
-              >
-                 Request Advice
-              </button>
+               <ConnectButton 
+                 userId={advisor.id} 
+                 userName={advisor.name} 
+                 label="Request Advice" 
+                 className="h-20 px-12 !rounded-[2rem] text-xs" 
+               />
               <div className="flex items-center justify-center gap-3 text-slate-300">
                  <Clock size={16} />
                  <span className="text-[10px] font-black uppercase tracking-widest">{advisor.availability}</span>

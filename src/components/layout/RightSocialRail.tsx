@@ -35,10 +35,10 @@ export default function RightSocialRail() {
 
   useEffect(() => {
     async function fetchNodes() {
-      const { data } = await supabase.from('network_nodes').select('*').order('activity_level', { ascending: false });
+      const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5);
       if (data && data.length > 0) {
         setNodes(data);
-        const insights = data.map(n => `High activity in ${n.name} Node`);
+        const insights = data.map(n => `Active node: ${n.full_name}`);
         setAiInsights(prev => [...insights, ...prev]);
       }
     }

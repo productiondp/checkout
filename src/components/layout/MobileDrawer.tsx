@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 import { 
   X, 
   Home, 
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -31,10 +33,11 @@ interface MobileDrawerProps {
 
 export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
   const supabase = createClient();
+  const { logout } = useAuth();
   
   const menuItems = [
     { label: "Home", href: "/home", icon: Home },
-    { label: "Partners", href: "/matches", icon: Users },
+    { label: "Directory", href: "/matches", icon: Users },
     { label: "Local Link", href: "/explore", icon: Zap },
     { label: "Experts", href: "/advisors", icon: Award },
     { label: "Communities", href: "/communities", icon: Globe },
@@ -42,14 +45,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    try {
-      await supabase.auth.signOut();
-      window.localStorage.clear();
-      window.location.href = "/login";
-    } catch (err) {
-      console.error("Mobile Logout Failure:", err);
-      window.location.href = "/login";
-    }
+    await logout();
   };
 
   if (!isOpen) return null;
@@ -74,7 +70,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
         <div className="p-6 bg-[#292828]/5 border-b border-[#292828]/5">
            <div className="flex items-center gap-4 mb-6">
               <div className="h-14 w-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-slate-100">
-                 <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=me"} className="w-full h-full object-cover" alt="" />
+                  <img src={user?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
               </div>
               <div>
                  <p className="text-lg font-black text-[#292828] leading-tight truncate max-w-[140px] uppercase">{user?.full_name || "Profile"}</p>

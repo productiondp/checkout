@@ -30,25 +30,19 @@ const NAV_GROUPS = [
     group: "Network Hub",
     items: [
       { label: "Feeds", icon: Home, href: "/home" },
-      {label: "Partners", icon: Users, href: "/matches"},
-      {label: "Connections", icon: UserPlus, href: "/connections", badge: "2" },
-      {label: "Messages", icon: MessageSquare, href: "/chat"},
-      {label: "Communities", icon: Globe, href: "/communities"},
+      { label: "Connections", icon: UserPlus, href: "/connections", badge: "2" },
+      { label: "Messages", icon: MessageSquare, href: "/chat" },
+      { label: "Communities", icon: Globe, href: "/communities" },
     ]
   },
   {
     group: "Explore",
     items: [
+      { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
+      { label: "Advisors", icon: Target, href: "/advisors" },
+      { label: "Business Directory", icon: Building2, href: "/directory" },
       { label: "Checkout Map", icon: Zap, href: "/explore" },
       { label: "Business Events", icon: LayoutGrid, href: "/events" },
-      { label: "Business Directory", icon: Building2, href: "/directory" },
-      { label: "Advisors", icon: Target, href: "/advisors" },
-    ]
-  },
-  {
-    group: "Settings",
-    items: [
-      { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
     ]
   }
 ];
@@ -116,43 +110,6 @@ export default function DesktopSidebar() {
         ))}
       </div>
 
-      {/* 3. FOOTER: NODE SYNC & IDENTITY */}
-      <div className="mt-12 pt-10 border-t border-[#292828]/5">
-         <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-[2.5rem] relative group cursor-pointer hover:bg-white hover:shadow-3xl transition-all duration-700">
-            <div className="flex items-center gap-4 mb-6">
-               <div className="h-10 w-10 bg-white shadow-xl rounded-xl flex items-center justify-center text-[#E53935] group-hover:rotate-12 transition-transform">
-                  <Activity size={20} />
-               </div>
-                <div>
-                   <p className="text-[11px] font-medium text-[#292828] uppercase leading-none mb-1.5 flex items-center gap-1.5">
-                      Verified User <ShieldCheck size={12} className="text-emerald-500" />
-                   </p>
-                   <p className="text-[10px] font-light text-[#E53935] uppercase leading-none">Rank #12 in City</p>
-                </div>
-            </div>
-
-            <div className="space-y-4">
-                <div className="flex justify-between text-[8px] font-medium text-[#292828]/30 uppercase tracking-[0.2em]">
-                   <span>Profile Health</span>
-                   <span className="text-[#292828]">98%</span>
-                </div>
-               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden p-[2px]">
-                  <div className="h-full bg-[#292828] rounded-full relative group-hover:bg-[#E53935] transition-all duration-[3s]" style={{ width: "98%" }}>
-                     <div className="absolute top-0 bottom-0 right-0 w-1 bg-white/30 animate-pulse" />
-                  </div>
-               </div>
-            </div>
-         </div>
-         
-         <div className="mt-8 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-6">
-               <Zap size={14} className="text-[#292828]/20 hover:text-[#E53935] transition-colors cursor-pointer" />
-               <TrendingUp size={14} className="text-[#292828]/20 hover:text-[#292828] transition-colors cursor-pointer" />
-               <ShieldCheck size={14} className="text-[#292828]/20 hover:text-emerald-500 transition-colors cursor-pointer" />
-            </div>
-            <p className="text-[9px] font-bold text-[#292828]/20 uppercase tracking-[0.3em]">Checkout OS v1.0</p>
-         </div>
-      </div>
 
     </aside>
   );

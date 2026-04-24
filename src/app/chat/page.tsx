@@ -28,10 +28,13 @@ import {
   BrainCircuit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 import { getChatInsight } from "@/lib/ai";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { analytics } from "@/utils/analytics";
+import { useAuth } from "@/hooks/useAuth";
 
 
 function ChatTerminal() {
@@ -49,14 +52,14 @@ function ChatTerminal() {
   const searchParams = useSearchParams();
   const userParam = searchParams.get('user');
 
+  const { user } = useAuth();
   const supabase = createClient();
 
   // 1. IDENTITY & NETWORK FETCHING
   React.useEffect(() => {
     async function initNetwork() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setCurrentUser(user);
+      analytics.trackScreen('CHAT', user.id);
 
       // Fetch All Profiles
       const { data: profiles } = await supabase
@@ -70,7 +73,7 @@ function ChatTerminal() {
           id: p.id,
           partnerId: p.id,
           name: p.full_name || "Partner",
-          avatar: p.avatar_url,
+          avatar: p.avatar_url || DEFAULT_AVATAR,
           role: p.role || "Verified Partner",
           online: true,
           time: "node",
@@ -101,11 +104,12 @@ function ChatTerminal() {
           return {
             id: conn.id,
             partnerId: partner.id,
-            name: partner.full_name,
-            avatar: partner.avatar_url,
-            role: partner.role,
+            name: partner.full_name || "Partner",
+            avatar: partner.avatar_url || DEFAULT_AVATAR,
+            role: partner.role || "Verified Partner",
             online: true,
-            time: "active"
+            last: "Secure node established",
+            time: "10:32 AM"
           };
         }));
       }
@@ -158,6 +162,7 @@ function ChatTerminal() {
 
     if (selectedChat.id !== "temp") {
        await supabase.from('messages').insert([newMessage]);
+       analytics.track('MESSAGE_INITIATED', currentUser.id, { connectionId: selectedChat.id });
     }
   };
 
@@ -199,9 +204,12 @@ function ChatTerminal() {
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
            <div className="px-5 mb-4 mt-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Directory</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Connections</p>
            </div>
-           {filteredNodes.map((chat) => (
+           {chats.filter(c => 
+             c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+             c.role.toLowerCase().includes(searchQuery.toLowerCase())
+           ).map((chat) => (
              <button 
                key={chat.partnerId} 
                onClick={() => setSelectedChat(chat)}
@@ -212,7 +220,7 @@ function ChatTerminal() {
              >
                 <div className="relative shrink-0">
                    <div className="h-14 w-14 rounded-2xl overflow-hidden border-2 border-transparent group-hover:border-slate-200 transition-all">
-                      <img src={chat.avatar} className="w-full h-full object-cover" alt="" />
+                      <img src={chat.avatar || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                    </div>
                    <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />
                 </div>
@@ -234,6 +242,11 @@ function ChatTerminal() {
                 )}
              </button>
            ))}
+           {chats.length === 0 && !isLoading && (
+              <div className="p-10 text-center opacity-20 italic text-[10px] uppercase font-black tracking-widest">
+                 No active nodes
+              </div>
+           )}
         </div>
       </aside>
 
@@ -317,64 +330,72 @@ function ChatTerminal() {
             </div>
             {/* COMPOSER (BOTTOM) */}
             <div className="p-4 lg:p-8 bg-white border-t border-slate-100 pb-32 lg:pb-8">
-               <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 group focus-within:bg-white focus-within:shadow-xl transition-all">
-                  <div className="relative">
-                     <button 
-                       type="button"
-                       onClick={() => setShowAttachMenu(!showAttachMenu)}
-                       className={cn(
-                         "h-12 w-12 flex items-center justify-center rounded-2xl transition-all",
-                         showAttachMenu ? "bg-[#292828] text-white rotate-45" : "text-slate-300 hover:text-[#292828]"
-                       )}
-                     >
-                        <Plus size={24} />
-                     </button>
+               {!selectedChat.id || selectedChat.id === "temp" ? (
+                  <div className="h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 border-dashed">
+                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] flex items-center gap-3">
+                        Connect to start conversation
+                     </p>
+                  </div>
+               ) : (
+                  <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 group focus-within:bg-white focus-within:shadow-xl transition-all">
+                     <div className="relative">
+                        <button 
+                          type="button"
+                          onClick={() => setShowAttachMenu(!showAttachMenu)}
+                          className={cn(
+                            "h-12 w-12 flex items-center justify-center rounded-2xl transition-all",
+                            showAttachMenu ? "bg-[#292828] text-white rotate-45" : "text-slate-300 hover:text-[#292828]"
+                          )}
+                        >
+                           <Plus size={24} />
+                        </button>
 
-                     {showAttachMenu && (
-                       <div className="absolute bottom-[130%] left-0 w-56 bg-white rounded-3xl shadow-4xl border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                          {[
-                            { icon: ImageIcon, label: "Photos & Videos", color: "text-red-500", bg: "bg-red-50" },
-                            { icon: FileText, label: "Documents", color: "text-blue-500", bg: "bg-blue-50" },
-                            { icon: User, label: "Share Contact", color: "text-green-500", bg: "bg-green-50" },
-                            { icon: Paperclip, label: "Business ID", color: "text-amber-500", bg: "bg-amber-50" },
-                          ].map((it, i) => (
-                            <button 
-                              key={i} 
-                              type="button"
-                              onClick={() => setShowAttachMenu(false)}
-                              className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-black text-[#292828] hover:bg-slate-50 transition-all group"
-                            >
-                               <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", it.bg, it.color)}>
-                                  <it.icon size={18} />
-                               </div>
-                               {it.label}
-                            </button>
-                          ))}
-                       </div>
-                     )}
-                  </div>
-                  <input 
-                    type="text" 
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Type your message..." 
-                    className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
-                  />
-                  <div className="flex items-center gap-2 pr-2">
-                     <button type="button" className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-[#292828] transition-colors">
-                        <ImageIcon size={20} />
-                     </button>
-                     <button 
-                       type="submit"
-                       className={cn(
-                        "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
-                        message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-[#292828] grayscale"
-                       )}
-                     >
-                        <Send size={20} />
-                     </button>
-                  </div>
-               </form>
+                        {showAttachMenu && (
+                          <div className="absolute bottom-[130%] left-0 w-56 bg-white rounded-3xl shadow-4xl border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                             {[
+                               { icon: ImageIcon, label: "Photos & Videos", color: "text-red-500", bg: "bg-red-50" },
+                               { icon: FileText, label: "Documents", color: "text-blue-500", bg: "bg-blue-50" },
+                               { icon: User, label: "Share Contact", color: "text-green-500", bg: "bg-green-50" },
+                               { icon: Paperclip, label: "Business ID", color: "text-amber-500", bg: "bg-amber-50" },
+                             ].map((it, i) => (
+                               <button 
+                                 key={i} 
+                                 type="button"
+                                 onClick={() => setShowAttachMenu(false)}
+                                 className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-black text-[#292828] hover:bg-slate-50 transition-all group"
+                               >
+                                  <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", it.bg, it.color)}>
+                                     <it.icon size={18} />
+                                  </div>
+                                  {it.label}
+                               </button>
+                             ))}
+                          </div>
+                        )}
+                     </div>
+                     <input 
+                       type="text" 
+                       value={message}
+                       onChange={(e) => setMessage(e.target.value)}
+                       placeholder="Type your message..." 
+                       className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
+                     />
+                     <div className="flex items-center gap-2 pr-2">
+                        <button type="button" className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-[#292828] transition-colors">
+                           <ImageIcon size={20} />
+                        </button>
+                        <button 
+                          type="submit"
+                          className={cn(
+                           "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
+                           message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-[#292828] grayscale"
+                          )}
+                        >
+                           <Send size={20} />
+                        </button>
+                     </div>
+                  </form>
+               )}
             </div>
 
           </>
@@ -557,7 +578,9 @@ function ChatTerminal() {
   );
 }
 
-export default function PremiumMessagesPage() {
+import { useAuth } from "@/hooks/useAuth";
+
+export default function ChatPage() {
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 tracking-widest animate-pulse">Synchronizing Tactical Channels...</div>}>
       <ChatTerminal />

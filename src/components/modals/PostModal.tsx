@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { analytics } from "@/utils/analytics";
 
 interface PostModalProps {
   isOpen: boolean;
@@ -26,13 +29,14 @@ const DOMAINS = ["FMCG", "Marketing", "Finance", "Operations", "Legal", "Tech", 
 const STAGES = ["Idea", "Early", "Growth", "Scale"];
 
 export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormType, editPost }: PostModalProps) {
+  const { user: authUser } = useAuth();
   const [formType, setFormType] = useState<FormType>("Lead");
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
-  const formTypes = [
-    { label: "Lead", icon: Target, id: "Lead", desc: "Post a specific requirement" },
+  const mandateTypes = [
+    { label: "Mandate", icon: Target, id: "Lead", desc: "Post a specific business requirement" },
     { label: "Hiring", icon: Briefcase, id: "Hiring", desc: "Broadcast a job opening" },
     { label: "Partner", icon: Sparkles, id: "Partner", desc: "Seek a strategic alliance" },
     { label: "Meetup", icon: Users, id: "Meetup", desc: "Plan a local deep-dive sync" }
@@ -53,7 +57,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         setAdvisors(data.map(adv => ({
           ...adv,
           name: adv.full_name,
-          avatar: adv.avatar_url || `https://i.pravatar.cc/150?u=${adv.id}`,
+          avatar: adv.avatar_url || DEFAULT_AVATAR,
           checkoutScore: adv.match_score || 95,
           checkoutBadge: 'Gold',
           checkoutRank: 'Elite'
@@ -147,10 +151,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     setIsPosting(true);
     
     try {
-      // 1. Get the authenticated user ID
-      const { data: { user } } = await supabase.auth.getUser();
+      // Use the already available authUser from useAuth()
+      const user = authUser;
       if (!user) {
         alert("Unauthorized. Please sign in.");
+        setIsPosting(false);
         return;
       }
       
@@ -173,7 +178,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         
         // Type-specific mappings
         budget: formData.leadBudget || formData.hiringComp,
-        due_date: formData.leadDeadline ? new Date(formData.leadDeadline).toISOString().split('T')[0] : null,
+        due_date: (() => {
+          if (!formData.leadDeadline) return null;
+          const date = new Date(formData.leadDeadline);
+          return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+        })(),
         skills_required: formData.hiringSkills ? formData.hiringSkills.split(',').map((s: string) => s.trim()) : null,
         work_type: formData.hiringEngagement,
         duration: formData.hiringDuration,
@@ -204,6 +213,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
       }
 
       if (result.error) throw result.error;
+      
+      analytics.track('FIRST_MANDATE_CREATED', authorId, { type: formType, postId: result.data.id });
 
       onPostSuccess?.(result.data);
       onClose();
@@ -254,12 +265,12 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         {/* HEADER - COMPACT */}
         <div className="px-8 py-5 border-b border-[#292828]/5 flex items-center justify-between shrink-0 bg-slate-50/50">
           <div className="flex items-center gap-4">
-             <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#E53935]/10">
-                <Plus size={20} strokeWidth={3} />
+             <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm bg-slate-50">
+                <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="h-full w-full object-cover" alt="" />
              </div>
              <div>
-                <h2 className="text-[13px] font-bold text-[#292828] uppercase tracking-wider leading-none mb-1">Create a Post</h2>
-                <p className="text-[8px] font-bold text-[#292828]/30 uppercase">Add what you need • Local City</p>
+                <h2 className="text-[13px] font-bold text-[#292828] uppercase tracking-wider leading-none mb-1">Create a Mandate</h2>
+                <p className="text-[8px] font-bold text-[#292828]/30 uppercase">As {authUser?.full_name || "Partner"} • Mandate = your requirement (hiring, leads, etc.)</p>
              </div>
           </div>
           <button onClick={onClose} className="h-10 w-10 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 hover:text-[#292828] transition-all">
@@ -273,7 +284,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
              {/* TYPE SELECTOR - SLIM */}
              <div className="flex items-center gap-1.5 p-1.5 bg-[#292828]/5 rounded-[1.25rem]">
                 {[
-                  { label: "Lead", icon: Target, id: "Lead" },
+                  { label: "Mandate", icon: Target, id: "Lead" },
                   { label: "Hiring", icon: Briefcase, id: "Hiring" },
                   { label: "Partner", icon: Sparkles, id: "Partner" },
                   { label: "Meetups", icon: Users, id: "Meetup" }
@@ -309,7 +320,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                       <div className="md:col-span-2">{input("Problem / Expected Output", "leadProblem", "Describe what should be solved...", "textarea")}</div>
                       {input("Type", "leadReqType", "", "select", ["Service", "Product", "Freelancer"])}
                       {input("Budget Range", "leadBudget", "₹20K - 40K")}
-                      <div className="md:col-span-2">{input("Required Deadline", "leadDeadline", "e.g. 5 days")}</div>
+                      <div className="md:col-span-2">{input("Required Deadline", "leadDeadline", "", "date")}</div>
                    </div>
                  )}
 

@@ -12,7 +12,10 @@ interface DealEngineProps {
  deal: any;
 }
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
+ const { user } = useAuth();
  const router = useRouter();
  const [step, setStep] = useState<"OVERVIEW" | "PROPOSAL" | "TRANSMITTING" | "SUCCESS">("OVERVIEW");
  const [proposal, setProposal] = useState("");
@@ -29,7 +32,6 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
     
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
       
       if (!user || !deal.author_id) throw new Error("Connection lost. Please login.");
 

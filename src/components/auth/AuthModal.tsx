@@ -17,6 +17,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { analytics } from "@/utils/analytics";
 
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student";
@@ -45,22 +46,41 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
     password: "",
     fullName: ""
   });
+  const [resendTimer, setResendTimer] = useState(0);
+  const [signupAttempts, setSignupAttempts] = useState(0);
+  const [lastSignupTime, setLastSignupTime] = useState(0);
 
   useEffect(() => {
     setMode(initialMode);
   }, [initialMode, isOpen]);
 
-  // Prevent parent scroll when open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
     }
-    return () => { document.body.style.overflow = "unset"; };
-  }, [isOpen]);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   if (!isOpen) return null;
+
+  const handleResendVerification = async () => {
+    if (resendTimer > 0) return;
+    setIsLoading(true);
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email,
+      });
+      if (error) throw error;
+      setResendTimer(60); // 1 minute cooldown
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -69,6 +89,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simple Rate Limiting
+    const now = Date.now();
+    if (mode === "signup") {
+      if (signupAttempts >= 3 && now - lastSignupTime < 300000) { // 3 attempts per 5 mins
+        setError("Too many signup attempts. Please wait 5 minutes.");
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -92,31 +122,44 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         });
         
         if (signUpError) {
-          // Check for existing user error
           if (signUpError.message.includes("already registered")) {
             throw new Error("This email is already registered. Please sign in instead.");
           }
           throw signUpError;
         }
         
+        setSignupAttempts(prev => prev + 1);
+        setLastSignupTime(now);
         setIsVerificationSent(true);
+        analytics.track('SIGNUP_COMPLETED', undefined, { role: role.toUpperCase(), email: formData.email });
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
         if (signInError) {
-          if (signInError.message.includes("Invalid login credentials")) {
+          if (signInError.message.toLowerCase().includes("invalid login credentials")) {
             throw new Error("Invalid email or password.");
+          }
+          if (signInError.message.toLowerCase().includes("email not confirmed")) {
+            throw new Error("Please verify your email before logging in. Check your inbox.");
           }
           throw signInError;
         }
         
+        if (user && !user.email_confirmed_at) {
+          await supabase.auth.signOut();
+          throw new Error("Email verification required. Please check your inbox.");
+        }
+
         setIsSuccess(true);
+        if (user) {
+          analytics.track('SESSION_START', user.id, { method: 'password' });
+        }
         onClose();
         router.push("/home");
-        router.refresh(); // Force re-validation of auth state
+        router.refresh(); 
       }
     } catch (err: any) {
       console.error("Auth Failure:", err);
@@ -189,18 +232,32 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
           {isVerificationSent || resetSent ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-               <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
-                  <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
-                     <Mail size={32} />
-                  </div>
-                  <h3 className="text-xl font-black text-white mb-2 uppercase">{resetSent ? "Reset Link Sent" : "Check Your Inbox"}</h3>
-                  <p className="text-white/40 text-[13px] font-medium leading-relaxed">
-                     {resetSent 
-                      ? `We've sent a recovery link to ${formData.email}. Access it to reset your password.`
-                      : `We've sent a verification link to ${formData.email}. Confirm your identity to activate your node.`
-                     }
-                  </p>
-               </div>
+                <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
+                   <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
+                      <Mail size={32} />
+                   </div>
+                   <h3 className="text-xl font-black text-white mb-2 uppercase">{resetSent ? "Reset Link Sent" : "Check Your Inbox"}</h3>
+                   <p className="text-white/40 text-[13px] font-medium leading-relaxed mb-6">
+                      {resetSent 
+                       ? `We've sent a recovery link to ${formData.email}. Access it to reset your password.`
+                       : `We've sent a verification link to ${formData.email}. Confirm your identity to activate your node.`
+                      }
+                   </p>
+                   
+                   {!resetSent && (
+                     <button 
+                       onClick={handleResendVerification}
+                       disabled={resendTimer > 0 || isLoading}
+                       className={`w-full py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
+                         resendTimer > 0 || isLoading
+                           ? "bg-white/5 text-white/20 cursor-not-allowed"
+                           : "bg-white/10 text-white hover:bg-[#E53935]"
+                       }`}
+                     >
+                       {resendTimer > 0 ? `Resend available in ${resendTimer}s` : "Resend Verification Email"}
+                     </button>
+                   )}
+                </div>
                <button 
                  onClick={() => { setIsVerificationSent(false); setResetSent(false); setIsResetting(false); }}
                  className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"

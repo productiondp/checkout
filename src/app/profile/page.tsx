@@ -1,9 +1,11 @@
 // CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   User, 
   Mail, 
@@ -36,38 +38,17 @@ import {
   DollarSign,
   Database,
   Megaphone,
-  BrainCircuit
+  BrainCircuit,
+  Wallet,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PremiumProfilePage() {
-  const performanceMetrics = [
-    { label: "Trust Score", value: 98, color: "bg-green-500", icon: ShieldCheck },
-    { label: "Match Score", value: 84, color: "bg-[#E53935]", icon: Target },
-    { label: "Credit Score", value: 92, color: "bg-blue-600", icon: CreditCard },
-    { label: "Speed Score", value: 76, color: "bg-violet-600", icon: Zap },
-  ];
-
-  const contactInfo = [
-    { label: "Email", value: "ahmad@zenithtech.com", icon: Mail },
-    { label: "Phone", value: "+91 9XX XXXXXXX", icon: Phone },
-    { label: "Website", value: "zenithtech.io", icon: Globe, link: true },
-  ];
-
-  const roleDefaults = {
-    "SEO": [],
-    "IT": [],
-    "Sales": [],
-    "Doctor": [],
-    "Advocate": [],
-    "Business": [],
-    "Student": [],
-    "CEO": []
-  };
-
   const [userData, setUserData] = useState({
      id: "",
-     name: "User",
+     full_name: "User",
      role: "Founder",
      company: "Business Name",
      bio: "Professional profile description goes here.",
@@ -77,166 +58,219 @@ export default function PremiumProfilePage() {
      email: "",
      phone: "",
      website: "",
-     skills: [] as string[]
+     expertise: [] as string[],
+     intents: [] as string[],
+     metadata: {} as any
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [dependencyList, setDependencyList] = useState<any[]>([]);
+  const [isAddingDep, setIsAddingDep] = useState(false);
+  const [newDep, setNewDep] = useState({ title: "", type: "Hiring" });
+  
+  const { user: authUser, updateProfile, logout } = useAuth();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const contactInfo = useMemo(() => [
+    { label: "Email", value: userData.email || "Verification Pending", icon: Mail },
+    { label: "Phone", value: userData.phone || "+91 XXXXXXXXXX", icon: Phone },
+    { label: "Website", value: userData.website || "No Node Active", icon: Globe, link: !!userData.website },
+  ], [userData.email, userData.phone, userData.website]);
+
+  const performanceMetrics = [
+    { label: "Trust Score", value: 98, color: "bg-green-500", icon: ShieldCheck },
+    { label: "Match Score", value: userData.metadata?.match_score || 84, color: "bg-[#E53935]", icon: Target },
+    { label: "Credit Score", value: 92, color: "bg-blue-600", icon: CreditCard },
+    { label: "Speed Score", value: 76, color: "bg-violet-600", icon: Zap },
+  ];
+
   useEffect(() => {
     async function loadProfile() {
+      if (!authUser?.id) return;
       setIsLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+        
+        if (error) throw error;
+
+        if (profile) {
+          const metadata = profile.metadata || {};
+          setUserData({
+            id: profile.id,
+            full_name: profile.full_name || "User",
+            role: profile.role || "Founder",
+            company: metadata.company_name || profile.location || "Business Name",
+            bio: profile.bio || "Professional profile description goes here.",
+            checkoutRank: profile.match_score ? `#${100 - profile.match_score}` : "Elite",
+            avatar_url: profile.avatar_url || DEFAULT_AVATAR,
+            location: profile.location || "Trivandrum",
+            email: profile.email || "",
+            phone: profile.phone || "",
+            website: profile.website || "",
+            expertise: profile.skills || [],
+            intents: profile.domains || [],
+            metadata: metadata
+          });
+
+          // Load Needs (Posts)
+          const { data: userPosts } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('author_id', authUser.id)
+            .order('created_at', { ascending: false });
+          
+          if (userPosts) {
+            setDependencyList(userPosts.map(p => ({
+              id: p.id,
+              title: p.title,
+              type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNER" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
+              priority: "High",
+              node: "General"
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("[PROFILE] Load Error:", err);
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      let { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (!profile) {
-        // Fallback
-        const { data: newProfile } = await supabase.from('profiles').insert([{
-           id: user.id,
-           full_name: user.user_metadata?.full_name || 'Community Elite',
-           role: user.user_metadata?.role || 'PROFESSIONAL',
-           location: 'Trivandrum',
-        }]).select().single();
-        profile = newProfile;
-      }
-
-      if (profile) {
-        setUserData({
-          id: profile.id,
-          name: profile.full_name || "User",
-          role: profile.role || "Founder",
-          company: profile.location || "Business Name",
-          bio: profile.bio || "Professional profile description goes here.",
-          checkoutRank: profile.match_score ? `#${100 - profile.match_score}` : "Elite",
-          avatar_url: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.id}`,
-          location: profile.location || "Trivandrum",
-          email: profile.email || "ahmad@zenithtech.com",
-          phone: profile.phone || "+91 9XX XXXXXXX",
-          website: profile.website || "zenithtech.io",
-          skills: profile.skills || []
-        });
-      }
-      setIsLoading(false);
     }
     loadProfile();
-  }, []);
+  }, [authUser?.id, supabase]);
 
   const handleSaveProfile = async (updatedData?: any) => {
     const dataToSave = updatedData || userData;
-    if (!dataToSave.id) {
-       alert("Profile ID not found. Please refresh and try again.");
-       return;
-    }
+    if (!dataToSave.id) return;
     
     setIsSaving(true);
-    
-    const systemRole = ["ADVISOR", "STUDENT", "BUSINESS"].includes(dataToSave.role.toUpperCase()) 
-      ? dataToSave.role.toUpperCase() 
-      : "PROFESSIONAL";
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: dataToSave.full_name,
+          role: dataToSave.role.toUpperCase(),
+          bio: dataToSave.bio,
+          location: dataToSave.location,
+          avatar_url: dataToSave.avatar_url,
+          skills: dataToSave.expertise,
+          domains: dataToSave.intents,
+          phone: dataToSave.phone,
+          website: dataToSave.website,
+          metadata: {
+            ...userData.metadata,
+            company_name: dataToSave.company
+          }
+        })
+        .eq('id', dataToSave.id);
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        full_name: dataToSave.name,
-        role: systemRole,
+      if (error) throw error;
+
+      setUserData(dataToSave);
+      updateProfile({
+        full_name: dataToSave.full_name,
+        role: dataToSave.role,
+        avatar_url: dataToSave.avatar_url,
         bio: dataToSave.bio,
         location: dataToSave.location,
-        avatar_url: dataToSave.avatar_url,
-        skills: dataToSave.skills
-      })
-      .eq('id', dataToSave.id);
-
-    if (error) {
-      console.error("Save Error:", error);
-      alert("Failed to save profile: " + error.message);
-    } else {
-      setUserData(dataToSave);
+        expertise: dataToSave.expertise,
+        intents: dataToSave.intents
+      });
       setShowEditModal(false);
-      // Optional: Refresh the window to sync GlobalHeader immediately
-      window.dispatchEvent(new Event('profile-updated'));
+    } catch (err: any) {
+      console.error("[PROFILE] Save Error:", err);
+      alert("Failed to save profile: " + err.message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+  const addDependency = async () => {
+    if (!newDep.title || !authUser?.id) return;
+    
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([{
+        author_id: authUser.id,
+        title: newDep.title,
+        type: newDep.type === "Hiring" ? "LEAD" : newDep.type === "Partnership" ? "PARTNER" : "GENERAL",
+        content: `Looking for ${newDep.title}`,
+        status: "ACTIVE"
+      }])
+      .select()
+      .single();
+
+    if (!error && data) {
+      setDependencyList([
+        {
+          id: data.id,
+          title: data.title,
+          type: newDep.type,
+          priority: "High",
+          node: "General"
+        },
+        ...dependencyList
+      ]);
+      setNewDep({ title: "", type: "Hiring" });
+      setIsAddingDep(false);
+    }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const b64 = event.target?.result as string;
-      const nextState = { ...userData, avatar_url: b64 };
-      setUserData(nextState);
-      // Immediate persistence for avatar
-      await handleSaveProfile(nextState);
-    };
-    reader.readAsDataURL(file);
+  const removeDependency = async (id: string) => {
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', id);
+    
+    if (!error) {
+      setDependencyList(dependencyList.filter(d => d.id !== id));
+    }
   };
 
-  const [dependencyList, setDependencyList] = useState(roleDefaults["SEO"]);
-  const [isAddingDep, setIsAddingDep] = useState(false);
-  const [newDep, setNewDep] = useState({ title: "", type: "Hiring", priority: "High", node: "General" });
-
-  const addDependency = () => {
-    if (!newDep.title.trim()) return;
-    setDependencyList(prev => [{ id: Date.now(), ...newDep, priority: "High", node: "General" }, ...prev]);
-    setNewDep({ title: "", type: "Hiring", priority: "High", node: "General" });
-    setIsAddingDep(false);
-  };
-
-  const removeDependency = (id: number) => {
-    setDependencyList(dependencyList.filter(d => d.id !== id));
-  };
-
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
+        <Loader2 className="animate-spin text-[#E53935]" size={48} />
+        <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em] italic animate-pulse">Synchronizing Profile Ledger</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans selection:bg-[#E53935]/10 overscroll-none pb-40">
-      
-      {/* EXECUTIVE HEADER */}
-      <div className="relative h-[360px] w-full overflow-hidden bg-[#292828] shadow-2xl">
-         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-[#E53935]/20 opacity-80" />
-         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-30 grayscale" />
+    <div className="min-h-screen bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10">
+      {/* HEADER ARCHITECTURE (Black Terminal) */}
+      <div className="bg-[#292828] h-[500px] relative overflow-hidden">
+         <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-[#1a1a1a] to-[#E53935]/10" />
+         <div className="absolute top-[-20%] right-[-10%] h-[800px] w-[800px] bg-[#E53935]/5 blur-[200px] rounded-full animate-pulse" />
          
-         <div className="max-w-[1240px] mx-auto px-6 h-full flex flex-col justify-center relative z-10">
+         <div className="max-w-[1440px] mx-auto px-6 pt-16 relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-12">
-               <div className="relative shrink-0 group cursor-pointer" onClick={handleAvatarClick}>
-                  <div className="h-52 w-52 rounded-full bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-2xl p-2 shadow-4xl relative z-10 border border-white/20 ring-4 ring-white/10 ring-offset-8 ring-offset-[#292828] flex items-center justify-center overflow-hidden">
-                     {userData.avatar_url ? (
-                        <img src={userData.avatar_url} className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700" alt="" />
-                     ) : (
-                        <User size={80} className="text-white/20" />
-                     )}
-                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Plus size={32} className="text-white" />
-                     </div>
+               {/* IDENTITY NODE */}
+               <div className="relative group">
+                  <div className="h-44 w-44 rounded-[4rem] overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/30 transition-all duration-700 shadow-4xl relative">
+                     <img 
+                       src={userData.avatar_url} 
+                       className="w-full h-full object-cover rounded-[3rem]" 
+                       alt={userData.full_name} 
+                     />
+                     {isSaving && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[3rem]"><Loader2 className="animate-spin text-white" size={24} /></div>}
                   </div>
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                  <div className="absolute top-4 right-4 h-10 w-10 bg-white border-2 border-[#E53935] rounded-full flex items-center justify-center text-[#E53935] shadow-2xl z-20 animate-bounce-slow">
+                  <div className="absolute -bottom-4 -right-4 h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-2xl border-4 border-[#292828]">
                      <Award size={20} />
                   </div>
                </div>
 
                <div className="text-center md:text-left flex-1">
                   <div className="flex flex-col gap-5 mb-2">
-                     <h1 className="text-6xl font-black text-white leading-none -">{userData.name}</h1>
+                     <h1 className="text-6xl font-black text-white leading-none tracking-tighter uppercase">{userData.full_name}</h1>
                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                         <div className="px-4 py-1.5 bg-[#E53935] rounded-full text-[9px] font-black uppercase text-white shadow-lg">
                            {userData.role}
@@ -272,34 +306,33 @@ export default function PremiumProfilePage() {
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* COLUMN 1: SIDEBAR */}
-            <div className="lg:col-span-3 space-y-8 animate-in fade-in slide-in-from-left-6 duration-700">
+            <div className="lg:col-span-3 space-y-8">
                
                {/* STRATEGIC INTERESTS (Neural Input) */}
-               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10 mb-8 overflow-hidden relative group">
+               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                   <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-6 flex items-center gap-3">
                      <BrainCircuit size={16} className="text-[#E53935]" /> Strategic Nodes
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                     {userData.skills && userData.skills.length > 0 ? userData.skills.map(skill => (
-                       <span key={skill} className="px-4 py-2 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[11px] font-bold text-[#292828] uppercase">{skill}</span>
-                     )) : (
-                       <p className="text-[11px] font-bold text-slate-300 italic px-2">No nodes defined. Update profile to activate matching.</p>
-                     )}
+                      {userData.expertise && userData.expertise.length > 0 ? userData.expertise.map(skill => (
+                        <span key={skill} className="px-4 py-2 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[11px] font-bold text-[#292828] uppercase">{skill}</span>
+                      )) : (
+                        <p className="text-[11px] font-bold text-slate-300 italic px-2">No nodes defined.</p>
+                      )}
                   </div>
-                  <button onClick={() => setShowEditModal(true)} className="w-full mt-6 py-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#E53935] transition-all">
-                    Update Market Nodes
-                  </button>
                </div>
 
+               {/* ABOUT & CONTACT BLOCK */}
                <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
                   <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-5 flex items-center gap-2">
                      <div className="h-1 w-3 bg-[#E53935] rounded-full" /> About Me
                   </h3>
-                  <p className="text-[15px] text-[#292828] font-medium leading-[1.7]">{userData.bio}</p>
-                  <div className="mt-8 pt-8 border-t border-[#292828]/5 space-y-5">
+                  <p className="text-[15px] text-[#292828] font-medium leading-[1.7] mb-8">{userData.bio}</p>
+                  
+                  <div className="pt-8 border-t border-[#292828]/5 space-y-5">
                      {contactInfo.map((info, i) => (
-                        <div key={i} className="flex items-center gap-4 group cursor-pointer">
+                        <div key={i} className="flex items-center gap-4 group">
                            <div className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
                               <info.icon size={16} />
                            </div>
@@ -314,7 +347,7 @@ export default function PremiumProfilePage() {
             </div>
 
             {/* COLUMN 2: COMMAND FEED */}
-            <div className="lg:col-span-6 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+            <div className="lg:col-span-6 space-y-8">
                <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-xl relative overflow-hidden">
                   <div className="flex items-center justify-between mb-8">
                      <div>
@@ -343,8 +376,8 @@ export default function PremiumProfilePage() {
                   )}
 
                   <div className="space-y-4">
-                     {dependencyList.map(dep => (
-                        <div key={dep.id} className="p-6 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#E53935]/30 transition-all cursor-default">
+                     {dependencyList.length > 0 ? dependencyList.map(dep => (
+                        <div key={dep.id} className="p-6 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#E53935]/30 transition-all">
                            <div className="flex items-center gap-5">
                               <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-colors">
                                  {dep.type === "Hiring" && <Briefcase size={20} />}
@@ -367,110 +400,120 @@ export default function PremiumProfilePage() {
                            </div>
                            <button onClick={() => removeDependency(dep.id)} className="text-slate-200 hover:text-[#E53935] transition-colors p-2"><X size={16} /></button>
                         </div>
-                     ))}
+                     )) : (
+                        <div className="py-12 text-center">
+                           <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest italic">No active needs broadcasted</p>
+                        </div>
+                     )}
                   </div>
                </div>
             </div>
 
             {/* COLUMN 3: PERFORMANCE & WALLET */}
-            <div className="lg:col-span-3 space-y-8 animate-in fade-in slide-in-from-right-6 duration-700 delay-200">
-               
-               {/* FINANCIAL HUB (Integrated Wallet) */}
+            <div className="lg:col-span-3 space-y-8">
+               {/* FINANCIAL HUB */}
                <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
                   <div className="absolute -right-10 -top-10 h-32 w-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
                   <div className="relative z-10">
                      <div className="flex items-center justify-between mb-8">
                         <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Financial Hub</p>
-                        <Wallet size={18} className="text-white/40" />
+                        <Wallet size={16} className="text-white/40" />
                      </div>
-                     <p className="text-[9px] font-black uppercase text-white/40 mb-1">Available Liquidity</p>
-                     <h4 className="text-3xl font-black mb-10">₹0.00</h4>
-                     <div className="flex gap-2">
-                        <Link href="/wallet" className="flex-1 h-10 bg-white text-[#292828] rounded-xl flex items-center justify-center text-[9px] font-black uppercase shadow-xl hover:scale-105 transition-all">Manage</Link>
-                        <button className="flex-1 h-10 bg-[#292828] text-white rounded-xl flex items-center justify-center text-[9px] font-black uppercase hover:bg-white hover:text-[#292828] transition-all">Add</button>
+                     <h4 className="text-[10px] font-black uppercase text-white/40 mb-2">Available Balance</h4>
+                     <div className="flex items-baseline gap-2 mb-8">
+                        <span className="text-4xl font-black tracking-tighter">₹84,200</span>
+                        <span className="text-[10px] font-black text-white/40">INR</span>
                      </div>
+                     <Link href="/wallet" className="w-full h-14 bg-white text-[#292828] rounded-2xl flex items-center justify-center text-[10px] font-black uppercase hover:bg-[#292828] hover:text-white transition-all shadow-xl">
+                        Open Ledger
+                     </Link>
                   </div>
                </div>
 
-               <div className="space-y-4">
-                  {performanceMetrics.map((met, i) => (
-                     <div key={i} className="bg-white p-6 rounded-[1.3rem] border border-[#292828]/10 shadow-lg group hover:bg-[#292828] transition-all duration-500 cursor-default">
-                        <div className="flex items-center justify-between mb-4">
-                           <div className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#E53935] group-hover:bg-white/10 transition-all"><met.icon size={18} /></div>
-                           <span className="text-xl font-black text-[#292828] group-hover:text-white transition-colors">{met.value}%</span>
+               {/* PERFORMANCE METRICS */}
+               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
+                  <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-8 flex items-center gap-2">
+                     <Activity size={16} className="text-[#E53935]" /> Network Vitals
+                  </h3>
+                  <div className="space-y-6">
+                     {performanceMetrics.map((metric, i) => (
+                        <div key={i} className="space-y-3">
+                           <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-black text-[#292828] uppercase flex items-center gap-2">
+                                 <metric.icon size={12} className="text-[#E53935]" /> {metric.label}
+                              </span>
+                              <span className="text-[10px] font-black text-[#292828]">{metric.value}%</span>
+                           </div>
+                           <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${metric.value}%` }}
+                                transition={{ duration: 1, delay: i * 0.1 }}
+                                className={cn("h-full rounded-full shadow-sm", metric.color)} 
+                              />
+                           </div>
                         </div>
-                        <p className="text-[9px] font-black text-[#292828]/40 uppercase group-hover:text-white/40 transition-colors">{met.label}</p>
-                        <div className="h-1 w-full bg-[#292828]/5 group-hover:bg-white/10 rounded-full mt-3 overflow-hidden">
-                           <div className={cn("h-full rounded-full transition-all duration-1000", met.color)} style={{ width: `${met.value}%` }} />
-                        </div>
-                     </div>
-                  ))}
+                     ))}
+                  </div>
                </div>
             </div>
-
          </div>
       </div>
 
-      {/* EDIT MODAL */}
+      {/* EDIT MODAL (Surgical Interface) */}
       {showEditModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="w-full max-w-2xl bg-white rounded-[1.95rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
-              <div className="flex items-center justify-between mb-10">
-                 <h2 className="text-2xl font-black text-[#292828] uppercase">Edit <span className="text-[#E53935]">Profile</span></h2>
-                 <button onClick={() => setShowEditModal(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center"><X size={20} /></button>
-              </div>
-              <div className="space-y-8">
-                 <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">Full Name</label>
-                    <input type="text" value={userData.name} onChange={(e) => setUserData({...userData, name: e.target.value})} className="w-full h-14 px-5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-[#292828] outline-none focus:border-[#E53935]" />
-                 </div>
-                 
-                 <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 mb-4 block">Strategic Alignment (Neural Interests)</label>
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      {[
-                        "Capital & Investment", "Marketing & Growth", "Technology & AI", 
-                        "Logistics & Supply", "Real Estate & Infra", "Legal & Compliance", 
-                        "Human Resources", "Strategic Sales"
-                      ].map(interest => (
-                        <button
-                          key={interest}
-                          onClick={() => {
-                            const current = userData.skills;
-                            if (current.includes(interest)) {
-                              setUserData({...userData, skills: current.filter(s => s !== interest)});
-                            } else {
-                              setUserData({...userData, skills: [...current, interest]});
-                            }
-                          }}
-                          className={cn(
-                            "px-4 py-3 rounded-xl border text-[10px] font-black uppercase transition-all flex items-center justify-between group",
-                            userData.skills.includes(interest) 
-                              ? "bg-[#292828] text-white border-[#292828]" 
-                              : "bg-slate-50 text-slate-400 border-slate-200 hover:border-[#E53935]"
-                          )}
-                        >
-                          {interest}
-                          {userData.skills.includes(interest) ? <CheckCircle2 size={12} className="text-[#E53935]" /> : <Plus size={12} className="opacity-40" />}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="p-4 bg-red-50 text-[#E53935] rounded-xl border border-red-100 italic text-[10px] font-bold uppercase">
-                       Selecting these nodes will mathematically re-rank your Neural Match feed instantly.
-                    </div>
-                 </div>
-
-                 <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">Executive Bio</label>
-                    <textarea rows={4} value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full p-5 bg-slate-50 border border-slate-100 rounded-xl font-medium text-[#292828] outline-none focus:border-[#E53935]" />
-                 </div>
-                 
-                 <button onClick={handleSaveProfile} disabled={isSaving} className="w-full h-16 bg-[#E53935] text-white rounded-2xl font-black text-xs uppercase shadow-2xl hover:bg-[#292828] transition-all">
-                    {isSaving ? "Synchronizing..." : "Save & Sync Neural Profile"}
-                 </button>
-              </div>
-           </div>
-        </div>
+         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-4xl flex flex-col max-h-[90vh]"
+            >
+               <div className="p-10 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Edit Profile Protocol</h2>
+                  <button onClick={() => setShowEditModal(false)} className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-[#E53935] hover:text-white transition-all"><X size={20} /></button>
+               </div>
+               <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar">
+                  <div className="space-y-4">
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Node Name</p>
+                     <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                  </div>
+                  <div className="space-y-4">
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Entity Role</p>
+                     <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                  </div>
+                  <div className="space-y-4">
+                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Identity Bio</p>
+                     <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-40 p-6 rounded-2xl bg-slate-50 border border-slate-100 font-medium outline-none focus:border-[#E53935] resize-none" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Location Node</p>
+                        <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     </div>
+                     <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Entity Node (Company)</p>
+                        <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Contact Phone</p>
+                        <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     </div>
+                     <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Web Domain</p>
+                        <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     </div>
+                  </div>
+               </div>
+               <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex gap-4">
+                  <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border-2 border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all">Cancel</button>
+                  <button onClick={() => handleSaveProfile()} disabled={isSaving} className="flex-[2] h-16 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50">
+                     {isSaving ? "Synchronizing..." : "Commit Changes"}
+                  </button>
+               </div>
+            </motion.div>
+         </div>
       )}
     </div>
   );

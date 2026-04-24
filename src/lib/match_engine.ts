@@ -30,8 +30,8 @@ export function calculateMatchScore(user: MatchProfile, post: MatchPost): MatchR
   const reasons: string[] = [];
 
   // 1. Intent Match (40 pts)
-  const hasIntentMatch = user.intent_tags.some(i => 
-    post.type.toLowerCase().includes(i.toLowerCase()) || 
+  const hasIntentMatch = (user.intent_tags || []).some(i => 
+    post.type?.toLowerCase().includes(i.toLowerCase()) || 
     post.target_intent?.toLowerCase().includes(i.toLowerCase())
   );
   if (hasIntentMatch) {
@@ -46,13 +46,13 @@ export function calculateMatchScore(user: MatchProfile, post: MatchPost): MatchR
     "STUDENT": ["LEAD", "MEETUP", "HIRING"],
     "ADVISOR": ["PARTNER", "LEAD", "MEETUP"]
   };
-  if (roleRelevanceMap[user.role]?.includes(post.type.toUpperCase())) {
+  if (roleRelevanceMap[user.role || ""]?.includes(post.type?.toUpperCase() || "")) {
     score += 20;
     reasons.push("High archetype relevance");
   }
 
   // 3. Expertise Overlap (20 pts)
-  const overlappingExpertise = user.expertise_tags.filter(t => 
+  const overlappingExpertise = (user.expertise_tags || []).filter(t => 
     post.required_expertise?.some(req => req.toLowerCase() === t.toLowerCase())
   );
   if (overlappingExpertise.length > 0) {
@@ -61,14 +61,14 @@ export function calculateMatchScore(user: MatchProfile, post: MatchPost): MatchR
   }
 
   // 4. Experience Match (10 pts)
-  if (user.experience_years > 0) {
+  if ((user.experience_years || 0) > 0) {
     score += 10;
   }
 
   // 5. Location Match (10 pts)
-  if (user.location.toLowerCase() === post.location?.toLowerCase()) {
+  if ((user.location || "").toLowerCase() === (post.location || "").toLowerCase()) {
     score += 10;
-    reasons.push(`Regional priority (${user.location})`);
+    reasons.push(`Regional priority (${user.location || "Local"})`);
   }
 
   return { 

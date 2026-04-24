@@ -18,28 +18,19 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/match_engine";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DiscoveryTerminal() {
+   const { user: authUser } = useAuth();
    const [searchQuery, setSearchQuery] = useState("");
    const [activeIntent, setActiveIntent] = useState<string | null>(null);
    const [results, setResults] = useState<any[]>([]);
    const [isLoading, setIsLoading] = useState(false);
-   const [userProfile, setUserProfile] = useState<any>(null);
 
    const supabase = createClient();
 
-   useEffect(() => {
-      async function loadUser() {
-         const { data: { user } } = await supabase.auth.getUser();
-         if (user) {
-            const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-            setUserProfile(profile);
-         }
-      }
-      loadUser();
-   }, []);
-
    const performSearch = async () => {
+      if (!authUser) return;
       setIsLoading(true);
       let query = supabase.from('profiles').select('*');
 
@@ -49,18 +40,18 @@ export default function DiscoveryTerminal() {
 
       const { data } = await query.limit(20);
 
-      if (data && userProfile) {
+      if (data && authUser) {
          const ranked = data
-            .filter(p => p.id !== userProfile.id)
+            .filter(p => p.id !== authUser.id)
             .map(p => {
                const match = calculateMatchScore(
                   {
-                     role: userProfile.role,
-                     industry: userProfile.location,
-                     expertise_tags: userProfile.skills || [],
-                     intent_tags: userProfile.metadata?.intents || [],
+                     role: authUser.role,
+                     industry: authUser.location,
+                     expertise_tags: authUser.skills || [],
+                     intent_tags: authUser.intents || [],
                      experience_years: 5,
-                     location: userProfile.location
+                     location: authUser.location
                   },
                   {
                      type: p.role,

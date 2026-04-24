@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Plus, 
@@ -15,25 +15,75 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MOCK_BUSINESSES } from "@/data/directory";
-import { BusinessListing, BusinessCategory } from "@/types/directory";
+import { BusinessListing } from "@/types/directory";
 import { ConnectButton } from "@/components/connection/ConnectButton";
+import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
+import dynamic from "next/dynamic";
+const PostModal = dynamic(() => import("@/components/modals/PostModal"), { ssr: false });
 
-const CATEGORIES: BusinessCategory[] = [
-  "Restaurants", "Agencies", "Manufacturing", "IT Services", "Finance", "Legal", "Retail"
+const CATEGORIES: string[] = [
+  "Business Owner", "Professional", "Advisor", "Student"
 ];
 
 export default function DirectoryPage() {
+  const [advisors, setAdvisors] = useState<BusinessListing[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<BusinessCategory | "All">("All");
+  const [activeCategory, setActiveCategory] = useState<string | "All">("All");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const router = useRouter();
 
-  const filteredBusinesses = MOCK_BUSINESSES.filter(biz => {
+  useEffect(() => {
+    async function loadDirectory() {
+      const supabase = createClient();
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, role, bio, skills, city, location, matchScore')
+          .limit(30);
+
+        if (error) throw error;
+
+        if (data) {
+          const mapped: BusinessListing[] = data.map(p => ({
+            id: p.id,
+            name: p.full_name || "Anonymous Node",
+            logo: p.avatar_url || DEFAULT_AVATAR,
+            category: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
+            description: p.bio || "Professional business node in the regional network.",
+            services: p.skills || [],
+            location: p.city || p.location || "Regional Hub",
+            matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
+            isVerified: true,
+            expertise: p.skills || []
+          }));
+          setAdvisors(mapped);
+        }
+      } catch (err) {
+        console.error("Directory Sync Failure:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDirectory();
+  }, []);
+
+  const filteredBusinesses = advisors.filter(biz => {
     const matchesSearch = biz.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          biz.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === "All" || biz.category === activeCategory;
+    const matchesCategory = activeCategory === "All" || biz.category.toLowerCase() === activeCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-6">
+        <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Accessing Global Directory...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] text-[#292828] pb-40 selection:bg-[#E53935]/10 font-sans relative overflow-hidden">
@@ -53,10 +103,13 @@ export default function DirectoryPage() {
                      <div className="h-px w-12 bg-[#E53935]" />
                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935]">Neural Index</p>
                   </div>
-                  <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.9] uppercase">Business <br /><span className="text-slate-200">Directory</span></h1>
+                  <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.9] uppercase">Professional <br /><span className="text-slate-200">Directory</span></h1>
                </div>
-               <button className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] flex items-center gap-4 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl active:scale-95 mx-auto md:mx-0">
-                  <Plus size={24} /> Add Business
+               <button 
+                 onClick={() => setIsCreateModalOpen(true)}
+                 className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] flex items-center gap-4 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl active:scale-95 mx-auto md:mx-0"
+               >
+                  <Plus size={24} /> Register Hub
                </button>
             </div>
 
@@ -66,7 +119,7 @@ export default function DirectoryPage() {
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
                   <input 
                     type="text" 
-                    placeholder="Search 12,500+ Top Tier Firms..." 
+                    placeholder="Search regional business nodes..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full h-16 bg-transparent pl-16 pr-6 text-base font-bold text-[#292828] outline-none"
@@ -110,12 +163,31 @@ export default function DirectoryPage() {
          </div>
 
          {filteredBusinesses.length === 0 && (
-            <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700">
+            <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700 bg-white rounded-[4rem] border border-dashed border-slate-200">
                <Zap size={64} className="mx-auto text-slate-100 mb-8" />
-               <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em]">Zero neural matches for this query.</p>
+               <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 tracking-tight">No professionals found</h3>
+               <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Expand your search intelligence or try a different professional category.</p>
+               <button 
+                  onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
+                  className="h-16 px-12 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all shadow-4xl"
+               >
+                  Try different filters
+               </button>
             </div>
          )}
       </main>
+
+      {isCreateModalOpen && (
+        <PostModal 
+          isOpen={isCreateModalOpen} 
+          onClose={() => setIsCreateModalOpen(false)}
+          onPostSuccess={() => {
+             setIsCreateModalOpen(false);
+             alert("Business mandate created successfully!");
+          }}
+          initialFormType="Lead"
+        />
+      )}
     </div>
   );
 }

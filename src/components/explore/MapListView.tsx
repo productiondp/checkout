@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Users, 
   Globe, 
@@ -14,24 +14,79 @@ import {
   Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_COMMUNITIES, MOCK_POSTS, MOCK_MAP_PEOPLE } from "@/data/communities";
+import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 
 export default function MapListView({ searchQuery }: { searchQuery: string }) {
-  // Combine and rank entities
-  const entities = [
-    ...MOCK_MAP_PEOPLE.map(p => ({ ...p, type: 'Person' })),
-    ...MOCK_COMMUNITIES.map(c => ({ ...c, type: 'Community' })),
-    ...MOCK_POSTS.map(p => ({ ...p, type: 'Post' }))
-  ].filter(e => {
+  const [entities, setEntities] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    async function fetchListData() {
+      const supabase = createClient();
+      try {
+        const { data: profiles } = await supabase.from('profiles').select('*');
+        const { data: posts } = await supabase.from('posts').select('*');
+
+        const listEntities: any[] = [];
+
+        if (profiles) {
+          profiles.forEach((p, i) => {
+            listEntities.push({
+              id: p.id,
+              name: p.full_name || "Regional Node",
+              type: 'Person',
+              role: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
+              avatar: p.avatar_url || DEFAULT_AVATAR,
+              description: p.bio || "Active professional business node.",
+              matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
+            });
+          });
+        }
+
+        if (posts) {
+          posts.forEach((p, i) => {
+            listEntities.push({
+              id: p.id,
+              name: p.title || "Mandate",
+              type: 'Post',
+              role: p.type || "Update",
+              description: p.content,
+              matchScore: p.match_score || 90,
+            });
+          });
+        }
+
+        setEntities(listEntities);
+      } catch (err) {
+        console.error("List Discovery Protocol Failure:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchListData();
+  }, []);
+
+  const filteredEntities = entities.filter(e => {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
       (e.name?.toLowerCase().includes(search)) ||
       (e.description?.toLowerCase().includes(search)) ||
       (e.author?.toLowerCase().includes(search)) ||
-      (e.type?.toLowerCase().includes(search))
+      (e.type?.toLowerCase().includes(search)) ||
+      (e.role?.toLowerCase().includes(search))
     );
   }).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 pt-32 pb-40 text-center">
+         <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin mx-auto mb-6" />
+         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Synthesizing Node Rankings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-6 pt-32 pb-40 space-y-8 overflow-y-auto h-full no-scrollbar">
@@ -46,11 +101,11 @@ export default function MapListView({ searchQuery }: { searchQuery: string }) {
         </div>
       </div>
 
-      {entities.map((entity: any) => (
+      {filteredEntities.map((entity: any) => (
         <ListViewCard key={`${entity.type}-${entity.id}`} entity={entity} />
       ))}
 
-      {entities.length === 0 && (
+      {filteredEntities.length === 0 && (
         <div className="py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
           <Search size={48} className="mx-auto text-slate-100 mb-6" />
           <p className="text-slate-400 font-bold uppercase tracking-widest">No matching nodes found in regional hub.</p>

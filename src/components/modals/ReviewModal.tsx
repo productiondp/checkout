@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -20,7 +21,10 @@ interface ReviewModalProps {
   onSuccess: () => void;
 }
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: ReviewModalProps) {
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -37,7 +41,6 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
     }
 
     setIsSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       alert("Authentication required.");
@@ -93,7 +96,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
           <p className="text-[10px] font-black uppercase text-[#292828]/40 tracking-[0.3em] mb-4">Finalizing Mandate With</p>
           <div className="flex items-center justify-center gap-4 mb-4">
              <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-lg border-2 border-slate-50">
-                <img src={booking.advisor?.avatar_url || `https://i.pravatar.cc/150?u=${booking.advisor_id}`} className="w-full h-full object-cover grayscale" alt="" />
+                <img src={booking.advisor?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover grayscale" alt="" />
              </div>
              <div className="text-left">
                 <h3 className="text-xl font-black text-[#292828] leading-tight">{booking.advisor?.full_name || "Expert Advisor"}</h3>

@@ -19,7 +19,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_COMMUNITIES, MOCK_POSTS, MOCK_MAP_PEOPLE } from "@/data/communities";
+import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
 
 export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
   const [zoom, setZoom] = useState(1);
@@ -28,20 +29,66 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
   const [showActiveZones, setShowActiveZones] = useState(true);
+  const [entities, setEntities] = useState<any[]>([]);
 
-  // Combine entities for the map
-  const entities = [
-    ...MOCK_MAP_PEOPLE.map(p => ({ ...p, type: 'Person' })),
-    ...MOCK_COMMUNITIES.map(c => ({ ...c, type: 'Community' })),
-    ...MOCK_POSTS.map((p, i) => ({ ...p, type: 'Post', x: 20 + (i * 15), y: 25 + (i * 10) }))
-  ].filter(e => {
+  useEffect(() => {
+    async function fetchMapData() {
+      const supabase = createClient();
+      try {
+        const { data: profiles } = await supabase.from('profiles').select('id, full_name, role, avatar_url, bio, matchScore, location').limit(40);
+        const { data: posts } = await supabase.from('posts').select('id, title, type, content, match_score, created_at').limit(40);
+
+        const mapEntities: any[] = [];
+
+        if (profiles) {
+          profiles.forEach((p, i) => {
+            mapEntities.push({
+              id: p.id,
+              name: p.full_name || "Regional Node",
+              type: 'Person',
+              role: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
+              avatar: p.avatar_url || DEFAULT_AVATAR,
+              description: p.bio || "Active professional business node.",
+              matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
+              // Deterministic but distributed random placement for demo
+              x: 25 + (Math.sin(i * 123.456) * 35 + 35),
+              y: 25 + (Math.cos(i * 456.789) * 35 + 35)
+            });
+          });
+        }
+
+        if (posts) {
+          posts.forEach((p, i) => {
+            mapEntities.push({
+              id: p.id,
+              name: p.title || "Mandate",
+              type: 'Post',
+              role: p.type || "Update",
+              description: p.content,
+              matchScore: p.match_score || 90,
+              x: 30 + (Math.cos(i * 987.654) * 30 + 30),
+              y: 30 + (Math.sin(i * 321.098) * 30 + 30)
+            });
+          });
+        }
+
+        setEntities(mapEntities);
+      } catch (err) {
+        console.error("Map Intelligence Protocol Failure:", err);
+      }
+    }
+    fetchMapData();
+  }, []);
+
+  const filteredEntities = entities.filter(e => {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
       (e.name?.toLowerCase().includes(search)) ||
       (e.description?.toLowerCase().includes(search)) ||
       (e.author?.toLowerCase().includes(search)) ||
-      (e.type?.toLowerCase().includes(search))
+      (e.type?.toLowerCase().includes(search)) ||
+      (e.role?.toLowerCase().includes(search))
     );
   });
 
@@ -92,7 +139,7 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
           )}
 
           {/* Markers */}
-          {entities.map((entity: any) => (
+          {filteredEntities.map((entity: any) => (
             <MapMarker 
               key={`${entity.type}-${entity.id}`} 
               entity={entity} 

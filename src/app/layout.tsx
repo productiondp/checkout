@@ -2,6 +2,7 @@ import React from "react";
 import "./globals.css";
 import ClientLayout from "../components/layout/ClientLayout";
 import { Inter, Outfit } from "next/font/google";
+import { AuthProvider, AuthGate } from "@/hooks/useAuth";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-outfit" });
@@ -41,9 +42,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable} h-full overflow-hidden`}>
       <body className="font-sans bg-white h-full overscroll-none">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <AuthProvider>
+          <AuthGate>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

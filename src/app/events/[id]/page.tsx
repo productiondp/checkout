@@ -25,7 +25,8 @@ import {
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MOCK_EVENTS } from "@/data/events";
-import { MOCK_POSTS, MOCK_MEMBERS } from "@/data/communities";
+const MOCK_POSTS: any[] = [];
+const MOCK_MEMBERS: any[] = [];
 
 export default function EventDetailPage() {
   const params = useParams();

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MOCK_BUSINESSES } from "@/data/directory";
+const MOCK_BUSINESSES: any[] = [];
 
 export default function BusinessProfilePage() {
   const params = useParams();

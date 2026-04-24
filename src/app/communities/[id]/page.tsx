@@ -23,7 +23,9 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MOCK_COMMUNITIES, MOCK_POSTS, MOCK_MEMBERS } from "@/data/communities";
+import { MOCK_COMMUNITIES } from "@/data/communities";
+const MOCK_POSTS: any[] = [];
+const MOCK_MEMBERS: any[] = [];
 import { CommunityPost, Member } from "@/types/communities";
 
 export default function CommunityDetailPage() {

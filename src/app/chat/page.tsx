@@ -578,8 +578,6 @@ function ChatTerminal() {
   );
 }
 
-import { useAuth } from "@/hooks/useAuth";
-
 export default function ChatPage() {
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 tracking-widest animate-pulse">Synchronizing Tactical Channels...</div>}>

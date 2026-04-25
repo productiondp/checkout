@@ -84,6 +84,12 @@
 }
 
 @layer utilities {
+  .architectural-grid {
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(41, 40, 40, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -112,5 +118,15 @@
   }
   .animate-progress {
     animation: progress 1.2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
   }
 }

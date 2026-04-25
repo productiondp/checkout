@@ -10,21 +10,20 @@ import {
   Clock, 
   ArrowUpRight,
   Bookmark,
-  ChevronUp,
-  Maximize2,
-  Medal,
   Pencil,
   Trash2,
-  MoreVertical,
-  Star,
+  MoreHorizontal,
   ShieldCheck,
   CheckCircle2,
   GraduationCap,
   Briefcase,
-  User
+  User,
+  Calendar,
+  DollarSign,
+  AlertCircle,
+  Tag
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { analytics } from "@/utils/analytics";
 
 interface UniversalFeedCardProps {
   post: any;
@@ -36,270 +35,325 @@ interface UniversalFeedCardProps {
   onDelete?: (post: any) => void;
 }
 
-export default function UniversalFeedCard({ 
-  post, 
+const TYPE_CONFIG: Record<string, {
+  icon: any;
+  label: string;
+  accentColor: string;
+  bgColor: string;
+  chipBg: string;
+  chipText: string;
+  ctaLabel: string;
+  ctaBg: string;
+}> = {
+  REQUIREMENT: {
+    icon: Target,
+    label: "Requirement",
+    accentColor: "#E53935",
+    bgColor: "bg-red-50",
+    chipBg: "bg-red-50",
+    chipText: "text-[#E53935]",
+    ctaLabel: "Send Offer",
+    ctaBg: "bg-[#E53935] hover:bg-red-700",
+  },
+  PARTNERSHIP: {
+    icon: Sparkles,
+    label: "Partnership",
+    accentColor: "#292828",
+    bgColor: "bg-slate-50",
+    chipBg: "bg-slate-100",
+    chipText: "text-[#292828]",
+    ctaLabel: "Connect",
+    ctaBg: "bg-[#292828] hover:bg-black",
+  },
+  MEETUP: {
+    icon: Users,
+    label: "Meetup",
+    accentColor: "#059669",
+    bgColor: "bg-emerald-50",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+    ctaLabel: "Join",
+    ctaBg: "bg-emerald-600 hover:bg-emerald-700",
+  },
+};
+
+const CONTEXT_ICONS: Record<string, any> = {
+  BUSINESS: Briefcase,
+  PROFESSIONAL: User,
+  STUDENT: GraduationCap,
+  ADVISOR: ShieldCheck,
+};
+
+function normalizeType(type: string): keyof typeof TYPE_CONFIG {
+  const map: Record<string, string> = {
+    LEAD: "REQUIREMENT",
+    HIRING: "REQUIREMENT",
+    PARTNER: "PARTNERSHIP",
+    PARTNERSHIP: "PARTNERSHIP",
+    MEETUP: "MEETUP",
+    REQUIREMENT: "REQUIREMENT",
+  };
+  return (map[type?.toUpperCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
+}
+
+export default function UniversalFeedCard({
+  post,
   currentUserId,
-  isExpanded, 
+  isExpanded,
   onExpand,
   onAction,
   onEdit,
-  onDelete
+  onDelete,
 }: UniversalFeedCardProps) {
   const [showMenu, setShowMenu] = React.useState(false);
+  const [bookmarked, setBookmarked] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setShowMenu(false);
       }
     };
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (showMenu) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [showMenu]);
 
   if (!post) return null;
 
   const { type, title, author, avatar, time, location, matchScore, badge, rank, context } = post;
-
-  const typeMap: Record<string, string> = {
-    LEAD: "REQUIREMENT",
-    HIRING: "REQUIREMENT",
-    PARTNER: "PARTNERSHIP",
-    PARTNERSHIP: "PARTNERSHIP",
-    MEETUP: "MEETUP"
-  };
-
-  const normalizedType = typeMap[type?.toUpperCase()] || "REQUIREMENT";
-  
-  const typeConfig: any = {
-    REQUIREMENT: { 
-      icon: Target, 
-      label: "Need", 
-      color: "bg-[#E53935]", 
-      cta: "Send Offer"
-    },
-    PARTNERSHIP: { 
-      icon: Sparkles, 
-      label: "Partner", 
-      color: "bg-[#292828]", 
-      cta: "Start Chat"
-    },
-    MEETUP: { 
-      icon: Users, 
-      label: "Meetup", 
-      color: "bg-emerald-600", 
-      cta: "Join"
-    }
-  };
-
-  const contextIcons: any = {
-    BUSINESS: Briefcase,
-    PROFESSIONAL: User,
-    STUDENT: GraduationCap,
-    ADVISOR: ShieldCheck
-  };
-
-  const config = typeConfig[normalizedType];
-  const ContextIcon = contextIcons[context?.toUpperCase()] || User;
+  const nType = normalizeType(type);
+  const cfg = TYPE_CONFIG[nType];
+  const ContextIcon = CONTEXT_ICONS[context?.toUpperCase()] || User;
+  const score = matchScore || 50;
+  const isOwner = currentUserId === post.user_id || currentUserId === post.author_id;
+  const circumference = 2 * Math.PI * 16; // r=16
 
   return (
-    <div className={cn(
-      "group relative bg-white border border-[#292828]/5 rounded-2xl transition-all duration-500 hover:border-[#292828]/20 hover:shadow-2xl hover:shadow-black/5",
-      isExpanded && "ring-2 ring-[#292828]/5"
-    )}>
-      <div className="p-5 lg:p-6 relative z-10">
-        
-        {/* 1. HEADER: AUTHOR & CONTEXT (LEFT) & POST TYPE (RIGHT) */}
-        <div className="flex items-center justify-between mb-5">
-           <div className="flex items-center gap-3">
-              <div className="relative group">
-                 <div className={cn(
-                   "h-10 w-10 rounded-xl overflow-hidden border-2 relative z-10 transition-transform active:scale-95",
-                   badge === "Master Partner" ? "border-amber-400 shadow-lg shadow-amber-500/10" : "border-white shadow-sm"
-                 )}>
-                    <img src={avatar} className="h-full w-full object-cover grayscale contrast-125" alt="" />
-                 </div>
-                 <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-lg bg-white border border-slate-100 shadow-xl flex items-center justify-center z-20">
-                    <span className="text-[7px] font-black text-[#292828]">{(post.author_profile?.match_score ?? 50)}</span>
-                 </div>
+    <div
+      className={cn(
+        "group relative bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all duration-300",
+        "hover:shadow-[0_8px_40px_-8px_rgba(0,0,0,0.12)] hover:border-slate-200",
+        isExpanded && "ring-2 ring-offset-2 ring-[#E53935]/20"
+      )}
+    >
+      {/* LEFT ACCENT BAR */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 group-hover:w-1.5"
+        style={{ backgroundColor: cfg.accentColor }}
+      />
+
+      <div className="pl-5 pr-5 pt-5 pb-4">
+
+        {/* ── ROW 1: AUTHOR + TYPE BADGE ── */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="h-11 w-11 rounded-xl overflow-hidden border-2 border-white shadow-md">
+                {avatar
+                  ? <img src={avatar} className="h-full w-full object-cover" alt="" />
+                  : <div className="h-full w-full bg-slate-100 flex items-center justify-center"><User size={18} className="text-slate-300" /></div>
+                }
               </div>
-
-              <div className="text-left">
-                 <div className="flex items-center justify-start gap-1.5 mb-0.5">
-                    <p className="text-sm font-black text-[#292828] leading-none">{author}</p>
-                    {post.author_profile?.metadata?.subscription_tier && post.author_profile.metadata.subscription_tier !== 'FREE' && (
-                       <div className="h-3.5 w-3.5 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white">
-                          <CheckCircle2 size={10} strokeWidth={4} />
-                       </div>
-                    )}
-                    <div className="h-4 px-1.5 rounded-md border border-slate-100 flex items-center gap-1 text-[7px] font-black uppercase text-slate-400 ml-1">
-                       <ContextIcon size={8} />
-                       {context || "PROFESSIONAL"}
-                    </div>
-                 </div>
-                 <div className="flex items-center justify-start gap-1.5">
-                    <span className={cn(
-                       "text-[7px] font-black uppercase px-1.5 py-0.5 rounded-full border transition-all",
-                       badge === "Master Partner" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
-                       badge === "Expert Contributor" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
-                       "bg-slate-50 text-slate-400 border-slate-100"
-                    )}>
-                       {badge}
-                    </span>
-                    <p className="text-[8px] font-bold text-slate-300 uppercase">{time}</p>
-                 </div>
-              </div>
-           </div>
-
-           <div className="flex items-center gap-2">
-              <div className={cn(
-                "h-7 px-3 rounded-full flex items-center gap-2 text-[9px] font-black uppercase text-white shadow-lg",
-                config.color
-              )}>
-                 <config.icon size={11} />
-                 {config.label}
-              </div>
-           </div>
-        </div>
-
-        {/* 2. CORE CONTENT */}
-        <div className="space-y-4">
-           <div className="space-y-1">
-              <h3 className="text-2xl font-black text-[#292828] leading-tight group-hover:text-[#E53935] transition-colors tracking-tight">
-                 {title}
-              </h3>
-              <p className="text-[15px] font-medium text-slate-500 leading-relaxed line-clamp-3">
-                 {post.content}
-              </p>
-           </div>
-
-            {/* 3. HIGH-DENSITY INFO BAR */}
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 py-3 px-1 border-y border-slate-50">
-               {normalizedType === "REQUIREMENT" && (
-                 <>
-                    <DataField label="Budget" value={post.budget || "TBD"} />
-                    <DataField label="Urgency" value={post.urgency || "Normal"} color="text-[#E53935]" />
-                    <DataField label="Location" value={location} />
-                    <DataField label="Skills" value={post.skills_required?.slice(0,2).join(", ") || "General"} />
-                 </>
-               )}
-               {normalizedType === "PARTNERSHIP" && (
-                 <>
-                    <DataField label="Type" value={post.partnershipType || "Agency"} />
-                    <DataField label="Industry" value={post.industry || "General"} />
-                    <DataField label="Commitment" value={post.commitmentLevel || "High"} />
-                    <DataField label="Location" value={location} />
-                 </>
-               )}
-               {normalizedType === "MEETUP" && (
-                 <>
-                    <DataField label="Mode" value={post.mode || "Offline"} />
-                    <DataField label="Date" value={post.dateTime || "TBD"} />
-                    <DataField label="Price" value={post.payment_type || "Free"} />
-                    <DataField label="Slots" value={post.max_slots ? `${post.max_slots} Slots` : "Open"} />
-                 </>
-               )}
+              {/* Verified dot */}
+              {post.author_profile?.metadata?.subscription_tier && post.author_profile.metadata.subscription_tier !== "FREE" && (
+                <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+                  <CheckCircle2 size={9} strokeWidth={3} className="text-white" />
+                </div>
+              )}
             </div>
 
-           {/* 4. ACTIONS */}
-           <div className="flex items-center justify-between pt-2">
-              {(currentUserId === post.user_id || currentUserId === post.author_id) ? (
-                <div className="relative">
-                   <button 
-                     onClick={() => setShowMenu(!showMenu)}
-                     className={cn(
-                       "h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] transition-all",
-                       showMenu && "bg-[#292828] text-white"
-                     )}
-                   >
-                      <MoreVertical size={16} />
-                   </button>
-                   {showMenu && (
-                     <div 
-                       ref={menuRef}
-                       className="absolute bottom-full left-0 mb-3 w-48 bg-white border border-[#292828]/10 rounded-xl shadow-4xl overflow-hidden z-[60] animate-in fade-in slide-in-from-bottom-2 duration-300"
-                     >
-                        <button 
-                          onClick={() => { onEdit?.(post); setShowMenu(false); }}
-                          className="w-full h-10 px-4 flex items-center gap-3 text-[#292828] hover:bg-slate-50 text-[10px] font-bold uppercase"
-                        >
-                           <Pencil size={14} /> Edit
-                        </button>
-                        <button 
-                          onClick={() => { onDelete?.(post); setShowMenu(false); }}
-                          className="w-full h-10 px-4 flex items-center gap-3 text-red-600 hover:bg-red-50 text-[10px] font-bold uppercase"
-                        >
-                           <Trash2 size={14} /> Delete
-                        </button>
-                     </div>
-                   )}
-                </div>
-              ) : <div />}
-
-              <div className="flex items-center gap-3">
-                 {/* 4.1 TRUST HIGHLIGHT (UPGRADED TO PROGRESS BAR) */}
-                 <div className="hidden sm:flex flex-col gap-1.5 pr-4 border-r border-slate-100">
-                    <div className="flex items-center justify-between w-32">
-                       <p className="text-[7px] font-black text-slate-300 uppercase leading-none">Match Score</p>
-                       <span className={cn(
-                         "text-[9px] font-black",
-                         (matchScore || 50) >= 80 ? "text-emerald-600" : 
-                         (matchScore || 50) >= 50 ? "text-[#292828]" : "text-slate-400"
-                       )}>
-                         {matchScore || 50}%
-                       </span>
-                    </div>
-                    <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden relative">
-                       <div 
-                         className={cn(
-                           "absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out",
-                           (matchScore || 50) >= 80 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : 
-                           (matchScore || 50) >= 50 ? "bg-[#292828]" : "bg-slate-300"
-                         )}
-                         style={{ width: `${matchScore || 50}%` }}
-                       />
-                    </div>
-                    <p className="text-[7px] font-bold text-[#292828]/40 uppercase tracking-tighter">{rank || "Emerging"}</p>
-                 </div>
-
-                 <button className="h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#E53935] transition-all">
-                    <Bookmark size={16} />
-                 </button>
-                 <button 
-                   onClick={onAction}
-                   className={cn(
-                    "h-10 px-6 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-2 shadow-lg",
-                    config.color === "bg-[#292828]" ? "bg-[#292828]" : config.color
-                   )}
-                 >
-                    {config.cta} <ArrowUpRight size={14} />
-                 </button>
+            {/* Name + meta */}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[15px] font-bold text-[#292828] truncate leading-none">{author}</span>
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0",
+                  "bg-slate-100 text-slate-500"
+                )}>
+                  <ContextIcon size={9} />
+                  {context || "Professional"}
+                </span>
               </div>
-           </div>
+              <div className="flex items-center gap-2">
+                {badge && (
+                  <span className={cn(
+                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                    badge === "Master Partner" ? "bg-amber-50 text-amber-600" :
+                    badge === "Expert Contributor" ? "bg-emerald-50 text-emerald-600" :
+                    "bg-slate-50 text-slate-400"
+                  )}>
+                    {badge}
+                  </span>
+                )}
+                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <Clock size={10} />
+                  {time}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Type pill */}
+          <div className={cn(
+            "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide ml-3",
+            cfg.chipBg, cfg.chipText
+          )}>
+            <cfg.icon size={12} />
+            {cfg.label}
+          </div>
+        </div>
+
+        {/* ── ROW 2: TITLE + DESCRIPTION ── */}
+        <div className="mb-4">
+          <h3 className={cn(
+            "text-[20px] font-black text-[#292828] leading-tight mb-1.5 transition-colors duration-200",
+            "group-hover:text-[#E53935]"
+          )} style={{ letterSpacing: "-0.02em" }}>
+            {title}
+          </h3>
+          {post.content && (
+            <p className="text-[14px] text-slate-500 leading-relaxed line-clamp-2">
+              {post.content}
+            </p>
+          )}
+        </div>
+
+        {/* ── ROW 3: METADATA CHIPS ── */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          {nType === "REQUIREMENT" && <>
+            {post.budget && <MetaChip icon={DollarSign} label={post.budget} accent={cfg.accentColor} />}
+            {post.urgency && <MetaChip icon={AlertCircle} label={post.urgency} accent={cfg.accentColor} />}
+            {location && <MetaChip icon={MapPin} label={location} />}
+            {post.skills_required?.slice(0, 2).map((s: string) => (
+              <MetaChip key={s} icon={Tag} label={s} />
+            ))}
+          </>}
+          {nType === "PARTNERSHIP" && <>
+            {post.partnershipType && <MetaChip icon={Sparkles} label={post.partnershipType} accent={cfg.accentColor} />}
+            {post.industry && <MetaChip icon={Briefcase} label={post.industry} />}
+            {post.commitmentLevel && <MetaChip icon={Zap} label={post.commitmentLevel} />}
+            {location && <MetaChip icon={MapPin} label={location} />}
+          </>}
+          {nType === "MEETUP" && <>
+            {post.mode && <MetaChip icon={Users} label={post.mode} accent={cfg.accentColor} />}
+            {post.dateTime && <MetaChip icon={Calendar} label={post.dateTime} />}
+            {post.payment_type && <MetaChip icon={DollarSign} label={post.payment_type} />}
+            {post.max_slots && <MetaChip icon={Tag} label={`${post.max_slots} Slots`} />}
+          </>}
+        </div>
+
+        {/* ── ROW 4: ACTIONS ── */}
+        <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+
+          {/* LEFT: Owner menu OR empty */}
+          {isOwner ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className={cn(
+                  "h-9 w-9 rounded-xl border border-slate-100 flex items-center justify-center transition-all",
+                  showMenu ? "bg-[#292828] text-white border-[#292828]" : "text-slate-400 hover:text-[#292828] hover:border-slate-300"
+                )}
+              >
+                <MoreHorizontal size={16} />
+              </button>
+              {showMenu && (
+                <div className="absolute bottom-full left-0 mb-2 w-44 bg-white rounded-xl border border-slate-100 shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-1 duration-150">
+                  <button
+                    onClick={() => { onEdit?.(post); setShowMenu(false); }}
+                    className="w-full h-11 px-4 flex items-center gap-3 text-[13px] font-medium text-[#292828] hover:bg-slate-50 transition-colors"
+                  >
+                    <Pencil size={14} className="text-slate-400" /> Edit Post
+                  </button>
+                  <div className="h-px bg-slate-50" />
+                  <button
+                    onClick={() => { onDelete?.(post); setShowMenu(false); }}
+                    className="w-full h-11 px-4 flex items-center gap-3 text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : <div />}
+
+          {/* RIGHT: Match score + bookmark + CTA */}
+          <div className="flex items-center gap-3">
+
+            {/* Match Score Ring */}
+            <div className="hidden sm:flex items-center gap-3 pr-3 border-r border-slate-100">
+              <div className="relative h-10 w-10 shrink-0">
+                <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+                  <circle
+                    cx="20" cy="20" r="16"
+                    fill="none" stroke="#f1f5f9" strokeWidth="3"
+                  />
+                  <circle
+                    cx="20" cy="20" r="16"
+                    fill="none"
+                    stroke={score >= 80 ? "#059669" : score >= 50 ? cfg.accentColor : "#cbd5e1"}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={circumference - (circumference * score) / 100}
+                    className="transition-all duration-700"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#292828]">
+                  {score}
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide leading-none">Match</span>
+                <span className="text-[11px] font-bold text-[#292828] leading-none">{rank || "Emerging"}</span>
+              </div>
+            </div>
+
+            {/* Bookmark */}
+            <button
+              onClick={() => setBookmarked(!bookmarked)}
+              className={cn(
+                "h-9 w-9 rounded-xl border flex items-center justify-center transition-all",
+                bookmarked
+                  ? "bg-amber-50 border-amber-200 text-amber-500"
+                  : "border-slate-100 text-slate-300 hover:text-amber-500 hover:border-amber-200"
+              )}
+            >
+              <Bookmark size={15} fill={bookmarked ? "currentColor" : "none"} />
+            </button>
+
+            {/* Primary CTA */}
+            <button
+              onClick={onAction}
+              className={cn(
+                "h-9 px-5 rounded-xl text-[13px] font-bold text-white flex items-center gap-1.5 transition-all active:scale-95 shadow-sm",
+                cfg.ctaBg
+              )}
+            >
+              {cfg.ctaLabel}
+              <ArrowUpRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function DataField({ label, value, highlight, color }: any) {
+// ── MICRO COMPONENT: MetaChip ──
+function MetaChip({ icon: Icon, label, accent }: { icon: any; label: string; accent?: string }) {
   return (
-    <div className="flex flex-col gap-1">
-       <span className="text-xs font-black text-slate-300 uppercase tracking-[0.2em]">{label}</span>
-       <div className={cn(
-          "text-[13px] font-black flex items-center gap-2",
-          highlight ? "text-[#292828]" : "text-[#292828]/80",
-          color
-       )}>
-          <div className={cn("h-1.5 w-1.5 rounded-full", color ? "bg-current" : "bg-[#292828]/20")} />
-          {value}
-       </div>
+    <div
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[12px] font-medium transition-colors"
+      style={accent
+        ? { borderColor: `${accent}30`, backgroundColor: `${accent}08`, color: accent }
+        : { borderColor: "#f1f5f9", backgroundColor: "#f8fafc", color: "#64748b" }
+      }
+    >
+      <Icon size={11} />
+      {label}
     </div>
   );
 }

@@ -4,22 +4,24 @@ import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { 
-  ArrowRight, 
-  Mail, 
-  Lock, 
-  User, 
-  Briefcase, 
-  Target, 
+import {
+  ArrowRight,
+  Mail,
+  Lock,
+  User,
+  Briefcase,
+  Target,
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
   Users,
   Award,
-  ChevronDown,
   Globe,
   Zap,
-  Fingerprint
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -28,59 +30,53 @@ import { useAuth } from "@/hooks/useAuth";
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student" | "Advisor";
 
+const ROLES: { value: Role; icon: any; desc: string }[] = [
+  { value: "Business", icon: Briefcase, desc: "MSME & Enterprises" },
+  { value: "Professional", icon: User, desc: "Freelancers & Experts" },
+  { value: "Student", icon: Award, desc: "Emerging Talent" },
+  { value: "Advisor", icon: ShieldCheck, desc: "Mentors & Consultants" },
+];
+
+const STATS = [
+  { value: "2,400+", label: "Members" },
+  { value: "12K+", label: "Connections" },
+  { value: "₹3.2Cr", label: "Deals Closed" },
+];
+
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = (searchParams.get("mode") as AuthMode) || "signup";
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<Role>("Business");
-  const [isRoleOpen, setIsRoleOpen] = useState(false);
-  
-  // Form State
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    fullName: "",
-  });
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "", fullName: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [signupAttempts, setSignupAttempts] = useState(0);
   const [lastSignupTime, setLastSignupTime] = useState(0);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    if (error) setError(null);
-  };
-  
   const { user: authUser, loading } = useAuth();
   const supabase = createClient();
 
   if (loading || !mounted) return null;
 
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 🛡️ FRONTEND GUARD
     const now = Date.now();
-    if (mode === "signup") {
-      if (now - lastSignupTime < 10000) {
-        setError("Please wait a few seconds before trying again.");
-        return;
-      }
+    if (mode === "signup" && now - lastSignupTime < 10000) {
+      setError("Please wait a moment before trying again.");
+      return;
     }
-
-    if (isLoading) return; // Prevent duplicate submission
-    
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
 
@@ -89,288 +85,292 @@ function AuthContent() {
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          options: {
-            data: {
-              full_name: formData.fullName || "New Partner",
-              role: role.toUpperCase(),
-            },
-          },
+          options: { data: { full_name: formData.fullName || "New Partner", role: role.toUpperCase() } },
         });
-        
         if (signUpError) {
           if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
-            throw new Error("Too many attempts. Please wait a moment and try again.");
+            throw new Error("Too many attempts. Please wait and try again.");
           }
           throw signUpError;
         }
-
-        setSignupAttempts(prev => prev + 1);
         setLastSignupTime(now);
-
         if (authData.user) {
-           await supabase
-             .from('profiles')
-             .upsert({
-               id: authData.user.id,
-               full_name: formData.fullName || "New Partner",
-               role: role.toUpperCase(),
-               city: "Trivandrum",
-               location: "Trivandrum"
-             });
+          await supabase.from("profiles").upsert({
+            id: authData.user.id,
+            full_name: formData.fullName || "New Partner",
+            role: role.toUpperCase(),
+            city: "Trivandrum",
+            location: "Trivandrum",
+          });
         }
-        
-        analytics.track('USER_SIGNUP', authData.user?.id, { role: role.toUpperCase() });
         setIsSuccess(true);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-        
         if (signInError) throw signInError;
-        
         setIsSuccess(true);
       }
     } catch (err: any) {
-      setError(err.message || "Authentication failed. Check your data.");
+      setError(err.message || "Authentication failed. Please check your details.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const roles: { label: Role; icon: any }[] = [
-    { label: "Business", icon: Briefcase },
-    { label: "Professional", icon: User },
-    { label: "Student", icon: Award },
-    { label: "Advisor", icon: ShieldCheck },
-  ];
-
-  const currentRoleIcon = roles.find(r => r.label === role)?.icon;
-
   return (
-    <div className="h-[100dvh] w-screen flex bg-white font-sans overflow-hidden relative">
-      
-      {/* HEADER OVERLAY */}
-      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-8">
-        <Link href="/" className="flex items-center gap-0 group">
-           <Image 
-             src="/images/logo.png" 
-             alt="CheckOut" 
-             width={150} 
-             height={40} 
-             className="h-10 w-auto object-contain"
-           />
-        </Link>
-        <div className="flex items-center gap-8">
-           <button 
-             onClick={() => setMode("signin")}
-             className="text-[10px] font-black uppercase tracking-widest text-[#292828] hover:text-[#E53935] transition-colors"
-           >
-              Log In
-           </button>
-           <button 
-             onClick={() => setMode("signup")}
-             className="h-10 px-6 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg active:scale-95"
-           >
-              Sign Up
-           </button>
+    <div className="min-h-screen w-screen flex bg-[#FDFDFF] overflow-hidden">
+
+      {/* ── LEFT: BRAND PANEL ── */}
+      <div className="hidden lg:flex flex-col justify-between w-[45%] xl:w-[42%] bg-[#292828] relative overflow-hidden p-14">
+        {/* Grid texture */}
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "32px 32px" }}
+        />
+        {/* Red glow */}
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#E53935]/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-20 left-10 w-64 h-64 bg-[#E53935]/10 rounded-full blur-[80px] pointer-events-none" />
+
+        {/* Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-9 w-9 bg-[#E53935] rounded-xl flex items-center justify-center shadow-lg">
+              <Zap size={18} className="text-white" />
+            </div>
+            <span className="text-white text-xl font-black uppercase tracking-tight">Checkout</span>
+          </div>
+          <p className="text-white/30 text-sm font-medium ml-12">Business OS for Local Commerce</p>
         </div>
-      </header>
 
-      {/* LEFT SECTION: BRANDING */}
-      <div className="hidden lg:flex flex-1 relative flex-col justify-center px-20 bg-white">
-         <div className="absolute inset-0 z-0 overflow-hidden">
-            <img 
-               src="/images/auth-bg.png" 
-               className="w-full h-full object-cover opacity-40 grayscale scale-110" 
-               alt="" 
-            />
-         </div>
-
-         <div className="relative z-10 space-y-12">
-            <div className="space-y-0">
-               <h1 className="text-[120px] font-black uppercase tracking-tighter leading-[0.8] text-[#292828]">
-                  CONNECT<br />
-                  PEOPLE.
-               </h1>
-               <h1 className="text-[120px] font-black uppercase tracking-tighter leading-[0.8] text-[#E53935]">
-                  GET<br />
-                  LEADS.
-               </h1>
+        {/* Hero text */}
+        <div className="relative z-10 space-y-8">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E53935]/20 border border-[#E53935]/30 text-[#E53935] text-xs font-bold uppercase tracking-widest mb-6">
+              <Sparkles size={12} />
+              Trivandrum's Business Network
             </div>
-            <div className="flex items-center gap-4 border-l-2 border-[#E53935] pl-6">
-               <p className="text-3xl font-medium italic text-[#292828]/40">
-                  Meet real people. Get real business.
-               </p>
-            </div>
-         </div>
+            <h1 className="text-[56px] xl:text-[68px] font-black text-white leading-none tracking-[-0.04em] uppercase">
+              Connect.<br />
+              <span className="text-[#E53935]">Grow.</span><br />
+              Succeed.
+            </h1>
+          </div>
+          <p className="text-white/50 text-base font-medium leading-relaxed max-w-sm">
+            Find business partners, leads, and professional meetups. 
+            Real people, real opportunities.
+          </p>
 
-         <div className="absolute bottom-12 left-20 z-10 flex items-center gap-12">
-            {[
-              { label: 'CONNECT', icon: Users },
-              { label: 'LEADS', icon: Target },
-              { label: 'MEETUPS', icon: Zap }
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 opacity-20 hover:opacity-100 transition-opacity cursor-default">
-                 <item.icon size={16} />
-                 <span className="text-[11px] font-black uppercase tracking-[0.3em]">{item.label}</span>
+          {/* Stats row */}
+          <div className="flex items-center gap-8 pt-4 border-t border-white/10">
+            {STATS.map((s, i) => (
+              <div key={i}>
+                <p className="text-white text-xl font-black leading-none">{s.value}</p>
+                <p className="text-white/30 text-xs font-medium uppercase tracking-wide mt-1">{s.label}</p>
               </div>
             ))}
-         </div>
+          </div>
+        </div>
+
+        {/* Bottom */}
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="flex -space-x-2">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="h-8 w-8 rounded-full bg-white/10 border-2 border-[#292828] flex items-center justify-center text-white/50">
+                <User size={12} />
+              </div>
+            ))}
+          </div>
+          <p className="text-white/40 text-xs">Joined by professionals across Kerala</p>
+        </div>
       </div>
 
-      {/* RIGHT SECTION: AUTH CARD */}
-      <div className="flex-1 flex items-center justify-center bg-white lg:bg-transparent relative z-20">
-         <div className="w-full max-w-[500px] bg-white rounded-[4rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] p-12 lg:p-16 space-y-10 animate-in fade-in zoom-in-95 duration-700">
-            
-            <div className="space-y-1">
-               <h2 className="text-[44px] font-black uppercase tracking-tight text-[#292828] leading-none">
-                  {mode === "signup" ? "Join Now" : "Welcome Back"}
-               </h2>
-               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">
-                  {mode === "signup" ? "Find partners and grow" : "Continue your journey"}
-               </p>
+      {/* ── RIGHT: AUTH FORM PANEL ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
+        {/* Subtle top nav for mobile */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-5 lg:hidden border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 bg-[#E53935] rounded-lg flex items-center justify-center">
+              <Zap size={14} className="text-white" />
             </div>
+            <span className="text-[#292828] text-base font-black uppercase tracking-tight">Checkout</span>
+          </div>
+        </div>
 
-            {isSuccess && mode === "signup" ? (
-               <div className="space-y-8 text-center py-10 animate-in fade-in zoom-in-95 duration-700">
-                  <div className="h-24 w-24 bg-red-50 rounded-full flex items-center justify-center mx-auto text-[#E53935] shadow-lg mb-4">
-                     <Mail size={40} />
+        <div className="w-full max-w-[440px]">
+
+          {/* ── SUCCESS STATE ── */}
+          {isSuccess && mode === "signup" ? (
+            <div className="text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+              <div className="h-20 w-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto border border-emerald-100">
+                <CheckCircle2 size={36} className="text-emerald-600" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tight leading-none mb-3">Check Your Email</h2>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  A verification link was sent to<br />
+                  <span className="font-bold text-[#292828]">{formData.email}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => { setMode("signin"); setIsSuccess(false); }}
+                className="w-full h-14 bg-[#292828] text-white rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg"
+              >
+                Continue to Sign In
+              </button>
+              <p className="text-slate-400 text-xs">Check your spam folder if you don't see it.</p>
+            </div>
+          ) : (
+            <>
+              {/* Heading */}
+              <div className="mb-8">
+                <h2 className="text-[38px] font-black text-[#292828] uppercase leading-none tracking-tight mb-2">
+                  {mode === "signup" ? "Get Started" : "Welcome Back"}
+                </h2>
+                <p className="text-slate-500 text-[15px]">
+                  {mode === "signup"
+                    ? "Create your account to find partners and grow."
+                    : "Sign in to continue to your dashboard."
+                  }
+                </p>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium mb-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle size={16} className="shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+
+                {/* Role selector (signup only) */}
+                {mode === "signup" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">I am a...</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ROLES.map((r) => (
+                        <button
+                          key={r.value}
+                          type="button"
+                          onClick={() => setRole(r.value)}
+                          className={cn(
+                            "flex items-center gap-2.5 p-3.5 rounded-xl border-2 text-left transition-all",
+                            role === r.value
+                              ? "border-[#292828] bg-[#292828] text-white"
+                              : "border-slate-100 bg-white text-[#292828] hover:border-slate-300"
+                          )}
+                        >
+                          <r.icon size={16} className={role === r.value ? "text-[#E53935]" : "text-slate-400"} />
+                          <div>
+                            <p className="text-[13px] font-bold leading-none">{r.value}</p>
+                            <p className={cn("text-[10px] mt-0.5", role === r.value ? "text-white/50" : "text-slate-400")}>{r.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-4">
-                     <h3 className="text-[32px] font-black text-[#292828] uppercase tracking-tighter leading-none italic">Verify Identity</h3>
-                     <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed tracking-[0.1em] px-8">
-                        A professional verification link has been dispatched to:
-                        <br />
-                        <span className="text-[#292828] font-black">{formData.email}</span>
-                     </p>
+                )}
+
+                {/* Name field (signup) */}
+                {mode === "signup" && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Full Name</label>
+                    <div className="relative">
+                      <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInput}
+                        placeholder="Your full name"
+                        className="w-full h-13 pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] font-medium text-[#292828] placeholder:text-slate-300 outline-none focus:border-[#292828] focus:bg-white transition-all"
+                        required
+                        style={{ height: "52px" }}
+                      />
+                    </div>
                   </div>
-                  <div className="pt-8 flex flex-col gap-4">
-                     <button 
-                        onClick={() => { setMode("signin"); setIsSuccess(false); }}
-                        className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#E53935] shadow-xl transition-all"
-                     >
-                        Continue to Sign In
-                     </button>
-                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">
-                        Check your spam folder if you don't see it.
-                     </p>
+                )}
+
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInput}
+                      placeholder="you@company.com"
+                      className="w-full pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] font-medium text-[#292828] placeholder:text-slate-300 outline-none focus:border-[#292828] focus:bg-white transition-all"
+                      required
+                      style={{ height: "52px" }}
+                    />
                   </div>
-               </div>
-            ) : (
-               <form onSubmit={handleSubmit} className="space-y-8">
-                  {error && (
-                     <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[10px] font-black uppercase tracking-widest animate-in shake duration-500">
-                        <AlertCircle size={16} /> {error}
-                     </div>
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Password</label>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInput}
+                      placeholder="Min. 8 characters"
+                      className="w-full pl-11 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-[15px] font-medium text-[#292828] placeholder:text-slate-300 outline-none focus:border-[#292828] focus:bg-white transition-all"
+                      required
+                      style={{ height: "52px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={cn(
+                    "w-full h-14 rounded-2xl font-bold text-[15px] text-white flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98]",
+                    "bg-[#292828] hover:bg-[#E53935]",
+                    isLoading && "opacity-60 cursor-wait"
                   )}
+                >
+                  {isLoading ? (
+                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      {mode === "signup" ? "Create Account" : "Sign In"}
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
 
-                  <div className="space-y-6">
-                     {/* Role Selector (Dropdown style from image) */}
-                     {mode === "signup" && (
-                        <div className="space-y-2 relative">
-                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-300 ml-2">Select Your Role</p>
-                           <button
-                              type="button"
-                              onClick={() => setIsRoleOpen(!isRoleOpen)}
-                              className={cn(
-                                 "w-full h-16 bg-white border-2 rounded-2xl px-6 flex items-center justify-between transition-all",
-                                 isRoleOpen ? "border-blue-500 shadow-lg shadow-blue-500/10" : "border-slate-100"
-                              )}
-                           >
-                              <div className="flex items-center gap-3">
-                                 <div className="h-8 w-8 bg-slate-50 rounded-lg flex items-center justify-center text-[#E53935]">
-                                    {React.createElement(currentRoleIcon)}
-                                 </div>
-                                 <span className="text-[11px] font-black uppercase tracking-widest text-[#292828]">{role}</span>
-                              </div>
-                              <ChevronDown size={16} className={cn("text-slate-300 transition-transform duration-300", isRoleOpen && "rotate-180")} />
-                           </button>
-
-                           {isRoleOpen && (
-                              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-3xl shadow-4xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                                 {roles.map((r) => (
-                                    <button
-                                       key={r.label}
-                                       type="button"
-                                       onClick={() => { setRole(r.label); setIsRoleOpen(false); }}
-                                       className={cn(
-                                          "w-full h-14 px-6 flex items-center gap-4 hover:bg-slate-50 transition-all",
-                                          role === r.label ? "bg-[#292828] text-white" : "text-[#292828]"
-                                       )}
-                                    >
-                                       <r.icon size={16} className={cn(role === r.label ? "text-white" : "text-slate-300")} />
-                                       <span className="text-[10px] font-black uppercase tracking-widest">{r.label}</span>
-                                    </button>
-                                 ))}
-                              </div>
-                           )}
-                        </div>
-                     )}
-
-                     <div className="space-y-4">
-                        {mode === "signup" && (
-                           <div className="relative group">
-                              <input 
-                                 type="text" 
-                                 name="fullName"
-                                 value={formData.fullName}
-                                 onChange={handleInputChange}
-                                 placeholder="Full Name" 
-                                 className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
-                                 required
-                              />
-                           </div>
-                        )}
-                        <div className="relative group">
-                           <input 
-                              type="email" 
-                              name="email"
-                              value={formData.email}
-                              onChange={handleInputChange}
-                              placeholder="Email Address" 
-                              className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
-                              required
-                           />
-                        </div>
-                        <div className="relative group">
-                           <input 
-                              type="password" 
-                              name="password"
-                              value={formData.password}
-                              onChange={handleInputChange}
-                              placeholder="Password" 
-                              className="w-full h-16 bg-slate-50 border-2 border-transparent rounded-2xl px-6 text-[12px] font-bold outline-none focus:bg-white focus:border-slate-200 transition-all"
-                              required
-                           />
-                        </div>
-                     </div>
-                  </div>
-
-                  <button 
-                     type="submit"
-                     disabled={isLoading || isSuccess}
-                     className={cn(
-                        "w-full h-20 bg-[#292828] text-white rounded-3xl font-black text-xs uppercase tracking-[0.4em] shadow-4xl active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-[#E53935]",
-                        isLoading && "opacity-50 cursor-wait"
-                     )}
+                {/* Switch mode */}
+                <p className="text-center text-[14px] text-slate-500">
+                  {mode === "signup" ? "Already have an account? " : "Don't have an account? "}
+                  <button
+                    type="button"
+                    onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(null); }}
+                    className="font-bold text-[#292828] hover:text-[#E53935] transition-colors underline underline-offset-2"
                   >
-                     {isLoading ? "Processing..." : "Get Started"}
-                     {!isLoading && <ArrowRight size={20} />}
+                    {mode === "signup" ? "Sign In" : "Join Now"}
                   </button>
-
-                  <div className="text-center pt-4">
-                     <button 
-                        type="button"
-                        onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-[#292828] transition-colors"
-                     >
-                        {mode === "signup" ? "Already have an account?" : "Need an account? Join now"}
-                     </button>
-                  </div>
-               </form>
-            )}
-         </div>
+                </p>
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -378,7 +378,11 @@ function AuthContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-[#292828] font-black uppercase tracking-widest">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FDFDFF] flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-slate-200 border-t-[#292828] rounded-full animate-spin" />
+      </div>
+    }>
       <AuthContent />
     </Suspense>
   );

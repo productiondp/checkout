@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -26,55 +26,18 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
-import { DEFAULT_AVATAR } from "@/utils/constants";
+import { MOCK_EVENTS } from "@/data/events";
+const MOCK_POSTS: any[] = [];
+const MOCK_MEMBERS: any[] = [];
 
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"Opportunities" | "Attendees" | "About">("About");
+  const [activeTab, setActiveTab] = useState<"Opportunities" | "Attendees" | "About">("Opportunities");
   const [isJoined, setIsJoined] = useState(false);
-  const [event, setEvent] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const eventId = params.id as string;
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function fetchEvent() {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .single();
-
-      if (data) {
-        setEvent({
-          ...data,
-          matchScore: 98,
-          attendeeCount: data.attendee_count || 0,
-          banner: data.banner_url || 'https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?q=80&w=2000'
-        });
-      }
-      setIsLoading(false);
-    }
-    if (eventId) fetchEvent();
-  }, [eventId]);
-
-  if (isLoading) return (
-    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
-      <div className="h-12 w-12 border-4 border-white/5 border-t-[#E53935] rounded-full animate-spin" />
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Syncing Event Details...</p>
-    </div>
-  );
-
-  if (!event) return (
-    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
-      <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Event Not Found</h2>
-      <button onClick={() => router.push('/events')} className="text-[#E53935] text-[10px] font-black uppercase tracking-widest border-b border-[#E53935]">Back to Events</button>
-    </div>
-  );
+  const event = MOCK_EVENTS.find(e => e.id === eventId) || MOCK_EVENTS[0];
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] pb-24">
@@ -110,7 +73,7 @@ export default function EventDetailPage() {
                  </div>
                  <div className="flex items-center gap-3">
                     <Clock size={20} className="text-[#E53935]" />
-                    <span className="text-sm font-black uppercase tracking-tight">{event.time || '10:00 AM'}</span>
+                    <span className="text-sm font-black uppercase tracking-tight">{event.time}</span>
                  </div>
                  <div className="flex items-center gap-3">
                     <MapPin size={20} className="text-[#E53935]" />
@@ -168,6 +131,43 @@ export default function EventDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* MAIN COLUMN */}
           <div className="lg:col-span-2">
+            {activeTab === "Opportunities" && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                  <div>
+                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Live Post Feed</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time posts from attendees</p>
+                  </div>
+                  <button className="h-12 px-8 bg-[#292828] text-white rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
+                    <Plus size={16} /> Add Post
+                  </button>
+                </div>
+                
+                {MOCK_POSTS.map(post => (
+                  <OpportunityCard key={post.id} post={post} />
+                ))}
+              </div>
+            )}
+
+            {activeTab === "Attendees" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 mb-10 flex items-center gap-4 shadow-sm">
+                  <Search size={20} className="text-slate-300" />
+                  <input 
+                    type="text" 
+                    placeholder="Search attendees..." 
+                    className="flex-1 bg-transparent outline-none text-sm font-bold text-[#292828]"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {MOCK_MEMBERS.map(member => (
+                    <AttendeeCard key={member.id} member={member} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeTab === "About" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm">
                 <div>
@@ -177,22 +177,24 @@ export default function EventDetailPage() {
                   </p>
                 </div>
 
-                <div>
-                   <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Ecosystem Impact</h3>
-                   <div className="space-y-6">
-                      {[
-                        "High-authority networking with verified founders.",
-                        "Direct access to strategic local opportunities.",
-                        "Neural match prioritization for all attendees.",
-                        "Outcome-driven session architecture."
-                      ].map((rule, i) => (
-                        <div key={i} className="flex items-start gap-4">
-                          <div className="h-6 w-6 bg-slate-50 rounded-lg flex items-center justify-center text-[10px] font-black text-[#292828] shrink-0">{i+1}</div>
-                          <p className="text-sm font-bold text-slate-500 uppercase leading-relaxed">{rule}</p>
+                {event.agenda && (
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Agenda</h3>
+                    <div className="space-y-6">
+                      {event.agenda.map((item, i) => (
+                        <div key={i} className="flex items-start gap-6 group">
+                          <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-[10px] font-black text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shrink-0">
+                             {i+1}
+                          </div>
+                          <div className="pt-2">
+                             <p className="text-sm font-black text-[#292828] uppercase tracking-tight mb-1">{item}</p>
+                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Main Hall • 10:00 AM</p>
+                          </div>
                         </div>
                       ))}
-                   </div>
-                </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -200,39 +202,137 @@ export default function EventDetailPage() {
                       <ShieldCheck size={24} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Organizer</p>
-                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">{event.organizer || 'Checkout Verified'}</h4>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Host</p>
+                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">{event.organizer}</h4>
                     </div>
                   </div>
                   <button className="h-12 px-6 bg-[#292828]/5 text-[#292828] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] hover:text-white transition-all">Download Info Kit</button>
                 </div>
               </div>
             )}
-
-            {(activeTab === "Opportunities" || activeTab === "Attendees") && (
-              <div className="py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Live data sync for {activeTab} is currently being established...</p>
-              </div>
-            )}
           </div>
 
           {/* SIDEBAR */}
           <aside className="space-y-10">
+            {/* SMART MATCHES */}
             <div className="bg-[#292828] p-10 rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
               <Zap size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-6">
                    <Sparkles size={18} className="text-[#E53935]" />
-                   <h3 className="text-[11px] font-black uppercase tracking-widest">Neural Matching</h3>
+                   <h3 className="text-[11px] font-black uppercase tracking-widest">Pre-Event Matching</h3>
                 </div>
                 <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-10">
-                  We've mapped your structural gaps against the attendee list for optimal networking priority.
+                  Based on your business goals, we've identified 12 people you must connect with at this event.
                 </p>
-                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all">View Matches</button>
+                <div className="space-y-4 mb-10">
+                   {MOCK_MEMBERS.slice(0, 2).map(m => (
+                     <div key={m.id} className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                        <img src={m.avatar} className="h-10 w-10 rounded-xl" alt="" />
+                        <div>
+                           <p className="text-[11px] font-black text-white uppercase leading-none mb-1">{m.name}</p>
+                           <p className="text-[9px] font-bold text-emerald-400 uppercase">{m.matchScore}% Match</p>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all">Optimize Itinerary</button>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Posts</h3>
+              <div className="space-y-4">
+                {MOCK_POSTS.slice(0, 3).map(post => (
+                  <div key={post.id} className="p-6 bg-white border border-slate-100 rounded-3xl group cursor-pointer hover:border-[#E53935]/20 transition-all shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-red-50 text-[#E53935] rounded-lg">{post.type}</span>
+                      <span className="text-[10px] font-bold text-slate-300">{post.timestamp}</span>
+                    </div>
+                    <p className="text-sm font-bold text-[#292828] leading-snug line-clamp-2 mb-4">"{post.description}"</p>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#E53935] group-hover:translate-x-2 transition-transform">
+                      View Post <ArrowRight size={14} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </aside>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function OpportunityCard({ post }: { post: any }) {
+  return (
+    <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-6 sm:p-8 text-right">
+        <p className="text-[8px] sm:text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1 sm:mb-2">Match Score</p>
+        <p className="text-xl sm:text-3xl font-black text-[#292828] tracking-tighter tabular-nums group-hover:text-[#E53935] transition-colors">{post.matchScore}%</p>
+      </div>
+
+      <div className="flex items-center gap-4 mb-8">
+        <span className={cn(
+          "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider",
+          post.type === "Hiring" ? "bg-blue-50 text-blue-600" :
+          post.type === "Leads" ? "bg-emerald-50 text-emerald-600" :
+          post.type === "Partnership" ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
+        )}>
+          {post.type}
+        </span>
+        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{post.timestamp}</span>
+      </div>
+
+      <h3 className="text-2xl font-bold text-[#292828] leading-relaxed mb-10 pr-24 line-clamp-3">
+        "{post.description}"
+      </h3>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-8 border-t border-slate-50">
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden">
+             <img src={`https://i.pravatar.cc/150?u=${post.author}`} alt="" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Author</p>
+            <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">{post.author}</h4>
+          </div>
+        </div>
+
+        <button className="h-12 px-8 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg active:scale-95">
+           Connect
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AttendeeCard({ member }: { member: any }) {
+  return (
+    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex items-center justify-between">
+      <div className="flex items-center gap-5">
+        <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-md border-2 border-white relative shrink-0">
+          <img src={member.avatar} className="w-full h-full object-cover" alt="" />
+          <div className="absolute bottom-0 right-0 h-4 w-4 bg-emerald-500 border-2 border-white rounded-full" />
+        </div>
+        <div>
+          <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors uppercase tracking-tight leading-tight mb-1">{member.name}</h4>
+          <p className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+            <Briefcase size={12} /> {member.role} @ {member.company}
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+             <TrendingUp size={12} className="text-emerald-500" />
+             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{member.matchScore}% Match Score</span>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828] hover:text-white transition-all shadow-sm">
+          <UserPlus size={18} />
+        </button>
+        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+          <ChevronRight size={18} />
+        </button>
       </div>
     </div>
   );

@@ -36,11 +36,10 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   const { logout } = useAuth();
   
   const menuItems = [
-    { label: "Feed", href: "/home", icon: Home },
+    { label: "Requirement Feed", href: "/home", icon: Home },
     { label: "Directory", href: "/matches", icon: Users },
-    { label: "Map", href: "/explore", icon: Zap },
-    { label: "Advisors", href: "/advisors", icon: Award },
-    { label: "Communities", href: "/communities", icon: Globe },
+    { label: "Chat", href: "/chat", icon: MessageSquare },
+    { label: "Events", href: "/matches", icon: Calendar },
   ];
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -69,7 +68,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
         {/* User Quick Profile */}
         <div className="p-6 bg-[#292828]/5 border-b border-[#292828]/5">
            <div className="flex items-center gap-4 mb-6">
-              <div className="h-14 w-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-slate-100">
+              <div className="h-14 w-14 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-slate-100">
                   <img src={user?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
               </div>
               <div>
@@ -90,7 +89,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
               key={item.label} 
               href={item.href} 
               onClick={onClose}
-              className="flex items-center justify-between p-4 rounded-2xl text-[14px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group active:scale-95"
+              className="flex items-center justify-between p-4 rounded-xl text-[14px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group active:scale-95"
             >
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 rounded-xl bg-white border border-[#292828]/10 flex items-center justify-center text-[#292828] group-hover:text-[#E53935] shadow-sm transition-colors">

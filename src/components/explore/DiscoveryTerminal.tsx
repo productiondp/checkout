@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/match_engine";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function PartnerDiscovery() {
    const { user: authUser } = useAuth();
@@ -26,6 +27,7 @@ export default function PartnerDiscovery() {
    const [activeIntent, setActiveIntent] = useState<string | null>(null);
    const [results, setResults] = useState<any[]>([]);
    const [isLoading, setIsLoading] = useState(false);
+   const router = useRouter();
 
    const supabase = createClient();
 
@@ -155,7 +157,7 @@ export default function PartnerDiscovery() {
                         </div>
 
                         <button 
-                           onClick={() => window.location.href = `/profile/${profile.id}`}
+                           onClick={() => router.push(`/profile/${profile.id}`)}
                            className="w-full h-12 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-[#E53935] transition-all"
                         >
                            View Profile <ArrowRight size={14} />

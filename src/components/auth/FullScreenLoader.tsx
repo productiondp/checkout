@@ -9,34 +9,31 @@ export default function FullScreenLoader() {
       
       <div className="relative flex flex-col items-center">
         {/* LOGO */}
-        <div className="text-4xl font-black tracking-tighter text-white mb-2 uppercase italic">
+        <div className="text-xl font-bold tracking-wide text-white mb-4">
           CHECKOUT
         </div>
 
         {/* TEXT */}
-        <div className="space-y-2 text-center">
-          <p className="text-[10px] font-black text-[#E53935] uppercase tracking-[0.5em] animate-pulse">
-            Neural Handshake Active
-          </p>
-          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] italic">
+        <div className="space-y-1 text-center">
+          <div className="text-[10px] font-black text-white uppercase tracking-[0.7em]">
+            Checkout
+          </div>
+          <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.4em] italic">
             Setting things up...
           </p>
         </div>
 
         {/* PROGRESS BAR */}
-        <div className="w-64 h-[2px] bg-white/5 mt-8 overflow-hidden rounded-full border border-white/5">
-          <div className="h-full bg-gradient-to-r from-[#E53935] to-[#ff5252] animate-progress shadow-[0_0_15px_#E53935]" />
+        <div className="w-40 h-[2px] bg-white/10 mt-4 overflow-hidden">
+          <div className="h-full bg-[#E53935] animate-progress" />
         </div>
       </div>
 
       {/* SECURE LAYER DECORATION */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-30">
-        <div className="flex items-center gap-3">
-          <div className="h-[1px] w-8 bg-white/20" />
-          <span className="text-[9px] font-black text-white uppercase tracking-[0.5em]">Secure Initialization</span>
-          <div className="h-[1px] w-8 bg-white/20" />
-        </div>
-        <p className="text-[7px] font-bold text-white/20 uppercase tracking-widest">v 2.0.4 • Platform Stable</p>
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-3 opacity-20">
+        <div className="h-[1px] w-8 bg-white/30" />
+        <span className="text-[8px] font-black text-white uppercase tracking-widest">Secure Login</span>
+        <div className="h-[1px] w-8 bg-white/30" />
       </div>
     </div>
   );

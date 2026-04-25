@@ -36,6 +36,8 @@ export default function Page() {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isRolePeekActive, setIsRolePeekActive] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [signupAttempts, setSignupAttempts] = useState(0);
+  const [lastSignupTime, setLastSignupTime] = useState(0);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -67,6 +69,18 @@ export default function Page() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 🛡️ FRONTEND GUARD
+    const now = Date.now();
+    if (authMode === "signup") {
+      if (now - lastSignupTime < 10000) {
+        setError("Please wait a few seconds before trying again.");
+        return;
+      }
+    }
+
+    if (isLoading) return; // Prevent duplicate submission
+    
     setIsLoading(true);
     setError(null);
     
@@ -87,7 +101,15 @@ export default function Page() {
           },
         });
         
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
+            throw new Error("Too many attempts. Please wait a moment and try again.");
+          }
+          throw signUpError;
+        }
+
+        setSignupAttempts(prev => prev + 1);
+        setLastSignupTime(now);
 
         // MANUAL PROFILE CREATION (Reliable Fix)
         if (authData.user) {
@@ -102,9 +124,10 @@ export default function Page() {
              });
         }
         
+        analytics.track('USER_SIGNUP', authData.user?.id, { role: role });
         setIsSuccess(true);
         setTimeout(() => {
-          window.location.href = "/home";
+          router.push("/home");
         }, 1500);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({

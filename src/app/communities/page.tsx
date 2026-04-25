@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   Search, 
   Plus, 
@@ -17,54 +17,32 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { MOCK_COMMUNITIES } from "@/data/communities";
 import { Community, CommunityCategory } from "@/types/communities";
 import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/utils/supabase/client";
 
 export default function CommunitiesPage() {
   const [activeTab, setActiveTab] = useState<CommunityCategory>("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [communities, setCommunities] = useState<Community[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
-  const supabase = createClient();
 
-  useEffect(() => {
-    async function fetchCommunities() {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('communities')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (data) {
-        setCommunities(data.map(c => ({
-          ...c,
-          matchScore: 94, // Logic placeholder
-          memberCount: c.member_count || 0,
-          isFeatured: c.is_featured || false,
-          activity: c.activity_status || 'Active'
-        })));
-      }
-      setIsLoading(false);
-    }
-    fetchCommunities();
+  React.useEffect(() => {
     if (user) analytics.trackScreen('COMMUNITIES', user.id);
   }, [user]);
 
   const categories: CommunityCategory[] = ["All", "Hiring", "Partnership", "Leads", "Meetup", "Local"];
 
-  const filteredCommunities = communities.filter(comm => {
+  const filteredCommunities = MOCK_COMMUNITIES.filter(comm => {
     const matchesSearch = comm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          comm.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "All" || comm.category === activeTab;
     return matchesSearch && matchesTab;
   });
 
-  const featuredCommunities = communities.filter(c => c.isFeatured);
+  const featuredCommunities = MOCK_COMMUNITIES.filter(c => c.isFeatured);
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] pb-24">
@@ -72,7 +50,7 @@ export default function CommunitiesPage() {
       <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3 uppercase">Communities</h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3">Communities</h1>
             <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Join focused spaces that match your goals</p>
           </div>
           <div className="flex items-center gap-4">
@@ -106,51 +84,49 @@ export default function CommunitiesPage() {
       </div>
 
       {/* FEATURED SECTION */}
-      {featuredCommunities.length > 0 && (
-        <section className="mt-16 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
-            <div className="flex items-center gap-3 text-[#E53935]">
-              <Sparkles size={20} fill="currentColor" />
-              <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Communities</h2>
-            </div>
+      <section className="mt-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
+          <div className="flex items-center gap-3 text-[#E53935]">
+            <Sparkles size={20} fill="currentColor" />
+            <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Communities</h2>
           </div>
-          
-          <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 lg:px-10 pb-10 max-w-7xl mx-auto">
-            {featuredCommunities.map((comm) => (
-              <div 
-                key={comm.id}
-                onClick={() => router.push(`/communities/${comm.id}`)}
-                className="min-w-[300px] sm:min-w-[340px] md:min-w-[420px] bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
-              >
-                <div className="flex items-start justify-between mb-8">
-                  <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
-                    <Users size={32} />
-                  </div>
-                  <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-wider">
-                    {comm.activity}
-                  </div>
+        </div>
+        
+        <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 lg:px-10 pb-10 max-w-7xl mx-auto">
+          {featuredCommunities.map((comm) => (
+            <div 
+              key={comm.id}
+              onClick={() => router.push(`/communities/${comm.id}`)}
+              className="min-w-[300px] sm:min-w-[340px] md:min-w-[420px] bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
+            >
+              <div className="flex items-start justify-between mb-8">
+                <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+                  <Users size={32} />
                 </div>
-                <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors">{comm.name}</h3>
-                <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-2">{comm.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {comm.tags?.map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex items-center gap-2">
-                    <Users size={14} className="text-slate-300" />
-                    <span className="text-xs font-black text-[#292828]">{comm.memberCount.toLocaleString()} Members</span>
-                  </div>
-                  <button className="h-10 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join</button>
+                <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  {comm.activity}
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors">{comm.name}</h3>
+              <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-2">{comm.description}</p>
+              
+              <div className="flex flex-wrap gap-2 mb-8">
+                {comm.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-2">
+                  <Users size={14} className="text-slate-300" />
+                  <span className="text-xs font-black text-[#292828]">{comm.memberCount.toLocaleString()} Members</span>
+                </div>
+                <button className="h-10 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* CATEGORY TABS & MAIN LIST */}
       <main className="max-w-7xl mx-auto px-6 lg:px-10 mt-12">
@@ -171,30 +147,75 @@ export default function CommunitiesPage() {
           ))}
         </div>
 
-        {isLoading ? (
-          <div className="py-40 text-center animate-pulse">
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Synchronizing Global Hubs...</p>
-          </div>
-        ) : filteredCommunities.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCommunities.map((comm) => (
-              <CommunityCard key={comm.id} community={comm} />
-            ))}
-          </div>
-        ) : (
-          <div className="py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredCommunities.map((comm) => (
+            <CommunityCard key={comm.id} community={comm} />
+          ))}
+        </div>
+
+        {filteredCommunities.length === 0 && (
+          <div className="py-32 text-center bg-white rounded-[3rem] border border-slate-50 shadow-sm">
             <div className="h-24 w-24 bg-slate-50 rounded-full mx-auto flex items-center justify-center text-slate-200 mb-8">
               <Globe size={48} />
             </div>
             <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tight">No Communities Found</h3>
-            <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-[10px]">Try adjusting your search or filters.</p>
+            <p className="text-slate-400 font-bold mt-2">Try adjusting your search or filters.</p>
           </div>
         )}
       </main>
 
+      {/* DISCOVERY LOGIC - SMART SECTIONS */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-32 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Recommended for You</h2>
+            <button className="text-[10px] font-black text-[#E53935] uppercase tracking-widest hover:underline">See All</button>
+          </div>
+          <div className="space-y-4">
+            {MOCK_COMMUNITIES.slice(0, 3).map(comm => (
+              <div key={comm.id} className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-[#E53935]/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-5">
+                  <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                    <Zap size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors">{comm.name}</h4>
+                    <p className="text-xs font-bold text-slate-400 uppercase">{comm.category} • {comm.memberCount} Members</p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-slate-300 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Near Bangalore</h2>
+            <button className="text-[10px] font-black text-[#E53935] uppercase tracking-widest hover:underline">See All</button>
+          </div>
+          <div className="space-y-4">
+            {MOCK_COMMUNITIES.slice(3, 6).map(comm => (
+              <div key={comm.id} className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-[#E53935]/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-5">
+                  <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                    <MapPin size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors">{comm.name}</h4>
+                    <p className="text-xs font-bold text-slate-400 uppercase">{comm.category} • {comm.memberCount} Members</p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-slate-300 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CREATE MODAL */}
       {isCreateModalOpen && (
-        <CreateCommunityFlow onClose={() => setIsCreateModalOpen(false)} onCreated={() => router.refresh()} />
+        <CreateCommunityFlow onClose={() => setIsCreateModalOpen(false)} />
       )}
     </div>
   );
@@ -219,11 +240,11 @@ function CommunityCard({ community }: { community: Community }) {
           {community.activity}
         </div>
       </div>
-      <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors uppercase tracking-tight">{community.name}</h3>
-      <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-3 italic">"{community.description}"</p>
+      <h3 className="text-2xl font-black text-[#292828] mb-4 group-hover:text-[#E53935] transition-colors">{community.name}</h3>
+      <p className="text-sm font-bold text-slate-400 leading-relaxed mb-8 line-clamp-3">{community.description}</p>
       
       <div className="flex flex-wrap gap-2 mb-10 mt-auto">
-        {community.tags?.map(tag => (
+        {community.tags.map(tag => (
           <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
         ))}
       </div>
@@ -239,9 +260,8 @@ function CommunityCard({ community }: { community: Community }) {
   );
 }
 
-function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCreated: () => void }) {
+function CreateCommunityFlow({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(1);
-  const [isPublishing, setIsPublishing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -250,38 +270,18 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
     visibility: "Public"
   });
 
-  const supabase = createClient();
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
 
-  const handleCreate = async () => {
-    setIsPublishing(true);
-    const { error } = await supabase.from('communities').insert({
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      tags: formData.tags.split(',').map(t => t.trim()),
-      visibility: formData.visibility,
-      activity_status: 'Active',
-      member_count: 1
-    });
-
-    if (!error) {
-      onCreated();
-      onClose();
-    }
-    setIsPublishing(false);
-  };
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 lg:p-10">
-      <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-500" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md" onClick={onClose} />
       
       <div className="bg-white w-full max-w-2xl rounded-[2.5rem] sm:rounded-[3rem] shadow-4xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="bg-[#292828] p-6 sm:p-10 text-white relative">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Configuration {step} of 3</span>
-            <button onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E53935] transition-all">×</button>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Step {step} of 3</span>
+            <button onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all">×</button>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter">Create Community</h2>
           <div className="flex gap-2 mt-6 sm:mt-8">
@@ -301,7 +301,7 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
                   placeholder="e.g. Bangalore Founders Network" 
-                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all uppercase"
+                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all"
                 />
               </div>
               <div className="space-y-3">
@@ -310,7 +310,7 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   placeholder="What is the primary intent of this community?" 
-                  className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all resize-none italic"
+                  className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all resize-none"
                 />
               </div>
             </div>
@@ -342,7 +342,7 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
                   value={formData.tags}
                   onChange={e => setFormData({...formData, tags: e.target.value})}
                   placeholder="e.g. Tech, Scaling, B2B" 
-                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all uppercase"
+                  className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] transition-all"
                 />
               </div>
             </div>
@@ -365,8 +365,8 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
                         <Globe size={20} />
                       </div>
                       <div>
-                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Public Hub</h4>
-                        <p className="text-xs font-bold text-slate-400 uppercase">Neural discovery active</p>
+                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Public</h4>
+                        <p className="text-xs font-bold text-slate-400 uppercase">Anyone can join instantly</p>
                       </div>
                     </div>
                     <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all", formData.visibility === "Public" ? "border-[#E53935] bg-[#E53935]" : "border-slate-200")}>
@@ -386,8 +386,8 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
                         <Lock size={20} />
                       </div>
                       <div>
-                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Private Hub</h4>
-                        <p className="text-xs font-bold text-slate-400 uppercase">Verification required</p>
+                        <h4 className="text-lg font-black text-[#292828] uppercase tracking-tight">Private</h4>
+                        <p className="text-xs font-bold text-slate-400 uppercase">Approval required to join</p>
                       </div>
                     </div>
                     <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all", formData.visibility === "Private" ? "border-[#E53935] bg-[#E53935]" : "border-slate-200")}>
@@ -409,11 +409,10 @@ function CreateCommunityFlow({ onClose, onCreated }: { onClose: () => void, onCr
               </button>
             )}
             <button 
-              onClick={step === 3 ? handleCreate : nextStep}
-              disabled={isPublishing}
-              className="flex-1 h-16 bg-[#292828] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#E53935] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              onClick={step === 3 ? onClose : nextStep}
+              className="flex-1 h-16 bg-[#292828] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#E53935] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3"
             >
-              {isPublishing ? "Syncing..." : (step === 3 ? "Launch Hub" : "Next Step")} <ArrowRight size={18} />
+              {step === 3 ? "Create Community" : "Next Step"} <ArrowRight size={18} />
             </button>
           </div>
         </div>

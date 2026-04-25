@@ -3,6 +3,7 @@ import "./globals.css";
 import ClientLayout from "../components/layout/ClientLayout";
 import { Inter, Outfit } from "next/font/google";
 import { AuthProvider, AuthGate } from "@/hooks/useAuth";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-outfit" });
@@ -29,8 +30,8 @@ export const metadata = {
   },
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 
@@ -43,11 +44,13 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${outfit.variable} h-full overflow-hidden`}>
       <body className="font-sans bg-white h-full overscroll-none">
         <AuthProvider>
-          <AuthGate>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </AuthGate>
+          <ErrorBoundary>
+            <AuthGate>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </AuthGate>
+          </ErrorBoundary>
         </AuthProvider>
       </body>
     </html>

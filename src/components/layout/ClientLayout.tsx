@@ -8,7 +8,7 @@ import DesktopSidebar from "./DesktopSidebar";
 import RightSocialRail from "./RightSocialRail";
 
 import { ConnectionProvider } from "@/hooks/useConnections";
-import { AuthProvider } from "@/hooks/useAuth";
+
 import { analytics } from "@/utils/analytics";
 import { insights } from "@/utils/insights_engine";
 import { healthMonitor } from "@/utils/health_monitor";

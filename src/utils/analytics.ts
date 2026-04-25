@@ -1,19 +1,20 @@
 /**
- * Checkout OS Analytics Engine (V2)
- * Purpose: Track core user behavior, funnel conversion, and first-value signals.
+ * Checkout OS Analytics Engine (V2 - Production Monitoring)
+ * Purpose: Track core user behavior, funnel conversion, and critical safety signals.
  */
 import { createClient } from "@/utils/supabase/client";
 
-type EventType = 
-  | 'SIGNUP_COMPLETED'
+export type EventType = 
+  | 'USER_SIGNUP'
+  | 'USER_VERIFIED'
   | 'ONBOARDING_COMPLETED'
-  | 'FIRST_MANDATE_CREATED'
-  | 'CONNECT_REQUEST_SENT'
-  | 'CONNECT_ACCEPTED'
-  | 'MESSAGE_INITIATED'
-  | 'SCREEN_VIEW'
-  | 'FEED_CLICK'
+  | 'REQUIREMENT_CREATED'
+  | 'CONNECTION_SENT'
   | 'SESSION_START'
+  | 'SCREEN_VIEW'
+  | 'AUTH_TIMEOUT'
+  | 'PROFILE_FETCH_FAILURE'
+  | 'ROUTING_FALLBACK'
   | 'LOW_ACTIVITY_PROMPT';
 
 interface EventData {
@@ -28,11 +29,7 @@ class AnalyticsEngine {
   private firstActionTaken: boolean = false;
   private sessionEvents: EventType[] = [];
 
-  private constructor() {
-    if (typeof window !== 'undefined') {
-      this.track('SESSION_START');
-    }
-  }
+  private constructor() {}
 
   public static getInstance(): AnalyticsEngine {
     if (!AnalyticsEngine.instance) {
@@ -51,31 +48,31 @@ class AnalyticsEngine {
       metadata: {
         ...metadata,
         timeSinceStart: timestamp - this.startTime,
-        ttfa: !this.firstActionTaken && !['SESSION_START', 'SCREEN_VIEW'].includes(event) ? timestamp - this.startTime : undefined
       }
     };
 
     this.sessionEvents.push(event);
 
-    if (!this.firstActionTaken && !['SESSION_START', 'SCREEN_VIEW'].includes(event)) {
-       this.firstActionTaken = true;
-       console.log(`[ANALYTICS] TTFA Detected: ${eventData.metadata.ttfa}ms`);
+    // STRUCTURED LOGGING
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`%c[ANALYTICS] ${event}`, 'color: #E53935; font-weight: bold;', eventData);
+    } else {
+      // PRODUCTION MONITORING LOG
+      console.log(`[MONITORING] ${event} | User: ${userId || 'anonymous'}`);
     }
-
-    // PRODUCTION LOGGING
-    console.log(`%c[ANALYTICS] ${event}`, 'color: #E53935; font-weight: bold;', eventData);
     
-    // PERSIST TO SUPABASE if userId is available
-    if (userId) {
-      try {
-        const supabase = createClient();
-        await supabase.from('analytics_events').insert([{
-          user_id: userId,
-          event_type: event,
-          metadata: eventData.metadata
-        }]);
-      } catch (err) {
-        console.error('[ANALYTICS] Failed to persist event:', err);
+    // PERSIST TO SUPABASE
+    try {
+      const supabase = createClient();
+      await supabase.from('analytics_events').insert([{
+        user_id: userId || null,
+        event_type: event,
+        metadata: eventData.metadata
+      }]);
+    } catch (err) {
+      // Don't crash on analytics failure
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[ANALYTICS] Persistence failed:', err);
       }
     }
   }
@@ -86,10 +83,6 @@ class AnalyticsEngine {
 
   public getSessionEvents(): EventType[] {
     return this.sessionEvents;
-  }
-
-  public getTTFA(): number | null {
-    return this.firstActionTaken ? Date.now() - this.startTime : null;
   }
 
   public hasAction(events: EventType[]): boolean {

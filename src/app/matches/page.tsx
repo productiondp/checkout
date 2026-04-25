@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 // --- TYPES ---
 type MatchProfile = {
@@ -49,6 +50,7 @@ type MatchProfile = {
     experience?: string;
     intents?: string[];
     checkoutScore?: number;
+    reasons?: string[];
   };
   connection_status?: "NONE" | "PENDING" | "ACCEPTED";
 };
@@ -87,8 +89,6 @@ const calculateProfileMatch = (me: any, target: any) => {
   return { score: Math.min(score, 98), reasons: reasons.slice(0, 2) };
 };
 
-import { useAuth } from "@/hooks/useAuth";
-
 export default function PremiumPartnersPage() {
   const { user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState<"DISCOVER" | "REQUESTS">("DISCOVER");
@@ -126,8 +126,13 @@ export default function PremiumPartnersPage() {
         const matchData = calculateProfileMatch(myProfile, p);
         return {
           ...p,
+          skills: p.skills || [],
           connection_status: conn ? (conn.status === 'PENDING' ? 'PENDING' : 'ACCEPTED') : 'NONE',
-          metadata: { ...p.metadata, match_score: matchData.score, reasons: matchData.reasons }
+          metadata: { 
+            ...(p.metadata || {}), 
+            match_score: matchData.score, 
+            reasons: matchData.reasons 
+          }
         };
       });
       setPartners(mapped.sort((a,b) => (b.metadata?.match_score || 0) - (a.metadata?.match_score || 0)));
@@ -160,32 +165,26 @@ export default function PremiumPartnersPage() {
     setIsSending(false);
   };
 
-  const handleRequestAction = async (id: string, status: 'ACCEPTED' | 'REJECTED', partnerId?: string) => {
+  const handleRequestAction = async (id: string, status: 'ACCEPTED' | 'REJECTED') => {
     const { error } = await supabase.from('connections').update({ status }).eq('id', id);
-    if (!error) {
-      if (status === 'ACCEPTED' && partnerId) {
-        router.push(`/chat?user=${partnerId}`);
-      } else {
-        initPartners();
-      }
-    }
+    if (!error) initPartners();
   };
 
   const filteredPartners = useMemo(() => {
-    return partners.filter(p => 
-      p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    return partners.filter(p => {
+      const nameMatch = p.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const skillMatch = p.skills?.some(s => s?.toLowerCase().includes(searchQuery.toLowerCase()));
+      const roleMatch = p.role?.toLowerCase().includes(searchQuery.toLowerCase());
+      return nameMatch || skillMatch || roleMatch;
+    });
   }, [partners, searchQuery]);
 
   const bestMatches = filteredPartners.slice(0, 6);
-  const complimentary = filteredPartners.filter(p => !p.skills.some(s => authUser?.skills?.includes(s))).slice(0, 6);
+  const complimentary = filteredPartners.filter(p => !p.skills?.some(s => authUser?.skills?.includes(s))).slice(0, 6);
   const regional = filteredPartners.filter(p => p.location === authUser?.location).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] selection:bg-[#E53935]/10 pb-40">
-      
-      {/* PARTNER DISCOVERY HEADER */}
       <header className="bg-white border-b border-slate-100 sticky top-0 z-[60] px-6 py-4 lg:px-10 lg:py-6">
          <div className="max-w-none mx-auto flex flex-col xl:flex-row items-center justify-between gap-6">
             
@@ -194,7 +193,7 @@ export default function PremiumPartnersPage() {
                <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-1">
                      <div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />
-                     <h1 className="text-xl lg:text-2xl font-black text-[#292828] uppercase tracking-[-0.04em] leading-none font-outfit">Neural Match Engine</h1>
+                     <h1 className="text-xl lg:text-2xl font-black text-[#292828] uppercase tracking-[-0.04em] leading-none font-outfit">Find Your Profile</h1>
                   </div>
                   <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] pl-5">Business Directory v.7</p>
                </div>
@@ -261,64 +260,83 @@ export default function PremiumPartnersPage() {
 
       <main className="max-w-none mx-auto px-6 lg:px-10 pt-10 lg:pt-16">
          
-         <AnimatePresence mode="wait">
-            {activeTab === "DISCOVER" ? (
+         {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-40 animate-pulse">
+               <div className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Loader2 className="animate-spin text-slate-200" size={24} />
+               </div>
+               <p className="text-[11px] font-black text-slate-300 uppercase tracking-[0.4em]">Hydrating Directory...</p>
+            </div>
+         ) : (
+            <AnimatePresence mode="wait">
+               {activeTab === "DISCOVER" ? (
               <motion.div 
                 key="discover" 
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
                 className="space-y-20 lg:space-y-32"
               >
-                 {/* SECTION: BEST MATCHES */}
-                 <section className="space-y-12">
-                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
-                       <Zap size={14} className="text-[#E53935]" /> Best Matches
-                    </h2>
-                    <div className={cn(
-                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
-                    )}>
-                       {bestMatches.map((p) => (
-                         viewMode === "GRID" 
-                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                       ))}
+                  {filteredPartners.length === 0 ? (
+                    <div className="py-40 text-center bg-slate-50 border border-dashed border-slate-200 rounded-[3rem]">
+                       <Search size={40} className="mx-auto text-slate-200 mb-6" />
+                       <h3 className="text-lg font-black text-[#292828] uppercase tracking-tight mb-2">No Profiles Found</h3>
+                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Try adjusting your search or filters to find more matches</p>
                     </div>
-                 </section>
+                  ) : (
+                    <>
+                       {/* SECTION: BEST MATCHES */}
+                       <section className="space-y-12">
+                          <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                             <Zap size={14} className="text-[#E53935]" /> Best Matches
+                          </h2>
+                          <div className={cn(
+                            viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                          )}>
+                             {bestMatches.map((p) => (
+                               viewMode === "GRID" 
+                                ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                                : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                             ))}
+                          </div>
+                       </section>
 
-                 {/* SECTION: SKILLS */}
-                 <section className="space-y-12">
-                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
-                       <BrainCircuit size={14} className="text-emerald-600" /> New Opportunities
-                    </h2>
-                    <div className={cn(
-                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
-                    )}>
-                       {complimentary.map((p) => (
-                         viewMode === "GRID" 
-                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                       ))}
-                    </div>
-                 </section>
+                       {complimentary.length > 0 && (
+                          <section className="space-y-12">
+                             <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                                <BrainCircuit size={14} className="text-emerald-600" /> New Opportunities
+                             </h2>
+                             <div className={cn(
+                               viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                             )}>
+                                {complimentary.map((p) => (
+                                  viewMode === "GRID" 
+                                   ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                                   : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                                ))}
+                             </div>
+                          </section>
+                       )}
 
-                 {/* SECTION: REGIONAL */}
-                 <section className="space-y-12">
-                    <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
-                       <MapPin size={14} className="text-blue-500" /> People Nearby
-                    </h2>
-                    <div className={cn(
-                      viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
-                    )}>
-                       {regional.map((p) => (
-                         viewMode === "GRID" 
-                          ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                          : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
-                       ))}
-                    </div>
-                 </section>
+                       {regional.length > 0 && (
+                          <section className="space-y-12">
+                             <h2 className="text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] lg:tracking-[0.4em] flex items-center gap-4">
+                                <MapPin size={14} className="text-blue-500" /> People Nearby
+                             </h2>
+                             <div className={cn(
+                               viewMode === "GRID" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                             )}>
+                                {regional.map((p) => (
+                                  viewMode === "GRID" 
+                                   ? <PartnerCard key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                                   : <PartnerListRow key={p.id} partner={p} onConnect={() => setConnectModal({ isOpen: true, user: p })} />
+                                ))}
+                             </div>
+                          </section>
+                       )}
+                    </>
+                  )}
               </motion.div>
             ) : (
-              // ... requests section remains similar
-<motion.div 
+              <motion.div 
                 key="requests" 
                 initial={{ opacity: 0, y: 20 }} 
                 animate={{ opacity: 1, y: 0 }}
@@ -330,7 +348,7 @@ export default function PremiumPartnersPage() {
                  </div>
 
                  {requests.length > 0 ? requests.map((req) => (
-                   <RequestCard key={req.id} request={req} onAction={(id, status) => handleRequestAction(id, status, req.sender?.id)} />
+                   <RequestCard key={req.id} request={req} onAction={handleRequestAction} />
                  )) : (
                    <div className="py-40 text-center bg-slate-50 border border-dashed border-slate-200 rounded-[3rem]">
                       <Users size={40} className="mx-auto text-slate-200 mb-6" />
@@ -340,7 +358,7 @@ export default function PremiumPartnersPage() {
               </motion.div>
             )}
          </AnimatePresence>
-
+         )}
       </main>
 
       {/* FILTER PANEL */}

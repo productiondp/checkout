@@ -4,7 +4,6 @@ import React from "react";
 import { 
   Zap, 
   Target, 
-  Briefcase, 
   Users, 
   Sparkles, 
   MapPin, 
@@ -13,13 +12,16 @@ import {
   Bookmark,
   ChevronUp,
   Maximize2,
-  LayoutGrid,
   Medal,
-  BrainCircuit,
   Pencil,
   Trash2,
   MoreVertical,
-  Star
+  Star,
+  ShieldCheck,
+  CheckCircle2,
+  GraduationCap,
+  Briefcase,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/utils/analytics";
@@ -44,319 +46,258 @@ export default function UniversalFeedCard({
   onDelete
 }: UniversalFeedCardProps) {
   const [showMenu, setShowMenu] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
-  // Safety check for post data
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
   if (!post) return null;
 
-  const { type, title, author, avatar, time, location, matchScore, badge, rank, domain } = post;
+  const { type, title, author, avatar, time, location, matchScore, badge, rank, context } = post;
 
-  const isUpdate = type?.toUpperCase() === "UPDATE";
-  const isLead = type?.toUpperCase() === "LEAD";
-  const isHiring = type?.toUpperCase() === "HIRING";
-  const isPartner = type?.toUpperCase() === "PARTNER";
-  const isMeetup = type?.toUpperCase() === "MEETUP";
+  const typeMap: Record<string, string> = {
+    LEAD: "REQUIREMENT",
+    HIRING: "REQUIREMENT",
+    PARTNER: "PARTNERSHIP",
+    PARTNERSHIP: "PARTNERSHIP",
+    MEETUP: "MEETUP"
+  };
 
+  const normalizedType = typeMap[type?.toUpperCase()] || "REQUIREMENT";
+  
   const typeConfig: any = {
-    LEAD: { icon: Target, label: "Requirement", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
-    HIRING: { icon: Briefcase, label: "Hiring", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
-    PARTNER: { icon: Sparkles, label: "PARTNERSHIP", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
-    MEETUP: { icon: LayoutGrid, label: "EXPERT SESSION", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
-    UPDATE: { icon: Zap, label: "CHECKOUT NOW", color: "bg-slate-600", light: "bg-slate-50 text-slate-600" }
+    REQUIREMENT: { 
+      icon: Target, 
+      label: "Need", 
+      color: "bg-[#E53935]", 
+      cta: "Send Offer"
+    },
+    PARTNERSHIP: { 
+      icon: Sparkles, 
+      label: "Partner", 
+      color: "bg-[#292828]", 
+      cta: "Start Chat"
+    },
+    MEETUP: { 
+      icon: Users, 
+      label: "Meetup", 
+      color: "bg-emerald-600", 
+      cta: "Join"
+    }
   };
 
-  const badgeConfig: any = {
-    Bronze: "border-orange-200 text-orange-600",
-    Silver: "border-slate-200 text-slate-400",
-    Gold: "border-yellow-300 text-yellow-600",
-    Elite: "border-[#292828] text-white bg-[#292828] px-3"
+  const contextIcons: any = {
+    BUSINESS: Briefcase,
+    PROFESSIONAL: User,
+    STUDENT: GraduationCap,
+    ADVISOR: ShieldCheck
   };
 
-  const config = typeConfig[type?.toUpperCase()] || typeConfig.UPDATE;
+  const config = typeConfig[normalizedType];
+  const ContextIcon = contextIcons[context?.toUpperCase()] || User;
 
   return (
     <div className={cn(
-      "group relative bg-white border border-[#292828]/10 rounded-[14px] transition-all duration-500",
-      isExpanded && "ring-2 ring-[#292828]/5",
-      (isLead || isPartner || isHiring) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
-      (isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
+      "group relative bg-white border border-[#292828]/5 rounded-2xl transition-all duration-500 hover:border-[#292828]/20 hover:shadow-2xl hover:shadow-black/5",
+      isExpanded && "ring-2 ring-[#292828]/5"
     )}>
-      {/* Highlight Strip */}
-      {(isLead || isPartner || isHiring || isMeetup) && (
-        <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[14px]",
-          (isLead || isPartner || isHiring) ? "bg-[#E53935]" : "bg-emerald-600"
-        )} />
-      )}
-
-      <div className={cn("p-6 lg:p-8 relative z-10", (isLead || isMeetup || isHiring) && "pl-10 lg:pl-12")}>
+      <div className="p-5 lg:p-6 relative z-10">
         
-        {/* 1. CORE CONTENT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-10">
-           
-           {/* Identity */}
-           <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="relative">
-                    <div className="h-12 w-12 rounded-xl bg-slate-100 border border-[#292828]/10 overflow-hidden shadow-sm">
-                       <img src={avatar} className="h-full w-full grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt="" />
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+        {/* 1. HEADER: AUTHOR & CONTEXT (LEFT) & POST TYPE (RIGHT) */}
+        <div className="flex items-center justify-between mb-5">
+           <div className="flex items-center gap-3">
+              <div className="relative group">
+                 <div className={cn(
+                   "h-10 w-10 rounded-xl overflow-hidden border-2 relative z-10 transition-transform active:scale-95",
+                   badge === "Master Partner" ? "border-amber-400 shadow-lg shadow-amber-500/10" : "border-white shadow-sm"
+                 )}>
+                    <img src={avatar} className="h-full w-full object-cover grayscale contrast-125" alt="" />
                  </div>
-                 <div>
-                    <h4 className="text-[14px] font-black text-[#292828] uppercase tracking-tight leading-none mb-1">{author}</h4>
-                    <div className="subheading-editorial !mb-0 flex items-center gap-1.5 !text-[11px]">
-                       <Clock size={10} /> {time}
-                    </div>
+                 <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-lg bg-white border border-slate-100 shadow-xl flex items-center justify-center z-20">
+                    <span className="text-[7px] font-black text-[#292828]">{(post.author_profile?.match_score ?? 50)}</span>
                  </div>
               </div>
 
-              {/* Metrics */}
-              <div className="space-y-3 pt-4 border-t border-[#292828]/5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {badge && (
-                      <div className={cn("h-6 flex items-center px-2.5 rounded-md border text-[8px] font-bold uppercase", badgeConfig[badge] || badgeConfig.Silver)}>
-                        {badge}
-                      </div>
+              <div className="text-left">
+                 <div className="flex items-center justify-start gap-1.5 mb-0.5">
+                    <p className="text-sm font-black text-[#292828] leading-none">{author}</p>
+                    {post.author_profile?.metadata?.subscription_tier && post.author_profile.metadata.subscription_tier !== 'FREE' && (
+                       <div className="h-3.5 w-3.5 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white">
+                          <CheckCircle2 size={10} strokeWidth={4} />
+                       </div>
                     )}
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                     <div className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#292828]">
-                        <Medal size={16} />
-                     </div>
-                     <div>
-                        <p className="text-[8px] font-bold text-[#666666] uppercase leading-none mb-0.5">Local rank</p>
-                        <p className="text-[10px] font-bold text-[#E53935] uppercase">{rank}</p>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            {/* DATA BLOCK */}
-            <div className="space-y-6">
-               <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <div className={cn(
-                      "h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-white shadow-sm",
-                      config.color
-                    )}>
-                       <config.icon size={10} className="mr-1.5" />
-                       {config.label}
+                    <div className="h-4 px-1.5 rounded-md border border-slate-100 flex items-center gap-1 text-[7px] font-black uppercase text-slate-400 ml-1">
+                       <ContextIcon size={8} />
+                       {context || "PROFESSIONAL"}
                     </div>
-                    {domain && domain !== type && (
-                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-[#292828] bg-slate-100 border border-slate-200 uppercase">
-                         <BrainCircuit size={10} className="mr-1.5 text-[#E53935]" />
-                         {domain}
-                      </div>
-                    )}
-                    
-                    {matchScore > 85 && (
-                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase">
-                         <Star size={10} className="mr-1.5 fill-emerald-600" />
-                         Recommended for you
-                      </div>
-                    )}
-                    
-                    {matchScore > 90 && (
-                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935] bg-red-50 border border-[#E53935]/20 uppercase animate-pulse">
-                         <Zap size={10} className="mr-1.5 fill-[#E53935]" />
-                         High match for you
-                      </div>
-                    )}
-                    {new Date().getTime() - new Date(post.created_at).getTime() < 86400000 && (
-                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase">
-                         New opportunity
-                      </div>
-                    )}
-
-                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-slate-400 border border-slate-100 uppercase">
-                       <MapPin size={10} className="mr-1.5" />
-                       {location}
-                    </div>
-                  </div>
-                  
-                  <h3 className={cn(
-                    "transition-colors duration-500",
-                    (isLead || isPartner || isHiring) ? "text-[#E53935]" : (isMeetup) ? "text-emerald-600" : "text-[#111111] hover:text-[#E53935]"
-                  )}>
-                     {title}
-                  </h3>
-               </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 p-6 bg-[#F8FAFC] border border-[#292828]/5 rounded-[10px] relative">
-                  {isMeetup && (
-                     <div className="absolute top-4 right-6 flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-[#111111] uppercase">{post.joined}/{post.maxSlots} Joined</span>
-                     </div>
-                  )}
-                  {isLead && (
-                     <>
-                        <DataField label="Description" value={post.content} highlight />
-                        <DataField label="Budget range" value={post.budget} color="text-blue-600" />
-                        <DataField label="Deadline" value={post.due_date} color="text-[#E53935]" />
-                        <DataField label="Verified Location" value={location} icon={<MapPin size={12} />} />
-                     </>
-                  )}
-                  {isMeetup && (
-                     <>
-                        <DataField label="Selected expert" value={post.advisor || "Awaiting Expert"} color="text-emerald-600" highlight />
-                        <DataField label="Expert rank" value={`Local ranking`} />
-                        <DataField label="Pay type" value={post.payment_type || "Shared cost"} color="text-emerald-600" />
-                        <DataField label="Field" value={domain} />
-                     </>
-                  )}
-                  {isHiring && (
-                     <>
-                        <DataField label="Key Skills" value={post.skills_required?.join(', ') || 'General Help'} highlight />
-                        <DataField label="Work structure" value={post.work_type} />
-                        <DataField label="Project duration" value={post.duration} />
-                        <DataField label="Hub location" value={location} />
-                     </>
-                  )}
-                  {isPartner && (
-                     <>
-                        <DataField label="B2B offer" value={post.offer} highlight />
-                        <DataField label="Resource need" value={post.need} highlight />
-                        <DataField label="Partnership term" value={post.timeline} />
-                        <DataField label="Local Location" value={location} />
-                     </>
-                  )}
-                  {isUpdate && (
-                     <>
-                        <DataField label="Status" value={post.content} highlight />
-                        <DataField label="Goal" value={post.need} />
-                        <DataField label="City" value={location} />
-                        <DataField label="Source" value="Verified update" />
-                     </>
-                  )}
-               </div>
-            </div>
-         </div>
-
-         {/* Footer */}
-         <div className="mt-8 pt-6 border-t border-[#292828]/5 flex flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-start selection:bg-none relative group/ai">
-                     <div className="flex items-center gap-1.5 mb-1.5 opacity-0 group-hover/ai:opacity-100 transition-opacity">
-                        <Sparkles size={8} className="text-[#E53935] animate-pulse" />
-                        <span className="text-[7px] font-black text-[#E53935] uppercase tracking-widest">Match Score</span>
-                     </div>
-                     <p className="subheading-editorial !text-[#666666] !mb-1">
-                        Alignment
-                     </p>
-                     <div className="flex items-baseline gap-1">
-                        <span className={cn(
-                          "text-2xl font-bold tabular-nums leading-none tracking-tighter",
-                          isMeetup ? "text-emerald-600" : "text-[#111111]"
-                        )}>
-                          {matchScore}
-                        </span>
-                        <span className={cn(
-                          "text-[10px] font-bold",
-                          isMeetup ? "text-emerald-600/30" : "text-[#666666]/30"
-                        )}>%</span>
-                     </div>
-                  </div>
-               </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-               {isMeetup ? (
-                  <div className="flex items-center gap-2">
-                     <button className="h-12 px-6 bg-emerald-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2">
-                        Join Group <ArrowUpRight size={14} />
-                     </button>
-                     <button className="h-12 px-6 bg-white border border-slate-200 text-[#111111] rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
-                        Details
-                     </button>
-                  </div>
-               ) : (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      analytics.track('FEED_CLICK', currentUserId, { postId: post.id, action: (isLead || isHiring) ? 'view_more' : 'connect', type: post.type });
-                      onAction?.();
-                    }}
-                    className={cn(
-                      "h-12 px-8 rounded-xl text-[10px] font-bold uppercase tracking-[0.1em] shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
-                      "bg-[#292828] text-white hover:bg-[#E53935]"
-                    )}
-                  >
-                     {(isLead || isHiring) ? "View More" : "Connect"}
-                     <ArrowUpRight size={16} strokeWidth={3} />
-                  </button>
-               )}
-               
-               <button className="h-12 w-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#E53935] hover:border-[#E53935] transition-all shrink-0">
-                  <Bookmark size={18} />
-               </button>
-               
-               {/* Only show edit/delete for the post owner */}
-               {(currentUserId === post.user_id || currentUserId === post.author_id) && (
-                 <div className="relative">
-                    <button 
-                      onClick={() => setShowMenu(!showMenu)}
-                      className={cn(
-                        "h-12 w-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#292828] hover:border-[#292828] transition-all shrink-0",
-                        showMenu && "bg-[#292828] text-white border-[#292828]"
-                      )}
-                    >
-                       <MoreVertical size={18} />
-                    </button>
-
-                    {showMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#292828]/10 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
-                         <div className="px-4 py-3 border-b border-slate-50 bg-slate-50/50">
-                            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Feed Actions</p>
-                         </div>
-                         <div className="p-1.5">
-                            <button 
-                              onClick={() => { onEdit?.(post); setShowMenu(false); }}
-                              className="w-full h-11 px-4 flex items-center gap-3 text-[#292828] hover:bg-slate-50 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider"
-                            >
-                               <div className="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-[#292828]">
-                                  <Pencil size={12} />
-                                </div>
-                               Edit Requirement
-                            </button>
-                            <button 
-                              onClick={() => { onDelete?.(post); setShowMenu(false); }}
-                              className="w-full h-11 px-4 flex items-center gap-3 text-red-600 hover:bg-red-50 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider"
-                            >
-                               <div className="h-7 w-7 bg-red-100/50 rounded-lg flex items-center justify-center text-red-500">
-                                  <Trash2 size={12} />
-                               </div>
-                               Delete Requirement
-                            </button>
-                         </div>
-                      </div>
-                    )}
                  </div>
+                 <div className="flex items-center justify-start gap-1.5">
+                    <span className={cn(
+                       "text-[7px] font-black uppercase px-1.5 py-0.5 rounded-full border transition-all",
+                       badge === "Master Partner" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                       badge === "Expert Contributor" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                       "bg-slate-50 text-slate-400 border-slate-100"
+                    )}>
+                       {badge}
+                    </span>
+                    <p className="text-[8px] font-bold text-slate-300 uppercase">{time}</p>
+                 </div>
+              </div>
+           </div>
+
+           <div className="flex items-center gap-2">
+              <div className={cn(
+                "h-7 px-3 rounded-full flex items-center gap-2 text-[9px] font-black uppercase text-white shadow-lg",
+                config.color
+              )}>
+                 <config.icon size={11} />
+                 {config.label}
+              </div>
+           </div>
+        </div>
+
+        {/* 2. CORE CONTENT */}
+        <div className="space-y-4">
+           <div className="space-y-1">
+              <h3 className="text-2xl font-black text-[#292828] leading-tight group-hover:text-[#E53935] transition-colors tracking-tight">
+                 {title}
+              </h3>
+              <p className="text-[15px] font-medium text-slate-500 leading-relaxed line-clamp-3">
+                 {post.content}
+              </p>
+           </div>
+
+            {/* 3. HIGH-DENSITY INFO BAR */}
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 py-3 px-1 border-y border-slate-50">
+               {normalizedType === "REQUIREMENT" && (
+                 <>
+                    <DataField label="Budget" value={post.budget || "TBD"} />
+                    <DataField label="Urgency" value={post.urgency || "Normal"} color="text-[#E53935]" />
+                    <DataField label="Location" value={location} />
+                    <DataField label="Skills" value={post.skills_required?.slice(0,2).join(", ") || "General"} />
+                 </>
                )}
-               
-               <button 
-                 onClick={onExpand}
-                 className="h-12 w-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-all shrink-0"
-               >
-                  {isExpanded ? <ChevronUp size={18} /> : <Maximize2 size={18} />}
-               </button>
+               {normalizedType === "PARTNERSHIP" && (
+                 <>
+                    <DataField label="Type" value={post.partnershipType || "Agency"} />
+                    <DataField label="Industry" value={post.industry || "General"} />
+                    <DataField label="Commitment" value={post.commitmentLevel || "High"} />
+                    <DataField label="Location" value={location} />
+                 </>
+               )}
+               {normalizedType === "MEETUP" && (
+                 <>
+                    <DataField label="Mode" value={post.mode || "Offline"} />
+                    <DataField label="Date" value={post.dateTime || "TBD"} />
+                    <DataField label="Price" value={post.payment_type || "Free"} />
+                    <DataField label="Slots" value={post.max_slots ? `${post.max_slots} Slots` : "Open"} />
+                 </>
+               )}
             </div>
-         </div>
+
+           {/* 4. ACTIONS */}
+           <div className="flex items-center justify-between pt-2">
+              {(currentUserId === post.user_id || currentUserId === post.author_id) ? (
+                <div className="relative">
+                   <button 
+                     onClick={() => setShowMenu(!showMenu)}
+                     className={cn(
+                       "h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] transition-all",
+                       showMenu && "bg-[#292828] text-white"
+                     )}
+                   >
+                      <MoreVertical size={16} />
+                   </button>
+                   {showMenu && (
+                     <div 
+                       ref={menuRef}
+                       className="absolute bottom-full left-0 mb-3 w-48 bg-white border border-[#292828]/10 rounded-xl shadow-4xl overflow-hidden z-[60] animate-in fade-in slide-in-from-bottom-2 duration-300"
+                     >
+                        <button 
+                          onClick={() => { onEdit?.(post); setShowMenu(false); }}
+                          className="w-full h-10 px-4 flex items-center gap-3 text-[#292828] hover:bg-slate-50 text-[10px] font-bold uppercase"
+                        >
+                           <Pencil size={14} /> Edit
+                        </button>
+                        <button 
+                          onClick={() => { onDelete?.(post); setShowMenu(false); }}
+                          className="w-full h-10 px-4 flex items-center gap-3 text-red-600 hover:bg-red-50 text-[10px] font-bold uppercase"
+                        >
+                           <Trash2 size={14} /> Delete
+                        </button>
+                     </div>
+                   )}
+                </div>
+              ) : <div />}
+
+              <div className="flex items-center gap-3">
+                 {/* 4.1 TRUST HIGHLIGHT (UPGRADED TO PROGRESS BAR) */}
+                 <div className="hidden sm:flex flex-col gap-1.5 pr-4 border-r border-slate-100">
+                    <div className="flex items-center justify-between w-32">
+                       <p className="text-[7px] font-black text-slate-300 uppercase leading-none">Match Score</p>
+                       <span className={cn(
+                         "text-[9px] font-black",
+                         (matchScore || 50) >= 80 ? "text-emerald-600" : 
+                         (matchScore || 50) >= 50 ? "text-[#292828]" : "text-slate-400"
+                       )}>
+                         {matchScore || 50}%
+                       </span>
+                    </div>
+                    <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden relative">
+                       <div 
+                         className={cn(
+                           "absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out",
+                           (matchScore || 50) >= 80 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : 
+                           (matchScore || 50) >= 50 ? "bg-[#292828]" : "bg-slate-300"
+                         )}
+                         style={{ width: `${matchScore || 50}%` }}
+                       />
+                    </div>
+                    <p className="text-[7px] font-bold text-[#292828]/40 uppercase tracking-tighter">{rank || "Emerging"}</p>
+                 </div>
+
+                 <button className="h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#E53935] transition-all">
+                    <Bookmark size={16} />
+                 </button>
+                 <button 
+                   onClick={onAction}
+                   className={cn(
+                    "h-10 px-6 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-2 shadow-lg",
+                    config.color === "bg-[#292828]" ? "bg-[#292828]" : config.color
+                   )}
+                 >
+                    {config.cta} <ArrowUpRight size={14} />
+                 </button>
+              </div>
+           </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function DataField({ label, value, highlight, color, icon }: any) {
+function DataField({ label, value, highlight, color }: any) {
   return (
-    <div className="space-y-1.5">
-       <span className="subheading-editorial !text-[9px] !mb-0">{label}</span>
+    <div className="flex flex-col gap-1">
+       <span className="text-xs font-black text-slate-300 uppercase tracking-[0.2em]">{label}</span>
        <div className={cn(
-         "text-[14px] font-bold uppercase flex items-center gap-2 truncate",
-         highlight ? "text-[#111111]" : "text-[#666666]",
-         color
+          "text-[13px] font-black flex items-center gap-2",
+          highlight ? "text-[#292828]" : "text-[#292828]/80",
+          color
        )}>
-          {icon}
+          <div className={cn("h-1.5 w-1.5 rounded-full", color ? "bg-current" : "bg-[#292828]/20")} />
           {value}
        </div>
     </div>

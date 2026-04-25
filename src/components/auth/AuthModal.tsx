@@ -90,10 +90,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple Rate Limiting
+    // 🛡️ FRONTEND GUARD: Anti-Spam UX
     const now = Date.now();
     if (mode === "signup") {
-      if (signupAttempts >= 3 && now - lastSignupTime < 300000) { // 3 attempts per 5 mins
+      if (now - lastSignupTime < 10000) { // 1 attempt per 10 seconds
+        setError("Please wait a few seconds before trying again.");
+        return;
+      }
+      
+      if (signupAttempts >= 5 && now - lastSignupTime < 300000) { // 5 attempts per 5 mins
         setError("Too many signup attempts. Please wait 5 minutes.");
         return;
       }
@@ -122,6 +127,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         });
         
         if (signUpError) {
+          if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
+            throw new Error("Too many attempts. Please wait a moment and try again.");
+          }
           if (signUpError.message.includes("already registered")) {
             throw new Error("This email is already registered. Please sign in instead.");
           }
@@ -144,7 +152,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           }
           if (signInError.message.toLowerCase().includes("email not confirmed")) {
             setIsVerificationSent(true);
-            setError(null); // Clear previous error
             return;
           }
           throw signInError;

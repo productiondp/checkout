@@ -5,6 +5,7 @@ import { Send, Check, MessageSquare, Clock, UserPlus, X, Sparkles } from "lucide
 import { cn } from "@/lib/utils";
 import { useConnections, ConnectionState } from "@/hooks/useConnections";
 import { analytics } from "@/utils/analytics";
+import { useRouter } from "next/navigation";
 
 interface ConnectButtonProps {
   userId: string;
@@ -19,6 +20,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
   const [showModal, setShowModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const state = getConnectionState(userId);
+  const router = useRouter();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -26,7 +28,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
       setShowModal(true);
     } else if (state === "CONNECTED" || state === "MESSAGE") {
       // Logic for messaging would go here
-      window.location.href = `/chat/${userId}`;
+      router.push(`/chat/${userId}`);
     }
   };
 
@@ -130,7 +132,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
                         onClick={() => {
                           sendRequest(userId);
                           setIsSuccess(true);
-                          analytics.track('CONNECT_REQUEST_SENT', undefined, { targetUserId: userId });
+                          analytics.track('CONNECTION_SENT', undefined, { targetUserId: userId });
                         }}
                         className="flex-2 h-16 px-12 bg-[#E53935] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-[#292828] transition-all flex items-center justify-center gap-3"
                       >
@@ -142,7 +144,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
                       onClick={() => {
                          setShowModal(false);
                          setIsSuccess(false);
-                         window.location.href = '/matches';
+                         router.push('/matches');
                       }}
                       className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl flex items-center justify-center gap-3"
                     >

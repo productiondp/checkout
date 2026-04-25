@@ -24,38 +24,70 @@ import {
   Building2,
   UserPlus
 } from "lucide-react";
-
-const NAV_GROUPS = [
-  {
-    group: "Directory",
-    items: [
-      { label: "Feed", icon: Home, href: "/home" },
-      { label: "Connections", icon: UserPlus, href: "/connections" },
-      { label: "Chat", icon: MessageSquare, href: "/chat" },
-      { label: "Communities", icon: Globe, href: "/communities" },
-    ]
-  },
-  {
-    group: "Explore",
-    items: [
-      { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
-      { label: "Advisors", icon: Target, href: "/advisors" },
-      { label: "Directory", icon: Building2, href: "/directory" },
-      { label: "Map", icon: Zap, href: "/explore" },
-      { label: "Events", icon: LayoutGrid, href: "/events" },
-    ]
-  }
-];
+import { useAuth } from "@/hooks/useAuth";
+import { createClient } from "@/utils/supabase/client";
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const [connectionCount, setConnectionCount] = useState(0);
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('status', 'PENDING');
+      
+      setConnectionCount(count || 0);
+    };
+
+    fetchCount();
+
+    const channel = supabase
+      .channel('sidebar_connections')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'connections' 
+      }, fetchCount)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const navGroups = [
+    {
+      group: "Directory",
+      items: [
+        { label: "Feed", icon: Home, href: "/home" },
+        { label: "Connections", icon: UserPlus, href: "/connections", badge: connectionCount > 0 ? connectionCount.toString() : null },
+        { label: "Chat", icon: MessageSquare, href: "/chat" },
+        { label: "Communities", icon: Globe, href: "/communities" },
+      ]
+    },
+    {
+      group: "Explore",
+      items: [
+        { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
+        { label: "Advisors", icon: Target, href: "/advisors" },
+        { label: "Directory", icon: Building2, href: "/directory" },
+        { label: "Map", icon: Zap, href: "/explore" },
+        { label: "Events", icon: LayoutGrid, href: "/events" },
+      ]
+    }
+  ];
 
   return (
     <aside className="w-[260px] hidden lg:flex flex-col bg-white border-r border-[#292828]/5 h-full sticky top-0 py-10 px-6 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10 z-50">
       
       {/* 1. NAVIGATION GROUPS */}
       <div className="flex-1 space-y-12">
-        {NAV_GROUPS.map((group, idx) => (
+        {navGroups.map((group, idx) => (
           <div key={idx} className="space-y-6">
             <h3 className="px-4 text-[9px] font-black uppercase text-[#292828]/30 tracking-[0.3em] flex items-center justify-between">
               {group.group}

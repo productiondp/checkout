@@ -69,7 +69,7 @@ export default function PremiumProfilePage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [dependencyList, setDependencyList] = useState<any[]>([]);
   const [isAddingDep, setIsAddingDep] = useState(false);
-  const [newDep, setNewDep] = useState({ title: "", type: "Hiring & Requirements" });
+  const [newDep, setNewDep] = useState({ title: "", type: "Hiring" });
   
   const { user: authUser, updateProfile, logout } = useAuth();
   const supabase = createClient();
@@ -132,7 +132,7 @@ export default function PremiumProfilePage() {
             setDependencyList(userPosts.map(p => ({
               id: p.id,
               title: p.title,
-              type: (p.type === "LEAD" || p.type === "HIRING") ? "Hiring & Requirements" : p.type === "PARTNER" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
+              type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNER" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
               priority: "High",
               status: "General"
             })));
@@ -201,7 +201,7 @@ export default function PremiumProfilePage() {
       .insert([{
         author_id: authUser.id,
         title: newDep.title,
-        type: newDep.type === "Hiring & Requirements" ? "LEAD" : newDep.type === "Partnership" ? "PARTNER" : "GENERAL",
+        type: newDep.type === "Hiring" ? "LEAD" : newDep.type === "Partnership" ? "PARTNER" : "GENERAL",
         content: `Looking for ${newDep.title}`,
         status: "ACTIVE"
       }])
@@ -219,7 +219,7 @@ export default function PremiumProfilePage() {
         },
         ...dependencyList
       ]);
-      setNewDep({ title: "", type: "Hiring & Requirements" });
+      setNewDep({ title: "", type: "Hiring" });
       setIsAddingDep(false);
     }
   };
@@ -364,8 +364,9 @@ export default function PremiumProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                            <input type="text" placeholder="What do you need?" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-12 px-5 rounded-xl border border-slate-200 text-sm font-bold focus:border-[#E53935] outline-none" />
                            <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="h-12 px-4 rounded-xl border border-slate-200 text-[10px] font-black uppercase outline-none focus:border-[#E53935]">
-                              <option>Hiring & Requirements</option>
+                              <option>Hiring</option>
                               <option>Partnership</option>
+                              <option>Procurement</option>
                               <option>Investment</option>
                               <option>Technology</option>
                            </select>
@@ -379,11 +380,11 @@ export default function PremiumProfilePage() {
                         <div key={dep.id} className="p-6 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#E53935]/30 transition-all">
                            <div className="flex items-center gap-5">
                               <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-colors">
-                                 {dep.type === "Hiring & Requirements" && <Target size={20} />}
+                                 {dep.type === "Hiring" && <Briefcase size={20} />}
                                  {dep.type === "Partnership" && <Users size={20} />}
                                  {dep.type === "Investment" && <TrendingUp size={20} />}
                                  {dep.type === "Technology" && <Database size={20} />}
-                                 {!["Hiring & Requirements", "Partnership", "Investment", "Technology"].includes(dep.type) && <Briefcase size={20} />}
+                                 {dep.type === "Procurement" && <ShoppingBag size={20} />}
                               </div>
                               <div>
                                  <div className="flex items-center gap-2 mb-1">
@@ -408,8 +409,27 @@ export default function PremiumProfilePage() {
                </div>
             </div>
 
-            {/* COLUMN 3: PERFORMANCE */}
+            {/* COLUMN 3: PERFORMANCE & WALLET */}
             <div className="lg:col-span-3 space-y-8">
+               {/* WALLET */}
+               <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                  <div className="absolute -right-10 -top-10 h-32 w-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
+                  <div className="relative z-10">
+                     <div className="flex items-center justify-between mb-8">
+                        <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Wallet</p>
+                        <Wallet size={16} className="text-white/40" />
+                     </div>
+                     <h4 className="text-[10px] font-black uppercase text-white/40 mb-2">Available Balance</h4>
+                     <div className="flex items-baseline gap-2 mb-8">
+                        <span className="text-4xl font-black tracking-tighter">₹84,200</span>
+                        <span className="text-[10px] font-black text-white/40">INR</span>
+                     </div>
+                     <Link href="/wallet" className="w-full h-14 bg-white text-[#292828] rounded-2xl flex items-center justify-center text-[10px] font-black uppercase hover:bg-[#292828] hover:text-white transition-all shadow-xl">
+                        Open Wallet
+                     </Link>
+                  </div>
+               </div>
+
                {/* PERFORMANCE METRICS */}
                <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
                   <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-8 flex items-center gap-2">

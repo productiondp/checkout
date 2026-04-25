@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   ArrowLeft, 
   Star, 
@@ -26,61 +26,29 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
-import { DEFAULT_AVATAR } from "@/utils/constants";
+import { MOCK_ADVISORS } from "@/data/advisors";
+import { useConnections } from "@/hooks/useConnections";
 import { ConnectButton } from "@/components/connection/ConnectButton";
 
 export default function AdvisorProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const [advisor, setAdvisor] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<"Idle" | "Sending" | "Sent">("Idle");
+  const [requestData, setRequestData] = useState({ topic: "", description: "" });
 
   const advisorId = params.id as string;
-  const supabase = createClient();
+  const advisor = MOCK_ADVISORS.find(a => a.id === advisorId) || MOCK_ADVISORS[0];
+  const { sendRequest, getConnectionState } = useConnections();
+  const connectionState = getConnectionState(advisorId);
 
-  useEffect(() => {
-    async function fetchAdvisor() {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', advisorId)
-        .single();
-
-      if (data) {
-        setAdvisor({
-          ...data,
-          name: data.full_name || "Elite Advisor",
-          role: data.headline || "Verified Professional",
-          industry: data.city || "Kerala Hub",
-          avatar: data.avatar_url || DEFAULT_AVATAR,
-          matchScore: 94,
-          experience: data.experience_years ? `${data.experience_years}+ Years` : "10+ Years",
-          expertise: data.skills || data.expertise || ["Strategy", "Growth", "Scale"],
-          highlights: ["Neural match priority", "Strategic growth path", "Verified authority"],
-          focus: ["Scaling Operations", "Market Expansion"],
-          availability: "Available"
-        });
-      }
-      setIsLoading(false);
-    }
-    if (advisorId) fetchAdvisor();
-  }, [advisorId]);
-
-  if (isLoading) return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-6">
-      <div className="h-12 w-12 border-4 border-slate-50 border-t-[#E53935] rounded-full animate-spin" />
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Syncing Advisor Profile...</p>
-    </div>
-  );
-
-  if (!advisor) return (
-    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
-      <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Advisor Not Found</h2>
-      <button onClick={() => router.push('/advisors')} className="text-[#E53935] text-[10px] font-black uppercase tracking-widest border-b border-[#E53935]">Back to Advisors</button>
-    </div>
-  );
+  const handleSendRequest = () => {
+    setRequestStatus("Sending");
+    sendRequest(advisorId);
+    setTimeout(() => {
+      setRequestStatus("Sent");
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] pb-24">
@@ -91,9 +59,9 @@ export default function AdvisorProfilePage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <button 
             onClick={() => router.push('/advisors')}
-            className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 hover:text-[#E53935] transition-all group"
+            className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 hover:text-[#E53935] transition-all"
           >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Advisors
+            <ArrowLeft size={16} /> Back to Advisors
           </button>
 
           <div className="flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-left gap-10 lg:gap-20">
@@ -119,7 +87,7 @@ export default function AdvisorProfilePage() {
                  userId={advisor.id} 
                  userName={advisor.name} 
                  label="Connect" 
-                 className="h-20 px-12 !rounded-[2rem] text-xs !bg-[#292828] !text-white hover:!bg-[#E53935] shadow-4xl transition-all" 
+                 className="h-20 px-12 !rounded-[2rem] text-xs" 
                />
               <div className="flex items-center justify-center gap-3 text-slate-300">
                  <Clock size={16} />
@@ -137,10 +105,10 @@ export default function AdvisorProfilePage() {
           <div className="lg:col-span-2 space-y-16">
             <section>
               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-8 flex items-center gap-3">
-                 <BrainCircuit size={18} /> Professional Context
+                 <BrainCircuit size={18} /> Professional Bio
               </h3>
               <p className="text-2xl lg:text-3xl font-bold text-[#292828] leading-relaxed italic">
-                 "{advisor.bio || 'Strategic scaling and growth advisory for high-impact ecosystems.'}"
+                 "{advisor.bio}"
               </p>
             </section>
 
@@ -148,15 +116,15 @@ export default function AdvisorProfilePage() {
                <div>
                   <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-8">Expertise</h4>
                   <div className="flex flex-wrap gap-3">
-                     {advisor.expertise?.map((tag: string) => (
+                     {advisor.expertise.map(tag => (
                        <span key={tag} className="px-6 py-3 bg-white border border-slate-100 rounded-2xl text-[11px] font-black uppercase text-[#292828] shadow-sm">{tag}</span>
                      ))}
                   </div>
                </div>
                <div>
-                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-8">Neural Highights</h4>
+                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-8">Experience Highlights</h4>
                   <div className="space-y-4">
-                     {advisor.highlights?.map((h: string, i: number) => (
+                     {advisor.highlights.map((h, i) => (
                        <div key={i} className="flex items-center gap-4 text-[#292828] font-bold text-sm">
                           <CheckCircle2 size={18} className="text-emerald-500 shrink-0" /> {h}
                        </div>
@@ -165,19 +133,19 @@ export default function AdvisorProfilePage() {
                </div>
             </section>
 
-            <section className="bg-[#292828] rounded-[3.5rem] p-12 lg:p-16 text-white relative overflow-hidden group shadow-2xl">
+            <section className="bg-[#292828] rounded-[3.5rem] p-12 lg:p-16 text-white relative overflow-hidden group">
                <Zap size={200} className="absolute -right-20 -bottom-20 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[5s]" />
                <div className="relative z-10">
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10">Strategic Focus</h3>
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10">Focus</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                     {advisor.focus?.map((f: string, i: number) => (
+                     {advisor.focus.map((f, i) => (
                        <div key={i} className="flex items-start gap-5">
                           <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
                              <Award size={20} className="text-[#E53935]" />
                           </div>
                           <div>
                              <p className="text-lg font-black uppercase tracking-tight leading-tight mb-2">{f}</p>
-                             <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest">Target Area</p>
+                             <p className="text-xs font-medium text-white/40 uppercase tracking-widest">Business Goal</p>
                           </div>
                        </div>
                      ))}
@@ -190,15 +158,15 @@ export default function AdvisorProfilePage() {
           <aside className="space-y-10">
              <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-8 flex items-center gap-2">
-                   <TrendingUp size={16} className="text-[#E53935]" /> Matching
+                   <TrendingUp size={16} className="text-[#E53935]" /> Profile Matching
                 </h3>
                 <div className="space-y-8">
                    <div className="flex items-end justify-between">
-                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Ecosystem Relevance</p>
+                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Industry Relevance</p>
                       <p className="text-2xl font-black text-[#292828]">98%</p>
                    </div>
                    <div className="flex items-end justify-between">
-                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Neural Fit</p>
+                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Intent Match</p>
                       <p className="text-2xl font-black text-[#292828]">94%</p>
                    </div>
                    <div className="flex items-end justify-between">
@@ -206,26 +174,108 @@ export default function AdvisorProfilePage() {
                       <p className="text-2xl font-black text-emerald-500">100%</p>
                    </div>
                 </div>
+                <div className="mt-12 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                   <div className="flex items-center gap-3 mb-3">
+                      <Info size={14} className="text-[#292828]/20" />
+                      <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Rules</p>
+                   </div>
+                   <p className="text-[11px] font-bold text-[#292828]/40 uppercase leading-relaxed">This advisor is a high-authority match for your current business needs.</p>
+                </div>
              </div>
 
              <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-sm">
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-8 flex items-center gap-2">
-                   <MessageSquare size={16} className="text-[#E53935]" /> Advisory Rules
+                   <MessageSquare size={16} className="text-[#E53935]" /> Advisor Rules
                 </h3>
                 <ul className="space-y-4">
                    <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
-                      Neural verification required for deal-flow.
+                      Connections required before messaging.
                    </li>
                    <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
-                      Zero-noise interaction policy.
+                      Requests are outcome-driven only.
+                   </li>
+                   <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
+                      Zero noise tolerance policy.
                    </li>
                 </ul>
              </div>
           </aside>
         </div>
       </div>
+
+      {/* REQUEST ADVICE MODAL */}
+      {isRequestModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+           <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setIsRequestModalOpen(false)} />
+           
+           <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] sm:rounded-[3.5rem] p-8 sm:p-12 lg:p-16 shadow-premium animate-in zoom-in-95 duration-500">
+              <button onClick={() => setIsRequestModalOpen(false)} className="absolute top-6 right-6 sm:top-10 sm:right-10 text-slate-300 hover:text-[#292828] transition-all hover:rotate-90"><X size={28} /></button>
+              
+              <div className="mb-12">
+                 <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-4">Send Request</h2>
+                 <h3 className="text-4xl font-black text-[#292828] uppercase tracking-tighter leading-none">Request <br /> <span className="text-slate-300">Guidance</span></h3>
+              </div>
+
+              {requestStatus === "Sent" ? (
+                <div className="py-20 text-center animate-in zoom-in-95 duration-700">
+                   <div className="h-24 w-24 bg-emerald-50 rounded-[2.5rem] mx-auto flex items-center justify-center text-emerald-500 mb-8 shadow-inner shadow-emerald-500/20">
+                      <CheckCircle2 size={48} strokeWidth={3} />
+                   </div>
+                   <h4 className="text-2xl font-black text-[#292828] uppercase tracking-tight mb-3">Request Sent</h4>
+                   <p className="text-slate-400 font-bold uppercase text-[11px] tracking-widest leading-relaxed px-12">
+                      Your request has been sent to {advisor.name}. You will be notified once it is accepted.
+                   </p>
+                   <button 
+                     onClick={() => setIsRequestModalOpen(false)}
+                     className="mt-12 h-14 px-12 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+                   >
+                      Back to Profile
+                   </button>
+                </div>
+              ) : (
+                <div className="space-y-10">
+                   <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 block px-4">Subject Topic</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Scaling regional logistics" 
+                        value={requestData.topic}
+                        onChange={e => setRequestData({...requestData, topic: e.target.value})}
+                        className="w-full h-16 bg-slate-50 border border-transparent rounded-[1.5rem] px-8 text-sm font-bold text-[#292828] outline-none focus:bg-white focus:border-[#E53935] transition-all shadow-inner"
+                      />
+                   </div>
+                   <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 block px-4">Request Details</label>
+                      <textarea 
+                        rows={4}
+                        placeholder="Describe what you need help with..." 
+                        value={requestData.description}
+                        onChange={e => setRequestData({...requestData, description: e.target.value})}
+                        className="w-full p-8 bg-slate-50 border border-transparent rounded-[2rem] text-sm font-bold text-[#292828] outline-none focus:bg-white focus:border-[#E53935] transition-all shadow-inner"
+                      />
+                   </div>
+
+                   <button 
+                     onClick={handleSendRequest}
+                     disabled={requestStatus === "Sending"}
+                     className="w-full h-20 bg-[#292828] text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-[#E53935] transition-all disabled:opacity-50 relative overflow-hidden group"
+                   >
+                      <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[2s]" />
+                      <span className="relative z-10">{requestStatus === "Sending" ? "Sending Request..." : "Send Request"}</span>
+                   </button>
+                   
+                   <div className="flex items-center justify-center gap-2 text-slate-300">
+                      <Lock size={12} />
+                      <p className="text-[9px] font-black uppercase tracking-widest">Secured & Private</p>
+                   </div>
+                </div>
+              )}
+           </div>
+        </div>
+      )}
     </div>
   );
 }

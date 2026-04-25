@@ -65,6 +65,12 @@ export default function ConnectionSentinel() {
          setRequests(prev => prev.filter(r => r.id !== id));
          if (status === 'ACCEPTED') {
             window.dispatchEvent(new Event('chat-unlocked'));
+            
+            // 🏆 CHECKOUT SCORE: Update scores for both parties
+            const { CheckoutScoreService } = await import("@/lib/checkout-score");
+            if (user) await CheckoutScoreService.addScore(user.id, 'SUCCESSFUL_CONNECTION');
+            const sender = requests.find(r => r.id === id)?.sender;
+            if (sender) await CheckoutScoreService.addScore(sender.id, 'SUCCESSFUL_CONNECTION');
          }
       }
    };

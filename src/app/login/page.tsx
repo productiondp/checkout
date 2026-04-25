@@ -47,6 +47,8 @@ function AuthContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [signupAttempts, setSignupAttempts] = useState(0);
+  const [lastSignupTime, setLastSignupTime] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -67,6 +69,18 @@ function AuthContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 🛡️ FRONTEND GUARD
+    const now = Date.now();
+    if (mode === "signup") {
+      if (now - lastSignupTime < 10000) {
+        setError("Please wait a few seconds before trying again.");
+        return;
+      }
+    }
+
+    if (isLoading) return; // Prevent duplicate submission
+    
     setIsLoading(true);
     setError(null);
 
@@ -83,7 +97,15 @@ function AuthContent() {
           },
         });
         
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
+            throw new Error("Too many attempts. Please wait a moment and try again.");
+          }
+          throw signUpError;
+        }
+
+        setSignupAttempts(prev => prev + 1);
+        setLastSignupTime(now);
 
         if (authData.user) {
            await supabase
@@ -97,6 +119,7 @@ function AuthContent() {
              });
         }
         
+        analytics.track('USER_SIGNUP', authData.user?.id, { role: role.toUpperCase() });
         setIsSuccess(true);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -158,7 +181,7 @@ function AuthContent() {
       <div className="hidden lg:flex flex-1 relative flex-col justify-center px-20 bg-white">
          <div className="absolute inset-0 z-0 overflow-hidden">
             <img 
-               src="/login_background_1777062678077.png" 
+               src="/images/auth-bg.png" 
                className="w-full h-full object-cover opacity-40 grayscale scale-110" 
                alt="" 
             />

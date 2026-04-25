@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   ArrowLeft, 
   ArrowRight,
@@ -25,54 +25,20 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
-import { DEFAULT_AVATAR } from "@/utils/constants";
+import { MOCK_COMMUNITIES } from "@/data/communities";
+const MOCK_POSTS: any[] = [];
+const MOCK_MEMBERS: any[] = [];
+import { CommunityPost, Member } from "@/types/communities";
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"Posts" | "Members" | "About">("About");
+  const [activeTab, setActiveTab] = useState<"Posts" | "Members" | "About">("Posts");
   const [isJoined, setIsJoined] = useState(false);
-  const [community, setCommunity] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const communityId = params.id as string;
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function fetchCommunity() {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('communities')
-        .select('*')
-        .eq('id', communityId)
-        .single();
-
-      if (data) {
-        setCommunity({
-          ...data,
-          memberCount: data.member_count || 0,
-          activity: data.activity_status || 'Active'
-        });
-      }
-      setIsLoading(false);
-    }
-    if (communityId) fetchCommunity();
-  }, [communityId]);
-
-  if (isLoading) return (
-    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
-      <div className="h-12 w-12 border-4 border-white/5 border-t-[#E53935] rounded-full animate-spin" />
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Syncing Hub Details...</p>
-    </div>
-  );
-
-  if (!community) return (
-    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
-      <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Hub Not Found</h2>
-      <button onClick={() => router.push('/communities')} className="text-[#E53935] text-[10px] font-black uppercase tracking-widest border-b border-[#E53935]">Back to Communities</button>
-    </div>
-  );
+  const community = MOCK_COMMUNITIES.find(c => c.id === communityId) || MOCK_COMMUNITIES[0];
+  const posts = MOCK_POSTS.filter(p => p.communityId === communityId);
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] pb-24">
@@ -93,7 +59,7 @@ export default function CommunityDetailPage() {
               </div>
               <div className="pt-2">
                 <div className="flex items-center gap-4 mb-4">
-                  <h1 className="text-5xl font-black text-[#292828] tracking-tight uppercase">{community.name}</h1>
+                  <h1 className="text-5xl font-black text-[#292828] tracking-tight">{community.name}</h1>
                   <div className={cn(
                     "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2",
                     community.visibility === "Public" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
@@ -114,7 +80,7 @@ export default function CommunityDetailPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-6">
-                  {community.tags?.map((tag: string) => (
+                  {community.tags.map(tag => (
                     <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase">{tag}</span>
                   ))}
                 </div>
@@ -129,11 +95,11 @@ export default function CommunityDetailPage() {
                   isJoined ? "bg-white border-2 border-slate-100 text-slate-400" : "bg-[#292828] text-white hover:bg-[#E53935]"
                 )}
               >
-                {isJoined ? "Member" : "Join Hub"}
+                {isJoined ? "Member" : "Join Community"}
                 {!isJoined && <Plus size={20} />}
               </button>
               <p className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
-                {community.visibility === "Private" ? "Requires Neural Approval" : "Instant Neural Access"}
+                {community.visibility === "Private" ? "Requires Approval" : "Instant Access"}
               </p>
             </div>
           </div>
@@ -166,8 +132,52 @@ export default function CommunityDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* MAIN COLUMN */}
           <div className="lg:col-span-2">
+            {activeTab === "Posts" && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                  <div>
+                    <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Post Feed</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Relevant posts only</p>
+                  </div>
+                  <button className="h-12 px-8 bg-[#292828] text-white rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
+                    <Plus size={16} /> Add Post
+                  </button>
+                </div>
+                
+                {posts.map(post => (
+                  <IntentPostCard key={post.id} post={post} />
+                ))}
+
+                {posts.length === 0 && (
+                  <div className="py-24 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+                    <Zap size={48} className="mx-auto text-slate-100 mb-6" />
+                    <p className="text-slate-400 font-bold uppercase tracking-widest">No active posts found in this community.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "Members" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 mb-10 flex items-center gap-4">
+                  <Search size={20} className="text-slate-300" />
+                  <input 
+                    type="text" 
+                    placeholder="Search members by name, role or company..." 
+                    className="flex-1 bg-transparent outline-none text-sm font-bold text-[#292828]"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {MOCK_MEMBERS.map(member => (
+                    <MemberCard key={member.id} member={member} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeTab === "About" && (
-              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm">
+              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-[3rem] border border-slate-100">
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Mission</h3>
                   <p className="text-2xl font-bold text-[#292828] leading-relaxed italic">
@@ -176,17 +186,17 @@ export default function CommunityDetailPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Ecosystem Engagement Rules</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-6">Engagement Rules</h3>
                   <div className="space-y-6">
                     {[
-                      "Absolute focus on high-authority intent posts.",
-                      "Zero tolerance for generic or noise-based interactions.",
-                      "All members are verified through the Checkout neural layer.",
-                      "Secure deal-flow routing is mandatory."
+                      "Absolute focus on relevant posts (Leads, Hiring, Partners).",
+                      "Zero tolerance for generic chat noise or self-promotion.",
+                      "All interactions must be high-authority and outcome-driven.",
+                      "Privacy and data integrity of fellow members is paramount."
                     ].map((rule, i) => (
                       <div key={i} className="flex items-start gap-4">
                         <div className="h-6 w-6 bg-slate-50 rounded-lg flex items-center justify-center text-[10px] font-black text-[#292828] shrink-0">{i+1}</div>
-                        <p className="text-sm font-bold text-slate-500 uppercase leading-relaxed">{rule}</p>
+                        <p className="text-sm font-bold text-slate-500">{rule}</p>
                       </div>
                     ))}
                   </div>
@@ -198,17 +208,15 @@ export default function CommunityDetailPage() {
                       <ShieldCheck size={24} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Verified Hub Creator</p>
-                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">Checkout Verified</h4>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Verified Creator</p>
+                      <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">Creator</h4>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl">
+                    <Clock size={14} className="text-slate-400" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Created Feb 2026</span>
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {(activeTab === "Posts" || activeTab === "Members") && (
-              <div className="py-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Live {activeTab} synchronization is currently being established...</p>
               </div>
             )}
           </div>
@@ -218,19 +226,119 @@ export default function CommunityDetailPage() {
             <div className="bg-[#292828] p-10 rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
               <Zap size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
               <div className="relative z-10">
-                <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Neural Match Score</p>
+                <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest mb-6">Match Score</p>
                 <div className="flex items-center gap-4 mb-8">
                   <h3 className="text-5xl font-black tabular-nums">94%</h3>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">Ecosystem Fit</span>
-                    <span className="text-[9px] font-bold text-white/40 uppercase">Verified</span>
+                    <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">Match Score</span>
+                    <span className="text-[9px] font-bold text-white/40 uppercase">Rank</span>
                   </div>
                 </div>
-                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all shadow-xl">Connect Now</button>
+                <p className="text-[11px] font-medium text-white/60 uppercase leading-relaxed mb-10">
+                  This community has high structural overlap with your expertise and current business posts.
+                </p>
+                <button className="w-full h-12 bg-[#E53935] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#292828] transition-all">Connect</button>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#292828]">Trending Posts</h3>
+              <div className="space-y-4">
+                {MOCK_POSTS.slice(0, 2).map(post => (
+                  <div key={post.id} className="p-6 bg-white border border-slate-100 rounded-3xl group cursor-pointer hover:border-[#E53935]/20 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-red-50 text-[#E53935] rounded-lg">{post.type}</span>
+                      <span className="text-[10px] font-bold text-slate-300">{post.timestamp}</span>
+                    </div>
+                    <p className="text-sm font-bold text-[#292828] leading-snug line-clamp-2 mb-4">"{post.description}"</p>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#E53935] group-hover:translate-x-2 transition-transform">
+                      View Post <ArrowRight size={14} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </aside>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function IntentPostCard({ post }: { post: CommunityPost }) {
+  return (
+    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+      {/* MATCH SCORE BADGE */}
+      <div className="absolute top-0 right-0 p-8">
+        <div className="flex flex-col items-end">
+          <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Match</p>
+          <p className="text-3xl font-black text-[#292828] tracking-tighter tabular-nums group-hover:text-[#E53935] transition-colors">{post.matchScore}%</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4 mb-8">
+        <span className={cn(
+          "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider",
+          post.type === "Hiring" ? "bg-blue-50 text-blue-600" :
+          post.type === "Leads" ? "bg-emerald-50 text-emerald-600" :
+          post.type === "Partnership" ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
+        )}>
+          {post.type}
+        </span>
+        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{post.timestamp}</span>
+      </div>
+
+      <h3 className="text-2xl font-bold text-[#292828] leading-relaxed mb-10 pr-20">
+        "{post.description}"
+      </h3>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-8 border-t border-slate-50">
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden">
+             <img src={`https://i.pravatar.cc/150?u=${post.author}`} alt="" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Posted By</p>
+            <h4 className="text-sm font-black text-[#292828] uppercase tracking-tight">{post.author}</h4>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="h-12 px-8 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg active:scale-95">
+            {post.type === "Hiring" ? "Apply" : post.type === "Leads" ? "Claim Lead" : "Connect"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemberCard({ member }: { member: Member }) {
+  return (
+    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex items-center justify-between">
+      <div className="flex items-center gap-5">
+        <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-md border-2 border-white relative shrink-0">
+          <img src={member.avatar} className="w-full h-full object-cover" alt="" />
+          <div className="absolute bottom-0 right-0 h-4 w-4 bg-emerald-500 border-2 border-white rounded-full" />
+        </div>
+        <div>
+          <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors uppercase tracking-tight leading-tight mb-1">{member.name}</h4>
+          <p className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+            <Briefcase size={12} /> {member.role} @ {member.company}
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+             <Zap size={12} className="text-emerald-500" />
+             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{member.matchScore}% Match</span>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#292828] hover:text-white transition-all shadow-sm">
+          <UserPlus size={18} />
+        </button>
+        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
+          <ChevronRight size={18} />
+        </button>
       </div>
     </div>
   );

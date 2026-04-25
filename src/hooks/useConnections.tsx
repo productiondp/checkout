@@ -16,7 +16,10 @@ const ConnectionContext = createContext<ConnectionContextType | undefined>(undef
 
 export function ConnectionProvider({ children }: { children: ReactNode }) {
   // Store connection states keyed by user/entity ID
-  const [connections, setConnections] = useState<Record<string, ConnectionState>>({});
+  const [connections, setConnections] = useState<Record<string, ConnectionState>>({
+    "a1": "CONNECTED", // Mock advisor connected
+    "m1": "PENDING",   // Mock marketplace request sent
+  });
 
   const sendRequest = (id: string) => {
     setConnections(prev => ({ ...prev, [id]: "PENDING" }));

@@ -293,8 +293,8 @@ export default function CheckoutHomeFeed() {
         };
       default:
         return {
-          title: "Find people",
-          subtext: "Create a requirement or connect with others",
+          title: "Start here",
+          subtext: "Create your first requirement or connect with people",
           ctaPrimary: "Create Requirement",
           ctaSecondary: "See people →"
         };

@@ -71,7 +71,25 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    if (user) analytics.trackScreen('ONBOARDING', user.id);
+    if (user) {
+      analytics.trackScreen('ONBOARDING', user.id);
+      
+      // Step Persistence & Hydration
+      const initialStep = user.expertise?.length ? 3 : (user.company_name ? 2 : 1);
+      setStep(initialStep);
+
+      setOnboardingData(prev => ({
+        ...prev,
+        name: user.full_name || prev.name,
+        role: (user.role?.toLowerCase() as Role) || prev.role,
+        company_name: user.company_name || prev.company_name,
+        business_type: user.business_type || prev.business_type,
+        skills: user.expertise || prev.skills,
+        intent_tags: user.intents || prev.intent_tags,
+        location: user.location || prev.location,
+        avatar_url: user.avatar_url || prev.avatar_url,
+      }));
+    }
   }, [user]);
 
   const getProfilePayload = (isFinal = false) => {
@@ -134,11 +152,7 @@ export default function OnboardingPage() {
         });
 
       if (uploadError) {
-        if (uploadError.message.includes("bucket not found")) {
-          setError("CRITICAL: 'avatars' storage bucket not found. Create it in Supabase.");
-        } else {
-          setError(`Upload Error: ${uploadError.message}`);
-        }
+        setError("Profile photo service unavailable. Please try again later.");
         throw uploadError;
       }
 
@@ -198,7 +212,7 @@ export default function OnboardingPage() {
       router.push("/home");
     } else {
       console.error("Final sync error:", finalError);
-      setError(`Finalize Failed: ${finalError.message}`);
+      setError("Something went wrong. Try again.");
     }
     setIsSubmitting(false);
   };

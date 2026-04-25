@@ -36,57 +36,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const initialized = useRef(false);
-  const routingHandled = useRef(false);
   const hasRouted = useRef(false);
 
-  const handleRouting = useCallback(async (currentSession: any, profile: any, currentPath: string) => {
-    try {
-      if (routingHandled.current) return;
-      routingHandled.current = true;
-
-      const publicRoutes = ['/', '/login', '/onboarding'];
-
-      // 🧠 DEBUG SENTINEL (STRICT REQUIREMENT)
-      console.log({
-        path: window.location.pathname,
-        session: !!currentSession,
-        onboarding: profile?.onboarding_completed,
-        loading
-      });
-
-      // 1. NO SESSION
-      if (!currentSession) {
-        setUser(null);
-        if (!publicRoutes.includes(currentPath)) {
-          router.replace('/login');
-        }
-        return;
+  // 🛡️ GLOBAL SAFETY GUARD: Force loading to resolve after 5s
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      if (loading) {
+        console.warn("[AUTH] Safety Gate Triggered - Forcing resolve");
+        setLoading(false);
       }
+    }, 5000);
+    return () => clearTimeout(safetyTimer);
+  }, [loading]);
 
-      // 2. SESSION BUT NO PROFILE
-      if (!profile) {
-        if (currentPath !== '/onboarding') {
-          router.replace('/onboarding');
-        }
-        return;
-      }
-
-      // 3. SESSION + INCOMPLETE ONBOARDING
-      if (!profile.onboarding_completed) {
-        if (currentPath !== '/onboarding') {
-          router.replace('/onboarding');
-        }
-        return;
-      }
-
-      // 4. SESSION + COMPLETE
-      if (['/', '/login', '/onboarding'].includes(currentPath)) {
-        router.replace('/home');
-      }
-    } catch (err) {
-      console.error("[AUTH CRITICAL] Routing Crash:", err);
-    }
-  }, [router, loading]);
 
   const syncProfile = useCallback(async (currentSession: any) => {
     if (!currentSession?.user) {
@@ -144,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [handleRouting]);
+  }, []);
 
   const initAuth = useCallback(async () => {
     try {
@@ -188,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [syncProfile, handleRouting]);
+  }, [syncProfile]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -214,18 +176,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setSession(null);
         setLoading(false);
-        routingHandled.current = false;
+        hasRouted.current = false;
         
-        // Tab Sync: Ensure all tabs reflect logout
-        if (window.location.pathname !== '/') {
-          window.location.href = '/'; // Hard redirect for clean state sync
-        }
+        // 🧠 MULTI-TAB SYNC: Force all tabs to sync instantly
+        window.location.href = '/';
         return;
       }
 
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         if (currentSession) {
-          routingHandled.current = false;
+          hasRouted.current = false;
           await syncProfile(currentSession);
         }
       }
@@ -237,15 +197,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [initAuth, syncProfile]);
 
-  // 🧠 CENTRALIZED REACTIVE ROUTING SENTINEL
   useEffect(() => {
-    if (!session) {
-       hasRouted.current = false;
-    }
-
     if (!isAuthReady || hasRouted.current) return;
 
-    const publicRoutes = ['/', '/login', '/auth', '/onboarding'];
+    const publicRoutes = ['/', '/login', '/auth'];
     const currentPath = window.location.pathname;
 
     hasRouted.current = true;
@@ -260,10 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. AUTHENTICATED LOGIC
     if (session && user !== undefined) {
-       if (!user?.onboarding_completed && currentPath !== '/onboarding') {
-          router.replace('/onboarding');
-       } else if (user?.onboarding_completed && publicRoutes.includes(currentPath)) {
-          router.replace('/home');
+       const target = !user?.onboarding_completed ? '/onboarding' : '/home';
+       
+       if (currentPath !== target && (publicRoutes.includes(currentPath) || (currentPath === '/onboarding' && user?.onboarding_completed) || (currentPath === '/home' && !user?.onboarding_completed))) {
+          router.replace(target);
        }
     }
   }, [isAuthReady, session, user, router]);
@@ -301,6 +256,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // 🧠 STEP 2 & 3: Fix Landing Page Flash & White Screen
+  if (loading) {
+    return <FullScreenLoader />;
+  }
+
   return (
     <AuthContext.Provider value={{ user, login: async () => {}, logout, updateProfile, loading, session, initAuth }}>
       {children}
@@ -316,7 +276,7 @@ export function useAuth() {
   return context;
 }
 
-// 🧠 THE GLOBAL AUTH GATE (ROOT LEVEL)
+// 🧠 THE GLOBAL AUTH GATE (REFINED)
 export function AuthGate({ children }: { children: ReactNode }) {
   const { loading } = useAuth();
 

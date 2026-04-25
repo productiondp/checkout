@@ -143,7 +143,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
             throw new Error("Invalid email or password.");
           }
           if (signInError.message.toLowerCase().includes("email not confirmed")) {
-            throw new Error("Please verify your email before logging in. Check your inbox.");
+            setIsVerificationSent(true);
+            return;
           }
           throw signInError;
         }
@@ -159,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         }
         onClose();
         router.push("/home");
-        router.refresh(); 
+        // router.refresh(); // REMOVED: redundant and causes flicker
       }
     } catch (err: any) {
       console.error("Auth Failure:", err);
@@ -439,7 +440,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            <button className="py-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 hover:border-white/10 transition-all text-[11px] font-black uppercase flex items-center justify-center gap-3 text-white">
+            <button 
+              disabled 
+              className="py-4 bg-white/5 border border-white/5 rounded-2xl cursor-not-allowed opacity-50 text-[11px] font-black uppercase flex items-center justify-center gap-3 text-white group relative"
+            >
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white text-black text-[9px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                Coming soon
+              </div>
               <Chrome size={16} className="text-[#E53935]" />
               Google
             </button>

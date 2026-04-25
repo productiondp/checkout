@@ -160,9 +160,15 @@ export default function PremiumPartnersPage() {
     setIsSending(false);
   };
 
-  const handleRequestAction = async (id: string, status: 'ACCEPTED' | 'REJECTED') => {
+  const handleRequestAction = async (id: string, status: 'ACCEPTED' | 'REJECTED', partnerId?: string) => {
     const { error } = await supabase.from('connections').update({ status }).eq('id', id);
-    if (!error) initPartners();
+    if (!error) {
+      if (status === 'ACCEPTED' && partnerId) {
+        router.push(`/chat?user=${partnerId}`);
+      } else {
+        initPartners();
+      }
+    }
   };
 
   const filteredPartners = useMemo(() => {
@@ -188,7 +194,7 @@ export default function PremiumPartnersPage() {
                <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-1">
                      <div className="h-2 w-2 rounded-full bg-[#E53935] animate-pulse" />
-                     <h1 className="text-xl lg:text-2xl font-black text-[#292828] uppercase tracking-[-0.04em] leading-none font-outfit">Find Your Profile</h1>
+                     <h1 className="text-xl lg:text-2xl font-black text-[#292828] uppercase tracking-[-0.04em] leading-none font-outfit">Neural Match Engine</h1>
                   </div>
                   <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] pl-5">Business Directory v.7</p>
                </div>
@@ -324,7 +330,7 @@ export default function PremiumPartnersPage() {
                  </div>
 
                  {requests.length > 0 ? requests.map((req) => (
-                   <RequestCard key={req.id} request={req} onAction={handleRequestAction} />
+                   <RequestCard key={req.id} request={req} onAction={(id, status) => handleRequestAction(id, status, req.sender?.id)} />
                  )) : (
                    <div className="py-40 text-center bg-slate-50 border border-dashed border-slate-200 rounded-[3rem]">
                       <Users size={40} className="mx-auto text-slate-200 mb-6" />

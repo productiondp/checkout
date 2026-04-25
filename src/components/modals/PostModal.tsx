@@ -41,12 +41,6 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     if (hasPosted) setIsFirstPost(false);
   }, []);
 
-  const mandateTypes = [
-    { label: "Requirement", icon: Target, id: "Lead", desc: "Post what you need" },
-    { label: "Hiring", icon: Briefcase, id: "Hiring", desc: "Broadcast a job opening" },
-    { label: "Partner", icon: Sparkles, id: "Partner", desc: "Seek a partnership" },
-    { label: "Meetup", icon: Users, id: "Meetup", desc: "Plan a meeting" }
-  ];
   const [advisors, setAdvisors] = useState<any[]>([]);
 
   const supabase = createClient();
@@ -76,19 +70,25 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     if (isOpen) {
       if (editPost) {
         const postType = editPost.type || "LEAD";
-        setFormType(postType.charAt(0).toUpperCase() + postType.slice(1).toLowerCase() as FormType);
+        // Map backend type to frontend formType
+        const mappedType = postType === "HIRING" ? "Lead" : (postType.charAt(0).toUpperCase() + postType.slice(1).toLowerCase() as FormType);
+        setFormType(mappedType);
+        
         setFormData({
           leadTitle: editPost.title || "",
           leadProblem: editPost.content || "",
           leadBudget: editPost.budget || "",
-          hiringRole: editPost.title || "",
-          hiringTasks: editPost.content || "",
+          leadReqType: editPost.skills_required?.length ? "Full-time" : (editPost.work_type || "Service"),
+          leadDeadline: editPost.due_date || "",
+          leadSkills: editPost.skills_required?.join(', ') || "",
+          
           meetupTitle: editPost.title || "",
           meetupDescription: editPost.content || "",
           updateContent: editPost.content || "",
         });
       } else if (initialFormType) {
-        setFormType(initialFormType);
+        // If initial is Hiring, we use Lead form now
+        setFormType(initialFormType === "Hiring" ? "Lead" : initialFormType);
       }
       setCurrentStep(1);
     }
@@ -101,15 +101,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     leadReqType: "Service",
     leadBudget: "",
     leadDeadline: "",
+    leadSkills: "",
     
-    hiringRole: "",
-    hiringTasks: "",
-    hiringSkills: "",
-    hiringExp: "Experienced",
-    hiringEngagement: "Full-time",
-    hiringDuration: "",
-    hiringComp: "",
-
     partnerType: "Distributor",
     partnerContext: "",
     partnerOffer: "",
@@ -141,12 +134,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     // Specificity Multipliers
     if (formData.meetupTitle.length > 10) score += 10;
     if (formData.meetupDescription.length > 30) score += 15;
-    if (formData.meetupStuck.length > 20) score += 10;
-    if (formData.meetupAttempted.length > 20) score += 15;
     
-    // Logic for other types
-    if (formType === "Lead" && formData.leadTitle.length > 5) score += 10;
-    if (formType === "Hiring" && formData.hiringRole.length > 5) score += 10;
+    // Combined Lead/Hiring score logic
+    if (formType === "Lead") {
+       if (formData.leadTitle.length > 5) score += 10;
+       if (formData.leadProblem.length > 20) score += 15;
+       if (formData.leadBudget) score += 5;
+       if (formData.leadSkills) score += 5;
+    }
     
     return Math.min(100, score);
   }, [formData, formType]);
@@ -157,7 +152,6 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     setIsPosting(true);
     
     try {
-      // Use the already available authUser from useAuth()
       const user = authUser;
       if (!user) {
         alert("Unauthorized. Please sign in.");
@@ -165,38 +159,37 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         return;
       }
       
-      // Ownership check for editing
       if (editPost && editPost.author_id !== user.id && editPost.user_id !== user.id) {
         alert("Action denied: You are not the owner of this feed item.");
         onClose();
         return;
       }
 
-      const authorId = user.id; // Always use the authenticated user's ID for creation/update tracking
+      const authorId = user.id;
 
       const postData: any = {
         author_id: authorId,
-        type: formType.toUpperCase(),
-        title: formData.leadTitle || formData.hiringRole || formData.meetupTitle || (formData.updateContent ? formData.updateContent.substring(0, 30) : "Update"),
-        content: formData.leadProblem || formData.hiringTasks || formData.meetupDescription || formData.updateContent,
+        // If it's the combined Lead form, determine if it's HIRING or LEAD based on category
+        type: formType === "Lead" 
+          ? (["Full-time", "Intern", "Freelance"].includes(formData.leadReqType) ? "HIRING" : "LEAD")
+          : formType.toUpperCase(),
+        title: formData.leadTitle || formData.meetupTitle || (formData.updateContent ? formData.updateContent.substring(0, 30) : "Update"),
+        content: formData.leadProblem || formData.meetupDescription || formData.updateContent,
         location: "Trivandrum",
         match_score: checkoutScore,
         
-        // Type-specific mappings
-        budget: formData.leadBudget || formData.hiringComp,
+        budget: formData.leadBudget,
         due_date: (() => {
           if (!formData.leadDeadline) return null;
           const date = new Date(formData.leadDeadline);
           return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
         })(),
-        skills_required: formData.hiringSkills ? formData.hiringSkills.split(',').map((s: string) => s.trim()) : null,
-        work_type: formData.hiringEngagement,
-        duration: formData.hiringDuration,
+        skills_required: formData.leadSkills ? formData.leadSkills.split(',').map((s: string) => s.trim()) : null,
+        work_type: formData.leadReqType,
         offer: formData.partnerOffer,
         need: formData.partnerNeed || formData.updateNeed,
         timeline: formData.partnerTimeline,
         
-        // Meetup specifics
         max_slots: 8,
         payment_type: formData.meetupPayment,
         domain: formData.meetupDomain
@@ -220,7 +213,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
 
       if (result.error) throw result.error;
       
-      analytics.track('FIRST_MANDATE_CREATED', authorId, { type: formType, postId: result.data.id });
+      analytics.track('FIRST_MANDATE_CREATED', authorId, { type: postData.type, postId: result.data.id });
 
       onPostSuccess?.(result.data);
       localStorage.setItem('checkout_has_posted', 'true');
@@ -269,7 +262,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 lg:p-10 bg-[#292828]/40 backdrop-blur-xl">
       <div className="relative w-full max-w-4xl bg-white border border-[#292828]/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-full max-h-[90vh] animate-in zoom-in-95 duration-500">
         
-        {/* HEADER - COMPACT */}
+        {/* HEADER */}
         <div className="px-8 py-5 border-b border-[#292828]/5 flex items-center justify-between shrink-0 bg-slate-50/50">
           <div className="flex items-center gap-4">
              <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm bg-slate-50">
@@ -288,11 +281,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
         <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="p-10 space-y-10">
              
-             {/* TYPE SELECTOR - SLIM */}
+             {/* TYPE SELECTOR */}
              <div className="flex items-center gap-1.5 p-1.5 bg-[#292828]/5 rounded-[1.25rem]">
                 {[
-                  { label: "Requirement", icon: Target, id: "Lead" },
-                  { label: "Hiring", icon: Briefcase, id: "Hiring" },
+                  { label: "Hiring & Requirements", icon: Target, id: "Lead" },
                   { label: "Partner", icon: Sparkles, id: "Partner" },
                   { label: "Events", icon: Users, id: "Meetup" }
                 ].map((item) => (
@@ -302,7 +294,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                     className={cn(
                       "flex-1 flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-bold uppercase text-[9px] tracking-widest",
                       formType === item.id 
-                        ? ((item.id === "Hiring" || item.id === "Meetup") ? "bg-emerald-600 text-white shadow-md" : "bg-[#292828] text-white shadow-md")
+                        ? (item.id === "Meetup" ? "bg-emerald-600 text-white shadow-md" : "bg-[#292828] text-white shadow-md")
                         : "text-[#292828]/40 hover:bg-[#292828]/5"
                     )}
                   >
@@ -314,32 +306,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
 
              {/* DYNAMIC FORMS */}
              <div className="animate-in slide-in-from-bottom-4 duration-500">
-                {formType === "Update" && (
-                   <div className="space-y-6">
-                      {input("What's happening?", "updateContent", "Status / Need / Availability (Max 3 lines)", "textarea")}
-                      {input("Desired Direction", "updateNeed", "What do you want?")}
-                   </div>
-                )}
-
                  {formType === "Lead" && (
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">{input("Requirement Title", "leadTitle", "What do you need?")}</div>
-                      <div className="md:col-span-2">{input("Problem / Expected Output", "leadProblem", "Describe what should be solved...", "textarea")}</div>
-                      {input("Type", "leadReqType", "", "select", ["Service", "Product", "Freelancer"])}
-                      {input("Budget Range", "leadBudget", "₹20K - 40K")}
-                      <div className="md:col-span-2">{input("Required Deadline", "leadDeadline", "", "date")}</div>
-                   </div>
-                 )}
-
-                 {formType === "Hiring" && (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {input("Role Title", "hiringRole", "e.g. UI/UX Intern")}
-                      {input("Experience", "hiringExp", "", "select", ["Student", "Fresher", "Experienced"])}
-                      <div className="md:col-span-2">{input("Key Responsibilities", "hiringTasks", "List 2-3 main points...", "textarea")}</div>
-                      <div className="md:col-span-2">{input("Top Skills Required", "hiringSkills", "e.g. Figma, React")}</div>
-                      {input("Contract Type", "hiringEngagement", "", "select", ["Intern", "Full-time", "Freelance"])}
-                      {input("Duration", "hiringDuration", "e.g. 2 Months")}
-                      <div className="md:col-span-2">{input("Compensation (Optional)", "hiringComp", "Boosts match score")}</div>
+                      <div className="md:col-span-2">{input("Title", "leadTitle", "What do you need or who are you hiring?")}</div>
+                      <div className="md:col-span-2">{input("Description / Responsibilities", "leadProblem", "Provide more context or requirements...", "textarea")}</div>
+                      {input("Category", "leadReqType", "", "select", ["Service", "Product", "Freelancer", "Full-time", "Intern", "Contract"])}
+                      {input("Budget / Compensation", "leadBudget", "₹20K - 40K")}
+                      <div className="md:col-span-2">{input("Key Skills (Optional)", "leadSkills", "e.g. React, UI Design, Sales")}</div>
+                      <div className="md:col-span-2">{input("Target Deadline / Start Date", "leadDeadline", "", "date")}</div>
                    </div>
                  )}
 
@@ -354,131 +328,101 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                  )}
 
                 {formType === "Meetup" && (
-                  <div className="space-y-8">
-                     <div className="grid grid-cols-3 gap-1">
-                        {[1,2,3].map(s => (
-                           <div key={s} className={cn("h-1.5 rounded-full", s <= currentStep ? "bg-emerald-600" : "bg-slate-100")} />
-                        ))}
-                     </div>
-                     
-                     {currentStep === 1 && (
-                        <div className="space-y-6">
-                           <div className="space-y-4">
-                              {input("The Problem (Title)", "meetupTitle", "e.g. Sales dropped 40% in Q3", "text")}
-                              {input("Current Situation", "meetupDescription", "What is happening right now?", "textarea")}
-                              <div className="grid grid-cols-2 gap-4">
-                                 {input("Where are you stuck?", "meetupStuck", "Specify the bottleneck...")}
-                                 {input("What have you tried?", "meetupAttempted", "e.g. Meta Ads, Cold Calling")}
-                              </div>
-                           </div>
-                           
-                           {/* AI CLARITY RADAR */}
-                           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                 <Sparkles size={16} className="text-emerald-600" />
-                                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Clarity Score: {checkoutScore}%</span>
-                              </div>
-                              {checkoutScore < 70 && (
-                                 <span className="text-[8px] font-bold text-emerald-400 uppercase">Pro Tip: Add more detail to attract more people</span>
-                              )}
-                           </div>
+                   <div className="space-y-8">
+                      <div className="grid grid-cols-3 gap-1">
+                         {[1,2,3].map(s => (
+                            <div key={s} className={cn("h-1.5 rounded-full", s <= currentStep ? "bg-emerald-600" : "bg-slate-100")} />
+                         ))}
+                      </div>
+                      
+                      {currentStep === 1 && (
+                         <div className="space-y-6">
+                            <div className="space-y-4">
+                               {input("The Problem (Title)", "meetupTitle", "e.g. Sales dropped 40% in Q3", "text")}
+                               {input("Current Situation", "meetupDescription", "What is happening right now?", "textarea")}
+                               <div className="grid grid-cols-2 gap-4">
+                                  {input("Where are you stuck?", "meetupStuck", "Specify the bottleneck...")}
+                                  {input("What have you tried?", "meetupAttempted", "e.g. Meta Ads, Cold Calling")}
+                               </div>
+                            </div>
+                            
+                            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                               <div className="flex items-center gap-3">
+                                  <Sparkles size={16} className="text-emerald-600" />
+                                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Clarity Score: {checkoutScore}%</span>
+                               </div>
+                            </div>
 
-                           <button onClick={() => setCurrentStep(2)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Details</button>
-                        </div>
-                     )}
+                            <button onClick={() => setCurrentStep(2)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Details</button>
+                         </div>
+                      )}
 
-                     {currentStep === 2 && (
-                        <div className="space-y-6">
-                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {input("Domain", "meetupDomain", "", "select", DOMAINS)}
-                              {input("Business Stage", "meetupStage", "", "select", STAGES)}
-                              {input("Urgency", "meetupUrgency", "", "select", ["Flexible", "Soon", "Urgent"])}
-                           </div>
+                      {currentStep === 2 && (
+                         <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                               {input("Domain", "meetupDomain", "", "select", DOMAINS)}
+                               {input("Business Stage", "meetupStage", "", "select", STAGES)}
+                               {input("Urgency", "meetupUrgency", "", "select", ["Flexible", "Soon", "Urgent"])}
+                            </div>
+                            <button onClick={() => setCurrentStep(3)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Select Advisor</button>
+                         </div>
+                      )}
 
-                           {/* ACTIVITY INDICATOR */}
-                           <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl text-center">
-                              <p className="text-[10px] font-bold text-[#292828] uppercase mb-1">Looking for matches...</p>
-                              <p className="text-[8px] font-bold text-[#292828]/40 uppercase tracking-wider">Matches: 3 People with similar {formData.meetupDomain} problems are active</p>
-                           </div>
-
-                           <button onClick={() => setCurrentStep(3)} className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold uppercase transition-all shadow-lg shadow-emerald-200">Next: Select Advisor</button>
-                        </div>
-                     )}
-
-                     {currentStep === 3 && (
-                        <div className="space-y-6">
-                           <div className="flex items-center justify-between">
-                              <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-widest">Suggested Advisors</h4>
-                              <button className="text-[8px] font-bold text-emerald-600 uppercase border-b border-emerald-600">Explore All Advisors</button>
-                           </div>
-                           
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                             {advisors.map(adv => (
-                                 <button 
-                                   key={adv.id} 
-                                   onClick={() => {
-                                      updateField("selectedAdvisor", adv);
-                                      updateField("advisorFee", adv.checkoutScore > 90 ? 2000 : 500);
-                                   }} 
-                                   className={cn(
-                                      "p-5 rounded-[1.5rem] border-2 transition-all flex items-center gap-4 text-left relative overflow-hidden", 
-                                      formData.selectedAdvisor?.id === adv.id ? "border-emerald-600 bg-emerald-50/50" : "border-slate-100 hover:border-slate-200 bg-slate-50/30"
-                                   )}
-                                 >
-                                    <div className="h-12 w-12 rounded-xl overflow-hidden grayscale">
-                                       <img src={adv.avatar} className="h-full w-full object-cover" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                       <p className="text-[12px] font-bold text-[#292828] uppercase leading-none mb-1 truncate">{adv.name}</p>
-                                       <div className="flex items-center gap-2">
-                                          <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">{adv.checkoutBadge}</p>
-                                          <p className="text-[8px] font-bold text-[#292828]/40 uppercase">Status: {adv.checkoutRank}</p>
-                                       </div>
-                                    </div>
-                                    <div className="text-right">
-                                       <p className="text-[10px] font-bold text-emerald-600">{adv.checkoutScore}%</p>
-                                       <p className="text-[7px] font-bold text-[#292828]/30 uppercase">Score</p>
-                                    </div>
-                                    {formData.selectedAdvisor?.id === adv.id && (
-                                       <div className="absolute top-0 right-0 h-4 w-4 bg-emerald-600 flex items-center justify-center">
-                                          <CheckCircle2 size={8} className="text-white" />
-                                       </div>
+                      {currentStep === 3 && (
+                         <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                               <h4 className="text-[10px] font-bold text-[#292828] uppercase tracking-widest">Suggested Advisors</h4>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               {advisors.map(adv => (
+                                  <button 
+                                    key={adv.id} 
+                                    onClick={() => {
+                                       updateField("selectedAdvisor", adv);
+                                       updateField("advisorFee", adv.checkoutScore > 90 ? 2000 : 500);
+                                    }} 
+                                    className={cn(
+                                       "p-5 rounded-[1.5rem] border-2 transition-all flex items-center gap-4 text-left relative overflow-hidden", 
+                                       formData.selectedAdvisor?.id === adv.id ? "border-emerald-600 bg-emerald-50/50" : "border-slate-100 hover:border-slate-200 bg-slate-50/30"
                                     )}
-                                 </button>
-                              ))}
-                           </div>
+                                  >
+                                     <div className="h-12 w-12 rounded-xl overflow-hidden grayscale">
+                                        <img src={adv.avatar} className="h-full w-full object-cover" />
+                                     </div>
+                                     <div className="flex-1 min-w-0">
+                                        <p className="text-[12px] font-bold text-[#292828] uppercase leading-none mb-1 truncate">{adv.name}</p>
+                                        <div className="flex items-center gap-2">
+                                           <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">{adv.checkoutBadge}</p>
+                                        </div>
+                                     </div>
+                                  </button>
+                               ))}
+                            </div>
 
-                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {input("Preferred Time", "meetupTime", "e.g. Friday 4PM")}
-                              {input("Type", "meetupPayment", "", "select", ["Free", "Paid"])}
-                              
-                              {formData.meetupPayment === "Paid" && (
-                                 <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                                    <p className="text-[7px] font-bold text-emerald-600 uppercase mb-1">Cost Split (Max 8 People)</p>
-                                    <p className="text-[12px] font-bold text-emerald-700">₹{(formData.advisorFee / 8).toFixed(0)} <span className="text-[8px] opacity-60">/PERSON</span></p>
-                                 </div>
-                              )}
-                           </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               {input("Preferred Time", "meetupTime", "e.g. Friday 4PM")}
+                               {input("Type", "meetupPayment", "", "select", ["Free", "Paid"])}
+                            </div>
 
-                           <div className="p-4 bg-[#292828] rounded-2xl text-center">
-                              <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">System Logic</p>
-                              <p className="text-[10px] font-bold text-white uppercase">Meeting is confirmed after Advisor accepts</p>
-                           </div>
-                        </div>
-                     )}
-                  </div>
+                            <div className="p-4 bg-[#292828] rounded-2xl text-center">
+                               <p className="text-[10px] font-bold text-white uppercase">Meeting is confirmed after Advisor accepts</p>
+                            </div>
+                         </div>
+                      )}
+                   </div>
                 )}
              </div>
           </div>
         </div>
 
-        {/* FOOTER - COMPACT */}
+        {/* FOOTER */}
         <div className="px-8 py-6 border-t border-[#292828]/5 flex items-center justify-between shrink-0 bg-slate-50/30">
             <div className="flex flex-col">
-               <span className="text-[7px] font-bold text-[#292828]/30 uppercase tracking-widest mb-0.5">Requirement Quality</span>
+               <span className="text-[7px] font-bold text-[#292828]/30 uppercase tracking-widest mb-0.5">Quality Check</span>
                <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[11px] font-bold text-[#292828] uppercase">{checkoutScore}% Match Score</span>
+                  <span className="text-[11px] font-bold text-[#292828] uppercase">{checkoutScore}% Score</span>
                </div>
             </div>
             <button 
@@ -486,7 +430,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
               disabled={isPosting}
               className="h-14 px-10 bg-[#292828] text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-xl hover:bg-[#E53935] active:scale-95 transition-all flex items-center gap-3"
             >
-               {isPosting ? "Creating..." : (isFirstPost ? "Create Requirement (Post)" : "Create Requirement")} <ArrowUpRight size={16} />
+               {isPosting ? "Processing..." : "Submit Requirement"} <ArrowUpRight size={16} />
             </button>
         </div>
 

@@ -144,6 +144,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           }
           if (signInError.message.toLowerCase().includes("email not confirmed")) {
             setIsVerificationSent(true);
+            setError(null); // Clear previous error
             return;
           }
           throw signInError;

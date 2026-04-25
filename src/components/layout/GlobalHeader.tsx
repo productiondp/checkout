@@ -1,36 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";
 import { 
- Search, 
- Bell, 
- Globe, 
- User as UserIcon, 
- ChevronDown, 
- LogOut, 
- Settings, 
- Zap, 
- Command,
- MapPin,
- CheckCircle2,
- Heart,
- Briefcase,
- ExternalLink,
- Plus,
- ArrowRight,
- Menu,
- GraduationCap,
- Users,
- MessageSquare
+  Search, 
+  Bell, 
+  Globe, 
+  User as UserIcon, 
+  ChevronDown, 
+  LogOut, 
+  Settings, 
+  Zap, 
+  Command,
+  MapPin,
+  CheckCircle2,
+  Heart,
+  Briefcase,
+  ExternalLink,
+  Plus,
+  ArrowRight,
+  Menu,
+  GraduationCap,
+  Users,
+  MessageSquare,
+  X,
+  Target
 } from "lucide-react";
 import MobileDrawer from "./MobileDrawer";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import UnifiedSearch from "../search/UnifiedSearch";
 
 export default function FullyActiveGlobalHeader() {
   const router = useRouter();
@@ -39,10 +42,46 @@ export default function FullyActiveGlobalHeader() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const supabase = createClient();
+  const profileRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
+
+  // 0. CLICK OUTSIDE HANDLER
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
+        setIsLocationOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOverlayOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOverlayOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // 1. NOTIFICATIONS INITIAL FETCH
   React.useEffect(() => {
@@ -133,17 +172,22 @@ export default function FullyActiveGlobalHeader() {
         {/* 2. RIGHT HUB (ACTIVE BUTTONS) */}
         <div className="flex items-center gap-2 lg:gap-3 justify-end flex-1">
           
-          {/* RIGHT ALIGNED SEARCH */}
-          <div className="hidden md:flex max-w-[280px] w-full relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              className="w-full h-10 bg-[#292828]/5 border border-[#292828]/10 rounded-xl pl-11 pr-4 text-[13px] font-bold text-[#292828] focus:bg-white focus:border-[#E53935] transition-all outline-none shadow-sm"
-            />
+          {/* RIGHT ALIGNED SEARCH TRIGGER */}
+          <div 
+            onClick={() => setIsSearchOverlayOpen(true)}
+            className="hidden md:flex max-w-[280px] w-full relative group cursor-pointer"
+          >
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#292828]/20 group-hover:text-[#E53935] transition-colors" size={16} />
+            <div className="w-full h-10 bg-[#292828]/5 border border-[#292828]/10 rounded-xl pl-11 pr-4 flex items-center justify-between transition-all outline-none shadow-sm group-hover:border-[#E53935]/30">
+               <span className="text-[12px] font-bold text-[#292828]/40 uppercase tracking-tight">Search Directory...</span>
+               <div className="flex items-center gap-1">
+                  <kbd className="h-5 px-1.5 bg-white border border-[#292828]/10 rounded text-[8px] font-black text-[#292828]/20">⌘</kbd>
+                  <kbd className="h-5 px-1.5 bg-white border border-[#292828]/10 rounded text-[8px] font-black text-[#292828]/20">K</kbd>
+               </div>
+            </div>
           </div>
           
-          <div className="relative hidden sm:block">
+          <div className="relative hidden sm:block" ref={locationRef}>
             <button 
               onClick={() => setIsLocationOpen(!isLocationOpen)}
               className="flex items-center gap-1.5 px-4 h-9 bg-[#292828]/5 border border-[#292828]/10 rounded-lg hover:bg-white hover:shadow-lg transition-all"
@@ -157,7 +201,11 @@ export default function FullyActiveGlobalHeader() {
               <div className="absolute top-[130%] right-0 w-56 bg-white rounded-2xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
                 <p className="px-3 py-2 text-[10px] font-bold text-[#292828]/30 uppercase border-b border-[#292828]/5 mb-2">Select Hub</p>
                 {["Kochi", "Bangalore", "Chennai"].map(loc => (
-                  <button key={loc} className="w-full text-left p-3 rounded-xl text-[11px] font-bold uppercase text-[#292828] hover:bg-[#292828]/5 hover:text-[#E53935] flex items-center justify-between group transition-all">
+                  <button 
+                    key={loc} 
+                    onClick={() => setIsLocationOpen(false)}
+                    className="w-full text-left p-3 rounded-xl text-[11px] font-bold uppercase text-[#292828] hover:bg-[#292828]/5 hover:text-[#E53935] flex items-center justify-between group transition-all"
+                  >
                     {loc}
                     <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
                   </button>
@@ -166,22 +214,11 @@ export default function FullyActiveGlobalHeader() {
             )}
           </div>
 
-          <Link 
-            href="/wallet"
-            className="hidden lg:flex flex-col items-center justify-center px-4 h-12 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all group"
-          >
-             <div className="flex items-center gap-2">
-                <Zap size={14} className="text-emerald-600 fill-emerald-600" />
-                <span className="text-[11px] font-black text-emerald-700">₹0</span>
-             </div>
-             <span className="text-[7px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Your Wallet</span>
-          </Link>
-
           {/* NOTIFICATIONS & PROFILE */}
           <div className="flex items-center gap-1 border-r border-[#292828]/10 pr-1 lg:pr-3">
             
             {/* NOTIFICATIONS */}
-            <div className="relative">
+            <div className="relative" ref={notificationsRef}>
               <button 
                 onClick={() => {
                   setIsNotificationsOpen(!isNotificationsOpen);
@@ -243,7 +280,7 @@ export default function FullyActiveGlobalHeader() {
           </div>
 
           {/* PROFILE */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             {!authUser ? (
                <Link 
                  href="/login"
@@ -253,26 +290,15 @@ export default function FullyActiveGlobalHeader() {
                </Link>
             ) : (
               <>
-                <Link 
-                  href="/profile"
-                  className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl hover:shadow-slate-200/20 transition-all transition-duration-300"
+                <div 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl transition-all cursor-pointer"
                 >
                   <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shadow-sm">
                     <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                   </div>
-                  <div 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsProfileOpen(!isProfileOpen);
-                      setIsNotificationsOpen(false);
-                      setIsLocationOpen(false);
-                    }}
-                    className="flex items-center"
-                  >
-                    <ChevronDown size={12} className={cn("text-[#292828]/40 transition-transform duration-500", isProfileOpen && "rotate-180")} />
-                  </div>
-                </Link>
+                  <ChevronDown size={12} className={cn("text-[#292828]/40 transition-transform", isProfileOpen && "rotate-180")} />
+                </div>
 
                 {isProfileOpen && (
                   <div className="absolute top-[130%] right-0 w-64 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
@@ -285,10 +311,14 @@ export default function FullyActiveGlobalHeader() {
                         { icon: UserIcon, label: "My Profile", href: "/profile" },
                         { icon: Globe, label: "Directory", href: "/matches" },
                         { icon: GraduationCap, label: "Advisors", href: "/advisors" },
-                        { icon: Zap, label: "Wallet", href: "/wallet" },
                         { icon: Settings, label: "Settings", href: "/settings" },
                       ].map(it => (
-                        <Link key={it.label} href={it.href} className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-medium text-slate-700 hover:bg-[#292828]/5 hover:text-[#292828] transition-all">
+                        <Link 
+                          key={it.label} 
+                          href={it.href} 
+                          onClick={() => setIsProfileOpen(false)}
+                          className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-medium text-slate-700 hover:bg-[#292828]/5 hover:text-[#292828] transition-all"
+                        >
                           <it.icon size={16} className="text-[#292828] group-hover:text-[#E53935]" />
                           {it.label}
                         </Link>
@@ -321,6 +351,21 @@ export default function FullyActiveGlobalHeader() {
         </div>
       </header>
       
+      {/* SEARCH OVERLAY */}
+      {isSearchOverlayOpen && (
+        <div className="fixed inset-0 z-[1000] flex flex-col items-center pt-20 px-4 bg-[#292828]/40 backdrop-blur-xl animate-in fade-in duration-300">
+           <div className="w-full max-w-4xl flex justify-end mb-4">
+              <button onClick={() => setIsSearchOverlayOpen(false)} className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white rounded-2xl flex items-center justify-center transition-all">
+                 <X size={24} />
+              </button>
+           </div>
+           <UnifiedSearch />
+           <div className="mt-8 text-white/40 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
+              Press ESC to close
+           </div>
+        </div>
+      )}
+
       <MobileDrawer 
         isOpen={isDrawerOpen} 
         onClose={() => setIsDrawerOpen(false)} 

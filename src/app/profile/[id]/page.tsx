@@ -2,8 +2,8 @@
 
 export const runtime = "edge";
 
-import React, { useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import React, { useState, useMemo, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { 
   User, 
   Mail, 
@@ -31,43 +31,100 @@ import {
   Image as ImageIcon,
   Compass,
   Layout,
-  BookOpen
+  BookOpen,
+  MessageSquare,
+  Clock,
+  Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DynamicProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const profileId = params.id as string;
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<"NONE" | "PENDING" | "ACCEPTED" | "RECEIVED">("NONE");
+  const [connectionId, setConnectionId] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
+  const { user: authUser } = useAuth();
   const supabase = createClient();
 
-  React.useEffect(() => {
-    async function fetchProfile() {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
+  const fetchProfileAndConnection = async () => {
+    setIsLoading(true);
+    
+    // 1. Fetch Profile
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', profileId)
+      .single();
+    
+    if (profileData) {
+      setProfile({
+        ...profileData,
+        name: profileData.full_name || "Expert",
+        avatar: profileData.avatar_url || `https://i.pravatar.cc/150?u=${profileData.id}`,
+        role: profileData.role || "Professional",
+        company: profileData.location || "Global",
+        city: profileData.location || "Virtual",
+        match: profileData.match_score || 95
+      });
+    }
+
+    // 2. Fetch Connection Status
+    if (authUser && profileId) {
+      const { data: conn } = await supabase
+        .from('connections')
         .select('*')
-        .eq('id', profileId)
+        .or(`and(sender_id.eq.${authUser.id},receiver_id.eq.${profileId}),and(sender_id.eq.${profileId},receiver_id.eq.${authUser.id})`)
         .single();
       
-      if (data) {
-        setProfile({
-          ...data,
-          name: data.full_name || "Expert",
-          avatar: data.avatar_url || `https://i.pravatar.cc/150?u=${data.id}`,
-          role: data.role || "Professional",
-          company: data.location || "Global",
-          city: data.location || "Virtual",
-          match: data.match_score || 95
-        });
+      if (conn) {
+        setConnectionId(conn.id);
+        if (conn.status === 'ACCEPTED') {
+          setConnectionStatus('ACCEPTED');
+        } else if (conn.sender_id === authUser.id) {
+          setConnectionStatus('PENDING');
+        } else {
+          setConnectionStatus('RECEIVED');
+        }
       }
-      setIsLoading(false);
     }
-    if (profileId) fetchProfile();
-  }, [profileId]);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (profileId) fetchProfileAndConnection();
+  }, [profileId, authUser?.id]);
+
+  const handleConnect = async () => {
+    if (!authUser || !profileId || isProcessing) return;
+    setIsProcessing(true);
+    
+    if (connectionStatus === 'NONE') {
+      const { error } = await supabase.from('connections').insert({
+        sender_id: authUser.id,
+        receiver_id: profileId,
+        status: 'PENDING'
+      });
+      if (!error) setConnectionStatus('PENDING');
+    } else if (connectionStatus === 'RECEIVED' && connectionId) {
+      const { error } = await supabase
+        .from('connections')
+        .update({ status: 'ACCEPTED' })
+        .eq('id', connectionId);
+      if (!error) {
+        setConnectionStatus('ACCEPTED');
+        // Redirection as requested: "it will list in chat"
+        router.push(`/chat?user=${profileId}`);
+      }
+    }
+    setIsProcessing(false);
+  };
 
   const [activeTab, setActiveTab] = useState("Overview");
 
@@ -75,16 +132,16 @@ export default function DynamicProfilePage() {
   if (!profile) return <div className="min-h-screen flex items-center justify-center bg-[#292828] text-white">Profile Not Found</div>;
 
   const performanceMetrics = [
-    { label: "Trust Score", value: profile.match + 2, color: "bg-green-500", icon: ShieldCheck },
-    { label: "Networking Score", value: profile.match, color: "bg-[#E53935]", icon: Target },
+    { label: "Trust Score", value: (profile.match || 80) + 2, color: "bg-green-500", icon: ShieldCheck },
+    { label: "Networking Score", value: (profile.match || 80), color: "bg-[#E53935]", icon: Target },
     { label: "Credit Score", value: 92, color: "bg-[#292828]", icon: CreditCard },
     { label: "Response Time", value: 76, color: "bg-red-600", icon: Zap },
   ];
 
   const contactInfo = [
-    { label: "Email", value: `${profile.name.toLowerCase().replace(" ", ".")}@${profile.company.toLowerCase().replace(" ", "")}.com`, icon: Mail },
+    { label: "Email", value: `${profile.name.toLowerCase().replace(/\s/g, ".")}@${profile.company.toLowerCase().replace(/\s/g, "")}.com`, icon: Mail },
     { label: "Phone", value: "+91 9XX XXXXXXX", icon: Phone },
-    { label: "Website", value: `${profile.company.toLowerCase().replace(" ", "")}.io`, icon: Globe, link: true },
+    { label: "Website", value: `${profile.company.toLowerCase().replace(/\s/g, "")}.io`, icon: Globe, link: true },
   ];
 
   return (
@@ -124,9 +181,37 @@ export default function DynamicProfilePage() {
                </div>
 
                <div className="flex items-center gap-4">
-                  <button className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:scale-105 transition-all active:scale-95">Chat</button>
+                  {connectionStatus === 'ACCEPTED' ? (
+                    <button 
+                      onClick={() => router.push(`/chat?user=${profileId}`)}
+                      className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:scale-105 transition-all active:scale-95 flex items-center gap-3"
+                    >
+                       Message <MessageSquare size={18} />
+                    </button>
+                  ) : connectionStatus === 'PENDING' ? (
+                    <button className="h-16 px-10 bg-white/10 text-white/40 rounded-2xl font-black text-[11px] uppercase cursor-default flex items-center gap-3">
+                       Pending <Clock size={18} />
+                    </button>
+                  ) : connectionStatus === 'RECEIVED' ? (
+                    <button 
+                      onClick={handleConnect}
+                      disabled={isProcessing}
+                      className="h-16 px-10 bg-emerald-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-2xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-3"
+                    >
+                       Accept Connection <Check size={18} />
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleConnect}
+                      disabled={isProcessing}
+                      className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:scale-105 transition-all active:scale-95 flex items-center gap-3"
+                    >
+                       Connect <Plus size={18} />
+                    </button>
+                  )}
+                  
                   <button className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-white hover:text-[#292828] transition-all">
-                     <Plus size={24} />
+                     <TrendingUp size={24} />
                   </button>
                </div>
             </div>
@@ -147,8 +232,7 @@ export default function DynamicProfilePage() {
                      About
                   </h3>
                   <p className="text-lg text-[#292828] font-bold leading-relaxed uppercase">
-                     Experienced leader at {profile.company}. Focused on improving local distribution 
-                     through partnerships and digital tools in Kerala.
+                     {profile.bio || `Experienced leader at ${profile.company}. Focused on improving local business ecosystem.`}
                   </p>
                   
                   <div className="mt-10 pt-10 border-t border-[#292828]/5 space-y-8">
@@ -189,11 +273,11 @@ export default function DynamicProfilePage() {
                      <div className="grid grid-cols-2 gap-4 mb-10 text-center">
                         <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">Global</p>
-                           <p className="text-2xl font-black text-white">#{100 + profile.id}</p>
+                           <p className="text-2xl font-black text-white">#124</p>
                         </div>
                         <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">State</p>
-                           <p className="text-2xl font-black text-[#E53935]">#{profile.id % 20 + 1}</p>
+                           <p className="text-2xl font-black text-[#E53935]">#12</p>
                         </div>
                      </div>
 
@@ -202,8 +286,8 @@ export default function DynamicProfilePage() {
                            Goals
                         </p>
                         {[
-                           { label: "Completed Projects", val: `${30 + (profile.id % 20)}/50`, progress: 60 + (profile.id % 40) },
-                           { label: "Match Rate", val: `${profile.match}%`, progress: profile.match },
+                           { label: "Completed Projects", val: `34/50`, progress: 68 },
+                           { label: "Match Rate", val: `${profile.match || 85}%`, progress: profile.match || 85 },
                         ].map((param, i) => (
                            <div key={i} className="space-y-2">
                               <div className="flex justify-between text-[9px] font-black text-white/30 uppercase">
@@ -276,46 +360,6 @@ export default function DynamicProfilePage() {
                   ))}
                </div>
 
-               {/* C. MEDIA GALLERY & INSIGHTS */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  {/* Articles / Insights */}
-                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
-                     <div className="flex items-center justify-between mb-10">
-                        <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
-                           <BookOpen size={18} className="text-[#E53935]" /> Articles
-                        </h3>
-                     </div>
-                     <div className="space-y-8">
-                        {[].map((art, i) => (
-                           <div key={i} className="group/art cursor-pointer space-y-2">
-                              <p className="text-[13px] font-black text-[#292828] uppercase group/art:text-[#E53935] transition-colors">{art}</p>
-                              <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400">
-                                 <span>8 min read</span>
-                                 <span className="h-1 w-1 bg-slate-200 rounded-full" />
-                                 <span>12.4k Views</span>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                  </div>
-
-                  {/* Visual Portfolio */}
-                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50 flex flex-col">
-                     <div className="flex items-center justify-between mb-10">
-                        <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
-                           <ImageIcon size={18} className="text-[#E53935]" /> Media Portfolio
-                        </h3>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4 flex-1">
-                        {[].map(i => (
-                           <div key={i} className="relative rounded-[1rem] overflow-hidden group/img cursor-pointer">
-                              <img src={""} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover/img:grayscale-0 group-hover/img:scale-110" alt="" />
-                           </div>
-                        ))}
-                     </div>
-                  </div>
-               </div>
-
                {/* RECENT BUSINESS HISTORY */}
                <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
                   <div className="flex items-center justify-between mb-12">
@@ -326,15 +370,14 @@ export default function DynamicProfilePage() {
                   </div>
                   
                   <div className="space-y-12">
-                     {[].map((item, i) => (
-                        <div key={i} className="flex gap-8 relative group">
-                           {i !== 2 && <div className="absolute left-2 top-8 bottom-[-32px] w-px bg-neutral-100" />}
-                           <div className="h-4 w-4 rounded-full bg-[#E53935] shadow-[0_0_15px_rgba(229,57,53,0.4)] mt-1 relative z-10 border-4 border-white" />
-                           <div className="flex-1">
-                              {/* Content would go here */}
-                           </div>
+                     <div className="flex gap-8 relative group opacity-50">
+                        <div className="absolute left-2 top-8 bottom-[-32px] w-px bg-neutral-100" />
+                        <div className="h-4 w-4 rounded-full bg-[#E53935] shadow-[0_0_15px_rgba(229,57,53,0.4)] mt-1 relative z-10 border-4 border-white" />
+                        <div className="flex-1">
+                           <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Dec 2025</p>
+                           <p className="text-[14px] font-bold text-[#292828] uppercase">Joined Checkout Platform</p>
                         </div>
-                     ))}
+                     </div>
                   </div>
                </div>
 

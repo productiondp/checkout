@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
   Search, 
@@ -25,7 +25,9 @@ import {
   Zap,
   Target,
   Sparkles,
-  BrainCircuit
+  BrainCircuit,
+  Users,
+  Compass
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";
@@ -39,7 +41,6 @@ import { useAuth } from "@/hooks/useAuth";
 
 function Chat() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
   const [showProfile, setShowProfile] = useState(false);
@@ -48,6 +49,7 @@ function Chat() {
   const [chats, setChats] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"MESSAGES" | "DISCOVERY">("MESSAGES");
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const userParam = searchParams.get('user');
@@ -75,15 +77,22 @@ function Chat() {
           name: p.full_name || "Partner",
           avatar: p.avatar_url || DEFAULT_AVATAR,
           role: p.role || "Verified Partner",
-          online: true,
-          time: "connected",
-          last: "Start a conversation"
+          online: Math.random() > 0.3,
+          time: "just now",
+          last: "Available for collaboration",
+          bio: p.bio,
+          checkoutScore: p.match_score || 85,
+          badge: 'Gold',
+          rank: { pos: 12, city: 'Trivandrum', domain: p.role }
         }));
         setAllUsers(formattedUsers);
 
         if (userParam) {
            const target = formattedUsers.find(u => u.partnerId === userParam);
-           if (target) setSelectedChat(target);
+           if (target) {
+             setSelectedChat(target);
+             setActiveTab("DISCOVERY"); // Default to discovery, will be overridden by active chat if found
+           }
         }
       }
 
@@ -93,13 +102,14 @@ function Chat() {
         .select(`
           id,
           status,
-          sender:profiles!connections_sender_id_fkey (id, full_name, avatar_url, role),
-          receiver:profiles!connections_receiver_id_fkey (id, full_name, avatar_url, role)
+          sender:profiles!connections_sender_id_fkey (id, full_name, avatar_url, role, bio),
+          receiver:profiles!connections_receiver_id_fkey (id, full_name, avatar_url, role, bio)
         `)
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq('status', 'ACCEPTED');
 
       if (connections) {
-        setChats(connections.map((conn: any) => {
+        const formattedChats = connections.map((conn: any) => {
           const partner = conn.sender.id === user.id ? conn.receiver : conn.sender;
           return {
             id: conn.id,
@@ -107,20 +117,34 @@ function Chat() {
             name: partner.full_name || "Partner",
             avatar: partner.avatar_url || DEFAULT_AVATAR,
             role: partner.role || "Verified Profile",
+            bio: partner.bio,
             online: true,
             last: "Connected",
-            time: "10:32 AM"
+            time: "10:32 AM",
+            checkoutScore: 92,
+            badge: 'Elite',
+            rank: { pos: 5, city: 'Trivandrum', domain: partner.role }
           };
-        }));
+        });
+        setChats(formattedChats);
+
+        // If redirected from acceptance, prioritize selecting from active chats
+        if (userParam) {
+           const activeChat = formattedChats.find(c => c.partnerId === userParam);
+           if (activeChat) {
+             setSelectedChat(activeChat);
+             setActiveTab("MESSAGES");
+           }
+        }
       }
       setIsLoading(false);
     }
     initChat();
-  }, [userParam]);
+  }, [user?.id, userParam, supabase]);
 
   // 2. MESSAGE LOADING & REALTIME SUBSCRIPTION
   React.useEffect(() => {
-    if (!selectedChat || selectedChat.id === "temp") return;
+    if (!selectedChat || !selectedChat.id || selectedChat.id === "temp") return;
 
     async function loadMessages() {
       const { data } = await supabase
@@ -145,31 +169,40 @@ function Chat() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [selectedChat]);
+  }, [selectedChat, supabase]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !selectedChat || !currentUser) return;
+    if (!message.trim() || !selectedChat || !user) return;
 
-    // Logic to create connection if "temp"
-    // For now, assume connection exists or just list "everyone" for UI testing
     const newMessage = {
       connection_id: selectedChat.id === "temp" ? null : selectedChat.id,
-      sender_id: currentUser.id,
+      sender_id: user.id,
       content: message
     };
     setMessage("");
 
-    if (selectedChat.id !== "temp") {
+    if (selectedChat.id && selectedChat.id !== "temp") {
        await supabase.from('messages').insert([newMessage]);
-       analytics.track('MESSAGE_INITIATED', currentUser.id, { connectionId: selectedChat.id });
+       analytics.track('MESSAGE_INITIATED', user.id, { connectionId: selectedChat.id });
     }
   };
 
-   const filteredUsers = allUsers.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDiscovery = useMemo(() => {
+    return allUsers.filter(u => {
+      const isAlreadyInChats = chats.some(c => c.partnerId === u.partnerId);
+      const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           u.role.toLowerCase().includes(searchQuery.toLowerCase());
+      return !isAlreadyInChats && matchesSearch;
+    });
+  }, [allUsers, chats, searchQuery]);
+
+  const filteredChats = useMemo(() => {
+    return chats.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [chats, searchQuery]);
 
   return (
     <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
@@ -190,26 +223,48 @@ function Chat() {
               </button>
            </div>
            
-           <div className="relative group">
+           <div className="relative group mb-6">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E53935] transition-colors" size={18} />
               <input 
                 type="text" 
-                placeholder="Search people..." 
+                placeholder="Search..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-[13px] font-bold text-[#292828] outline-none focus:bg-white focus:ring-2 focus:ring-[#E53935]/10 focus:border-[#E53935] transition-all" 
               />
            </div>
+
+           {/* Discovery Tabs */}
+           <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-2xl border border-[#292828]/5">
+              <button 
+                onClick={() => setActiveTab("MESSAGES")}
+                className={cn(
+                  "flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  activeTab === "MESSAGES" ? "bg-white text-[#292828] shadow-sm" : "text-slate-400 hover:text-[#292828]"
+                )}
+              >
+                 <MessageSquare size={14} /> Messages
+              </button>
+              <button 
+                onClick={() => setActiveTab("DISCOVERY")}
+                className={cn(
+                  "flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  activeTab === "DISCOVERY" ? "bg-white text-[#292828] shadow-sm" : "text-slate-400 hover:text-[#292828]"
+                )}
+              >
+                 <Compass size={14} /> Discovery
+              </button>
+           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-3 space-y-1 pb-40 lg:pb-12">
            <div className="px-5 mb-4 mt-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Chats</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                {activeTab === "MESSAGES" ? "Recent Conversations" : "Discover People"}
+              </p>
            </div>
-           {chats.filter(c => 
-             c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-             c.role.toLowerCase().includes(searchQuery.toLowerCase())
-           ).map((chat) => (
+           
+           {(activeTab === "MESSAGES" ? filteredChats : filteredDiscovery).map((chat) => (
              <button 
                key={chat.partnerId} 
                onClick={() => setSelectedChat(chat)}
@@ -222,7 +277,7 @@ function Chat() {
                    <div className="h-14 w-14 rounded-2xl overflow-hidden border-2 border-transparent group-hover:border-slate-200 transition-all">
                       <img src={chat.avatar || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                    </div>
-                   <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />
+                   {chat.online && <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                    <div className="flex justify-between items-center mb-1">
@@ -242,9 +297,10 @@ function Chat() {
                 )}
              </button>
            ))}
-           {chats.length === 0 && !isLoading && (
+           
+           {(activeTab === "MESSAGES" ? filteredChats : filteredDiscovery).length === 0 && !isLoading && (
               <div className="p-10 text-center opacity-20 italic text-[10px] uppercase font-black tracking-widest">
-                 No active chats
+                 {activeTab === "MESSAGES" ? "No active chats" : "No new people found"}
               </div>
            )}
         </div>
@@ -298,35 +354,52 @@ function Chat() {
 
              {/* MESSAGE STREAM */}
             <div className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-6 lg:space-y-8 bg-[#FDFDFF] no-scrollbar">
-               <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Connected</span>
-               </div>
+               
+               {activeTab === "DISCOVERY" || !selectedChat.id ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-20 px-8">
+                     <div className="h-20 w-20 bg-[#292828] text-white rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl">
+                        <Zap size={32} className="fill-[#E53935] text-[#E53935]" />
+                     </div>
+                     <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tighter mb-4">Start Conversation</h3>
+                     <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest max-w-xs leading-relaxed">
+                        You haven't connected with {selectedChat.name} yet. Send a request to enable full chat.
+                     </p>
+                     <Link href={`/profile/${selectedChat.partnerId}`} className="mt-10 h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3 shadow-xl hover:bg-[#292828] transition-all">
+                        Connect with Profile <ArrowUpRight size={18} />
+                     </Link>
+                  </div>
+               ) : (
+                  <>
+                    <div className="flex justify-center">
+                       <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Connected</span>
+                    </div>
 
-               {/* Live Message Stream */}
-               <div className="space-y-8">
-                  {messages.map((msg) => {
-                    const isMe = msg.sender_id === currentUser?.id;
-                    return (
-                      <div key={msg.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
-                        <div className={cn(
-                          "p-5 rounded-[1.3rem] shadow-sm max-w-[80%] leading-relaxed text-[15px] font-bold",
-                          isMe ? "bg-[#E53935] text-white rounded-tr-lg shadow-red-500/10" : "bg-white border border-slate-100 text-slate-700 rounded-tl-lg"
-                        )}>
-                          {msg.content}
-                        </div>
-                        <div className={cn("flex items-center gap-2 mt-2", isMe ? "mr-4" : "ml-4")}>
-                           <span className="text-[10px] font-bold text-slate-400">
-                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                           </span>
-                           {isMe && <CheckCheck size={14} className="text-[#E53935]" />}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {messages.length === 0 && (
-                    <div className="text-center py-20 opacity-20 italic text-sm">Beginning of shared history</div>
-                  )}
-               </div>
+                    <div className="space-y-8">
+                       {messages.map((msg) => {
+                         const isMe = msg.sender_id === user?.id;
+                         return (
+                           <div key={msg.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
+                             <div className={cn(
+                               "p-5 rounded-[1.3rem] shadow-sm max-w-[80%] leading-relaxed text-[15px] font-bold",
+                               isMe ? "bg-[#E53935] text-white rounded-tr-lg shadow-red-500/10" : "bg-white border border-slate-100 text-slate-700 rounded-tl-lg"
+                             )}>
+                               {msg.content}
+                             </div>
+                             <div className={cn("flex items-center gap-2 mt-2", isMe ? "mr-4" : "ml-4")}>
+                                <span className="text-[10px] font-bold text-slate-400">
+                                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                {isMe && <CheckCheck size={14} className="text-[#E53935]" />}
+                             </div>
+                           </div>
+                         );
+                       })}
+                       {messages.length === 0 && (
+                         <div className="text-center py-20 opacity-20 italic text-sm">Beginning of shared history</div>
+                       )}
+                    </div>
+                  </>
+               )}
             </div>
             {/* COMPOSER (BOTTOM) */}
             <div className="p-4 lg:p-8 bg-white border-t border-slate-100 pb-32 lg:pb-8">
@@ -405,7 +478,7 @@ function Chat() {
                 <MessageSquare size={40} />
              </div>
              <h2 className="text-2xl font-black text-[#292828] uppercase tracking-tighter">Chat</h2>
-             <p className="text-slate-400 max-w-sm mt-4 font-bold leading-relaxed uppercase text-[11px] tracking-widest">Select a person to start messaging.</p>
+             <p className="text-slate-400 max-w-sm mt-4 font-bold leading-relaxed uppercase text-[11px] tracking-widest">Select a person or discover new profiles to start messaging.</p>
           </div>
         )}
       </main>
@@ -423,7 +496,7 @@ function Chat() {
 
               <div className="text-center mb-10">
                  <div className="relative inline-block mb-6">
-                    <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-[2rem] overflow-hidden shadow-2xl ring-8 ring-[#292828]/5 block hover:scale-105 transition-transform active:scale-95">
+                    <Link href={`/profile/${selectedChat.partnerId}`} className="h-32 w-32 mx-auto rounded-[2rem] overflow-hidden shadow-2xl ring-8 ring-[#292828]/5 block hover:scale-105 transition-transform active:scale-95">
                        <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
                     </Link>
                     <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-white rounded-2xl shadow-xl flex items-center justify-center text-[#E53935] border border-[#292828]/5">
@@ -474,9 +547,9 @@ function Chat() {
                     </h4>
                     <p className="text-[13px] font-bold text-[#292828] leading-tight relative z-10">
                        {getChatInsight({
-                         role: currentUser?.profile?.role || "Professional",
-                         bio: currentUser?.profile?.bio || "",
-                         domains: currentUser?.profile?.skills || []
+                         role: user?.role || "Professional",
+                         bio: user?.bio || "",
+                         domains: user?.skills || []
                        }, selectedChat)}
                      </p>
                   </div>
@@ -490,51 +563,17 @@ function Chat() {
                     </div>
                  )}
 
-                 {/* Requirements Section */}
-                 {selectedChat.requirements && (
-                    <div>
-                        <div className="flex items-center gap-2 mb-6">
-                           <Target size={16} className="text-[#E53935]" />
-                           <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest">Requirements</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                           {selectedChat.requirements.map((req: string, i: number) => (
-                              <span key={i} className="px-4 py-2 bg-white border border-[#292828]/10 rounded-xl text-[12px] font-bold text-[#292828] shadow-sm hover:border-[#E53935] hover:text-[#E53935] transition-all cursor-default">
-                                 {req}
-                              </span>
-                           ))}
-                        </div>
-                    </div>
-                 )}
-
-                 {/* Collaboration Stats */}
-                 <div>
-                    <h4 className="text-[11px] font-black text-[#292828]/30 uppercase tracking-widest mb-6">Activity</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-5 bg-[#292828]/5 rounded-3xl border border-[#292828]/5 text-center">
-                          <p className="text-2xl font-black text-[#292828]">12</p>
-                          <p className="text-[10px] font-black text-[#292828]/40 uppercase mt-1">Shared Files</p>
-                       </div>
-                       <div className="p-5 bg-red-50 rounded-3xl border border-red-500/10 text-center">
-                          <p className="text-2xl font-black text-[#E53935]">4</p>
-                          <p className="text-[10px] font-black text-red-500/40 uppercase mt-1">Contracts</p>
-                       </div>
-                    </div>
-                 </div>
-
                  {/* Action Buttons */}
                  <div className="pt-6 space-y-3">
-                    <Link href={`/profile/${selectedChat.id}`} className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:bg-[#E53935] hover:-translate-y-1 transition-all active:translate-y-0">
+                    <Link href={`/profile/${selectedChat.partnerId}`} className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:bg-[#E53935] hover:-translate-y-1 transition-all active:translate-y-0">
                        View Full Profile
                     </Link>
-                    <button className="w-full h-14 bg-[#292828]/5 text-[#292828] rounded-2xl flex items-center justify-center font-black text-[11px] uppercase tracking-widest hover:bg-[#292828]/10 transition-all">
-                       Flag as High Priority
-                    </button>
                  </div>
               </div>
            </div>
         </aside>
       )}
+
       {/* 4. CHAT SETTINGS MODAL */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

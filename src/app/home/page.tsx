@@ -48,8 +48,7 @@ const Feed = dynamic(() => import("@/components/home/HomeFeed"), { ssr: false })
 
 const SMART_FILTERS = [
   { id: 'All', label: 'Everything', icon: LayoutGrid },
-  { id: 'LEAD', label: 'Leads', icon: Target },
-  { id: 'HIRING', label: 'Jobs', icon: Briefcase },
+  { id: 'Requirement', label: 'Hiring & Requirements', icon: Target },
   { id: 'PARTNER', label: 'Partnerships', icon: Sparkles },
   { id: 'Meetup', label: 'Meetups', icon: Users },
 ];
@@ -274,21 +273,21 @@ export default function CheckoutHomeFeed() {
         return {
           title: "Keep going",
           subtext: "Take your next step to grow",
-          ctaPrimary: "Create Requirement",
+          ctaPrimary: "Post Requirement",
           ctaSecondary: "See people →"
         };
       case 'RETURNING':
         return {
           title: "Network growing",
           subtext: "People nearby are active now",
-          ctaPrimary: "Create Requirement",
+          ctaPrimary: "Post Requirement",
           ctaSecondary: "See people →"
         };
       case 'EXPLORING':
         return {
           title: "Finding something?",
           subtext: "Post a requirement to get matches",
-          ctaPrimary: "Create Requirement",
+          ctaPrimary: "Post Requirement",
           ctaSecondary: "See people →"
         };
       default:
@@ -314,7 +313,11 @@ export default function CheckoutHomeFeed() {
     const config = optimization.getConfig();
     const hasAction = analytics.hasAction(['FIRST_MANDATE_CREATED', 'CONNECT_REQUEST_SENT', 'MESSAGE_INITIATED']);
     
-    let base = posts.filter(p => activeFilter === 'All' || p.type.toUpperCase() === activeFilter.toUpperCase());
+    let base = posts.filter(p => {
+       if (activeFilter === 'All') return true;
+       if (activeFilter === 'Requirement') return p.type === 'LEAD' || p.type === 'HIRING';
+       return p.type.toUpperCase() === activeFilter.toUpperCase();
+    });
     
     // Priority Mode Logic
     if (config.override.mode === 'growth') return base;
@@ -341,7 +344,12 @@ export default function CheckoutHomeFeed() {
           
           <div className="px-2">
              <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3 uppercase">Feed</h1>
-             <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Stay updated with your business directory.</p>
+             <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight mb-12">Stay updated with your business directory.</p>
+             
+             {/* UNIFIED DISCOVERY SEARCH */}
+             <div className="mb-20">
+                <UnifiedSearch />
+             </div>
           </div>
           
           {/* RETENTION & CONTINUITY BANNERS */}
@@ -382,12 +390,9 @@ export default function CheckoutHomeFeed() {
              <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[10px] font-black text-[#292828] uppercase tracking-[0.2em]">120+ People in your network</span>
+                   <span className="text-[10px] font-black text-[#292828] uppercase tracking-[0.2em]">Verified network nodes active</span>
                 </div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Network growing nearby • 3 active now</p>
-             </div>
-             <div className="text-right">
-                <p className="text-[8px] font-black text-[#E53935] uppercase tracking-widest">People like you are connecting here</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Growing nearby • Real-time synchronization active</p>
              </div>
           </div>
 
@@ -561,10 +566,9 @@ export default function CheckoutHomeFeed() {
                   <button onClick={() => window.location.href = '/settings'} className="h-10 px-6 bg-[#E53935] text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-red-500/10">Add Now</button>
                </div>
              )}
-             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-2 pb-2">
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-2 pb-2">
                 {[
-                   { id: 'Lead', icon: Target, label: "Requirement" },
-                   { id: 'Hiring', icon: Briefcase, label: "Hiring" },
+                   { id: 'Lead', icon: Target, label: "Hiring & Requirements" },
                    { id: 'Partner', icon: Sparkles, label: "Partner" },
                    { id: 'Meetup', icon: Users, label: "Meetup" }
                 ].map((btn) => (
@@ -608,8 +612,8 @@ export default function CheckoutHomeFeed() {
                            key={f.id}
                            onClick={() => { setActiveFilter(f.id); setIsFilterDropdownOpen(false); }}
                            className={cn(
-                              "w-full h-11 px-4 flex items-center gap-3 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider",
-                              activeFilter === f.id ? "bg-[#292828] text-white" : "text-slate-500 hover:bg-slate-50 hover:text-[#292828]"
+                               "w-full h-11 px-4 flex items-center gap-3 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider",
+                               activeFilter === f.id ? "bg-[#292828] text-white" : "text-slate-500 hover:bg-slate-50 hover:text-[#292828]"
                            )}
                          >
                             <f.icon size={14} />

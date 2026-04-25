@@ -30,8 +30,8 @@ export function calculateMatchScore(user: UserProfile, target: any): MatchResult
   
   // 1. Expertise Match (0.3)
   const userExpertise = new Set((user.expertise || []).map(e => e.toLowerCase()));
-  const targetExpertise = Array.isArray(target.expertise || target.skills_required) 
-    ? (target.expertise || target.skills_required) 
+  const targetExpertise = Array.isArray(target.expertise || target.skills_required || target.skills) 
+    ? (target.expertise || target.skills_required || target.skills) 
     : [];
   const expertiseOverlap = targetExpertise.filter((e: string) => userExpertise.has(e.toLowerCase()));
   

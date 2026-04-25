@@ -47,10 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 5000);
     return () => clearTimeout(safetyTimer);
-  }, [loading]);
-
-
-  const syncProfile = useCallback(async (currentSession: any) => {
+  }, [loading]);  const syncProfile = useCallback(async (currentSession: any) => {
     if (!currentSession?.user) {
       setLoading(false);
       return;
@@ -58,48 +55,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       setSession(currentSession);
-      const { data: profile, error: fetchError } = await supabase
+      
+      // 🧠 PRODUCTION SECURITY: Verify Confirmation
+      if (!currentSession.user.email_confirmed_at) {
+        console.warn("[AUTH] Unverified access blocked. Terminating session.");
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+        setError("Identification verification required. Please confirm your email link.");
+        return;
+      }
+
+      let { data: profile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentSession.user.id)
         .single();
       
-      if (fetchError) {
-        console.error("[AUTH] Profile sync failure:", fetchError.message);
+      // 🧬 SELF-HEAL: If profile was deleted (e.g., during database flush), re-create it
+      if (fetchError && fetchError.code === 'PGRST116') {
+        console.warn("[AUTH] Profile missing. Re-initializing ledger...");
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: currentSession.user.id,
+            full_name: currentSession.user.user_metadata?.full_name || "New Partner",
+            role: (currentSession.user.user_metadata?.role?.toUpperCase() || 'PROFESSIONAL') as any,
+            avatar_url: currentSession.user.user_metadata?.avatar_url || DEFAULT_AVATAR
+          })
+          .select()
+          .single();
+        
+        if (!createError) profile = newProfile;
       }
-      
+
       if (profile) {
         const userData = {
           ...profile,
           expertise: profile.skills || [],
           intents: profile.intent_tags || profile.domains || [],
           onboarding_completed: !!profile.onboarding_completed,
-          full_name: profile.full_name || currentSession.user_metadata?.full_name || "New Partner",
-          avatar_url: profile.avatar_url || currentSession.user_metadata?.avatar_url || DEFAULT_AVATAR
+          full_name: profile.full_name || currentSession.user.user_metadata?.full_name || "New Partner",
+          avatar_url: profile.avatar_url || currentSession.user.user_metadata?.avatar_url || DEFAULT_AVATAR
         } as UserProfile;
 
-        // 🧠 PRODUCTION SECURITY: Verify Confirmation
-        if (!currentSession.user.email_confirmed_at) {
-          console.warn("[AUTH] Unverified access blocked. Terminating session.");
-          await supabase.auth.signOut();
-          setUser(null);
-          setSession(null);
-          setLoading(false);
-          setError("Identification verification required. Please confirm your email link.");
-
-          return;
-        }
-
         setUser(userData);
-
         analytics.track('SESSION_START', profile.id, { 
           role: profile.role,
           hasExpertise: !!profile.skills?.length,
           onboardingCompleted: !!profile.onboarding_completed
         });
       }
-      
-
     } catch (err) {
       console.error("[AUTH] Identity Sync Crash:", err);
       setError("Failed to synchronize professional ledger.");
@@ -107,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, []);
+
 
   const initAuth = useCallback(async () => {
     try {
@@ -203,11 +211,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const publicRoutes = ['/', '/login', '/auth'];
     const currentPath = window.location.pathname;
 
-    hasRouted.current = true;
-
     // 1. GUEST LOGIC
     if (!session) {
        if (!publicRoutes.includes(currentPath)) {
+          hasRouted.current = true;
           router.replace('/login');
        }
        return;
@@ -215,9 +222,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. AUTHENTICATED LOGIC
     if (session && user !== undefined) {
-       const target = !user?.onboarding_completed ? '/onboarding' : '/home';
+       // 🧠 HYBRID CHECK: Consider onboarded if flag is true OR expertise is populated
+       const isOnboarded = !!user?.onboarding_completed || (user?.expertise && user.expertise.length > 0);
+       const target = !isOnboarded ? '/onboarding' : '/home';
        
-       if (currentPath !== target && (publicRoutes.includes(currentPath) || (currentPath === '/onboarding' && user?.onboarding_completed) || (currentPath === '/home' && !user?.onboarding_completed))) {
+       if (currentPath !== target && (publicRoutes.includes(currentPath) || (currentPath === '/onboarding' && isOnboarded) || (currentPath === '/home' && !isOnboarded))) {
+          hasRouted.current = true;
           router.replace(target);
        }
     }
@@ -231,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 🧠 FORCE LOGOUT BEHAVIOR (STRICT REQUIREMENT)
       setUser(null);
       setSession(null);
-      routingHandled.current = false;
+      hasRouted.current = false;
       router.replace('/');
     } catch (err) {
       console.error("[AUTH] Logout Error:", err);

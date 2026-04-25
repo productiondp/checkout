@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ArrowLeft, 
   Star, 
@@ -27,15 +27,63 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MOCK_LISTINGS } from "@/data/marketplace";
+import { createClient } from "@/utils/supabase/client";
+import { DEFAULT_AVATAR } from "@/utils/constants";
+import { ConnectButton } from "@/components/connection/ConnectButton";
 
 export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [connectStatus, setConnectStatus] = useState<"Idle" | "Sending" | "Sent">("Idle");
-
   const listingId = params.id as string;
-  const listing = MOCK_LISTINGS.find(m => m.id === listingId) || MOCK_LISTINGS[0];
+  const [listing, setListing] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchListing() {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          author:profiles(id, full_name, avatar_url, role)
+        `)
+        .eq('id', listingId)
+        .single();
+
+      if (data) {
+        const author = Array.isArray(data.author) ? data.author[0] : data.author;
+        setListing({
+          ...data,
+          matchScore: 92, // Placeholder for real score logic
+          provider: {
+            id: author?.id,
+            name: author?.full_name || "Professional",
+            avatar: author?.avatar_url || DEFAULT_AVATAR,
+            role: author?.role || "Verified Profile"
+          },
+          useCases: data.tags || ["Business Growth", "Strategic Partnership"]
+        });
+      }
+      setIsLoading(false);
+    }
+    if (listingId) fetchListing();
+  }, [listingId]);
+
+  if (isLoading) return (
+    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
+      <div className="h-12 w-12 border-4 border-white/5 border-t-[#E53935] rounded-full animate-spin" />
+      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Loading Listing...</p>
+    </div>
+  );
+
+  if (!listing) return (
+    <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
+      <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Listing Not Found</h2>
+      <button onClick={() => router.push('/marketplace')} className="text-[#E53935] text-[10px] font-black uppercase tracking-widest border-b border-[#E53935]">Back to Marketplace</button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white pb-32">
@@ -83,7 +131,7 @@ export default function ListingDetailPage() {
 
              <div className="flex flex-col gap-4 w-full sm:w-auto">
                <ConnectButton 
-                  userId={listing.id} 
+                  userId={listing.provider.id} 
                   userName={listing.provider.name} 
                   label="Connect" 
                   className="!h-24 !px-16 !bg-white !text-[#292828] !rounded-[2rem] !font-black !text-xs !uppercase !tracking-[0.2em] !shadow-4xl hover:!bg-[#E53935] hover:!text-white transition-all active:scale-95" 
@@ -116,7 +164,7 @@ export default function ListingDetailPage() {
                   <div>
                      <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Tags</h4>
                      <div className="flex flex-wrap gap-3">
-                        {listing.tags.map(tag => (
+                        {listing.tags?.map((tag: string) => (
                           <span key={tag} className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-black uppercase text-[#292828] shadow-sm hover:bg-[#292828] hover:text-white transition-all cursor-default">{tag}</span>
                         ))}
                      </div>
@@ -125,10 +173,10 @@ export default function ListingDetailPage() {
                      <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-10">Impact</h4>
                      <div className="space-y-6">
                         {[
-                           "Quick connection",
-                           "Get help directly",
-                           "Connect with locals",
-                           "Secure messaging"
+                           "Direct access to expertise",
+                           "Verified local provider",
+                           "Secure transaction layer",
+                           "Neural match priority"
                         ].map((impact, i) => (
                            <div key={i} className="flex items-center gap-5 text-[#292828] font-bold text-sm">
                               <CheckCircle2 size={20} className="text-emerald-500 shrink-0" /> {impact}
@@ -144,18 +192,18 @@ export default function ListingDetailPage() {
                <Target size={300} className="absolute -right-20 -bottom-20 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[10s]" />
                <div className="relative z-10">
                   <div className="flex items-center justify-between mb-16">
-                     <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935]">Use Cases</h3>
+                     <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935]">Specialties</h3>
                      <div className="h-px w-32 bg-white/10" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                     {listing.useCases.map((uc, i) => (
+                     {listing.useCases?.map((uc: string, i: number) => (
                        <div key={i} className="flex items-start gap-6 group/item">
                           <div className="h-12 w-12 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center shrink-0 group-hover/item:bg-[#E53935] transition-all">
                              <TrendingUp size={24} className="text-[#E53935] group-hover/item:text-white transition-all" />
                           </div>
                           <div>
                              <p className="text-xl font-black uppercase tracking-tight leading-tight mb-2">{uc}</p>
-                             <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Verified</p>
+                             <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Verified Hub</p>
                           </div>
                        </div>
                      ))}
@@ -169,7 +217,7 @@ export default function ListingDetailPage() {
              <div className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-premium relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-12 flex items-center gap-3">
-                   <Target size={18} className="text-[#E53935]" /> Matching
+                   <Target size={18} className="text-[#E53935]" /> Neural Map
                 </h3>
                 <div className="space-y-10">
                    {[
@@ -195,14 +243,14 @@ export default function ListingDetailPage() {
 
              <div className="p-12 bg-slate-50 border border-slate-100 rounded-[3rem] shadow-sm">
                 <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-10 flex items-center gap-3">
-                   <Lock size={18} className="text-[#E53935]" /> Rules
+                   <Lock size={18} className="text-[#E53935]" /> Ecosystem Rules
                 </h3>
                 <ul className="space-y-6">
                    {[
-                      "No direct sales initializations.",
-                      "Connect before chat.",
-                      "All interactions are secure.",
-                      "Verified members only."
+                      "Trust-first interactions only.",
+                      "Mandatory verification for deals.",
+                      "Neural match prioritization.",
+                      "Secure deal-flow routing."
                    ].map((rule, i) => (
                       <li key={i} className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-4">
                          <div className="h-2 w-2 rounded-full bg-[#E53935] mt-1 shrink-0 shadow-[0_0_8px_rgba(229,57,53,0.4)]" />
@@ -210,10 +258,6 @@ export default function ListingDetailPage() {
                       </li>
                    ))}
                 </ul>
-             </div>
-
-             <div className="p-10 text-center">
-                <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.3em]">Checkout OS V.7</p>
              </div>
           </aside>
         </div>

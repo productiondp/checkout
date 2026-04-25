@@ -57,8 +57,8 @@ export default function UniversalFeedCard({
   const isMeetup = type?.toUpperCase() === "MEETUP";
 
   const typeConfig: any = {
-    LEAD: { icon: Target, label: "Requirement • by", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
-    HIRING: { icon: Briefcase, label: "HIRING", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
+    LEAD: { icon: Target, label: "Requirement", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
+    HIRING: { icon: Briefcase, label: "Hiring", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
     PARTNER: { icon: Sparkles, label: "PARTNERSHIP", color: "bg-[#E53935]", light: "bg-red-50 text-red-600" },
     MEETUP: { icon: LayoutGrid, label: "EXPERT SESSION", color: "bg-emerald-600", light: "bg-emerald-50 text-emerald-600" },
     UPDATE: { icon: Zap, label: "CHECKOUT NOW", color: "bg-slate-600", light: "bg-slate-50 text-slate-600" }
@@ -77,18 +77,18 @@ export default function UniversalFeedCard({
     <div className={cn(
       "group relative bg-white border border-[#292828]/10 rounded-[14px] transition-all duration-500",
       isExpanded && "ring-2 ring-[#292828]/5",
-      (isLead || isPartner) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
-      (isHiring || isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
+      (isLead || isPartner || isHiring) && "border-[#E53935]/40 shadow-xl shadow-red-500/5",
+      (isMeetup) && "border-emerald-600/40 shadow-xl shadow-emerald-500/5"
     )}>
       {/* Highlight Strip */}
       {(isLead || isPartner || isHiring || isMeetup) && (
         <div className={cn(
           "absolute left-0 top-0 bottom-0 w-1.5 z-20 transition-all group-hover:w-2 rounded-l-[14px]",
-          (isLead || isPartner) ? "bg-[#E53935]" : "bg-emerald-600"
+          (isLead || isPartner || isHiring) ? "bg-[#E53935]" : "bg-emerald-600"
         )} />
       )}
 
-      <div className={cn("p-6 lg:p-8 relative z-10", (isLead || isMeetup) && "pl-10 lg:pl-12")}>
+      <div className={cn("p-6 lg:p-8 relative z-10", (isLead || isMeetup || isHiring) && "pl-10 lg:pl-12")}>
         
         {/* 1. CORE CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-10">
@@ -107,7 +107,6 @@ export default function UniversalFeedCard({
                     <div className="subheading-editorial !mb-0 flex items-center gap-1.5 !text-[11px]">
                        <Clock size={10} /> {time}
                     </div>
-                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-1.5">Connected with 12 professionals</p>
                  </div>
               </div>
 
@@ -151,7 +150,6 @@ export default function UniversalFeedCard({
                       </div>
                     )}
                     
-                    {/* DISCOVERY VALIDATION */}
                     {matchScore > 85 && (
                       <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase">
                          <Star size={10} className="mr-1.5 fill-emerald-600" />
@@ -159,7 +157,6 @@ export default function UniversalFeedCard({
                       </div>
                     )}
                     
-                    {/* MICRO URGENCY NUDGES */}
                     {matchScore > 90 && (
                       <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935] bg-red-50 border border-[#E53935]/20 uppercase animate-pulse">
                          <Zap size={10} className="mr-1.5 fill-[#E53935]" />
@@ -171,31 +168,16 @@ export default function UniversalFeedCard({
                          New opportunity
                       </div>
                     )}
-                    {Math.random() > 0.7 && (
-                      <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-blue-600 bg-blue-50 border border-blue-200 uppercase">
-                         <div className="h-1.5 w-1.5 rounded-full bg-blue-600 mr-1.5 animate-pulse" />
-                         Active now
-                      </div>
-                    )}
 
                     <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-slate-400 border border-slate-100 uppercase">
                        <MapPin size={10} className="mr-1.5" />
                        {location}
                     </div>
-                    
-                    {/* HUMAN PRESENCE SIGNALS */}
-                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-bold tracking-widest text-slate-300 uppercase">
-                       <Users size={10} className="mr-1.5" />
-                       5 professionals viewed recently
-                    </div>
-                    <div className="h-6 inline-flex items-center px-3 rounded-md text-[8px] font-black tracking-widest text-[#E53935]/60 uppercase">
-                       {Math.random() > 0.5 ? "Recently created" : "Recently active"}
-                    </div>
                   </div>
                   
                   <h3 className={cn(
                     "transition-colors duration-500",
-                    (isLead || isPartner) ? "text-[#E53935]" : (isHiring || isMeetup) ? "text-emerald-600" : "text-[#111111] hover:text-[#E53935]"
+                    (isLead || isPartner || isHiring) ? "text-[#E53935]" : (isMeetup) ? "text-emerald-600" : "text-[#111111] hover:text-[#E53935]"
                   )}>
                      {title}
                   </h3>
@@ -275,43 +257,6 @@ export default function UniversalFeedCard({
                           isMeetup ? "text-emerald-600/30" : "text-[#666666]/30"
                         )}>%</span>
                      </div>
-
-                     {/* INLINE MATCH REASONING */}
-                     <div className="mt-2 space-y-1">
-                        <div className="flex items-center justify-between">
-                           <p className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Why this match:</p>
-                           {matchScore > 80 && (
-                              <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest animate-pulse">High alignment with your goals</span>
-                           )}
-                        </div>
-                        <div className="flex flex-wrap gap-x-2 gap-y-1">
-                           {post.matchReasons?.slice(0, 2).map((reason: string, i: number) => (
-                              <span key={i} className="text-[8px] font-bold text-[#E53935] uppercase">{reason}</span>
-                           )) || <span className="text-[8px] font-bold text-slate-300 uppercase">Regional Alignment</span>}
-                        </div>
-                     </div>
-                     
-                     {/* AI Insight Tooltip/Bubble */}
-                     <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-48 bg-[#292828] text-white p-3 rounded-xl text-[9px] font-medium leading-relaxed opacity-0 group-hover/ai:opacity-100 transition-all pointer-events-none z-50 shadow-2xl translate-x-2 group-hover/ai:translate-x-0">
-                        <div className="flex items-center gap-2 mb-1.5 text-[#E53935]">
-                           <BrainCircuit size={10} />
-                           <span className="font-black uppercase tracking-widest text-[8px]">Match Insight</span>
-                        </div>
-                        <ul className="space-y-1 list-none p-0 m-0">
-                           {post.matchReasons?.map((reason: string, i: number) => (
-                             <li key={i} className="flex items-start gap-1.5">
-                                <span className="text-[#E53935]">•</span>
-                                {reason}
-                             </li>
-                           ))}
-                           {!post.matchReasons?.length && <li>Calculating match...</li>}
-                        </ul>
-                        <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
-                           {post.priorityLabels?.map((label: string, i: number) => (
-                             <span key={i} className="px-1.5 py-0.5 bg-white/10 rounded text-[6px] font-black uppercase tracking-tighter">{label}</span>
-                           ))}
-                        </div>
-                     </div>
                   </div>
                </div>
 
@@ -329,7 +274,7 @@ export default function UniversalFeedCard({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      analytics.track('FEED_CLICK', currentUserId, { postId: post.id, action: isLead ? 'view_more' : isHiring ? 'apply' : 'connect', type: post.type });
+                      analytics.track('FEED_CLICK', currentUserId, { postId: post.id, action: (isLead || isHiring) ? 'view_more' : 'connect', type: post.type });
                       onAction?.();
                     }}
                     className={cn(
@@ -337,7 +282,7 @@ export default function UniversalFeedCard({
                       "bg-[#292828] text-white hover:bg-[#E53935]"
                     )}
                   >
-                     {isLead ? "View More" : isHiring ? "Apply" : "Connect"}
+                     {(isLead || isHiring) ? "View More" : "Connect"}
                      <ArrowUpRight size={16} strokeWidth={3} />
                   </button>
                )}
@@ -371,7 +316,7 @@ export default function UniversalFeedCard({
                             >
                                <div className="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-[#292828]">
                                   <Pencil size={12} />
-                               </div>
+                                </div>
                                Edit Requirement
                             </button>
                             <button 

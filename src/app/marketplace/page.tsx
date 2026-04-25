@@ -32,7 +32,6 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MOCK_LISTINGS } from "@/data/marketplace";
 import { calculateMatchScore } from "@/lib/match-engine";
 import { DEFAULT_AVATAR } from "@/utils/constants";
 import { useRouter } from "next/navigation";

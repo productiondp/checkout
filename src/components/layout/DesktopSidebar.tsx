@@ -30,7 +30,7 @@ const NAV_GROUPS = [
     group: "Directory",
     items: [
       { label: "Feed", icon: Home, href: "/home" },
-      { label: "Connections", icon: UserPlus, href: "/connections", badge: "2" },
+      { label: "Connections", icon: UserPlus, href: "/connections" },
       { label: "Chat", icon: MessageSquare, href: "/chat" },
       { label: "Communities", icon: Globe, href: "/communities" },
     ]

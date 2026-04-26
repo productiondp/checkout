@@ -27,7 +27,8 @@ import {
   GraduationCap,
   Users,
   MessageSquare,
-  Calendar
+  Calendar,
+  BarChart3
 } from "lucide-react";
 import MobileDrawer from "./MobileDrawer";
 import { createClient } from "@/utils/supabase/client";
@@ -191,16 +192,6 @@ export default function FullyActiveGlobalHeader() {
             )}
           </div>
 
-          <Link 
-            href="/wallet"
-            className="hidden lg:flex flex-col items-center justify-center px-4 h-12 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all group"
-          >
-             <div className="flex items-center gap-2">
-                <Zap size={14} className="text-emerald-600 fill-emerald-600" />
-                <span className="text-[11px] font-black text-emerald-700">₹0</span>
-             </div>
-             <span className="text-[7px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Your Wallet</span>
-          </Link>
 
           {/* NOTIFICATIONS & PROFILE */}
           <div className="flex items-center gap-1 border-r border-[#292828]/10 pr-1 lg:pr-3">
@@ -272,68 +263,100 @@ export default function FullyActiveGlobalHeader() {
             {!authUser ? (
                <Link 
                  href="/login"
-                 className="h-9 px-4 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-lg"
+                 className="h-10 px-6 bg-[#292828] text-white rounded-[8px] text-[11px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-xl shadow-black/5"
                >
                  Sign In
                </Link>
             ) : (
               <>
-                <Link 
-                  href="/profile"
-                  onClick={() => setIsProfileOpen(false)}
-                  className="flex items-center gap-1.5 lg:gap-2.5 p-0.5 pr-1 lg:pr-3 bg-[#292828]/5 border border-[#292828]/10 rounded-full hover:bg-white hover:shadow-xl hover:shadow-slate-200/20 transition-all transition-duration-300"
+                <button 
+                  type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsProfileOpen(prev => !prev);
+                    setIsNotificationsOpen(false);
+                    setIsLocationOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 p-1 pr-4 rounded-full transition-all duration-300 border relative z-[101]",
+                    isProfileOpen 
+                      ? "bg-white border-[#292828]/10 shadow-2xl shadow-black/5 scale-[1.02]" 
+                      : "bg-[#292828]/5 border-transparent hover:bg-white hover:border-[#292828]/10 hover:shadow-xl hover:shadow-black/5"
+                  )}
                 >
-                  <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shadow-sm">
+                  <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
                     <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                   </div>
-                  <div 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsProfileOpen(!isProfileOpen);
-                      setIsNotificationsOpen(false);
-                      setIsLocationOpen(false);
-                    }}
-                    className="flex items-center"
-                  >
-                    <ChevronDown size={12} className={cn("text-[#292828]/40 transition-transform duration-500", isProfileOpen && "rotate-180")} />
+                  <div className="hidden lg:block text-left">
+                    <p className="text-[11px] font-black text-[#292828] leading-none mb-0.5 uppercase tracking-tighter">
+                      {authUser?.full_name?.split(' ')[0] || "User"}
+                    </p>
+                    <p className="text-[8px] font-bold text-slate-400 leading-none uppercase tracking-widest italic">
+                      {authUser?.role || "Member"}
+                    </p>
                   </div>
-                </Link>
+                  <ChevronDown size={14} className={cn("text-[#292828]/30 transition-transform duration-500", isProfileOpen && "rotate-180")} />
+                </button>
 
                 {isProfileOpen && (
-                  <div className="absolute top-[130%] right-0 w-64 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
-                    <div className="px-4 py-4 mb-2 border-b border-[#292828]/5">
-                      <p className="text-[14px] font-bold text-[#292828] leading-tight truncate">{authUser?.full_name || "Profile"}</p>
-                      <p className="text-[11px] font-medium text-[#292828] capitalize">{authUser?.role || "Verified Profile"}</p>
+                  <div className="absolute top-[120%] right-0 w-72 bg-white rounded-[15px] shadow-[0_30px_70px_rgba(0,0,0,0.15)] border border-[#292828]/5 p-2 animate-in fade-in slide-in-from-top-4 z-[200]">
+                    <div className="px-5 py-5 mb-2 bg-slate-50/50 rounded-[12px] border border-slate-100">
+                      <div className="flex items-center gap-3 mb-3">
+                         <div className="h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden">
+                            <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
+                         </div>
+                         <div>
+                            <p className="text-[14px] font-black text-[#292828] uppercase leading-none mb-1">{authUser?.full_name || "Profile"}</p>
+                            <div className="flex items-center gap-1.5">
+                               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">{authUser?.role || "Verified Profile"}</p>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                         <div className="bg-white p-2 rounded-lg border border-slate-100 text-center">
+                            <p className="text-[7px] font-black text-slate-300 uppercase leading-none mb-1">Match Score</p>
+                            <p className="text-[12px] font-black text-emerald-600 leading-none">98%</p>
+                         </div>
+                         <div className="bg-white p-2 rounded-lg border border-slate-100 text-center">
+                            <p className="text-[7px] font-black text-slate-300 uppercase leading-none mb-1">Rank</p>
+                            <p className="text-[12px] font-black text-[#292828] leading-none truncate uppercase tracking-tighter">{authUser?.role?.split(' ')[0] || "Alpha"}</p>
+                         </div>
+                      </div>
                     </div>
+
                     <div className="space-y-0.5">
                       {[
-                        { icon: UserIcon, label: "Profile", href: "/profile" },
-                        { icon: Globe, label: "Directory", href: "/matches" },
-                        { icon: MessageSquare, label: "Chat", href: "/chat" },
-                        { icon: Calendar, label: "Events", href: "/matches" },
-                        { icon: Settings, label: "Settings", href: "/settings" },
+                        { icon: UserIcon, label: "View Profile", href: "/profile" },
+                        { icon: MessageSquare, label: "Network Messages", href: "/chat" },
+                        { icon: Globe, label: "Global Directory", href: "/matches" },
+                        { icon: Calendar, label: "Strategic Events", href: "/matches" },
+                        { icon: BarChart3, label: "Network Stats", href: "/admin" },
+                        { icon: Settings, label: "System Settings", href: "/settings" },
                       ].map(it => (
                         <Link 
                           key={it.label} 
                           href={it.href} 
                           onClick={() => setIsProfileOpen(false)}
-                          className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-medium text-slate-700 hover:bg-[#292828]/5 hover:text-[#292828] transition-all"
+                          className="w-full flex items-center gap-3.5 p-3 rounded-[10px] text-[12px] font-black uppercase tracking-tight text-slate-500 hover:bg-[#292828] hover:text-white transition-all group"
                         >
-                          <it.icon size={16} className="text-[#292828] group-hover:text-[#E53935]" />
+                          <it.icon size={16} className="text-[#292828]/40 group-hover:text-white" />
                           {it.label}
                         </Link>
                       ))}
-                      <div className="h-px bg-[#292828]/5 my-2 mx-2" />
+                      
+                      <div className="h-px bg-slate-100 my-2 mx-3" />
+                      
                       <button 
                         onClick={async (e) => {
                           e.preventDefault();
                           await logout();
                           setIsProfileOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-[13px] font-bold text-red-500 hover:bg-red-50 transition-all text-left"
+                        className="w-full flex items-center gap-3.5 p-4 rounded-[10px] text-[12px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all text-left"
                       >
-                        <LogOut size={16} /> Logout
+                        <LogOut size={16} /> Logout System
                       </button>
                     </div>
                   </div>

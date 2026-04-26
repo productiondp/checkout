@@ -104,6 +104,9 @@ function AuthContent() {
           });
         }
         setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/onboarding");
+        }, 1000);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -111,6 +114,9 @@ function AuthContent() {
         });
         if (signInError) throw signInError;
         setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/home");
+        }, 1000);
       }
     } catch (err: any) {
       setError(err.message || "Authentication failed. Please check your details.");
@@ -200,25 +206,18 @@ function AuthContent() {
         <div className="w-full max-w-[440px]">
 
           {/* ── SUCCESS STATE ── */}
-          {isSuccess && mode === "signup" ? (
+          {isSuccess ? (
             <div className="text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
               <div className="h-20 w-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto border border-emerald-100">
                 <CheckCircle2 size={36} className="text-emerald-600" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tight leading-none mb-3">Check Your Email</h2>
+                <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tight leading-none mb-3">Welcome!</h2>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  A verification link was sent to<br />
-                  <span className="font-bold text-[#292828]">{formData.email}</span>
+                  Authentication successful.<br />
+                  Redirecting you to the network...
                 </p>
               </div>
-              <button
-                onClick={() => { setMode("signin"); setIsSuccess(false); }}
-                className="w-full h-14 bg-[#292828] text-white rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-lg"
-              >
-                Continue to Sign In
-              </button>
-              <p className="text-slate-400 text-xs">Check your spam folder if you don't see it.</p>
             </div>
           ) : (
             <>

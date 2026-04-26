@@ -40,7 +40,8 @@ import {
   Megaphone,
   BrainCircuit,
   Wallet,
-  Loader2
+  Loader2,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -246,77 +247,125 @@ export default function PremiumProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10">
-      {/* HEADER AREA */}
-      <div className="bg-[#292828] h-[500px] relative overflow-hidden">
-         <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-[#1a1a1a] to-[#E53935]/10" />
-         <div className="absolute top-[-20%] right-[-10%] h-[800px] w-[800px] bg-[#E53935]/5 blur-[200px] rounded-full animate-pulse" />
+      {/* HEADER AREA: PREMIUM GLASSMORPHISM REDESIGN */}
+      <div className="bg-[#0A0A0A] h-[320px] relative overflow-hidden flex items-center">
+         {/* Animated Background Engine */}
+         <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#1a1a1a] to-[#E53935]/10" />
+         <div className="absolute top-[-20%] right-[-10%] h-[600px] w-[600px] bg-[#E53935]/10 blur-[150px] rounded-full animate-pulse" />
+         <div className="absolute bottom-[-10%] left-[-5%] h-[400px] w-[400px] bg-blue-500/5 blur-[120px] rounded-full" />
          
-         <div className="max-w-[1440px] mx-auto px-6 pt-16 relative z-10">
-            <div className="flex flex-col md:flex-row items-center gap-12">
-               {/* IDENTITY */}
-               <div className="relative group">
-                  <div className="h-44 w-44 rounded-[4rem] overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/30 transition-all duration-700 shadow-4xl relative">
-                     <img 
-                       src={userData.avatar_url} 
-                       className="w-full h-full object-cover rounded-[3rem]" 
-                       alt={userData.full_name} 
-                     />
-                     {isSaving && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[3rem]"><Loader2 className="animate-spin text-white" size={24} /></div>}
-                  </div>
-                  <div className="absolute -bottom-4 -right-4 h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-2xl border-4 border-[#292828]">
-                     <Award size={20} />
-                  </div>
-               </div>
+         {/* Grid Pattern Overlay */}
+         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]" />
 
-               <div className="text-center md:text-left flex-1">
-                  <div className="flex flex-col gap-5 mb-2">
-                     <h1 className="text-6xl font-black text-white leading-none tracking-tighter uppercase">{userData.full_name}</h1>
-                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                        <div className="px-4 py-1.5 bg-[#E53935] rounded-full text-[9px] font-black uppercase text-white shadow-lg">
-                           {userData.role}
+         <div className="max-w-[1440px] mx-auto w-full px-6 relative z-10">
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[1.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group"
+            >
+               {/* Shine Animation Overlay */}
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+
+               <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
+                  {/* IDENTITY & AVATAR GLOW */}
+                  <div className="relative">
+                     <div className="absolute inset-0 bg-[#E53935]/20 blur-2xl rounded-full animate-pulse" />
+                     <div className="h-40 w-40 rounded-[2.5rem] overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/50 transition-all duration-700 shadow-4xl relative">
+                        <img 
+                          src={userData.avatar_url} 
+                          className="w-full h-full object-cover rounded-[1.8rem]" 
+                          alt={userData.full_name} 
+                        />
+                        {isSaving && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[1.8rem]"><Loader2 className="animate-spin text-white" size={24} /></div>}
+                     </div>
+                     <motion.div 
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="absolute -bottom-3 -right-3 h-12 w-12 bg-[#E53935] rounded-[8px] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(229,57,51,0.5)] border-4 border-[#0A0A0A]"
+                     >
+                        <Award size={20} />
+                     </motion.div>
+                  </div>
+
+                  {/* PROFILE INFO */}
+                  <div className="text-center md:text-left flex-1">
+                     <div className="flex flex-col gap-4 mb-4">
+                        <div className="flex items-center justify-center md:justify-start gap-3">
+                           <h1 className="text-5xl md:text-6xl font-black text-white leading-none tracking-tighter uppercase italic">{userData.full_name}</h1>
+                           <CheckCircle2 size={24} className="text-[#E53935] fill-[#E53935]/10" />
                         </div>
-                        <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[9px] font-black uppercase text-white">
-                           Checkout Rank {userData.checkoutRank}
-                        </div>
-                        <div className="px-4 py-1.5 border border-white/20 rounded-full text-[9px] font-black uppercase text-white/60">
-                           Elite Partner
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                           <div className="px-4 py-1.5 bg-[#E53935] rounded-[8px] text-[10px] font-black uppercase text-white shadow-lg tracking-widest">
+                              {userData.role}
+                           </div>
+                           <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-[8px] text-[10px] font-black uppercase text-white tracking-widest">
+                              Rank {userData.checkoutRank}
+                           </div>
+                           <div className={cn(
+                             "px-4 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border shadow-lg transition-all",
+                             userData.checkoutScore >= 75 ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" :
+                             userData.checkoutScore >= 50 ? "bg-amber-500/20 border-amber-500/50 text-amber-400" :
+                             userData.checkoutScore >= 25 ? "bg-[#E53935]/20 border-[#E53935]/50 text-[#E53935]" :
+                             "bg-slate-500/20 border-slate-500/50 text-slate-400"
+                           )}>
+                              <ShieldCheck size={12} />
+                              Checkout Score: {userData.checkoutScore}
+                           </div>
+                           <div className="px-4 py-1.5 border border-white/5 rounded-[8px] text-[10px] font-black uppercase text-white/40 tracking-widest">
+                              Elite Verified
+                           </div>
                         </div>
                      </div>
+                     <div className="flex flex-wrap justify-center md:justify-start gap-8 text-white/30 text-[12px] font-black uppercase tracking-widest pt-2">
+                        <span className="flex items-center gap-2.5 group/info"> 
+                           <Building size={16} className="text-[#E53935] group-hover/info:scale-110 transition-transform" /> 
+                           <span className="group-hover/info:text-white transition-colors">{userData.company}</span>
+                        </span>
+                        <span className="flex items-center gap-2.5 group/info"> 
+                           <MapPin size={16} className="text-[#E53935] group-hover/info:scale-110 transition-transform" /> 
+                           <span className="group-hover/info:text-white transition-colors">{userData.location}</span>
+                        </span>
+                     </div>
                   </div>
-                  <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/40 text-[11px] font-bold uppercase pt-2">
-                     <span className="flex items-center gap-2"> <Building size={14} className="text-[#E53935]" /> {userData.company}</span>
-                     <span className="flex items-center gap-2"> <MapPin size={14} className="text-[#E53935]" /> {userData.location}</span>
-                  </div>
-               </div>
 
-               <div className="flex items-center gap-4">
-                  <button onClick={() => setShowEditModal(true)} className="h-16 px-10 bg-white text-[#292828] rounded-full font-black text-xs uppercase shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform hover:-translate-y-1">
-                    Edit Profile
-                  </button>
-                  <button onClick={() => setShowSettingsModal(true)} className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-[#292828] transition-all overflow-hidden relative group">
-                     <Settings size={22} className="group-hover:rotate-90 transition-transform duration-500" />
-                  </button>
+                  {/* ACTION HUB */}
+                  <div className="flex items-center gap-4">
+                     <button 
+                        onClick={() => setShowEditModal(true)} 
+                        className="h-16 px-10 bg-white text-[#0A0A0A] rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform hover:-translate-y-1 active:scale-95"
+                     >
+                       Edit Profile
+                     </button>
+                     <button 
+                        onClick={() => setShowSettingsModal(true)} 
+                        className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-[8px] flex items-center justify-center text-white hover:bg-white hover:text-[#0A0A0A] transition-all overflow-hidden relative group"
+                     >
+                        <Settings size={22} className="group-hover:rotate-90 transition-transform duration-500" />
+                     </button>
+                  </div>
                </div>
-            </div>
+            </motion.div>
          </div>
       </div>
 
       {/* MAIN CONTENT ARCHITECTURE */}
-      <div className="max-w-[1440px] mx-auto px-6 -mt-14 relative z-20 pb-40">
+      <div className="max-w-[1440px] mx-auto px-6 -mt-12 relative z-20 pb-40">
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* COLUMN 1: SIDEBAR */}
+            {/* COLUMN 1: STRATEGIC SIDEBAR */}
             <div className="lg:col-span-3 space-y-8">
                
-               {/* Skills */}
-               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10 relative group overflow-hidden">
+               {/* Skills & Expertise */}
+               <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                  <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-6 flex items-center gap-3">
-                     <BrainCircuit size={16} className="text-[#E53935]" /> Skills
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-8 flex items-center gap-3 tracking-[0.2em]">
+                     <BrainCircuit size={16} className="text-[#E53935]" /> Core Expertise
                   </h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                       {userData.expertise && userData.expertise.length > 0 ? userData.expertise.map(skill => (
-                        <span key={skill} className="px-4 py-2 bg-[#292828]/5 border border-[#292828]/10 rounded-xl text-[11px] font-bold text-[#292828] uppercase">{skill}</span>
+                        <span key={skill} className="px-4 py-2 bg-[#0A0A0A]/5 border border-[#0A0A0A]/5 rounded-[8px] text-[10px] font-black text-[#0A0A0A] uppercase tracking-tighter hover:bg-[#E53935] hover:text-white transition-all cursor-default">
+                           {skill}
+                        </span>
                       )) : (
                         <p className="text-[11px] font-bold text-slate-300 italic px-2">No skills defined.</p>
                       )}
@@ -324,21 +373,21 @@ export default function PremiumProfilePage() {
                </div>
 
                {/* ABOUT & CONTACT BLOCK */}
-               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
-                  <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-5 flex items-center gap-2">
-                     <div className="h-1 w-3 bg-[#E53935] rounded-full" /> About Me
+               <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5">
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-6 flex items-center gap-2 tracking-[0.2em]">
+                     <div className="h-1 w-4 bg-[#E53935] rounded-full" /> Personal Bio
                   </h3>
-                  <p className="text-[15px] text-[#292828] font-medium leading-[1.7] mb-8">{userData.bio}</p>
+                  <p className="text-[14px] text-[#0A0A0A] font-bold leading-relaxed mb-10 italic">"{userData.bio}"</p>
                   
-                  <div className="pt-8 border-t border-[#292828]/5 space-y-5">
+                  <div className="pt-8 border-t border-[#0A0A0A]/5 space-y-6">
                      {contactInfo.map((info, i) => (
-                        <div key={i} className="flex items-center gap-4 group">
-                           <div className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all">
-                              <info.icon size={16} />
+                        <div key={i} className="flex items-center gap-5 group/item cursor-pointer">
+                           <div className="h-11 w-11 bg-[#0A0A0A]/5 rounded-[8px] flex items-center justify-center text-[#0A0A0A] group-hover/item:bg-[#0A0A0A] group-hover/item:text-white transition-all shadow-sm">
+                              <info.icon size={18} />
                            </div>
                            <div className="flex-1 min-w-0">
-                              <p className="text-[8px] font-black text-[#292828]/40 uppercase leading-none mb-1">{info.label}</p>
-                              <p className={cn("text-[12px] font-bold truncate", info.link ? "text-[#E53935]" : "text-[#292828]")}>{info.value}</p>
+                              <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase leading-none mb-1.5 tracking-widest">{info.label}</p>
+                              <p className={cn("text-[12px] font-black truncate uppercase tracking-tighter", info.link ? "text-[#E53935]" : "text-[#0A0A0A]")}>{info.value}</p>
                            </div>
                         </div>
                      ))}
@@ -346,111 +395,147 @@ export default function PremiumProfilePage() {
                </div>
             </div>
 
-            {/* FEED */}
+            {/* CENTRAL BROADCAST FEED */}
             <div className="lg:col-span-6 space-y-8">
-               <div className="bg-white rounded-[1.625rem] p-10 border border-[#292828]/10 shadow-xl relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-8">
+               <div className="bg-white rounded-[8px] p-10 border border-[#292828]/5 shadow-2xl relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-10 pb-6 border-b border-[#0A0A0A]/5">
                      <div>
-                        <h3 className="text-xs font-black uppercase text-[#292828] flex items-center gap-3"><Target size={18} className="text-[#E53935]" /> Current Needs</h3>
-                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none opacity-60">Showing posts to your network</p>
+                        <h3 className="text-sm font-black uppercase text-[#0A0A0A] flex items-center gap-3 tracking-tighter italic">
+                           <Target size={20} className="text-[#E53935]" /> My Posts
+                        </h3>
+                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none tracking-widest opacity-60">Showing to your network</p>
                      </div>
-                     <button onClick={() => setIsAddingDep(!isAddingDep)} className="h-10 px-6 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-2 shadow-xl">
-                        {isAddingDep ? <X size={14} /> : <Plus size={14} />} {isAddingDep ? "Cancel" : "Add Need"}
+                     <button 
+                        onClick={() => setIsAddingDep(!isAddingDep)} 
+                        className="h-11 px-8 bg-[#0A0A0A] text-white rounded-[8px] text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-3 shadow-2xl"
+                     >
+                        {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "Post Need"}
                      </button>
                   </div>
 
                   {isAddingDep && (
-                     <div className="mb-8 p-8 bg-slate-50 rounded-3xl border border-[#292828]/5 animate-in fade-in slide-in-from-top-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                           <input type="text" placeholder="What do you need?" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-12 px-5 rounded-xl border border-slate-200 text-sm font-bold focus:border-[#E53935] outline-none" />
-                           <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="h-12 px-4 rounded-xl border border-slate-200 text-[10px] font-black uppercase outline-none focus:border-[#E53935]">
-                              <option>Hiring</option>
-                              <option>Partnership</option>
-                              <option>Procurement</option>
-                              <option>Investment</option>
-                              <option>Technology</option>
-                           </select>
+                     <div className="mb-10 p-10 bg-slate-50 rounded-[8px] border border-[#0A0A0A]/5 animate-in fade-in slide-in-from-top-4 shadow-inner">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                           <div className="space-y-2">
+                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Requirement Title</p>
+                              <input type="text" placeholder="e.g. Senior Frontend Lead" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-[8px] border border-slate-200 text-sm font-black uppercase tracking-tighter focus:border-[#E53935] outline-none shadow-sm" />
+                           </div>
+                           <div className="space-y-2">
+                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Post Category</p>
+                              <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-[8px] border border-slate-200 text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#E53935] bg-white">
+                                 <option>Hiring</option>
+                                 <option>Partnership</option>
+                                 <option>Procurement</option>
+                                 <option>Investment</option>
+                                 <option>Technology</option>
+                              </select>
+                           </div>
                         </div>
-                        <button onClick={addDependency} className="w-full h-14 bg-[#E53935] text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#292828] transition-all shadow-xl">Post Now</button>
+                        <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-[8px] text-[11px] font-black uppercase tracking-[0.3em] hover:bg-[#0A0A0A] transition-all shadow-2xl">Post Now</button>
                      </div>
                   )}
 
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                      {dependencyList.length > 0 ? dependencyList.map(dep => (
-                        <div key={dep.id} className="p-6 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#E53935]/30 transition-all">
-                           <div className="flex items-center gap-5">
-                              <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-colors">
-                                 {dep.type === "Hiring" && <Briefcase size={20} />}
-                                 {dep.type === "Partnership" && <Users size={20} />}
-                                 {dep.type === "Investment" && <TrendingUp size={20} />}
-                                 {dep.type === "Technology" && <Database size={20} />}
-                                 {dep.type === "Procurement" && <ShoppingBag size={20} />}
+                        <div key={dep.id} className="p-8 bg-slate-50/50 border border-[#0A0A0A]/5 rounded-[8px] flex items-center justify-between group hover:bg-white hover:shadow-2xl hover:border-[#E53935]/20 transition-all duration-500">
+                           <div className="flex items-center gap-6">
+                              <div className="h-14 w-14 bg-white rounded-[8px] flex items-center justify-center text-[#E53935] shadow-lg border border-[#0A0A0A]/5 group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                                 {dep.type === "Hiring" && <Briefcase size={22} />}
+                                 {dep.type === "Partnership" && <Users size={22} />}
+                                 {dep.type === "Investment" && <TrendingUp size={22} />}
+                                 {dep.type === "Technology" && <Database size={22} />}
+                                 {dep.type === "Procurement" && <ShoppingBag size={22} />}
                               </div>
                               <div>
-                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="px-1.5 py-0.5 bg-[#292828] text-white text-[7px] font-black uppercase rounded-sm">{dep.type}</span>
-                                    <h4 className="text-[14px] font-black text-[#292828]">{dep.title}</h4>
+                                 <div className="flex items-center gap-3 mb-2">
+                                    <span className="px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-black uppercase rounded-[4px] tracking-widest">{dep.type}</span>
+                                    <h4 className="text-[16px] font-black text-[#0A0A0A] uppercase italic tracking-tighter">{dep.title}</h4>
                                  </div>
-                                 <div className="flex items-center gap-3">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase">{dep.status}</p>
+                                 <div className="flex items-center gap-4">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                       <Activity size={10} /> Active
+                                    </p>
                                     <div className="h-1 w-1 bg-slate-200 rounded-full" />
-                                    <p className="text-[9px] font-black text-[#E53935] uppercase">{dep.priority} Priority</p>
+                                    <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">High Priority</p>
                                  </div>
                               </div>
                            </div>
-                           <button onClick={() => removeDependency(dep.id)} className="text-slate-200 hover:text-[#E53935] transition-colors p-2"><X size={16} /></button>
+                           <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-[8px] text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all"><X size={18} /></button>
                         </div>
                      )) : (
-                        <div className="py-12 text-center">
-                           <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest italic">No active needs broadcasted</p>
+                        <div className="py-20 text-center opacity-30">
+                           <Sparkles size={40} className="mx-auto mb-4 text-[#0A0A0A]" />
+                           <p className="text-[11px] font-black text-[#0A0A0A] uppercase tracking-[0.3em] italic">No active strategic needs</p>
                         </div>
                      )}
                   </div>
                </div>
             </div>
 
-            {/* COLUMN 3: PERFORMANCE & WALLET */}
+            {/* COLUMN 3: PERFORMANCE ARCHITECTURE */}
             <div className="lg:col-span-3 space-y-8">
-               {/* WALLET */}
-               <div className="bg-[#E53935] rounded-[1.625rem] p-8 text-white shadow-2xl relative overflow-hidden group">
-                  <div className="absolute -right-10 -top-10 h-32 w-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
-                  <div className="relative z-10">
-                     <div className="flex items-center justify-between mb-8">
-                        <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Wallet</p>
-                        <Wallet size={16} className="text-white/40" />
-                     </div>
-                     <h4 className="text-[10px] font-black uppercase text-white/40 mb-2">Available Balance</h4>
-                     <div className="flex items-baseline gap-2 mb-8">
-                        <span className="text-4xl font-black tracking-tighter">₹84,200</span>
-                        <span className="text-[10px] font-black text-white/40">INR</span>
-                     </div>
-                     <Link href="/wallet" className="w-full h-14 bg-white text-[#292828] rounded-2xl flex items-center justify-center text-[10px] font-black uppercase hover:bg-[#292828] hover:text-white transition-all shadow-xl">
-                        Open Wallet
-                     </Link>
-                  </div>
-               </div>
 
-               {/* PERFORMANCE METRICS */}
-               <div className="bg-white rounded-[1.625rem] p-8 shadow-xl border border-[#292828]/10">
-                  <h3 className="text-[10px] font-black text-[#292828]/40 uppercase mb-8 flex items-center gap-2">
-                     <Activity size={16} className="text-[#E53935]" /> Network Vitals
+               {/* PERFORMANCE VITALS (STATS) */}
+               <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 space-y-10">
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 tracking-[0.2em]">
+                     <Activity size={18} className="text-[#E53935]" /> My Stats
                   </h3>
-                  <div className="space-y-6">
+
+                  {/* LARGE SCORE DISPLAY */}
+                  <div className="relative p-8 rounded-[8px] border border-[#0A0A0A]/5 bg-slate-50/50 overflow-hidden group">
+                     <div className={cn(
+                        "absolute top-0 right-0 w-24 h-24 blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2 rounded-full",
+                        userData.checkoutScore >= 75 ? "bg-emerald-500" :
+                        userData.checkoutScore >= 50 ? "bg-amber-500" :
+                        userData.checkoutScore >= 25 ? "bg-[#E53935]" :
+                        "bg-slate-500"
+                     )} />
+                     <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase tracking-widest mb-4">Network Authority Score</p>
+                     <div className="flex items-center gap-6">
+                        <div className={cn(
+                           "h-20 w-20 rounded-full border-[6px] flex items-center justify-center shadow-inner",
+                           userData.checkoutScore >= 75 ? "border-emerald-500 text-emerald-600 bg-emerald-50" :
+                           userData.checkoutScore >= 50 ? "border-amber-500 text-amber-600 bg-amber-50" :
+                           userData.checkoutScore >= 25 ? "border-[#E53935] text-[#E53935] bg-red-50" :
+                           "border-slate-300 text-slate-400 bg-slate-100"
+                        )}>
+                           <span className="text-2xl font-black">{userData.checkoutScore}</span>
+                        </div>
+                        <div>
+                           <p className="text-[14px] font-black text-[#0A0A0A] uppercase tracking-tighter italic mb-1">
+                              {userData.checkoutScore >= 75 ? "Elite Partner" :
+                               userData.checkoutScore >= 50 ? "Verified Pro" :
+                               userData.checkoutScore >= 25 ? "Active Node" :
+                               "New Member"}
+                           </p>
+                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight">
+                              Ranked in top 12%<br />of global network
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="space-y-8">
                      {performanceMetrics.map((metric, i) => (
-                        <div key={i} className="space-y-3">
-                           <div className="flex justify-between items-center">
-                              <span className="text-[9px] font-black text-[#292828] uppercase flex items-center gap-2">
-                                 <metric.icon size={12} className="text-[#E53935]" /> {metric.label}
-                              </span>
-                              <span className="text-[10px] font-black text-[#292828]">{metric.value}%</span>
+                        <div key={i} className="space-y-4">
+                           <div className="flex justify-between items-end">
+                              <div>
+                                 <span className="text-[9px] font-black text-[#0A0A0A]/40 uppercase tracking-widest block mb-1">Performance Metric</span>
+                                 <span className="text-[11px] font-black text-[#0A0A0A] uppercase flex items-center gap-2.5 italic">
+                                    <metric.icon size={14} className="text-[#E53935]" /> {metric.label}
+                                 </span>
+                              </div>
+                              <span className="text-[14px] font-black text-[#0A0A0A]">{metric.value}%</span>
                            </div>
-                           <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
+                           <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100 p-0.5">
                               <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${metric.value}%` }}
-                                transition={{ duration: 1, delay: i * 0.1 }}
-                                className={cn("h-full rounded-full shadow-sm", metric.color)} 
-                              />
+                                 initial={{ width: 0 }}
+                                 animate={{ width: `${metric.value}%` }}
+                                 transition={{ duration: 1.5, delay: i * 0.1, ease: "circOut" }}
+                                 className={cn("h-full rounded-full shadow-inner relative", metric.color)} 
+                              >
+                                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+                              </motion.div>
                            </div>
                         </div>
                      ))}
@@ -460,56 +545,88 @@ export default function PremiumProfilePage() {
          </div>
       </div>
 
-      {/* EDIT MODAL */}
+      {/* EDIT MODAL: PREMIUM REDESIGN */}
       {showEditModal && (
-         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
+         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/80 animate-in fade-in duration-500">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-4xl flex flex-col max-h-[90vh]"
+              className="bg-white w-full max-w-3xl rounded-[8px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex flex-col max-h-[90vh] border border-[#0A0A0A]/5"
             >
-               <div className="p-10 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-3xl font-black text-[#292828] uppercase tracking-tighter italic">Edit Profile</h2>
-                  <button onClick={() => setShowEditModal(false)} className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-[#E53935] hover:text-white transition-all"><X size={20} /></button>
+               <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                  <div>
+                     <h2 className="text-4xl font-black text-[#0A0A0A] uppercase tracking-tighter italic leading-none mb-2">Edit Profile</h2>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Update your account details</p>
+                  </div>
+                  <button onClick={() => setShowEditModal(false)} className="h-12 w-12 bg-white border border-slate-100 rounded-[8px] flex items-center justify-center text-slate-300 hover:bg-[#E53935] hover:text-white transition-all shadow-sm"><X size={20} /></button>
                </div>
-               <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar">
-                  <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Name</p>
-                     <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
-                  </div>
-                  <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Role</p>
-                     <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
-                  </div>
-                  <div className="space-y-4">
-                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Bio</p>
-                     <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-40 p-6 rounded-2xl bg-slate-50 border border-slate-100 font-medium outline-none focus:border-[#E53935] resize-none" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Location</p>
-                        <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+
+               <div className="flex-1 overflow-y-auto p-10 space-y-10 no-scrollbar">
+                  {/* Basic Identity */}
+                  <div className="grid grid-cols-2 gap-8">
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <User size={12} className="text-[#E53935]" /> Full Name
+                        </p>
+                        <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
-                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Company</p>
-                        <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <ShieldCheck size={12} className="text-[#E53935]" /> Strategic Role
+                        </p>
+                        <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-6">
-                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Contact Phone</p>
-                        <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+
+                  {/* Bio */}
+                  <div className="space-y-3">
+                     <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <FileText size={12} className="text-[#E53935]" /> Node Bio / Intent
+                     </p>
+                     <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-32 p-6 rounded-[8px] bg-slate-50 border border-slate-100 font-bold text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none shadow-inner" />
+                  </div>
+
+                  {/* Location & Company */}
+                  <div className="grid grid-cols-2 gap-8">
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <MapPin size={12} className="text-[#E53935]" /> Global Location
+                        </p>
+                        <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
-                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Website</p>
-                        <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-[#E53935]" />
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <Building size={12} className="text-[#E53935]" /> Organization Name
+                        </p>
+                        <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                     </div>
+                  </div>
+
+                  {/* Contact */}
+                  <div className="grid grid-cols-2 gap-8">
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <Phone size={12} className="text-[#E53935]" /> Direct Phone
+                        </p>
+                        <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                     </div>
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                           <Globe size={12} className="text-[#E53935]" /> External Website
+                        </p>
+                        <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                   </div>
                </div>
-               <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex gap-4">
-                  <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border-2 border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all">Cancel</button>
-                  <button onClick={() => handleSaveProfile()} disabled={isSaving} className="flex-[2] h-16 bg-[#292828] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50">
-                     {isSaving ? "Saving..." : "Save Changes"}
+
+               <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex gap-5">
+                  <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border border-slate-200 rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 hover:bg-white hover:text-[#0A0A0A] transition-all">Discard</button>
+                  <button 
+                     onClick={() => handleSaveProfile()} 
+                     disabled={isSaving} 
+                     className="flex-[2] h-16 bg-[#0A0A0A] text-white rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50 active:scale-95 group"
+                  >
+                     {isSaving ? "Saving..." : <span className="flex items-center justify-center gap-2">Save Changes <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>}
                   </button>
                </div>
             </motion.div>

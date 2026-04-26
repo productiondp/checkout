@@ -13,7 +13,7 @@
 
   html, body {
     min-height: 100svh;
-    @apply overscroll-none select-none touch-manipulation leading-normal bg-slate-50 text-slate-800 antialiased;
+    @apply overscroll-none touch-manipulation leading-normal bg-slate-50 text-slate-800 antialiased;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     font-feature-settings: "ss01", "ss02", "cv01", "cv11";

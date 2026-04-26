@@ -28,17 +28,17 @@ export class OutcomeEngine {
        if (post.type === 'REQUIREMENT') {
           return {
              type: 'OUTCOME_VIRAL',
-             title: "Requirement Solved",
-             content: "Success! Invite others who might need this problem solved.",
-             cta: "Share Success"
+             title: "STRATEGY SUCCESS",
+             content: "Your goal was reached. Share this success to attract more people.",
+             cta: "SHARE SUCCESS"
           };
        }
        if (post.type === 'PARTNERSHIP') {
           return {
              type: 'OUTCOME_VIRAL',
-             title: "Partnership Formed",
-             content: "Strategic connection made. Bring your team to scale this collaboration.",
-             cta: "Add Team"
+             title: "PARTNER FOUND",
+             content: "Connection made. Bring your team to help grow this project.",
+             cta: "ADD TEAM"
           };
        }
     }
@@ -48,9 +48,9 @@ export class OutcomeEngine {
     if (ageHours > 72 && post.response_count === 0 && (post.author_id === user.id)) {
        return {
           type: 'RE_ENGAGEMENT',
-          title: "Missed Opportunities?",
-          content: "Your post is expiring. Refine your requirement to attract new experts.",
-          cta: "Refine Post"
+          title: "POST EXPIRING",
+          content: "Your post is losing views. Update it to get more attention.",
+          cta: "UPDATE POST"
        };
     }
 

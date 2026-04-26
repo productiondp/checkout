@@ -69,7 +69,7 @@ export default function ClientLayout({
     }
   }, [pathname, mounted]);
 
-  const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/onboarding";
+  const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/onboarding" || pathname === "/admin";
 
   if (!mounted) {
     return (
@@ -104,7 +104,7 @@ export default function ClientLayout({
             </div>
             
             <main className="flex-1 flex overflow-hidden bg-white">
-              <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth pb-32 lg:pb-0">
+              <div className="flex-1 overflow-y-auto scroll-smooth pb-32 lg:pb-0">
                  {children}
               </div>
 

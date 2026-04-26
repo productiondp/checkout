@@ -25,13 +25,13 @@ type PostType = "REQUIREMENT" | "PARTNERSHIP" | "MEETUP";
 const SelectionCard = ({ type, label, desc, icon: Icon, color, onClick }: any) => (
   <button 
     onClick={onClick}
-    className="w-full p-6 bg-white border border-[#292828]/5 rounded-2xl flex items-center gap-6 hover:border-[#292828]/20 hover:shadow-2xl hover:shadow-black/5 transition-all group"
+    className="w-full p-6 bg-white border border-slate-100 rounded-2xl flex items-center gap-6 hover:border-[#292828]/20 hover:shadow-2xl hover:shadow-black/5 transition-all group"
   >
     <div className={cn("h-14 w-14 rounded-xl flex items-center justify-center text-white shadow-lg", color)}>
        <Icon size={24} />
     </div>
     <div className="text-left flex-1">
-       <h3 className="text-lg font-black text-[#292828] uppercase tracking-tight leading-none mb-1 group-hover:text-[#E53935] transition-colors">{label}</h3>
+       <h3 className="text-lg font-black text-[#292828] uppercase leading-none mb-1 group-hover:text-[#E53935] transition-colors">{label}</h3>
        <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight">{desc}</p>
     </div>
     <ArrowRight className="text-slate-200 group-hover:text-[#E53935] transition-colors" size={20} />
@@ -41,7 +41,7 @@ const SelectionCard = ({ type, label, desc, icon: Icon, color, onClick }: any) =
 const Input = ({ label, field, placeholder, type = "text", options = [], example, value, onChange }: any) => (
   <div className="space-y-1.5">
      <div className="flex items-center justify-between px-1">
-        <label className="text-[8px] font-black uppercase text-slate-300 tracking-widest">{label}</label>
+        <label className="text-[8px] font-black uppercase text-slate-300">{label}</label>
         {example && <span className="text-[7px] font-bold text-slate-200 uppercase">{example}</span>}
      </div>
      <div className="bg-slate-50/50 border border-slate-100 rounded-xl focus-within:bg-white focus-within:border-[#292828]/10 focus-within:ring-4 focus-within:ring-[#292828]/5 transition-all px-5 py-4">
@@ -456,27 +456,36 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                  </button>
               )}
               <div>
-                  <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight leading-none mb-1">
-                    {currentStep === 0 ? "Identify Strategy" : 
-                     currentStep === 1 ? (formData.title ? "Post now. Get replies fast." : "Start Strategy") : 
-                     currentStep === 2 ? "Specify Details" : "Success"}
+                  <h2 className="text-xl font-black text-[#292828] uppercase leading-none mb-1">
+                    {currentStep === 0 ? "Choose Type" : 
+                     postType === 'REQUIREMENT' ? "Post a Need" : 
+                     postType === 'PARTNERSHIP' ? "Find a Partner" : "Meet Up"}
                   </h2>
-                 <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                    {currentStep === 3 ? "Invite matches to start fast" : "Checkout OS • Anti-Illusion Guarded"}
+                 <p className="text-[10px] font-bold text-slate-300 uppercase">
+                    {currentStep === 3 ? "Your post is live" : `Step ${currentStep + 1} of 3 • Quick Post`}
                  </p>
               </div>
            </div>
-           <button onClick={onClose} className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-[#E53935] hover:bg-red-50 transition-all">
-              <X size={20} />
-           </button>
+           <div className="flex items-center gap-4">
+              {currentStep < 3 && (
+                <div className="hidden md:flex items-center gap-1">
+                   {[0, 1, 2].map(s => (
+                     <div key={s} className={cn("h-1 w-8 rounded-full transition-all duration-500", s <= currentStep ? "bg-[#E53935]" : "bg-slate-100")} />
+                   ))}
+                </div>
+              )}
+              <button onClick={onClose} className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-[#E53935] hover:bg-red-50 transition-all">
+                 <X size={20} />
+              </button>
+           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-10">
            {currentStep === 0 ? (
               <div className="space-y-6 max-w-2xl mx-auto py-10">
                  <SelectionCard type="REQUIREMENT" label="Post a Need" desc="Tell people what you need now" icon={Target} color="bg-[#E53935]" onClick={() => { setPostType("REQUIREMENT"); setCurrentStep(1); }} />
-                 <SelectionCard type="PARTNERSHIP" label="Find a Partner" desc="Work with someone long-term" icon={Sparkles} color="bg-[#292828]" onClick={() => { setPostType("PARTNERSHIP"); setCurrentStep(1); }} />
-                 <SelectionCard type="MEETUP" label="Host a Meetup" desc="Connect with people nearby" icon={Users} color="bg-emerald-600" onClick={() => { setPostType("MEETUP"); setCurrentStep(1); }} />
+                 <SelectionCard type="PARTNERSHIP" label="Find a Partner" desc="Find a long-term partner" icon={Sparkles} color="bg-[#292828]" onClick={() => { setPostType("PARTNERSHIP"); setCurrentStep(1); }} />
+                 <SelectionCard type="MEETUP" label="Meet Up" desc="Connect with people nearby" icon={Users} color="bg-emerald-600" onClick={() => { setPostType("MEETUP"); setCurrentStep(1); }} />
               </div>
            ) : currentStep === 1 ? (
               <div className="space-y-10 max-w-2xl mx-auto">
@@ -484,7 +493,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                  {formData.title && (
                     <div className="p-5 bg-white border border-slate-100 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
                        <div className="flex items-center justify-between mb-3">
-                          <p className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Live Preview</p>
+                          <p className="text-[7px] font-black text-slate-300 uppercase">Preview</p>
                           <div className="flex items-center gap-1">
                              <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
                              <span className="text-[7px] font-black text-emerald-500 uppercase">Drafting</span>
@@ -492,10 +501,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                        </div>
                        <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0 pr-4">
-                             <h4 className="text-[15px] font-black text-[#292828] uppercase truncate leading-none mb-1">{formData.title || "Strategy Title"}</h4>
-                             <p className="text-[9px] font-bold text-slate-400 uppercase">Strategic Intent Initialized</p>
+                             <h4 className="text-[15px] font-black text-[#292828] uppercase truncate leading-none mb-1">{formData.title || "Post Title"}</h4>
+                             <p className="text-[9px] font-bold text-slate-400 uppercase">Ready to go live</p>
                           </div>
-                          <div className="h-8 px-4 bg-[#E53935] rounded-lg flex items-center text-[8px] font-black text-white uppercase shadow-lg shadow-red-500/10">Action</div>
+                          <div className="h-8 px-4 bg-[#E53935] rounded-lg flex items-center text-[8px] font-black text-white uppercase shadow-lg shadow-red-500/10">Post</div>
                        </div>
                     </div>
                  )}
@@ -503,10 +512,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                  <div className="space-y-4">
                     <div>
                        <Input 
-                          label={postType === 'REQUIREMENT' ? "Strategy Core" : postType === 'PARTNERSHIP' ? "Target Partner" : "Meetup Topic"} 
+                          label={postType === 'REQUIREMENT' ? "What do you need?" : postType === 'PARTNERSHIP' ? "What kind of partner?" : "What is the meetup about?"} 
                           field="title" 
-                          placeholder={postType === 'REQUIREMENT' ? "e.g. Senior Product Designer" : postType === 'PARTNERSHIP' ? "e.g. Full-Stack Agency" : "e.g. Founders Coffee"} 
-                          example={postType === 'REQUIREMENT' ? "What is the primary need?" : postType === 'PARTNERSHIP' ? "Who is the ideal partner?" : "What is the event purpose?"}
+                          placeholder={postType === 'REQUIREMENT' ? "e.g. Hiring a React Developer" : postType === 'PARTNERSHIP' ? "e.g. Marketing Agency Partner" : "e.g. Tech Founders Meetup"} 
+                          example={postType === 'REQUIREMENT' ? "Be clear about your need" : postType === 'PARTNERSHIP' ? "Describe your ideal partner" : "What's the main topic?"}
                           value={formData.title}
                           onChange={updateField}
                        />
@@ -546,11 +555,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                     )}
 
                     <Input 
-                       label="Strategy Context" 
+                       label="Tell us more" 
                        field="content" 
                        type="textarea" 
-                       placeholder="Elaborate on your strategy to ensure maximum alignment..." 
-                       example="Be specific about requirements"
+                       placeholder="Provide some details so the right people can find you..." 
+                       example="Be specific for better matches"
                        value={formData.content}
                        onChange={updateField}
                     />
@@ -561,7 +570,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                       disabled={!formData.title}
                       className="h-12 bg-slate-50 text-[#292828] border border-slate-100 rounded-xl font-black uppercase text-[9px] hover:bg-white hover:border-[#292828]/20 transition-all disabled:opacity-30"
                     >
-                       Add Specifications
+                       Next: Add Details
                     </button>
                     <button 
                       onClick={() => handlePost()}
@@ -571,14 +580,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                         cooldown > 0 ? "bg-slate-200 text-slate-400" : "bg-[#292828] text-white hover:bg-[#E53935]"
                       )}
                     >
-                       {isPosting ? "Processing..." : cooldown > 0 ? `${cooldown}s` : "Execute Strategy"} 
+                       {isPosting ? "Posting..." : cooldown > 0 ? `${cooldown}s` : "Post Now"} 
                        {cooldown === 0 && <ArrowUpRight size={14} />}
                     </button>
                  </div>
                  {cooldown > 0 && (
-                    <p className="text-center mt-4 text-[9px] font-bold text-amber-500 uppercase tracking-widest">Posted. Try again in {cooldown}s</p>
+                    <p className="text-center mt-4 text-[9px] font-bold text-amber-500 uppercase ">Posted. Try again in {cooldown}s</p>
                  )}
-                 <p className="text-center text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-6">Fastest way to get replies</p>
+                 <p className="text-center text-[9px] font-bold text-slate-300 uppercase  mt-6">Fastest way to get replies</p>
               </div>
            ) : currentStep === 2 ? (
               <div className="space-y-10 max-w-2xl mx-auto">
@@ -618,12 +627,12 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                       onClick={() => handlePost()}
                       disabled={isPosting || cooldown > 0}
                       className={cn(
-                        "w-full h-16 rounded-xl font-black uppercase text-[10px] tracking-widest text-white shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4",
+                        "w-full h-16 rounded-xl font-black uppercase text-[10px]  text-white shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4",
                         cooldown > 0 ? "bg-slate-300" : (postType === "MEETUP" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-[#292828] hover:bg-[#E53935]"),
                         isPosting && "opacity-50 cursor-wait"
                       )}
                     >
-                       {isPosting ? "Processing Strategy..." : cooldown > 0 ? `Try again in ${cooldown}s` : "Finalize Strategy"}
+                       {isPosting ? "Sharing with network..." : cooldown > 0 ? `Try again in ${cooldown}s` : "Share Post Now"}
                        {!isPosting && cooldown === 0 && <Zap size={18} fill="currentColor" />}
                     </button>
                  </div>
@@ -633,14 +642,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, initialFormT
                  <div className="h-20 w-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-8 shadow-2xl">
                     <CheckCircle2 size={32} />
                  </div>
-                 <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tight mb-2">Strategy Live</h3>
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Optimizing for high-intent matches</p>
+                 <h3 className="text-2xl font-black text-[#292828] uppercase mb-2">Success!</h3>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-10">We're finding the best matches for you</p>
                  
                  <div className="space-y-3">
-                    <button onClick={onClose} className="w-full h-14 bg-[#292828] text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#E53935] transition-all flex items-center justify-center gap-3 shadow-lg">
-                       Invite Partners <Zap size={16} fill="currentColor" />
+                    <button onClick={onClose} className="w-full h-14 bg-[#292828] text-white rounded-xl font-black uppercase text-[10px]  hover:bg-[#E53935] transition-all flex items-center justify-center gap-3 shadow-lg">
+                       Find Matches <Zap size={16} fill="currentColor" />
                     </button>
-                    <button onClick={onClose} className="w-full h-12 bg-white text-slate-400 border border-slate-100 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                    <button onClick={onClose} className="w-full h-12 bg-white text-slate-400 border border-slate-100 rounded-xl font-black uppercase text-[9px]  hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
                        Review Post <Eye size={16} />
                     </button>
                  </div>

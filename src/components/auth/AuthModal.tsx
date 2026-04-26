@@ -35,9 +35,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isVerificationSent, setIsVerificationSent] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
   // Form State
@@ -64,23 +61,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
   if (!isOpen) return null;
 
-  const handleResendVerification = async () => {
-    if (resendTimer > 0) return;
-    setIsLoading(true);
-    const supabase = createClient();
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email,
-      });
-      if (error) throw error;
-      setResendTimer(60); // 1 minute cooldown
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -138,30 +118,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         
         setSignupAttempts(prev => prev + 1);
         setLastSignupTime(now);
-        setIsVerificationSent(true);
+        setIsSuccess(true);
         analytics.track('SIGNUP_COMPLETED', undefined, { role: role.toUpperCase(), email: formData.email });
+        
+        // Auto-redirect after a short delay for success animation
+        setTimeout(() => {
+          onClose();
+          router.push("/onboarding");
+        }, 1500);
       } else {
         const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
-        if (signInError) {
-          if (signInError.message.toLowerCase().includes("invalid login credentials")) {
-            throw new Error("Invalid email or password.");
-          }
-          if (signInError.message.toLowerCase().includes("email not confirmed")) {
-            setIsVerificationSent(true);
-            return;
-          }
-          throw signInError;
-        }
-        
-        if (user && !user.email_confirmed_at) {
-          await supabase.auth.signOut();
-          throw new Error("Email verification required. Please check your inbox.");
-        }
-
         setIsSuccess(true);
         if (user) {
           analytics.track('SESSION_START', user.id, { method: 'password' });
@@ -239,36 +209,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
             </p>
           </div>
 
-          {isVerificationSent || resetSent ? (
+          {resetSent ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
                    <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
                       <Mail size={32} />
                    </div>
-                   <h3 className="text-xl font-black text-white mb-2 uppercase">{resetSent ? "Reset Link Sent" : "Check Your Inbox"}</h3>
+                   <h3 className="text-xl font-black text-white mb-2 uppercase">Reset Link Sent</h3>
                    <p className="text-white/40 text-[13px] font-medium leading-relaxed mb-6">
-                      {resetSent 
-                       ? `We've sent a reset link to ${formData.email}. Access it to reset your password.`
-                       : `We've sent a verification link to ${formData.email}. Confirm your identity to get started.`
-                      }
+                      We've sent a reset link to {formData.email}. Access it to reset your password.
                    </p>
-                   
-                   {!resetSent && (
-                     <button 
-                       onClick={handleResendVerification}
-                       disabled={resendTimer > 0 || isLoading}
-                       className={`w-full py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
-                         resendTimer > 0 || isLoading
-                           ? "bg-white/5 text-white/20 cursor-not-allowed"
-                           : "bg-white/10 text-white hover:bg-[#E53935]"
-                       }`}
-                     >
-                       {resendTimer > 0 ? `Resend available in ${resendTimer}s` : "Resend Verification Email"}
-                     </button>
-                   )}
                 </div>
                <button 
-                 onClick={() => { setIsVerificationSent(false); setResetSent(false); setIsResetting(false); }}
+                 onClick={() => { setResetSent(false); setIsResetting(false); }}
                  className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"
                >
                   Back to Sign In

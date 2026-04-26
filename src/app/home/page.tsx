@@ -38,6 +38,7 @@ import { calculateMatchScore, rankEntities } from "@/lib/match-engine";
 import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import ConnectionSentinel from "@/components/home/ConnectionSentinel";
 import UnifiedSearch from "@/components/search/UnifiedSearch";
 import ActivitySentinel from "@/components/home/ActivitySentinel";
@@ -148,8 +149,8 @@ export default function CheckoutHomeFeed() {
       });
     }
     
-    // Visibility Limit: Hide extremely low trust users (below 10), but ALWAYS show own posts
-    return base.filter(p => p.author_id === authUser?.id || (p.author_profile?.match_score ?? 50) >= 10);
+    // Visibility Limit: Ensure others' requirements are visible. The ranking engine handles relevance.
+    return base;
   }, [activeFilter, posts]);
 
   const handleOpenPosting = async (type: any = null) => {
@@ -177,7 +178,7 @@ export default function CheckoutHomeFeed() {
     <div className="relative min-h-screen bg-slate-50/30 selection:bg-[#E53935]/10 font-sans pb-16">
       
       {/* 2. FEED AREA */}
-      <main className="w-[94%] mx-auto max-w-5xl pt-6">
+      <main className="w-[94%] mx-auto max-w-5xl pt-12">
          <div className="grid grid-cols-1 gap-4">
             
             {/* NEW ACTIVE COMPOSER */}
@@ -189,14 +190,21 @@ export default function CheckoutHomeFeed() {
             {/* REDESIGNED FILTER BAR */}
             <div className="flex items-center justify-end gap-2 mb-4 px-2">
                <div className="relative">
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
                     className="h-9 px-4 bg-white border border-[#292828]/5 rounded-lg flex items-center gap-3 text-[10px] font-black uppercase text-[#292828] shadow-sm hover:border-[#292828]/20 transition-all group"
                   >
                      <LayoutGrid size={14} className="text-[#E53935]" />
                      {SMART_FILTERS.find(f => f.id === activeFilter)?.label}
-                     <ChevronDown size={12} className={cn("text-slate-300 transition-transform group-hover:text-[#292828]", isFilterDropdownOpen && "rotate-180")} />
-                  </button>
+                     <motion.div
+                        animate={{ rotate: isFilterDropdownOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                     >
+                        <ChevronDown size={12} className="text-slate-300 group-hover:text-[#292828]" />
+                     </motion.div>
+                  </motion.button>
                   {isFilterDropdownOpen && (
                     <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-[#292828]/10 rounded-xl shadow-4xl p-1 z-[100] animate-in fade-in slide-in-from-top-2 duration-300">
                        {SMART_FILTERS.map(f => (
@@ -216,9 +224,13 @@ export default function CheckoutHomeFeed() {
                   )}
                </div>
 
-               <button className="h-9 w-9 bg-white border border-[#292828]/5 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] hover:border-[#292828]/20 shadow-sm transition-all">
+               <motion.button 
+                 whileHover={{ scale: 1.1, rotate: 5 }}
+                 whileTap={{ scale: 0.9 }}
+                 className="h-9 w-9 bg-white border border-[#292828]/5 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] hover:border-[#292828]/20 shadow-sm transition-all"
+               >
                   <Filter size={14} />
-               </button>
+               </motion.button>
             </div>
 
             {/* MOMENTUM SYSTEM */}
@@ -249,15 +261,17 @@ export default function CheckoutHomeFeed() {
 
       {/* HIGH-PERFORMANCE FLOATING ACTION BUTTON */}
       <div className="fixed bottom-8 right-8 z-[100] animate-in fade-in slide-in-from-bottom-4 duration-700">
-         <button 
+         <motion.button 
+           whileHover={{ scale: 1.05, y: -2 }}
+           whileTap={{ scale: 0.95 }}
            onClick={handleOpenPosting}
-           className="h-14 px-8 bg-[#292828] text-white rounded-full flex items-center gap-4 shadow-3xl hover:bg-black hover:scale-[1.02] active:scale-95 transition-all ring-1 ring-white/10 backdrop-blur-xl group"
+           className="h-14 px-8 bg-[#292828] text-white rounded-full flex items-center gap-4 shadow-3xl hover:bg-black transition-all ring-1 ring-white/10 backdrop-blur-xl group"
          >
             <div className="h-6 w-6 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-[#E53935] group-hover:text-white transition-all">
                <Plus size={18} strokeWidth={3} />
             </div>
             <span className="text-[12px] font-black uppercase tracking-tight">Post Now</span>
-         </button>
+         </motion.button>
       </div>
 
       {/* MODALS */}

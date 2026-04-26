@@ -210,8 +210,9 @@ export function rankEntities(user: UserProfile, entities: any[]): any[] {
         ranked.push({
            id: 'lifecycle-prompt',
            type: 'SYSTEM_PROMPT',
-           title: `Boost your ${atRisk.type.toLowerCase()}?`,
-           content: `Your post hasn't received a response yet. Invite some experts to get better results.`,
+           title: "BOOST POST",
+           content: `Your post for ${atRisk.title} is losing views. Boost reach to get more results.`,
+           cta: "BOOST REACH",
            targetPostId: atRisk.id,
            labels: ["Momentum"]
         });

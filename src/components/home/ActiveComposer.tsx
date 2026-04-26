@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import { 
   Target, 
   Sparkles, 
@@ -30,7 +31,9 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
           />
         </div>
         
-        <div 
+        <motion.div 
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={() => onPost('REQUIREMENT')}
           className="flex-1 h-14 bg-[#F4F7FA]/70 rounded-xl px-4 flex items-center justify-between cursor-pointer group hover:bg-[#F4F7FA] transition-all"
         >
@@ -43,7 +46,7 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
             </p>
           </div>
           <Zap size={16} className="text-[#E53935] opacity-40 group-hover:opacity-100 transition-opacity" />
-        </div>
+        </motion.div>
       </div>
 
       {/* 2. BOTTOM ROW: ACTION TABS */}
@@ -51,12 +54,14 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
         {[
           { id: 'REQUIREMENT', label: 'POST A NEED', icon: Target },
           { id: 'PARTNERSHIP', label: 'FIND A PARTNER', icon: Sparkles },
-          { id: 'MEETUP', label: 'HOST A MEETUP', icon: Users },
+          { id: 'MEETUP', label: 'MEET UP', icon: Users },
         ].map(item => (
-          <button 
+          <motion.button 
             key={item.id}
+            whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.02)" }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => onPost(item.id as any)}
-            className="flex items-center gap-2 group px-4 py-2 rounded-xl hover:bg-slate-50 transition-all"
+            className="flex items-center gap-2 group px-4 py-2 rounded-xl transition-all"
           >
             <div className="text-slate-300 group-hover:text-[#292828] transition-all">
               <item.icon size={16} strokeWidth={2} />
@@ -64,7 +69,7 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
             <span className="text-[10px] font-black uppercase text-slate-400 group-hover:text-[#292828] transition-colors">
               {item.label}
             </span>
-          </button>
+          </motion.button>
         ))}
       </div>
 

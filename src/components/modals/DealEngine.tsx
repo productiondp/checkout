@@ -142,15 +142,28 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
  <span className="text-[9px] font-bold uppercase text-white/40">Verified Need</span>
  </div>
  </div>
- <div className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex flex-col justify-between shadow-sm">
- <div>
- <p className="text-[10px] font-bold text-slate-400 uppercase mb-4 ">Match Score</p>
- <p className="text-3xl font-bold text-slate-900">{deal.matchScore || 100}%</p>
- </div>
- <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
- <div className="h-full bg-slate-900 rounded-full" style={{ width: `${deal.matchScore || 100}%` }} />
- </div>
- </div>
+  <div className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex flex-col justify-between shadow-sm">
+  <div>
+  <p className="text-[10px] font-bold text-slate-400 uppercase mb-4 ">Match Score</p>
+  <p className={cn(
+    "text-3xl font-bold",
+    (deal.matchScore || 100) >= 75 ? "text-emerald-500" :
+    (deal.matchScore || 100) >= 50 ? "text-amber-500" :
+    (deal.matchScore || 100) >= 25 ? "text-red-500" : "text-slate-400"
+  )}>{deal.matchScore || 100}%</p>
+  </div>
+  <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+  <div 
+    className={cn(
+      "h-full rounded-full transition-all duration-1000",
+      (deal.matchScore || 100) >= 75 ? "bg-emerald-500" :
+      (deal.matchScore || 100) >= 50 ? "bg-amber-500" :
+      (deal.matchScore || 100) >= 25 ? "bg-red-500" : "bg-slate-400"
+    )} 
+    style={{ width: `${deal.matchScore || 100}%` }} 
+  />
+  </div>
+  </div>
  </div>
 
  <div className="flex items-center gap-6 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">

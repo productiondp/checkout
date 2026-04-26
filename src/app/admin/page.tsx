@@ -162,7 +162,7 @@ export default function SentinelRedDashboard() {
   useEffect(() => {
     if (!isLinked) return;
     fetchStats();
-    const poll = setInterval(fetchStats, 8000);
+    const poll = setInterval(fetchStats, 4000); // Faster polling for real-time wipe feedback
     return () => clearInterval(poll);
   }, [isLinked]);
 
@@ -253,8 +253,10 @@ export default function SentinelRedDashboard() {
                <div className="flex items-center justify-between">
                   <h3 className="uppercase" style={getHeadingStyle('15px')}>Global Scanner</h3>
                   <div className="flex items-center gap-2">
-                     <span className="text-[10px] font-black animate-pulse" style={{ color: theme.primary }}>SYSTEM SCAN ACTIVE</span>
-                     <TargetIcon size={14} className="animate-spin-slow" style={{ color: theme.primary }} />
+                     <span className="text-[10px] font-black animate-pulse" style={{ color: theme.primary }}>
+                        {users.length > 0 ? "SYSTEM SCAN ACTIVE" : "SCANNING... NO NODES DETECTED"}
+                     </span>
+                     <TargetIcon size={14} className={cn("transition-all", users.length > 0 ? "animate-spin-slow" : "opacity-20")} style={{ color: theme.primary }} />
                   </div>
                </div>
                
@@ -349,7 +351,7 @@ export default function SentinelRedDashboard() {
                <div className="p-10 h-full">
                   <motion.div animate={{ y: ["0%", "-50%"] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="flex flex-col gap-4">
                      {[...Array(40)].map((_, i) => {
-                        const ev = events[i % events.length];
+                        const ev = events.length > 0 ? events[i % events.length] : null;
                         const log = securityLogs[i % securityLogs.length];
                         const isLog = i % 2 === 0 && log;
                         
@@ -362,7 +364,7 @@ export default function SentinelRedDashboard() {
                                </div>
                              ) : (
                                <div className="flex-1 truncate uppercase font-black" style={{ color: theme.secondary }}>
-                                  EVENT LOG :: {ev?.event_type || 'SYSTEM PING'} :: USER {ev?.user_id?.slice(0, 8)}
+                                   {ev ? `EVENT LOG :: ${ev.event_type} :: USER ${ev.user_id?.slice(0, 8)}` : "SYSTEM :: IDLE :: NO RECENT EVENTS"}
                                </div>
                              )}
                              <div className="h-2 w-2 rounded-full animate-ping shadow-[0_0_10px_currentColor]" style={{ backgroundColor: theme.primary }} />

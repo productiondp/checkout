@@ -2,54 +2,45 @@
 
 import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
-  ArrowRight,
   Mail,
   Lock,
-  User,
-  Briefcase,
-  Target,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Users,
-  Award,
-  Globe,
-  Zap,
-  ChevronRight,
   Eye,
   EyeOff,
-  Sparkles
+  ArrowRight,
+  User,
+  Briefcase,
+  Award,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
+  Loader2,
+  Activity,
+  Zap,
+  Globe,
+  Shield,
+  Terminal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { analytics } from "@/utils/analytics";
 
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student" | "Advisor";
 
 const ROLES: { value: Role; icon: any; desc: string }[] = [
-  { value: "Business", icon: Briefcase, desc: "MSME & Enterprises" },
-  { value: "Professional", icon: User, desc: "Freelancers & Experts" },
-  { value: "Student", icon: Award, desc: "Emerging Talent" },
-  { value: "Advisor", icon: ShieldCheck, desc: "Mentors & Consultants" },
-];
-
-const STATS = [
-  { value: "2,400+", label: "Members" },
-  { value: "12K+", label: "Connections" },
-  { value: "₹3.2Cr", label: "Deals Closed" },
+  { value: "Business", icon: Briefcase, desc: "Hire & Scale" },
+  { value: "Professional", icon: User, desc: "Work & Solve" },
+  { value: "Advisor", icon: ShieldCheck, desc: "Guide & Consult" },
+  { value: "Student", icon: Award, desc: "Learn & Grow" },
 ];
 
 function AuthContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialMode = (searchParams.get("mode") as AuthMode) || "signup";
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const { authState, loading: authLoading, initAuth } = useAuth();
+  const [mode, setMode] = useState<AuthMode>("signup");
   const [role, setRole] = useState<Role>("Business");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "", fullName: "" });
@@ -57,14 +48,12 @@ function AuthContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [lastSignupTime, setLastSignupTime] = useState(0);
+
+  const supabase = createClient();
 
   useEffect(() => { setMounted(true); }, []);
 
-  const { user: authUser, loading } = useAuth();
-  const supabase = createClient();
-
-  if (loading || !mounted) return null;
+  if (authLoading || !mounted) return null;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -73,11 +62,6 @@ function AuthContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const now = Date.now();
-    if (mode === "signup" && now - lastSignupTime < 10000) {
-      setError("Please wait a moment before trying again.");
-      return;
-    }
     if (isLoading) return;
     setIsLoading(true);
     setError(null);
@@ -89,310 +73,272 @@ function AuthContent() {
           password: formData.password,
           options: { data: { full_name: formData.fullName || "New Partner", role: role.toUpperCase() } },
         });
-        if (signUpError) {
-          if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
-            throw new Error("Too many attempts. Please wait and try again.");
-          }
-          throw signUpError;
-        }
-        setLastSignupTime(now);
+        if (signUpError) throw signUpError;
         if (authData.user) {
           await supabase.from("profiles").upsert({
             id: authData.user.id,
             full_name: formData.fullName || "New Partner",
             role: role.toUpperCase(),
-            city: "Trivandrum",
             location: "Trivandrum",
           });
-          analytics.track('USER_SIGNUP', authData.user.id, { role: role });
         }
         setIsSuccess(true);
-        setTimeout(() => {
-          router.push("/home");
-        }, 1500);
+        await initAuth();
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: { session: currentSession }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         if (signInError) throw signInError;
         setIsSuccess(true);
-        setTimeout(() => {
-          router.push("/home");
-        }, 1500);
+        if (currentSession) {
+          await initAuth();
+        }
       }
     } catch (err: any) {
-      setError(err.message || "Authentication failed. Please check your details.");
-    } finally {
+      setError(err.message || "Operation failed");
       setIsLoading(false);
     }
   };
 
-  const formVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        staggerChildren: 0.1,
-        duration: 0.4,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-black font-sans">
-      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-      
-      {/* ── BACKGROUND LAYER ── */}
-      <div className="absolute inset-0 z-0">
-        <Image 
-          src="/brain/e20a6442-6882-42f8-8557-d6bc2590b1b6/premium_business_background_1777208492794.png"
-          alt="Network Background"
-          fill
-          className="object-cover opacity-60"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-      </div>
+    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] font-sans selection:bg-[#FF3B30]/10 relative overflow-x-hidden">
+      {/* ── BACKGROUND ── */}
+      <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
 
-      {/* ── TOP LOGO ── */}
-      <div className="absolute top-10 left-10 z-20">
-        <Link href="/" className="flex items-center gap-4 group">
-          <Image 
-            src="/images/logo.png" 
-            alt="Checkout" 
-            width={200} 
-            height={50} 
-            priority
-            className="h-12 lg:h-14 w-auto object-contain transition-transform group-hover:scale-105" 
-          />
-        </Link>
-      </div>
-
-      {/* ── MAIN CONTENT CONTAINER ── */}
-      <div className="relative z-10 w-full max-w-7xl px-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-        
-        {/* LEFT: BRANDING (Hidden on small screens) */}
-        <div className="hidden lg:block space-y-12">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-[#E53935] text-[10px] font-black uppercase tracking-[0.2em]">
-              <Sparkles size={14} /> Trivandrum's Business OS
+      {/* ── NAVIGATION ── */}
+      <nav className="fixed top-0 inset-x-0 h-16 z-50 px-6 lg:px-12 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md">
+         <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-[#FF3B30] rounded-lg flex items-center justify-center shadow-lg shadow-[#FF3B30]/20">
+               <Terminal size={22} className="text-white" />
             </div>
-            <h1 className="text-7xl xl:text-8xl font-black text-white leading-none tracking-[-0.04em] uppercase font-outfit">
-              Connect.<br />
-              <span className="text-[#E53935]">Grow.</span><br />
-              Succeed.
-            </h1>
-            <p className="text-white/40 text-lg font-medium leading-relaxed max-w-md">
-              The premier business directory and networking hub for real professionals in Kerala.
-            </p>
-          </motion.div>
+            <span className="text-2xl font-black font-outfit uppercase tracking-tighter text-[#1A1A1A]">Check<span className="text-[#FF3B30]">Out</span></span>
+         </div>
+         <div className="flex items-center gap-6">
+            <button 
+              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
+              className="text-[11px] font-black uppercase text-slate-500 hover:text-[#1A1A1A] transition-colors"
+            >
+              {mode === "signin" ? "Join Network" : "Login"}
+            </button>
+         </div>
+      </nav>
 
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex items-center gap-10 pt-8 border-t border-white/10"
-          >
-            {STATS.map((s, i) => (
-              <div key={i} className="space-y-1">
-                <p className="text-white text-3xl font-black leading-none font-outfit">{s.value}</p>
-                <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.15em]">{s.label}</p>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* RIGHT: AUTH CARD */}
-        <div className="flex justify-center lg:justify-end">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="w-full max-w-[480px] bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 lg:p-14 shadow-[0_40px_100px_rgba(0,0,0,0.5)] relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#E53935]/10 blur-[60px] rounded-full" />
+      {/* ── MAIN CONTENT ── */}
+      <main className="relative z-10 pt-16 min-h-screen flex items-center justify-center">
+         <div className="max-w-7xl w-full px-6 lg:px-12 py-10 lg:grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             
-            {isSuccess ? (
-              <div className="text-center py-20 space-y-8 animate-in fade-in zoom-in-95 duration-500">
-                <div className="h-24 w-24 bg-emerald-500/10 rounded-[2.5rem] flex items-center justify-center mx-auto border border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.2)]">
-                  <CheckCircle2 size={44} className="text-emerald-500" />
-                </div>
-                <div className="space-y-3">
-                  <h2 className="text-4xl font-black text-white uppercase tracking-tight leading-none font-outfit">Welcome</h2>
-                  <p className="text-white/40 text-sm font-medium uppercase tracking-widest">Redirecting to network...</p>
-                </div>
-              </div>
-            ) : (
-              <motion.div
-                variants={formVariants}
-                initial="hidden"
-                animate="visible"
-                className="space-y-10"
-              >
-                <motion.div variants={itemVariants} className="space-y-2">
-                  <h2 className="text-[42px] font-black text-white uppercase leading-none tracking-tight font-outfit">
-                    {mode === "signup" ? "Join Now" : "Sign In"}
-                  </h2>
-                  <p className="text-white/30 text-sm font-medium uppercase tracking-widest">
-                    {mode === "signup" ? "Create your professional node" : "Access your business terminal"}
-                  </p>
-                </motion.div>
-
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, x: -10 }} 
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-[#E53935] text-xs font-black uppercase tracking-widest"
-                  >
-                    <AlertCircle size={16} className="shrink-0" />
-                    {error}
-                  </motion.div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {mode === "signup" && (
-                    <motion.div variants={itemVariants} className="space-y-3">
-                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">Identity Role</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {ROLES.map((r) => (
-                          <button
-                            key={r.value}
-                            type="button"
-                            onClick={() => setRole(r.value)}
-                            className={cn(
-                              "flex flex-col gap-3 p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group",
-                              role === r.value
-                                ? "border-[#E53935] bg-[#E53935]/10 text-white"
-                                : "border-white/5 bg-white/[0.02] text-white/40 hover:border-white/20"
-                            )}
-                          >
-                            <r.icon size={18} className={role === r.value ? "text-[#E53935]" : "text-white/20"} />
-                            <div>
-                              <p className="text-[13px] font-black uppercase leading-none">{r.value}</p>
-                              <p className={cn("text-[9px] mt-1 font-bold uppercase tracking-wide", role === r.value ? "text-white/60" : "text-white/20")}>{r.desc}</p>
-                            </div>
-                            {role === r.value && (
-                              <motion.div layoutId="role-bg" className="absolute inset-0 bg-[#E53935]/5 pointer-events-none" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <div className="space-y-4">
-                    {mode === "signup" && (
-                      <motion.div variants={itemVariants} className="relative">
-                        <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" />
-                        <input
-                          type="text"
-                          name="fullName"
-                          value={formData.fullName}
-                          onChange={handleInput}
-                          placeholder="FULL NAME"
-                          className="w-full h-16 pl-14 pr-6 bg-white/[0.03] border border-white/5 rounded-2xl text-[13px] font-black text-white placeholder:text-white/10 outline-none focus:border-[#E53935]/40 focus:bg-white/[0.05] transition-all tracking-widest"
-                          required
-                        />
-                      </motion.div>
-                    )}
-
-                    <motion.div variants={itemVariants} className="relative">
-                      <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" />
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInput}
-                        placeholder="EMAIL ADDRESS"
-                        className="w-full h-16 pl-14 pr-6 bg-white/[0.03] border border-white/5 rounded-2xl text-[13px] font-black text-white placeholder:text-white/10 outline-none focus:border-[#E53935]/40 focus:bg-white/[0.05] transition-all tracking-widest"
-                        required
-                      />
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="relative">
-                      <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInput}
-                        placeholder="PASSWORD"
-                        className="w-full h-16 pl-14 pr-14 bg-white/[0.03] border border-white/5 rounded-2xl text-[13px] font-black text-white placeholder:text-white/10 outline-none focus:border-[#E53935]/40 focus:bg-white/[0.05] transition-all tracking-widest"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </motion.div>
+            {/* ── LEFT SIDE ── */}
+            <div className="space-y-8 text-center lg:text-left">
+               <motion.div
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="space-y-4"
+               >
+                  <div className="inline-flex items-center gap-3 px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-[#FF3B30] text-[10px] font-black uppercase mx-auto lg:mx-0">
+                     <Sparkles size={12} />
+                     Unified Business Network
                   </div>
+                  
+                  <h1 className="text-6xl sm:text-7xl lg:text-[100px] font-black uppercase leading-[0.8] font-outfit text-[#1A1A1A] tracking-tighter">
+                     Connect. <br />
+                     <span className="text-[#FF3B30]">Grow.</span> <br />
+                     Succeed.
+                  </h1>
+                  
+                  <p className="text-slate-500 font-bold text-xl lg:text-2xl leading-tight max-w-md mx-auto lg:mx-0">
+                     The simple way to find people and grow your business together.
+                  </p>
+               </motion.div>
 
-                  <motion.button
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(229,57,53,0.2)" }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full h-20 rounded-[1.75rem] font-black text-[14px] text-white bg-[#E53935] uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all shadow-[0_10px_30px_rgba(229,57,53,0.3)]"
-                  >
-                    {isLoading ? (
-                      <div className="h-6 w-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        {mode === "signup" ? "Initialize Node" : "Authenticate"}
-                        <ArrowRight size={22} strokeWidth={3} />
-                      </>
-                    )}
-                  </motion.button>
+               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100">
+                  {[
+                    { icon: Globe, label: "Network", desc: "Local reach" },
+                    { icon: Zap, label: "Match", desc: "Fast sync" },
+                    { icon: Shield, label: "Secure", desc: "Verified" },
+                    { icon: Activity, label: "Live", desc: "Real-time" }
+                  ].map((f, i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all text-left group">
+                       <div className="h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-[#FF3B30]/10 group-hover:text-[#FF3B30] transition-colors">
+                          <f.icon size={20} />
+                       </div>
+                       <div>
+                          <p className="text-[11px] font-black uppercase text-[#1A1A1A]">{f.label}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">{f.desc}</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
 
-                  <motion.div variants={itemVariants} className="text-center">
-                    <button
-                      type="button"
-                      onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(null); }}
-                      className="text-[11px] font-black text-white/20 uppercase tracking-[0.2em] hover:text-[#E53935] transition-colors"
-                    >
-                      {mode === "signup" ? "Already Registered? Sign In" : "New Partner? Join Network"}
-                    </button>
-                  </motion.div>
-                </form>
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-      </div>
-      
-      {/* ── FOOTER ── */}
-      <div className="absolute bottom-10 inset-x-0 flex justify-center z-10 pointer-events-none">
-        <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em]">System Secure :: Trivandrum Grid</p>
+            {/* ── RIGHT SIDE ── */}
+            <div className="w-full flex justify-center lg:justify-end">
+               <motion.div
+                 initial={{ opacity: 0, scale: 0.98 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 className="w-full max-w-[550px] bg-white border border-slate-100 rounded-lg p-8 lg:p-14 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden"
+               >
+                  <AnimatePresence mode="wait">
+                     {isSuccess ? (
+                        <motion.div 
+                          key="success"
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="text-center py-12 space-y-8"
+                        >
+                           <div className="h-20 w-20 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto border border-emerald-100 shadow-xl shadow-emerald-500/10">
+                              <CheckCircle2 size={40} className="text-emerald-500" />
+                           </div>
+                           <div className="space-y-2">
+                              <h2 className="text-3xl font-black text-[#1A1A1A] uppercase font-outfit">Ready</h2>
+                              <p className="text-slate-400 text-[11px] font-black uppercase animate-pulse">Entering System...</p>
+                           </div>
+                        </motion.div>
+                     ) : (
+                        <motion.div 
+                          key="form"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="space-y-8"
+                        >
+                           <header className="space-y-2 text-center lg:text-left">
+                              <h2 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] uppercase font-outfit tracking-tighter leading-none">
+                                 {mode === "signup" ? "Join" : "Login"}
+                              </h2>
+                              <p className="text-slate-500 text-[11px] font-black uppercase tracking-wider">
+                                 {mode === "signup" ? "Create your professional account" : "Welcome back to the grid"}
+                              </p>
+                           </header>
+
+                           {error && (
+                              <div className="p-4 bg-red-50 border border-red-100 text-[#FF3B30] text-[10px] font-black uppercase rounded-lg">
+                                 {error}
+                              </div>
+                           )}
+
+                           <form onSubmit={handleSubmit} className="space-y-6">
+                              {mode === "signup" && (
+                                 <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Select Role</label>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                                       {ROLES.map((r) => (
+                                          <button
+                                             key={r.value}
+                                             type="button"
+                                             onClick={() => setRole(r.value)}
+                                             className={cn(
+                                                "flex flex-col gap-2 p-3 rounded-lg border transition-all text-left relative overflow-hidden h-24 justify-center group",
+                                                role === r.value
+                                                   ? "border-[#FF3B30] bg-[#FF3B30]/5 text-[#FF3B30]"
+                                                   : "border-slate-100 bg-slate-50 text-slate-400 hover:bg-white hover:border-slate-200"
+                                             )}
+                                          >
+                                             <r.icon size={18} className={cn("transition-colors", role === r.value ? "text-[#FF3B30]" : "text-slate-300 group-hover:text-slate-500")} />
+                                             <p className="text-[12px] font-black uppercase leading-none">{r.value}</p>
+                                             {role === r.value && <div className="absolute top-0 right-0 h-1 w-full bg-[#FF3B30]" />}
+                                          </button>
+                                       ))}
+                                    </div>
+                                 </div>
+                              )}
+
+                              <div className="space-y-4">
+                                 {mode === "signup" && (
+                                    <div className="relative group">
+                                       <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
+                                       <input
+                                          type="text"
+                                          name="fullName"
+                                          value={formData.fullName}
+                                          onChange={handleInput}
+                                          placeholder="Full Name"
+                                          className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
+                                          required
+                                       />
+                                    </div>
+                                 )}
+
+                                 <div className="relative group">
+                                    <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
+                                    <input
+                                       autoFocus={mode === "signin"}
+                                       type="email"
+                                       name="email"
+                                       value={formData.email}
+                                       onChange={handleInput}
+                                       placeholder="Email Address"
+                                       className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
+                                       required
+                                    />
+                                 </div>
+
+                                 <div className="relative group">
+                                    <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
+                                    <input
+                                       type={showPassword ? "text" : "password"}
+                                       name="password"
+                                       value={formData.password}
+                                       onChange={handleInput}
+                                       placeholder="Password"
+                                       className="w-full h-14 pl-14 pr-16 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
+                                       required
+                                    />
+                                    <button
+                                       type="button"
+                                       onClick={() => setShowPassword(!showPassword)}
+                                       className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#1A1A1A] transition-colors p-2"
+                                    >
+                                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                 </div>
+                              </div>
+
+                              <button
+                                 type="submit"
+                                 disabled={isLoading}
+                                 className="w-full h-16 bg-[#FF3B30] hover:bg-[#D32F2F] text-white font-black text-[15px] uppercase rounded-lg flex items-center justify-center gap-4 transition-all shadow-xl shadow-[#FF3B30]/20 disabled:opacity-50 mt-4 active:scale-95"
+                              >
+                                 {isLoading ? (
+                                   <Loader2 className="animate-spin" size={24} />
+                                 ) : (
+                                   <>
+                                     <span>{mode === "signup" ? "Join Network" : "Login"}</span>
+                                     <ArrowRight size={22} />
+                                   </>
+                                 )}
+                              </button>
+                           </form>
+                           
+                           <footer className="text-center pt-8 border-t border-slate-100">
+                              <button 
+                                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
+                                className="text-[11px] font-black uppercase text-slate-400 hover:text-[#1A1A1A] transition-colors"
+                              >
+                                {mode === "signin" ? "New to the platform? Join now" : "Already have an account? Login"}
+                              </button>
+                           </footer>
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
+               </motion.div>
+            </div>
+         </div>
+      </main>
+
+      {/* ── FOOTER STATUS ── */}
+      <div className="fixed bottom-0 inset-x-0 h-12 px-8 flex items-center justify-between z-50 text-[10px] font-black uppercase text-slate-300 pointer-events-none border-t border-slate-100 bg-white/60 backdrop-blur-md">
+         <div className="flex items-center gap-8">
+            <span className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Platform Active</span>
+         </div>
+         <div className="tracking-widest">CHECKOUT_OS_V8.0 // KERALA</div>
       </div>
     </div>
   );
 }
 
-export default function LandingPage() {
+export default function AuthPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="h-10 w-10 border-4 border-white/5 border-t-[#E53935] rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={null}>
       <AuthContent />
     </Suspense>
   );

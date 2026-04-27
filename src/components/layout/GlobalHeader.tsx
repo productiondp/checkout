@@ -80,7 +80,7 @@ export default function FullyActiveGlobalHeader() {
       
       if (notes) {
         setNotifications(notes);
-        setUnreadCount(notes.filter(n => !n.is_read).length);
+        setUnreadCount(notes.filter(n => !n.read).length);
       }
     }
     fetchNotifications();
@@ -120,11 +120,18 @@ export default function FullyActiveGlobalHeader() {
   const markAllAsRead = async () => {
     if (!authUser) return;
     setUnreadCount(0);
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     await supabase
       .from('notifications')
-      .update({ is_read: true })
+      .update({ read: true })
       .eq('user_id', authUser.id);
+  };
+
+  const getNotificationContent = (n: any) => {
+    const actorName = n.actor?.full_name || "Someone";
+    if (n.type === 'connection_request') return `${actorName} sent you a connection request`;
+    if (n.type === 'connection_accepted') return `${actorName} accepted your request`;
+    return n.message || "New activity in your network";
   };
 
   return (
@@ -135,7 +142,7 @@ export default function FullyActiveGlobalHeader() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setIsDrawerOpen(true)}
-            className="lg:hidden h-10 w-10 flex items-center justify-center text-[#292828] hover:bg-[#292828]/5 rounded-xl transition-all active:scale-95"
+            className="lg:hidden h-10 w-10 flex items-center justify-center text-[#292828] hover:bg-[#292828]/5 rounded-lg transition-all active:scale-95"
           >
             <Menu size={24} />
           </button>
@@ -161,7 +168,7 @@ export default function FullyActiveGlobalHeader() {
             <input 
               type="text" 
               placeholder="Search..." 
-              className="w-full h-10 bg-[#292828]/5 border border-[#292828]/10 rounded-xl pl-11 pr-4 text-[13px] font-bold text-[#292828] focus:bg-white focus:border-[#E53935] transition-all outline-none shadow-sm"
+              className="w-full h-10 bg-[#292828]/5 border border-[#292828]/10 rounded-lg pl-11 pr-4 text-[13px] font-bold text-[#292828] focus:bg-white focus:border-[#E53935] transition-all outline-none shadow-sm"
             />
           </div>
           
@@ -176,8 +183,8 @@ export default function FullyActiveGlobalHeader() {
             </button>
 
             {isLocationOpen && (
-              <div className="absolute top-[130%] right-0 w-56 bg-white rounded-xl shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
-                <p className="px-3 py-2 text-[10px] font-bold text-[#292828]/30 uppercase border-b border-[#292828]/5 mb-2">Select Hub</p>
+              <div className="absolute top-[130%] right-0 w-56 bg-white rounded-lg shadow-4xl border border-[#292828]/10 p-3 animate-in fade-in slide-in-from-top-2 z-[200]">
+                <p className="px-3 py-2 text-[10px] font-bold text-[#292828]/30 uppercase border-b border-[#292828]/5 mb-2">Choose your city</p>
                 {["Kochi", "Bangalore", "Chennai"].map(loc => (
                   <button 
                     key={loc} 
@@ -217,40 +224,47 @@ export default function FullyActiveGlobalHeader() {
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute top-[130%] right-0 md:right-0 w-[300px] md:w-96 bg-white rounded-3xl shadow-4xl border border-[#292828]/10 p-6 animate-in fade-in slide-in-from-top-2 z-[200]">
+                <div className="absolute top-[130%] right-0 md:right-0 w-[300px] md:w-96 bg-white rounded-lg shadow-4xl border border-[#292828]/10 p-6 animate-in fade-in slide-in-from-top-2 z-[200]">
                   <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#292828]/5">
-                    <h3 className="text-lg font-bold text-[#292828]">Notifications</h3>
-                    <button onClick={() => markAllAsRead()} className="text-[11px] font-bold text-[#E53935] uppercase">Clear All</button>
+                    <h3 className="text-lg font-bold text-[#292828]">Alerts</h3>
+                    <button onClick={() => markAllAsRead()} className="text-[11px] font-bold text-[#E53935] uppercase">Clear</button>
                   </div>
                   <div className="space-y-6 max-h-[360px] overflow-y-auto no-scrollbar pr-1">
                     {notifications.map((n, i) => (
                       <div 
                         key={n.id || i} 
                         onClick={() => {
-                          if (n.link) router.push(n.link);
+                          if (n.type?.startsWith('connection')) router.push('/connections');
+                          else if (n.link) router.push(n.link);
                           setIsNotificationsOpen(false);
                         }}
-                        className="flex gap-4 group cursor-pointer hover:bg-[#292828]/5 p-2 -mx-2 rounded-2xl transition-all"
+                        className="flex gap-4 group cursor-pointer hover:bg-[#292828]/5 p-2 -mx-2 rounded-lg transition-all"
                       >
                         <div className={cn(
-                          "h-11 w-11 shrink-0 rounded-xl flex items-center justify-center shadow-sm", 
-                          n.is_read ? "bg-slate-50 text-slate-400" : "bg-red-50 text-red-500"
+                          "h-11 w-11 shrink-0 rounded-lg flex items-center justify-center shadow-sm", 
+                          n.read ? "bg-slate-50 text-slate-400" : "bg-red-50 text-red-500"
                         )}>
                           <Zap size={20} />
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-0.5">
-                            <h4 className="text-[13px] font-bold text-[#292828]">{n.title}</h4>
+                            <h4 className="text-[13px] font-bold text-[#292828]">
+                              {n.type === 'connection_request' ? "New Request" : 
+                               n.type === 'connection_accepted' ? "Connection Accepted" : 
+                               n.title || "Update"}
+                            </h4>
                             <span className="text-[10px] font-bold text-[#292828] capitalize">
                               {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-[12px] font-medium text-[#292828] leading-tight">{n.message}</p>
+                          <p className="text-[12px] font-medium text-[#292828] leading-tight">
+                            {getNotificationContent(n)}
+                          </p>
                         </div>
                       </div>
                     ))}
                     {notifications.length === 0 && (
-                      <div className="text-center py-10 opacity-20 italic">No alerts found</div>
+                      <div className="text-center py-10 opacity-20 italic">Nothing here yet</div>
                     )}
                   </div>
                 </div>
@@ -263,7 +277,7 @@ export default function FullyActiveGlobalHeader() {
             {!authUser ? (
                <Link 
                  href="/login"
-                 className="h-10 px-6 bg-[#292828] text-white rounded-[8px] text-[11px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-xl shadow-black/5"
+                 className="h-10 px-6 bg-[#292828] text-white rounded-[8px] text-[11px] font-black uppercase  flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-xl shadow-black/5"
                >
                  Sign In
                </Link>
@@ -289,10 +303,10 @@ export default function FullyActiveGlobalHeader() {
                     <img src={authUser?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-[11px] font-black text-[#292828] leading-none mb-0.5 uppercase tracking-tighter">
+                    <p className="text-[11px] font-black text-[#292828] leading-none mb-0.5 uppercase ">
                       {authUser?.full_name?.split(' ')[0] || "User"}
                     </p>
-                    <p className="text-[8px] font-bold text-slate-400 leading-none uppercase tracking-widest italic">
+                    <p className="text-[8px] font-bold text-slate-400 leading-none uppercase  italic">
                       {authUser?.role || "Member"}
                     </p>
                   </div>
@@ -310,7 +324,7 @@ export default function FullyActiveGlobalHeader() {
                             <p className="text-[14px] font-black text-[#292828] uppercase leading-none mb-1">{authUser?.full_name || "Profile"}</p>
                             <div className="flex items-center gap-1.5">
                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">{authUser?.role || "Verified Profile"}</p>
+                               <p className="text-[9px] font-black text-slate-400 uppercase  italic">{authUser?.role || "Verified Profile"}</p>
                             </div>
                          </div>
                       </div>
@@ -321,7 +335,7 @@ export default function FullyActiveGlobalHeader() {
                          </div>
                          <div className="bg-white p-2 rounded-lg border border-slate-100 text-center">
                             <p className="text-[7px] font-black text-slate-300 uppercase leading-none mb-1">Rank</p>
-                            <p className="text-[12px] font-black text-[#292828] leading-none truncate uppercase tracking-tighter">{authUser?.role?.split(' ')[0] || "Alpha"}</p>
+                            <p className="text-[12px] font-black text-[#292828] leading-none truncate uppercase ">{authUser?.role?.split(' ')[0] || "Alpha"}</p>
                          </div>
                       </div>
                     </div>
@@ -339,7 +353,7 @@ export default function FullyActiveGlobalHeader() {
                           key={it.label} 
                           href={it.href} 
                           onClick={() => setIsProfileOpen(false)}
-                          className="w-full flex items-center gap-3.5 p-3 rounded-[10px] text-[12px] font-black uppercase tracking-tight text-slate-500 hover:bg-[#292828] hover:text-white transition-all group"
+                          className="w-full flex items-center gap-3.5 p-3 rounded-[10px] text-[12px] font-black uppercase  text-slate-500 hover:bg-[#292828] hover:text-white transition-all group"
                         >
                           <it.icon size={16} className="text-[#292828]/40 group-hover:text-white" />
                           {it.label}
@@ -354,9 +368,9 @@ export default function FullyActiveGlobalHeader() {
                           await logout();
                           setIsProfileOpen(false);
                         }}
-                        className="w-full flex items-center gap-3.5 p-4 rounded-[10px] text-[12px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all text-left"
+                        className="w-full flex items-center gap-3.5 p-4 rounded-[10px] text-[12px] font-black uppercase  text-red-500 hover:bg-red-50 transition-all text-left"
                       >
-                        <LogOut size={16} /> Logout System
+                        <LogOut size={16} /> Log out
                       </button>
                     </div>
                   </div>

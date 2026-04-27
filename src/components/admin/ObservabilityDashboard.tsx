@@ -40,7 +40,7 @@ export default function ObservabilityDashboard() {
     
     return (
       <div className={cn(
-        "p-8 bg-white border border-[#292828]/5 rounded-[2.5rem] shadow-xl relative overflow-hidden",
+        "p-8 bg-white border border-[#292828]/5 rounded-lg shadow-xl relative overflow-hidden",
         isAlert && "border-amber-200 bg-amber-50/30"
       )}>
          {isAlert && (
@@ -49,13 +49,13 @@ export default function ObservabilityDashboard() {
             </div>
          )}
          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">{label}</p>
-            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center text-white", isAlert ? "bg-amber-500" : color)}>
+            <p className="text-[10px] font-black uppercase text-slate-300 ">{label}</p>
+            <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center text-white", isAlert ? "bg-amber-500" : color)}>
                <Icon size={18} />
             </div>
          </div>
          <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-black text-[#292828] uppercase tracking-tight">{value}</h3>
+            <h3 className="text-3xl font-black text-[#292828] uppercase ">{value}</h3>
             <span className="text-[12px] font-bold text-slate-400">{suffix}</span>
          </div>
       </div>
@@ -69,15 +69,15 @@ export default function ObservabilityDashboard() {
        <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex items-center justify-between">
              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 bg-[#292828] rounded-2xl flex items-center justify-center text-white shadow-2xl">
+                <div className="h-14 w-14 bg-[#292828] rounded-lg flex items-center justify-center text-white shadow-2xl">
                    <BarChart3 size={24} />
                 </div>
                 <div>
-                   <h2 className="text-3xl font-black uppercase tracking-tight">System Observability</h2>
-                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Real-time Platform Metrics</p>
+                   <h2 className="text-3xl font-black uppercase ">System Observability</h2>
+                   <p className="text-[11px] font-bold text-slate-400 uppercase ">Real-time Platform Metrics</p>
                 </div>
              </div>
-             <div className="h-10 px-6 bg-emerald-500 text-white rounded-full flex items-center text-[9px] font-black uppercase tracking-widest shadow-lg">
+             <div className="h-10 px-6 bg-emerald-500 text-white rounded-full flex items-center text-[9px] font-black uppercase  shadow-lg">
                 System Healthy
              </div>
           </div>
@@ -117,8 +117,8 @@ export default function ObservabilityDashboard() {
                    <TrendingUp size={40} />
                 </div>
                 <div>
-                   <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Anti-Illusion Guarded Truth Layer</h3>
-                   <p className="text-[12px] font-bold text-white/40 uppercase tracking-widest leading-relaxed max-w-md">Sustained Outcome: 68.4%. Onboarding: 20m Window. Outcome Grace: 3m. Stability Margin: Active. Interaction: Depth+Time Gated.</p>
+                   <h3 className="text-2xl font-black uppercase  mb-2">Anti-Illusion Guarded Truth Layer</h3>
+                   <p className="text-[12px] font-bold text-white/40 uppercase  leading-relaxed max-w-md">Sustained Outcome: 68.4%. Onboarding: 20m Window. Outcome Grace: 3m. Stability Margin: Active. Interaction: Depth+Time Gated.</p>
                 </div>
              </div>
              <div className="flex gap-4">

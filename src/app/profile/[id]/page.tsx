@@ -104,7 +104,7 @@ export default function DynamicProfilePage() {
                   <div className="h-44 w-44 lg:h-52 lg:w-52 rounded-[1.95rem] bg-white p-3 shadow-4xl relative z-10 overflow-hidden border border-white/20">
                      <img src={profile.avatar} className="w-full h-full object-cover rounded-[1.625rem]" alt="Profile" />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-[#E53935] border-4 border-white rounded-2xl flex items-center justify-center text-white shadow-2xl z-20">
+                  <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-[#E53935] border-4 border-white rounded-lg flex items-center justify-center text-white shadow-2xl z-20">
                      <CheckCircle2 size={24} />
                   </div>
                </div>
@@ -112,7 +112,7 @@ export default function DynamicProfilePage() {
                <div className="text-center md:text-left flex-1 min-w-0">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-5">
                      <h1 className="text-4xl lg:text-6xl font-black text-white leading-none uppercase">{profile.name}</h1>
-                     <div className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[10px] font-black uppercase text-white">
+                     <div className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-[10px] font-black uppercase text-white">
                         Verified
                      </div>
                   </div>
@@ -124,8 +124,8 @@ export default function DynamicProfilePage() {
                </div>
 
                <div className="flex items-center gap-4">
-                  <button className="h-16 px-10 bg-[#E53935] text-white rounded-2xl font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:scale-105 transition-all active:scale-95">Chat</button>
-                  <button className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-white hover:text-[#292828] transition-all">
+                  <button className="h-16 px-10 bg-[#E53935] text-white rounded-lg font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:scale-105 transition-all active:scale-95">Chat</button>
+                  <button className="h-16 w-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-center text-white hover:bg-white hover:text-[#292828] transition-all">
                      <Plus size={24} />
                   </button>
                </div>
@@ -154,7 +154,7 @@ export default function DynamicProfilePage() {
                   <div className="mt-10 pt-10 border-t border-[#292828]/5 space-y-8">
                      {contactInfo.map((info, i) => (
                         <div key={i} className="flex items-center gap-4 group cursor-pointer">
-                           <div className="h-12 w-12 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828]/40 group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+                           <div className="h-12 w-12 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/40 group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
                               <info.icon size={18} />
                            </div>
                            <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export default function DynamicProfilePage() {
                   
                   <div className="relative z-10">
                      <div className="flex items-center gap-4 mb-10">
-                        <div className="h-14 w-14 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-xl">
+                        <div className="h-14 w-14 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl">
                            <Zap size={28} />
                         </div>
                         <div>
@@ -187,11 +187,11 @@ export default function DynamicProfilePage() {
                      </div>
 
                      <div className="grid grid-cols-2 gap-4 mb-10 text-center">
-                        <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                        <div className="bg-white/5 p-5 rounded-lg border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">Global</p>
                            <p className="text-2xl font-black text-white">#{100 + profile.id}</p>
                         </div>
-                        <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                        <div className="bg-white/5 p-5 rounded-lg border border-white/5">
                            <p className="text-[9px] font-black text-white/30 uppercase mb-2">State</p>
                            <p className="text-2xl font-black text-[#E53935]">#{profile.id % 20 + 1}</p>
                         </div>
@@ -242,11 +242,11 @@ export default function DynamicProfilePage() {
                </div>
 
                {/* INTRO VIDEO */}
-               <div className="bg-[#292828] rounded-[2rem] overflow-hidden relative group aspect-video shadow-4xl border border-white/5">
+               <div className="bg-[#292828] rounded-lg overflow-hidden relative group aspect-video shadow-4xl border border-white/5">
                   <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1200" className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-1000" alt="Video Placeholder" />
                   <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-[#292828] via-[#292828]/60 to-transparent flex items-end justify-between">
                      <div className="space-y-2">
-                        <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">Introduction</p>
+                        <p className="text-[10px] font-black text-[#E53935] uppercase ">Introduction</p>
                         <h3 className="text-3xl font-black text-white uppercase leading-none">Perspective 2026</h3>
                      </div>
                      <button className="h-16 w-16 bg-[#E53935] text-white rounded-full flex items-center justify-center shadow-2xl animate-pulse hover:animate-none active:scale-90 transition-all">
@@ -260,7 +260,7 @@ export default function DynamicProfilePage() {
                   {performanceMetrics.map((met, i) => (
                     <div key={i} className="bg-white p-10 rounded-[1.625rem] border border-[#292828]/5 shadow-xl group hover:border-[#E53935]/20 transition-all duration-500">
                        <div className="flex items-center justify-between mb-10">
-                          <div className="h-16 w-16 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#E53935] group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500 shadow-sm">
+                          <div className="h-16 w-16 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#E53935] group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500 shadow-sm">
                              <met.icon size={24} />
                           </div>
                           <span className="text-4xl font-black text-[#292828]">{met.value}%</span>
@@ -279,7 +279,7 @@ export default function DynamicProfilePage() {
                {/* C. MEDIA GALLERY & INSIGHTS */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {/* Articles / Insights */}
-                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
+                  <div className="bg-white rounded-lg p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50">
                      <div className="flex items-center justify-between mb-10">
                         <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
                            <BookOpen size={18} className="text-[#E53935]" /> Articles
@@ -289,7 +289,7 @@ export default function DynamicProfilePage() {
                         {[].map((art, i) => (
                            <div key={i} className="group/art cursor-pointer space-y-2">
                               <p className="text-[13px] font-black text-[#292828] uppercase group/art:text-[#E53935] transition-colors">{art}</p>
-                              <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400">
+                              <div className="flex items-center gap-4 text-[9px] font-bold text-slate-200">
                                  <span>8 min read</span>
                                  <span className="h-1 w-1 bg-slate-200 rounded-full" />
                                  <span>12.4k Views</span>
@@ -300,7 +300,7 @@ export default function DynamicProfilePage() {
                   </div>
 
                   {/* Visual Portfolio */}
-                  <div className="bg-white rounded-[2rem] p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50 flex flex-col">
+                  <div className="bg-white rounded-lg p-10 border border-[#292828]/10 shadow-2xl shadow-slate-200/50 flex flex-col">
                      <div className="flex items-center justify-between mb-10">
                         <h3 className="text-[10px] font-black uppercase text-[#292828] flex items-center gap-2">
                            <ImageIcon size={18} className="text-[#E53935]" /> Media Portfolio

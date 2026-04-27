@@ -71,18 +71,18 @@ export default function SettingsHub() {
         {/* Header Block */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-8 mb-16 p-10 bg-white rounded-[32px] border border-[#292828]/5 shadow-premium group relative overflow-hidden">
            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-           <div className="h-24 w-24 bg-[#292828] text-white rounded-[2rem] flex items-center justify-center shadow-2xl transition-all group-hover:rotate-6 group-hover:scale-105">
+           <div className="h-24 w-24 bg-[#292828] text-white rounded-lg flex items-center justify-center shadow-2xl transition-all group-hover:rotate-6 group-hover:scale-105">
               <Settings size={48} className="animate-spin-slow" />
            </div>
            <div>
-              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase tracking-tighter">Settings</h1>
+              <h1 className="text-4xl lg:text-5xl font-black text-[#292828] uppercase ">Settings</h1>
               <p className="text-[13px] font-bold text-[#666666] mt-2">Manage your profile settings and network identity.</p>
            </div>
         </div>
 
         {message && (
           <div className={cn(
-            "mb-8 p-4 rounded-2xl flex items-center gap-3 text-[13px] font-bold animate-in slide-in-from-top-2",
+            "mb-8 p-4 rounded-lg flex items-center gap-3 text-[13px] font-bold animate-in slide-in-from-top-2",
             message.type === 'success' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"
           )}>
             {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
@@ -95,15 +95,15 @@ export default function SettingsHub() {
            {sections.map(s => (
              <button 
               key={s.label} 
-              className="w-full bg-white border border-[#292828]/5 rounded-[2rem] p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-2xl hover:shadow-slate-200/40 transition-all text-left relative overflow-hidden active:scale-[0.99]"
+              className="w-full bg-white border border-[#292828]/5 rounded-lg p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-2xl hover:shadow-slate-200/40 transition-all text-left relative overflow-hidden active:scale-[0.99]"
              >
                 <div className="flex items-center gap-6 relative z-10">
-                   <div className="h-16 w-16 bg-[#292828]/5 rounded-2xl flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+                   <div className="h-16 w-16 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
                       <s.icon size={26} />
                    </div>
                    <div>
-                      <h3 className="text-xl font-black text-[#292828] uppercase tracking-tight">{s.label}</h3>
-                      <p className="text-[13px] font-medium text-slate-400 mt-1">{s.desc}</p>
+                      <h3 className="text-xl font-black text-[#292828] uppercase ">{s.label}</h3>
+                      <p className="text-[13px] font-medium text-slate-200 mt-1">{s.desc}</p>
                    </div>
                 </div>
                 <ChevronRight size={24} className="text-[#292828]/20 group-hover:text-[#292828] group-hover:translate-x-1 transition-all z-10" />
@@ -112,11 +112,11 @@ export default function SettingsHub() {
 
            {/* Emergency Actions */}
            <div className="mt-8 pt-8 border-t border-[#292828]/5 space-y-4">
-              <p className="px-4 text-[10px] font-black text-[#292828]/20 uppercase tracking-widest mb-4">Account Controls</p>
+              <p className="px-4 text-[10px] font-black text-[#292828]/20 uppercase  mb-4">Account Controls</p>
               
-              <Link href="/profile" className="w-full bg-white border border-[#292828]/5 rounded-2xl p-6 flex items-center justify-between group hover:bg-[#292828] transition-all">
+              <Link href="/profile" className="w-full bg-white border border-[#292828]/5 rounded-lg p-6 flex items-center justify-between group hover:bg-[#292828] transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-[#292828]/5 flex items-center justify-center text-[#292828] group-hover:bg-white/10 group-hover:text-white transition-all"><User size={20} /></div>
+                  <div className="h-10 w-10 rounded-lg bg-[#292828]/5 flex items-center justify-center text-[#292828] group-hover:bg-white/10 group-hover:text-white transition-all"><User size={20} /></div>
                   <span className="text-sm font-bold text-[#292828] group-hover:text-white uppercase transition-all">Edit Profile</span>
                 </div>
                 <ChevronRight size={20} className="text-[#292828]/20 group-hover:text-white/40 transition-all" />
@@ -124,10 +124,10 @@ export default function SettingsHub() {
 
               <button 
                 onClick={handleLogout}
-                className="w-full bg-red-500/5 border border-red-500/10 rounded-2xl p-6 flex items-center justify-between group hover:bg-[#E53935] transition-all"
+                className="w-full bg-red-500/5 border border-red-500/10 rounded-lg p-6 flex items-center justify-between group hover:bg-[#E53935] transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center text-[#E53935] group-hover:bg-white/20 group-hover:text-white transition-all"><LogOut size={20} /></div>
+                  <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center text-[#E53935] group-hover:bg-white/20 group-hover:text-white transition-all"><LogOut size={20} /></div>
                   <span className="text-sm font-bold text-[#E53935] group-hover:text-white uppercase transition-all">Logout</span>
                 </div>
                 <div className="px-3 py-1.5 bg-red-500/10 rounded-lg group-hover:bg-white/10">
@@ -139,7 +139,7 @@ export default function SettingsHub() {
 
         {/* Footer Audit */}
         <div className="mt-20 text-center pb-20">
-           <p className="text-[10px] font-black text-[#292828]/10 uppercase tracking-widest mb-2">Checkout Operating System V.7</p>
+           <p className="text-[10px] font-black text-[#292828]/10 uppercase  mb-2">Checkout Operating System V.7</p>
            <p className="text-[9px] font-bold text-slate-300 uppercase">Authorized Access Only</p>
         </div>
       </div>

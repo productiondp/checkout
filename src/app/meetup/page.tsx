@@ -113,7 +113,7 @@ export default function MeetupPage() {
                   <div className="label-premium">
                      <Target size={12} className="text-[#E53935]" /> Area Discovery Active
                   </div>
-                  <h1 className="text-xl md:text-2xl lg:text-3xl mb-0 tracking-tight font-black uppercase">
+                  <h1 className="text-xl md:text-2xl lg:text-3xl mb-0  font-black uppercase">
                      Meetups<span className="text-[#E53935]">.</span>
                   </h1>
                   <p className="subheading-editorial mt-2">Connect with people in your area.</p>
@@ -122,9 +122,9 @@ export default function MeetupPage() {
                <div className="flex items-center gap-4">
                   <button 
                     onClick={() => setShowAiArchitect(true)}
-                    className="h-16 px-8 rounded-2xl bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
+                    className="h-16 px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
                   >
-                     <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-xl animate-pulse">
+                     <div className="h-10 w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
                         <BrainCircuit size={20} />
                      </div>
                      <div className="text-left">
@@ -135,7 +135,7 @@ export default function MeetupPage() {
                   
                   <button 
                     onClick={() => setShowHostModal(true)}
-                    className="h-16 w-16 lg:w-auto lg:px-8 rounded-2xl bg-white border-2 border-[#292828] text-[#292828] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group"
+                    className="h-16 w-16 lg:w-auto lg:px-8 rounded-lg bg-white border-2 border-[#292828] text-[#292828] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group"
                   >
                      <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
                      <span className="hidden lg:block font-bold text-[11px] uppercase">New Meet Up</span>
@@ -150,7 +150,7 @@ export default function MeetupPage() {
                       key={t}
                       onClick={() => setActiveTopic(t)}
                       className={cn(
-                        "px-6 h-11 rounded-xl text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
+                        "px-6 h-11 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
                         activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
                       )}
                     >
@@ -158,7 +158,7 @@ export default function MeetupPage() {
                     </button>
                   ))}
                </div>
-               <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-xl">
+               <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
                   <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
                      <LayoutGrid size={14} /> Grid
                   </button>
@@ -178,12 +178,12 @@ export default function MeetupPage() {
                {filteredMeetups.map(m => (
                  <div key={m.id} className="group relative">
                     <div className={cn(
-                       "bg-white rounded-[2.5rem] border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] hover:border-[#E53935]/20 hover:-translate-y-2",
+                       "bg-white rounded-lg border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] hover:border-[#E53935]/20 hover:-translate-y-2",
                        m.status === "joined" && "border-emerald-500/30 ring-4 ring-emerald-500/5 shadow-2xl shadow-emerald-500/10"
                     )}>
                        {/* AI Alignment Indicator */}
                        <div className="absolute top-6 right-6 z-10">
-                          <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl border border-[#292828]/10 flex items-center gap-2 shadow-lg">
+                          <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-lg border border-[#292828]/10 flex items-center gap-2 shadow-lg">
                              <Sparkles size={14} className="text-[#E53935] animate-pulse" />
                              <span className="text-[10px] font-black text-[#292828] uppercase">{m.matchPotential}% Score</span>
                           </div>
@@ -192,13 +192,13 @@ export default function MeetupPage() {
                        {/* Card Content */}
                        <div className="p-8 lg:p-10 space-y-8">
                           <div className="flex items-center gap-4">
-                             <div className="h-14 w-14 rounded-2xl overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
+                             <div className="h-14 w-14 rounded-lg overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
                                 <img src={m.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
                                 <div className="absolute inset-0 bg-[#E53935]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                              </div>
                              <div>
-                                <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 tracking-tight">{m.author}</h4>
-                                <p className="text-[10px] font-bold text-[#292828]/30 uppercase tracking-widest">{m.category} • {m.timeAgo}</p>
+                                <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 ">{m.author}</h4>
+                                <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{m.category} • {m.timeAgo}</p>
                              </div>
                           </div>
 
@@ -208,8 +208,8 @@ export default function MeetupPage() {
                           </div>
 
                           <div className="flex flex-col gap-3">
-                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
-                                <div className="h-10 w-10 bg-[#292828] rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
+                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-lg border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
+                                <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
                                    <MapPin size={18} />
                                 </div>
                                 <div className="min-w-0">
@@ -218,8 +218,8 @@ export default function MeetupPage() {
                                 </div>
                              </div>
 
-                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-2xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
-                                <div className="h-10 w-10 bg-[#E53935]/10 rounded-xl flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
+                             <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-lg border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
+                                <div className="h-10 w-10 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
                                    <Clock size={18} />
                                 </div>
                                 <div>
@@ -238,13 +238,13 @@ export default function MeetupPage() {
                                      </div>
                                    ))}
                                 </div>
-                                <span className="text-[11px] font-bold text-[#292828]/40 uppercase tracking-tight">{m.attendees} Attending</span>
+                                <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{m.attendees} Attending</span>
                              </div>
 
                              <button 
                                onClick={() => handleJoin(m.id)}
                                className={cn(
-                                 "h-14 px-8 rounded-2xl font-bold text-[11px] uppercase tracking-widest transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
+                                 "h-14 px-8 rounded-lg font-bold text-[11px] uppercase  transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
                                  m.status === "joined" 
                                   ? "bg-emerald-500 text-white shadow-emerald-500/20" 
                                   : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
@@ -267,33 +267,33 @@ export default function MeetupPage() {
          {/* AI PLANNER STATUS */}
          <section className="space-y-6">
             <div className="flex items-center justify-between">
-               <p className="subheading-editorial !text-slate-400">Meeting Planner</p>
+               <p className="subheading-editorial !text-slate-200">Meeting Planner</p>
                <div className="flex items-center gap-2 text-emerald-600">
                   <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider font-outfit">Active</span>
+                  <span className="text-[9px] font-bold uppercase  font-outfit">Active</span>
                </div>
             </div>
 
-            <div className="p-8 bg-gradient-to-br from-[#292828] to-black rounded-[2.5rem] text-white relative overflow-hidden group shadow-2xl">
+            <div className="p-8 bg-gradient-to-br from-[#292828] to-black rounded-lg text-white relative overflow-hidden group shadow-2xl">
                <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/20 blur-[60px] pointer-events-none" />
                <BrainCircuit size={160} className="absolute -bottom-16 -right-16 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[4s]" />
                
                <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-8">
-                     <div className="h-12 w-12 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-xl">
+                     <div className="h-12 w-12 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl">
                         <Sparkles size={24} />
                      </div>
                      <div>
-                        <p className="text-[13px] font-bold uppercase tracking-tight">AI Strategy Insight</p>
-                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5 leading-none">Contextual Analysis</p>
+                        <p className="text-[13px] font-bold uppercase ">AI Strategy Insight</p>
+                        <p className="text-[9px] font-bold text-white/40 uppercase  mt-0.5 leading-none">Contextual Analysis</p>
                      </div>
                   </div>
                   
-                  <p className="text-[14px] font-medium text-white/70 leading-relaxed mb-8 uppercase tracking-wide">
+                  <p className="text-[14px] font-medium text-white/70 leading-relaxed mb-8 uppercase ">
                      "Found 3 optimal slots for a logistics sync in <span className="text-[#E53935]">Indiranagar</span> today. Participation potential is at peak capacity."
                   </p>
                   
-                  <button onClick={() => setShowAiArchitect(true)} className="w-full h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#292828] transition-all">
+                  <button onClick={() => setShowAiArchitect(true)} className="w-full h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg text-[10px] font-bold uppercase  hover:bg-white hover:text-[#292828] transition-all">
                      Open Suggestion Box
                   </button>
                </div>
@@ -302,15 +302,15 @@ export default function MeetupPage() {
 
          {/* NEARBY HEATMAP */}
          <section className="space-y-6">
-            <p className="subheading-editorial !text-slate-400">Meet Up Activity Map</p>
-            <div className="h-64 bg-slate-50 border-4 border-white shadow-xl rounded-[2.5rem] relative overflow-hidden group cursor-crosshair">
+            <p className="subheading-editorial !text-slate-200">Meet Up Activity Map</p>
+            <div className="h-64 bg-slate-50 border-4 border-white shadow-xl rounded-lg relative overflow-hidden group cursor-crosshair">
                <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#292828_2px,transparent_2px)] [background-size:24px_24px]" />
                
                {/* Map Pins */}
                {meetups.map(m => (
                  <div key={`pin-${m.id}`} className="absolute transition-all duration-700" style={{ top: `${m.y}%`, left: `${m.x}%` }}>
                     <div className={cn(
-                      "h-10 w-10 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-lg transition-transform hover:scale-125 hover:z-10",
+                      "h-10 w-10 rounded-lg border-4 border-white shadow-2xl flex items-center justify-center text-lg transition-transform hover:scale-125 hover:z-10",
                       m.status === "joined" ? "bg-emerald-500 scale-110" : "bg-[#292828] text-white hover:bg-[#E53935]"
                     )}>
                        {m.category === "Tech" ? "💻" : m.category === "Logistics" ? "📦" : "🏢"}
@@ -318,12 +318,12 @@ export default function MeetupPage() {
                  </div>
                ))}
 
-               <div className="absolute bottom-6 inset-x-6 flex items-center justify-between bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-[#292828]/5 shadow-xl">
+               <div className="absolute bottom-6 inset-x-6 flex items-center justify-between bg-white/90 backdrop-blur-md p-5 rounded-lg border border-[#292828]/5 shadow-xl">
                   <div>
                      <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">Trivandrum Hub</p>
-                     <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">8 Active Sessions</p>
+                     <p className="text-[9px] font-bold text-emerald-600 uppercase ">8 Active Sessions</p>
                   </div>
-                  <div className="h-10 w-10 bg-[#292828] rounded-xl flex items-center justify-center text-white hover:bg-[#E53935] transition-colors">
+                  <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white hover:bg-[#E53935] transition-colors">
                      <Maximize2 size={16} />
                   </div>
                </div>
@@ -331,12 +331,12 @@ export default function MeetupPage() {
          </section>
 
           <section className="mt-auto space-y-6">
-            <p className="subheading-editorial !text-slate-400">Upcoming Sessions</p>
+            <p className="subheading-editorial !text-slate-200">Upcoming Sessions</p>
             <div className="space-y-4">
                {strategicRecommendations.map((block, i) => (
-                 <div key={i} className="p-5 bg-white border border-[#292828]/5 rounded-3xl hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer group/block">
+                 <div key={i} className="p-5 bg-white border border-[#292828]/5 rounded-lg hover:border-[#E53935]/20 hover:shadow-xl transition-all cursor-pointer group/block">
                     <div className="flex items-center justify-between mb-4">
-                       <span className="px-3 py-1 bg-white border border-[#292828]/10 rounded-lg text-[8px] font-bold uppercase tracking-widest">{block.type}</span>
+                       <span className="px-3 py-1 bg-white border border-[#292828]/10 rounded-lg text-[8px] font-bold uppercase ">{block.type}</span>
                        <div className="flex items-center gap-1.5 text-[#E53935]">
                           <Zap size={14} fill="currentColor" />
                           <span className="text-[11px] font-bold">{block.score}%</span>
@@ -362,17 +362,17 @@ export default function MeetupPage() {
                     </div>
                     <h2>AI <span className="text-[#E53935] italic">Planner</span></h2>
                  </div>
-                 <button onClick={() => setShowAiArchitect(false)} className="h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-2xl flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all active:scale-95">
+                 <button onClick={() => setShowAiArchitect(false)} className="h-14 w-14 bg-[#292828]/5 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all active:scale-95">
                     <Check size={28} />
                  </button>
               </div>
 
               <div className="space-y-12">
                  <section className="space-y-6">
-                    <p className="subheading-editorial !text-slate-400">Active Objectives</p>
+                    <p className="subheading-editorial !text-slate-200">Active Objectives</p>
                     <div className="space-y-3">
                        {["Schedule series A sync", "Find logistics provider", "Arrange venue for Friday"].map((ob, i) => (
-                         <div key={i} className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-2xl group hover:border-[#E53935] transition-all cursor-pointer">
+                         <div key={i} className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-lg group hover:border-[#E53935] transition-all cursor-pointer">
                             <span className="text-[14px] font-medium text-[#292828] uppercase">{ob}</span>
                             <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover:text-[#E53935] transition-colors">
                                <ChevronRight size={18} />
@@ -382,25 +382,25 @@ export default function MeetupPage() {
                     </div>
                  </section>
 
-                 <section className="p-8 bg-[#E53935] rounded-[2.5rem] text-white space-y-6 relative overflow-hidden">
+                 <section className="p-8 bg-[#E53935] rounded-lg text-white space-y-6 relative overflow-hidden">
                     <Sparkles size={120} className="absolute -top-12 -right-12 text-white/10 rotate-12" />
                     <p className="subheading-editorial !text-white/40 mb-6">Smart Suggestion</p>
                     <p className="text-[17px] font-bold leading-relaxed relative z-10">
                        "Based on your {filteredMeetups[0]?.matchPotential}% score with local hubs, I recommend joining the <span className="underline decoration-white/30 underline-offset-4">{filteredMeetups[0]?.title}</span> today."
                      </p>
-                    <button className="w-full h-16 bg-white text-[#E53935] rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all">
+                    <button className="w-full h-16 bg-white text-[#E53935] rounded-lg font-black text-[11px] uppercase  shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all">
                        Auto-Plan Meeting
                     </button>
                  </section>
 
                  <section className="space-y-6">
-                    <p className="subheading-editorial !text-slate-400">Contextual Data</p>
+                    <p className="subheading-editorial !text-slate-200">Contextual Data</p>
                     <div className="grid grid-cols-2 gap-4">
-                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
+                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
                           <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Venue Match</p>
                           <p className="text-2xl font-bold text-[#292828]">94<span className="text-[12px] opacity-30">%</span></p>
                        </div>
-                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
+                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
                           <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Network Reach</p>
                           <p className="text-2xl font-bold text-[#292828]">12.4<span className="text-[12px] opacity-30">k</span></p>
                        </div>
@@ -415,7 +415,7 @@ export default function MeetupPage() {
       {showHostModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
            <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
-           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500">
+           <div className="relative w-full max-w-lg bg-white rounded-lg p-12 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="text-center mb-10">
                  <h2>Post <span className="text-[#E53935]">Meet Up</span></h2>
                  <p className="subheading-editorial mt-2 px-10">Show your meeting post to the local business network.</p>
@@ -423,27 +423,27 @@ export default function MeetupPage() {
 
               <div className="space-y-6">
                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Meeting Title</label>
-                    <input type="text" placeholder="e.g. Series A Strategy Circle" className="w-full h-16 bg-[#292828]/5 rounded-2xl px-8 text-[15px] font-bold outline-none border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner" />
+                    <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Meeting Title</label>
+                    <input type="text" placeholder="e.g. Series A Strategy Circle" className="w-full h-16 bg-[#292828]/5 rounded-lg px-8 text-[15px] font-bold outline-none border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner" />
                  </div>
                  
                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                       <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Format</label>
-                       <select className="w-full h-16 bg-[#292828]/5 rounded-2xl px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
+                       <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Format</label>
+                       <select className="w-full h-16 bg-[#292828]/5 rounded-lg px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
                           <option>In-Person</option>
                           <option>Virtual Hub</option>
                        </select>
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[9px] font-black text-[#292828]/30 uppercase tracking-[0.2em] ml-4">Category</label>
-                       <select className="w-full h-16 bg-[#292828]/5 rounded-2xl px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
+                       <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Category</label>
+                       <select className="w-full h-16 bg-[#292828]/5 rounded-lg px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
                           {TOPICS.map(t => t !== "All" && <option key={t}>{t}</option>)}
                        </select>
                     </div>
                  </div>
 
-                 <button className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl hover:bg-[#E53935] transition-all flex items-center justify-center gap-4 group">
+                 <button className="w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  shadow-2xl hover:bg-[#E53935] transition-all flex items-center justify-center gap-4 group">
                     Invite Others <Zap size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
                  </button>
               </div>

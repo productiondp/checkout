@@ -37,9 +37,8 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   
   const menuItems = [
     { label: "Requirement Feed", href: "/home", icon: Home },
-    { label: "Directory", href: "/matches", icon: Users },
+    { label: "Network Hub", href: "/connections", icon: Users },
     { label: "Chat", href: "/chat", icon: MessageSquare },
-    { label: "Events", href: "/matches", icon: Calendar },
   ];
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -60,7 +59,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
         {/* Header */}
         <div className="p-6 border-b border-[#292828]/5 flex items-center justify-between bg-white sticky top-0 z-10">
           <img src="/images/logo.png" className="h-8 object-contain" alt="Logo" />
-          <button onClick={onClose} className="h-10 w-10 bg-[#292828]/5 rounded-xl flex items-center justify-center text-[#292828]">
+          <button onClick={onClose} className="h-10 w-10 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]">
             <X size={20} />
           </button>
         </div>
@@ -68,7 +67,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
         {/* User Quick Profile */}
         <div className="p-6 bg-[#292828]/5 border-b border-[#292828]/5">
            <div className="flex items-center gap-4 mb-6">
-              <div className="h-14 w-14 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-slate-100">
+              <div className="h-14 w-14 rounded-lg overflow-hidden shadow-lg border-2 border-white bg-slate-100">
                   <img src={user?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
               </div>
               <div>
@@ -77,7 +76,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
               </div>
            </div>
            <div className="grid grid-cols-1">
-              <Link href="/profile" onClick={onClose} className="h-10 bg-[#E53935] text-white rounded-xl flex items-center justify-center text-[10px] font-black uppercase shadow-md">My Profile</Link>
+              <Link href="/profile" onClick={onClose} className="h-10 bg-[#E53935] text-white rounded-lg flex items-center justify-center text-[10px] font-black uppercase shadow-md">My Profile</Link>
            </div>
         </div>
 
@@ -89,10 +88,10 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
               key={item.label} 
               href={item.href} 
               onClick={onClose}
-              className="flex items-center justify-between p-4 rounded-xl text-[14px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group active:scale-95"
+              className="flex items-center justify-between p-4 rounded-lg text-[14px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group active:scale-95"
             >
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-white border border-[#292828]/10 flex items-center justify-center text-[#292828] group-hover:text-[#E53935] shadow-sm transition-colors">
+                <div className="h-10 w-10 rounded-lg bg-white border border-[#292828]/10 flex items-center justify-center text-[#292828] group-hover:text-[#E53935] shadow-sm transition-colors">
                   <item.icon size={18} />
                 </div>
                 {item.label}

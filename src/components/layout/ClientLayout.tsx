@@ -69,7 +69,7 @@ export default function ClientLayout({
     }
   }, [pathname, mounted]);
 
-  const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/onboarding" || pathname === "/admin";
+  const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/signup" || pathname === "/onboarding" || pathname === "/admin";
 
   if (!mounted) {
     return (
@@ -81,7 +81,7 @@ export default function ClientLayout({
               className="h-full object-contain opacity-20 brightness-0 invert" 
             />
          </div>
-         <div className="animate-pulse text-[9px] font-black text-white/20 uppercase tracking-[0.5em]">
+         <div className="animate-pulse text-[9px] font-black text-white/20 uppercase ">
             Initializing your network...
          </div>
       </div>

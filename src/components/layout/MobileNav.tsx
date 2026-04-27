@@ -20,7 +20,7 @@ export default function MobileNav() {
 
   const menu = [
     { label: "Feed", href: "/home", icon: Home },
-    { label: "Directory", href: "/matches", icon: Users },
+    { label: "Network", href: "/connections", icon: Users },
     { label: "Map", href: "/explore", icon: Search },
     { label: "Chat", href: "/chat", icon: MessageSquare },
     { label: "Profile", href: "/profile", icon: User },
@@ -43,7 +43,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Directory</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Network</span>
         </Link>
 
         {/* 2. CENTER ACTION (ADD) */}

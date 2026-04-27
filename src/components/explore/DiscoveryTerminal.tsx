@@ -82,11 +82,11 @@ export default function PartnerDiscovery() {
    return (
       <div className="w-full flex-1 overflow-hidden flex flex-col pointer-events-auto">
          {/* HEADER */}
-         <div className="bg-white rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden flex flex-col h-full">
+         <div className="bg-white rounded-lg shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden flex flex-col h-full">
             <div className="p-8 pb-4">
                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-black text-[#292828] uppercase tracking-tight">Directory <span className="text-[#E53935]">Discovery</span></h2>
-                  <div className="h-8 w-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                  <h2 className="text-xl font-black text-[#292828] uppercase ">Directory <span className="text-[#E53935]">Discovery</span></h2>
+                  <div className="h-8 w-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400">
                      <Search size={16} />
                   </div>
                </div>
@@ -98,7 +98,7 @@ export default function PartnerDiscovery() {
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                      placeholder="Search by name, role, or industry..." 
-                     className="w-full h-14 bg-slate-50 border-none rounded-2xl pl-12 pr-4 text-[13px] font-bold outline-none focus:bg-white focus:ring-1 focus:ring-[#E53935]/10" 
+                     className="w-full h-14 bg-slate-50 border-none rounded-lg pl-12 pr-4 text-[13px] font-bold outline-none focus:bg-white focus:ring-1 focus:ring-[#E53935]/10" 
                   />
                </div>
             </div>
@@ -110,7 +110,7 @@ export default function PartnerDiscovery() {
                      key={intent}
                      onClick={() => setActiveIntent(activeIntent === intent ? null : intent)}
                      className={cn(
-                        "px-4 h-10 rounded-xl text-[10px] font-black uppercase whitespace-nowrap transition-all border",
+                        "px-4 h-10 rounded-lg text-[10px] font-black uppercase whitespace-nowrap transition-all border",
                         activeIntent === intent ? "bg-[#292828] text-white border-[#292828]" : "bg-white text-slate-400 border-slate-100"
                      )}
                   >
@@ -124,14 +124,14 @@ export default function PartnerDiscovery() {
                {isLoading ? (
                   <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300">
                      <div className="h-4 w-4 border-2 border-slate-200 border-t-[#E53935] rounded-full animate-spin" />
-                     <p className="text-[10px] font-black uppercase tracking-widest">Searching directory...</p>
+                     <p className="text-[10px] font-black uppercase ">Searching directory...</p>
                   </div>
                ) : results.length > 0 ? (
                   results.map((profile) => (
-                     <div key={profile.id} className="p-6 bg-white border border-slate-100 rounded-[2rem] hover:border-[#E53935] hover:shadow-2xl hover:shadow-red-500/5 transition-all group">
+                     <div key={profile.id} className="p-6 bg-white border border-slate-100 rounded-lg hover:border-[#E53935] hover:shadow-2xl hover:shadow-red-500/5 transition-all group">
                         <div className="flex items-center justify-between mb-4">
                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center text-slate-300">
+                              <div className="h-10 w-10 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-slate-300">
                                  {profile.avatar_url ? (
                                     <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
                                  ) : (
@@ -140,7 +140,7 @@ export default function PartnerDiscovery() {
                               </div>
                               <div>
                                  <h4 className="text-[13px] font-black text-[#292828] uppercase">{profile.full_name}</h4>
-                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{profile.role}</p>
+                                 <p className="text-[9px] font-bold text-slate-400 uppercase ">{profile.role}</p>
                               </div>
                            </div>
                            <div className="flex flex-col items-end">
@@ -158,7 +158,7 @@ export default function PartnerDiscovery() {
 
                         <button 
                            onClick={() => router.push(`/profile/${profile.id}`)}
-                           className="w-full h-12 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-[#E53935] transition-all"
+                           className="w-full h-12 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase  flex items-center justify-center gap-2 group-hover:bg-[#E53935] transition-all"
                         >
                            View Profile <ArrowRight size={14} />
                         </button>
@@ -166,7 +166,7 @@ export default function PartnerDiscovery() {
                   ))
                ) : (
                   <div className="py-20 flex flex-col items-center justify-center text-center px-10">
-                     <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mb-4">
+                     <div className="h-12 w-12 bg-slate-50 rounded-lg flex items-center justify-center text-slate-200 mb-4">
                         <Sparkles size={24} />
                      </div>
                      <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed">No matches found for your current search.</p>

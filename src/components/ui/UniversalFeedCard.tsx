@@ -1,6 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { analytics } from "@/utils/analytics";
+import { useAuth } from "@/hooks/useAuth";
+import { createClient } from "@/utils/supabase/client";
 import { 
   Zap, 
   Target, 
@@ -21,7 +24,8 @@ import {
   Calendar,
   IndianRupee,
   AlertCircle,
-  Tag
+  Tag,
+  UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,7 +35,7 @@ interface UniversalFeedCardProps {
   currentUserId?: string;
   isExpanded?: boolean;
   onExpand?: () => void;
-  onAction?: () => void;
+  onAction?: (post: any) => void;
   onEdit?: (post: any) => void;
   onDelete?: (post: any) => void;
 }
@@ -50,39 +54,39 @@ const TYPE_CONFIG: Record<string, {
 }> = {
   REQUIREMENT: {
     icon: Target,
-    label: "Requirement",
+    label: "Need",
     accentColor: "#E53935",
-    gradient: "from-[#E53935] to-[#FF5252]",
+    gradient: "from-[#E53935] to-[#FF7043]",
     bgColor: "bg-red-50/50",
-    chipBg: "bg-red-500/10",
+    chipBg: "bg-[#F5F5F7]",
     chipText: "text-[#E53935]",
-    ctaLabel: "Respond",
-    ctaBg: "bg-gradient-to-r from-[#E53935] to-[#FF5252] hover:shadow-[0_0_20px_rgba(229,57,51,0.4)]",
-    glowColor: "rgba(229, 57, 51, 0.15)",
+    ctaLabel: "Reply",
+    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    glowColor: "rgba(0, 113, 227, 0.1)",
   },
   PARTNERSHIP: {
     icon: Sparkles,
-    label: "Partnership",
-    accentColor: "#292828",
-    gradient: "from-[#292828] to-[#4a4a4a]",
+    label: "Collab",
+    accentColor: "#1D1D1F",
+    gradient: "from-[#1D1D1F] to-[#4a4a4a]",
     bgColor: "bg-slate-50/50",
-    chipBg: "bg-slate-500/10",
-    chipText: "text-[#292828]",
+    chipBg: "bg-[#F5F5F7]",
+    chipText: "text-[#1D1D1F]",
     ctaLabel: "Connect",
-    ctaBg: "bg-gradient-to-r from-[#292828] to-[#4a4a4a] hover:shadow-[0_0_20px_rgba(41,40,40,0.3)]",
-    glowColor: "rgba(41, 40, 40, 0.1)",
+    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    glowColor: "rgba(29, 29, 31, 0.1)",
   },
   MEETUP: {
     icon: Users,
-    label: "Meetup",
-    accentColor: "#059669",
-    gradient: "from-[#059669] to-[#10B981]",
+    label: "Event",
+    accentColor: "#34C759",
+    gradient: "from-[#34C759] to-[#4CD964]",
     bgColor: "bg-emerald-50/50",
-    chipBg: "bg-emerald-500/10",
-    chipText: "text-emerald-700",
-    ctaLabel: "Join Event",
-    ctaBg: "bg-gradient-to-r from-[#059669] to-[#10B981] hover:shadow-[0_0_20px_rgba(5,150,105,0.4)]",
-    glowColor: "rgba(5, 150, 105, 0.15)",
+    chipBg: "bg-[#F5F5F7]",
+    chipText: "text-[#34C759]",
+    ctaLabel: "Join",
+    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    glowColor: "rgba(52, 199, 89, 0.1)",
   },
 };
 
@@ -116,6 +120,7 @@ export default function UniversalFeedCard({
 }: UniversalFeedCardProps) {
   const [showMenu, setShowMenu] = React.useState(false);
   const [bookmarked, setBookmarked] = React.useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -130,13 +135,34 @@ export default function UniversalFeedCard({
 
   if (!post) return null;
 
-  const { type, title, author, avatar, time, location, matchScore, badge, rank, context } = post;
+  const { 
+    type, title, authorName, author, avatar, time, location, matchScore, 
+    badge, rank, context, relevanceLabel, relevanceSignals 
+  } = post;
+  
   const nType = normalizeType(type);
+  const isOwner = currentUserId === (author?.id || post.author_id);
   const cfg = TYPE_CONFIG[nType];
   const ContextIcon = CONTEXT_ICONS[context?.toUpperCase()] || User;
+  
+  const relevanceColor = 
+    relevanceLabel === "Best opportunity" ? "emerald" :
+    relevanceLabel === "Also useful for you" ? "blue" : "slate";
+
   const score = matchScore || 50;
-  const isOwner = currentUserId === post.user_id || currentUserId === post.author_id;
   const circumference = 2 * Math.PI * 18;
+
+  const { user: authUser } = useAuth();
+  
+  const handleInteraction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (authUser?.base_tag && post.base_tag) {
+      analytics.trackInteraction(authUser.base_tag, post.base_tag, 'CLICK');
+    }
+    onAction?.();
+  };
+
+  const isTopPriority = post.tier === 1 && post.actionScore > 0.8;
 
   return (
     <motion.div
@@ -144,25 +170,72 @@ export default function UniversalFeedCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
+      onClick={handleInteraction}
       className={cn(
-        "group relative rounded-[8px] border overflow-hidden transition-all duration-500 tracking-[0px]",
+        "group relative rounded-3xl border overflow-hidden transition-all duration-500 ",
         isOwner 
-          ? "bg-slate-50/20 border-slate-200 shadow-none grayscale-[0.5] opacity-[0.85] hover:opacity-100 transition-opacity" 
-          : "bg-white border-slate-100 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] hover:border-slate-200",
-        isExpanded && "ring-2 ring-offset-4 ring-[#E53935]/20"
+          ? "bg-[#F5F5F7]/50 border-black/[0.05] shadow-none opacity-[0.9] hover:opacity-100 transition-opacity" 
+          : isTopPriority
+            ? "bg-white border-[#E53935]/20 shadow-[0_20px_50px_rgba(229,57,53,0.08)] scale-[1.01]"
+            : "bg-white border-black/[0.05] hover:shadow-2xl hover:shadow-black/[0.05] hover:border-black/[0.1]",
+        isExpanded && "ring-4 ring-[#E53935]/10"
       )}
     >
-      {/* MONOCHROME GRID & ANNOTATIONS - Faded */}
-      {isOwner && (
-        <>
-          <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[linear-gradient(to_right,#94A3B812_1px,transparent_1px),linear-gradient(to_bottom,#94A3B812_1px,transparent_1px)] bg-[size:40px_40px]" />
-          
-          <div className="absolute top-0 right-0 px-3 py-1 bg-slate-200 text-slate-500 text-[8px] font-black uppercase z-20 rounded-bl-[6px] flex items-center gap-2">
-             <div className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-             Your Post
-          </div>
-        </>
+      {post.ctaHint && !isOwner && (
+         <div className="absolute top-24 left-8 z-20 px-3 py-1 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-full shadow-lg shadow-emerald-500/20">
+            {post.ctaHint}
+         </div>
       )}
+      {/* MONOCHROME GRID & ANNOTATIONS - Faded */}
+      {/* ── STEP 1: RESPONSE SIGNALING ── */}
+      {isOwner && post.hasNewActivity && (
+        <div className="absolute top-0 right-0 px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-bold z-20 rounded-bl-2xl flex items-center gap-2 animate-pulse">
+           <div className="h-1.5 w-1.5 rounded-full bg-white" />
+           New Activity
+        </div>
+      )}
+
+      {isOwner && !post.hasNewActivity && (
+        <div className="absolute top-0 right-0 px-4 py-1.5 bg-[#F5F5F7] text-[#86868B] text-[10px] font-bold z-20 rounded-bl-2xl flex items-center gap-2 border-l border-b border-black/[0.03]">
+           <div className="h-1.5 w-1.5 rounded-full bg-[#86868B]/40" />
+           Your Post
+        </div>
+      )}
+
+      {/* 🛡️ PERSONALIZATION SIGNAL (Explainable Feed) */}
+      {(relevanceLabel) && !isOwner && (
+        <div className="absolute top-4 left-8 z-20">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                 <div className={cn(
+                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm border",
+                    relevanceColor === 'emerald' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                    relevanceColor === 'blue' ? "bg-blue-50 text-blue-600 border-blue-100" :
+                    "bg-[#0A0A0A] text-white border-white/10"
+                 )}>
+                    {relevanceColor === 'emerald' && <Zap size={10} strokeWidth={3} />}
+                    {relevanceColor === 'blue' && <Target size={10} strokeWidth={3} />}
+                    {relevanceColor === 'slate' && <Activity size={10} strokeWidth={3} />}
+                    {relevanceLabel || "Match"}
+                 </div>
+
+                 {/* STEP 8: PULSE SIGNALS */}
+                 {post.relevanceSignals?.map((sig: string) => (
+                    <div key={sig} className={cn(
+                       "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border",
+                       sig === 'Urgent' ? "bg-red-50 text-[#E53935] border-red-100 animate-pulse" :
+                       sig === 'New' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                       "bg-slate-50 text-slate-500 border-slate-100"
+                    )}>
+                       {sig === 'Urgent' && <Zap size={10} />}
+                       {sig === 'New' && <Sparkles size={10} />}
+                       {sig === 'Recently active' && <CheckCircle2 size={10} />}
+                       {sig}
+                    </div>
+                 ))}
+              </div>
+        </div>
+      )}
+
       {/* SHINE EFFECT */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
@@ -177,25 +250,22 @@ export default function UniversalFeedCard({
       <div className="pl-8 pr-8 pt-8 pb-7">
 
         {/* ── ROW 1: AUTHOR + TYPE BADGE ── */}
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4 min-w-0">
             {/* Avatar with Ring */}
             <div className="relative shrink-0">
-              <div className={cn(
-                "h-12 w-12 rounded-[8px] p-0.5 transition-all duration-500 group-hover:rotate-6",
-                "bg-gradient-to-tr", cfg.gradient
-              )}>
-                <div className="h-full w-full rounded-[8px] overflow-hidden bg-white">
+              <div className="h-14 w-14 rounded-2xl p-0.5 transition-all duration-500 group-hover:scale-105 bg-[#F5F5F7] border border-black/[0.03]">
+                <div className="h-full w-full rounded-[14px] overflow-hidden bg-white">
                   {avatar
                     ? <img src={avatar} className="h-full w-full object-cover" alt="" />
-                    : <div className="h-full w-full bg-slate-50 flex items-center justify-center"><User size={20} className="text-slate-300" /></div>
+                    : <div className="h-full w-full bg-[#F5F5F7] flex items-center justify-center"><User size={24} className="text-[#86868B]" /></div>
                   }
                 </div>
               </div>
               {/* Verified badge */}
-              {post.author_profile?.metadata?.subscription_tier && post.author_profile.metadata.subscription_tier !== "FREE" && (
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center shadow-lg">
-                  <CheckCircle2 size={10} strokeWidth={3} className="text-white" />
+              {post.author_profile?.metadata?.subscription_tier && post.author_profile?.metadata?.subscription_tier !== "FREE" && (
+                <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-[#E53935] rounded-full border-2 border-white flex items-center justify-center shadow-lg">
+                  <CheckCircle2 size={12} strokeWidth={3} className="text-white" />
                 </div>
               )}
             </div>
@@ -203,29 +273,23 @@ export default function UniversalFeedCard({
             {/* Name + meta */}
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={cn("text-[16px] font-black truncate leading-none", isOwner ? "text-slate-400" : "text-[#292828]")}>{author}</span>
-                <div className="h-1 w-1 rounded-full bg-slate-300" />
+                <span className={cn("text-[17px] font-bold truncate leading-none", isOwner ? "text-[#86868B]" : "text-[#1D1D1F]")}>{author}</span>
+                <div className="h-1 w-1 rounded-full bg-[#86868B]/20" />
                 <span className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase shrink-0",
-                  isOwner ? "bg-slate-50 text-slate-300 border-slate-100" : "bg-slate-50 text-slate-400 border border-slate-100"
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold shrink-0",
+                  "bg-[#F5F5F7] text-[#86868B] border border-black/[0.03]"
                 )}>
-                  <ContextIcon size={10} />
-                  {context || "Professional"}
+                  <ContextIcon size={12} />
+                  {context || "Member"}
                 </span>
               </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="text-[#86868B]" />
+                <span className="text-[12px] font-bold text-[#86868B]">{post.due_date || post.context}</span>
+              </div>
               <div className="flex items-center gap-2.5">
-                {badge && (
-                  <span className={cn(
-                    "text-[10px] font-black uppercase px-2 py-0.5 rounded-md",
-                    badge === "Master Partner" ? "bg-amber-500/10 text-amber-600" :
-                    badge === "Expert Contributor" ? "bg-emerald-500/10 text-emerald-600" :
-                    "bg-slate-50 text-slate-400"
-                  )}>
-                    {badge}
-                  </span>
-                )}
-                <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5 italic">
-                  <Clock size={11} />
+                <span className="text-[12px] font-medium text-[#86868B] flex items-center gap-1.5">
+                  <Clock size={12} />
                   {time}
                 </span>
               </div>
@@ -234,10 +298,10 @@ export default function UniversalFeedCard({
 
           {/* Type Pill - Simple English */}
           <div className={cn(
-            "shrink-0 flex items-center gap-2 px-4 py-2 rounded-[8px] text-[11px] font-black uppercase ml-3 border backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:scale-105",
-            cfg.chipBg, cfg.chipText, "border-white/50"
+            "shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-bold ml-3 border backdrop-blur-sm transition-all duration-300 group-hover:bg-[#F5F5F7]",
+            cfg.chipBg, cfg.chipText, "border-black/[0.03]"
           )}>
-            <cfg.icon size={13} className="animate-pulse" />
+            <cfg.icon size={14} />
             {cfg.label}
           </div>
         </div>
@@ -245,16 +309,16 @@ export default function UniversalFeedCard({
         {/* ── ROW 2: TITLE + DESCRIPTION ── */}
         <div className="mb-8">
           <h3 className={cn(
-            "text-[22px] font-black leading-[1.1] mb-2.5 transition-colors duration-300 uppercase",
-            isOwner ? "text-slate-400" : "text-[#292828] group-hover:text-[#E53935]"
+            "text-[24px] font-bold leading-tight mb-3 transition-colors duration-300",
+            isOwner ? "text-[#86868B]" : "text-[#1D1D1F] group-hover:text-[#E53935]"
           )}>
             {title}
           </h3>
           {post.content && (
             <p className={cn(
-              "text-[14px] font-medium leading-relaxed line-clamp-2 italic text-slate-300"
+              "text-[15px] font-medium leading-relaxed text-[#86868B] line-clamp-2"
             )}>
-              "{post.content}"
+              {post.content}
             </p>
           )}
         </div>
@@ -289,8 +353,8 @@ export default function UniversalFeedCard({
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase text-[#E53935] tracking-widest leading-none mb-1">Meetup Advisor</p>
-                    <h4 className="text-[13px] font-black text-[#292828] uppercase leading-none tracking-tight">{author}</h4>
+                    <p className="text-[8px] font-black uppercase text-[#E53935]  leading-none mb-1">Meetup Advisor</p>
+                    <h4 className="text-[13px] font-black text-[#292828] uppercase leading-none">{authorName}</h4>
                   </div>
                 </div>
                 <div className="text-right">
@@ -306,46 +370,46 @@ export default function UniversalFeedCard({
         </div>
 
         {/* ── ROW 4: ACTIONS ── */}
-        <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+        <div className="flex items-center justify-between pt-8 border-t border-black/[0.03]">
 
           {/* LEFT: Owner menu */}
           <div className="flex items-center gap-2">
             {isOwner && (
               <div className="relative" ref={menuRef}>
                 <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
                   className={cn(
-                    "h-10 w-10 rounded-[1rem] border flex items-center justify-center transition-all",
-                    showMenu ? "bg-[#475569] text-white border-[#475569]" : "text-slate-400 border-slate-100 hover:text-[#475569] hover:border-slate-300 hover:bg-slate-50"
+                    "h-12 w-12 rounded-lg border flex items-center justify-center transition-all",
+                    showMenu ? "bg-[#1D1D1F] text-white border-[#1D1D1F]" : "text-[#86868B] border-black/[0.05] hover:text-[#1D1D1F] hover:bg-[#F5F5F7]"
                   )}
                 >
-                  <MoreHorizontal size={18} />
+                  <MoreHorizontal size={20} />
                 </motion.button>
+
                 <AnimatePresence>
                   {showMenu && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full left-0 mb-3 w-48 bg-white rounded-[8px] border border-slate-100 shadow-[0_15px_30px_rgba(0,0,0,0.1)] overflow-hidden z-50 p-1"
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      className="absolute bottom-full left-0 mb-3 w-48 bg-white border border-black/[0.05] rounded-lg shadow-2xl overflow-hidden z-[100]"
                     >
-                      <button
+                      <button 
                         onClick={(e) => { e.stopPropagation(); onEdit?.(post); setShowMenu(false); }}
-                        className="w-full h-11 px-4 flex items-center gap-3 text-[12px] font-black uppercase text-[#475569] hover:bg-slate-50 rounded-[8px] transition-colors"
+                        className="w-full h-12 px-5 flex items-center gap-3 text-[13px] font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all"
                       >
-                        <Pencil size={14} className="text-slate-400" /> Edit Post
+                        <Pencil size={16} className="text-[#86868B]" />
+                        Edit Post
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onDelete?.(post); setShowMenu(false); }}
-                        className="w-full h-11 px-4 flex items-center gap-3 text-[12px] font-black uppercase text-red-500 hover:bg-red-50 rounded-[8px] transition-colors"
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); setShowMenu(false); }}
+                        className="w-full h-12 px-5 flex items-center gap-3 text-[13px] font-bold text-[#E53935] hover:bg-red-50 transition-all border-t border-black/[0.03]"
                       >
-                        <Trash2 size={14} /> Delete Post
+                        <Trash2 size={16} />
+                        Delete Post
                       </button>
-                      <div className="h-px bg-slate-50 my-1 bg-slate-100" />
-                      <button className="w-full h-10 px-4 text-left text-[11px] font-black uppercase text-slate-400 hover:text-[#475569] hover:bg-slate-50 rounded transition-colors">Archive</button>
-                      <button className="w-full h-10 px-4 text-left text-[11px] font-black uppercase text-slate-400 hover:text-[#475569] hover:bg-slate-50 rounded transition-colors">Promote</button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -353,95 +417,152 @@ export default function UniversalFeedCard({
             )}
           </div>
 
-          {/* RIGHT: Match score + bookmark + CTA */}
-          <div className="flex items-center gap-4">
-
-            {/* Match Score - Redesigned Glowing Ring */}
-            <div className="hidden md:flex items-center gap-4 pr-4 border-r border-slate-100">
-              <div className="relative h-12 w-12 shrink-0 group/score">
-                <div className="absolute inset-0 rounded-full bg-slate-50 border border-slate-100" />
-                <svg className="h-12 w-12 -rotate-90 relative z-10" viewBox="0 0 44 44">
-                  <circle
-                    cx="22" cy="22" r="18"
-                    fill="none" stroke="transparent" strokeWidth="4"
-                  />
-                  <motion.circle
-                    cx="22" cy="22" r="18"
-                    fill="none"
-                    stroke={
-                      score >= 75 ? "#22c55e" : 
-                      score >= 50 ? "#f59e0b" : 
-                      score >= 25 ? "#ef4444" : "#94a3b8"
-                    }
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset: circumference - (circumference * score) / 100 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <span className="text-[11px] font-black text-[#292828] tabular-nums">
-                    {score}%
-                  </span>
+          <AnimatePresence>
+            {showConfirmDelete && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-[200] bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center"
+              >
+                <div className="h-16 w-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
+                  <Trash2 size={32} />
                 </div>
-                {/* Glow Effect */}
-                <div className="absolute inset-0 rounded-full blur-[8px] opacity-0 group-hover/score:opacity-30 transition-opacity duration-500" 
-                     style={{ 
-                       backgroundColor: 
-                         score >= 75 ? "#22c55e" : 
-                         score >= 50 ? "#f59e0b" : 
-                         score >= 25 ? "#ef4444" : "#94a3b8" 
-                     }} 
+                <h4 className="text-xl font-bold text-[#1D1D1F] mb-2">Delete this post permanently?</h4>
+                <p className="text-sm font-medium text-[#86868B] mb-8">This cannot be undone.</p>
+                <div className="flex items-center gap-3 w-full max-w-xs">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(false); }}
+                    className="flex-1 h-12 bg-slate-100 text-slate-500 rounded-xl text-[12px] font-bold hover:bg-slate-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onDelete?.(post); setShowConfirmDelete(false); }}
+                    className="flex-1 h-12 bg-[#E53935] text-white rounded-xl text-[12px] font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* RIGHT: Actions */}
+          <div className="flex items-center gap-3">
+            {!isOwner && (
+              <>
+                {/* 1. REPLY / MESSAGE BUTTON (Primary for communication) */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={(e) => { e.stopPropagation(); onAction?.(post); }}
+                  className={cn(
+                    "h-14 px-8 rounded-2xl text-[14px] font-bold text-white flex items-center gap-3 transition-all",
+                    cfg.ctaBg
+                  )}
+                >
+                  {cfg.ctaLabel}
+                  <ArrowUpRight size={18} strokeWidth={2.5} />
+                </motion.button>
+
+                {/* 2. CONNECT BUTTON (Single Responsibility: Relationship) */}
+                <ConnectButton 
+                  initialStatus={post.connectionStatus} 
+                  userId={currentUserId} 
+                  targetId={post.author?.id || post.author_id}
+                  post={post}
                 />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Match Rating</span>
-                <span className={cn(
-                  "text-[12px] font-black uppercase leading-none",
-                  score >= 75 ? "text-emerald-600" : 
-                  score >= 50 ? "text-amber-600" : 
-                  score >= 25 ? "text-red-600" : "text-slate-400"
-                )}>{rank || "Emerging"}</span>
-              </div>
-            </div>
+              </>
+            )}
 
             {/* Bookmark */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
               className={cn(
-                "h-11 w-11 rounded-[8px] border flex items-center justify-center transition-all duration-300",
+                "h-14 w-14 rounded-2xl border flex items-center justify-center transition-all duration-300",
                 bookmarked
-                  ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/20"
-                  : "border-slate-100 text-slate-300 hover:text-amber-500 hover:border-amber-200 hover:bg-slate-50"
+                  ? "bg-amber-500 border-amber-500 text-white shadow-xl shadow-amber-500/10"
+                  : "border-black/[0.05] text-[#86868B] hover:text-amber-500 hover:bg-[#F5F5F7]"
               )}
             >
-              <Bookmark size={18} fill={bookmarked ? "currentColor" : "none"} />
+              <Bookmark size={20} fill={bookmarked ? "currentColor" : "none"} />
             </motion.button>
-
-            {/* Primary CTA - Hidden for Owner */}
-            {!isOwner ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={(e) => { e.stopPropagation(); onAction?.(); }}
-                className={cn(
-                  "h-12 px-7 rounded-[8px] text-[13px] font-black uppercase text-white flex items-center gap-2.5 transition-all shadow-xl active:shadow-inner",
-                  cfg.ctaBg
-                )}
-              >
-                {cfg.ctaLabel}
-                <ArrowUpRight size={16} strokeWidth={3} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </motion.button>
-            ) : (
-              <div className="flex items-center gap-3" />
-            )}
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    );
+}
+
+function ConnectButton({ userId, targetId }: { userId?: string; targetId?: string }) {
+  const [status, setStatus] = useState<'idle' | 'connecting' | 'pending' | 'connected' | 'error'>('idle');
+  const { user } = useAuth();
+  const supabase = createClient();
+
+  React.useEffect(() => {
+    if (!userId || !targetId) return;
+    const check = async () => {
+      const { data } = await supabase
+        .from('connections')
+        .select('status')
+        .or(`and(sender_id.eq.${userId},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${userId})`)
+        .maybeSingle();
+      
+      if (data) {
+        setStatus(data.status.toLowerCase() as any);
+      }
+    };
+    check();
+  }, [userId, targetId]);
+
+  const handleConnect = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId || !targetId || status !== 'idle') return;
+
+    setStatus('connecting');
+    
+    try {
+      const { ConnectionService } = await import("@/services/connection-service");
+      const result = await ConnectionService.connect(userId, targetId);
+      
+      if (result.success) {
+        setStatus(result.status === 'ACCEPTED' ? 'connected' : 'pending');
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
+      console.error("Connect failed:", err);
+      setStatus('error');
+    }
+  };
+
+  if (status === 'connected') return (
+    <div className="h-14 px-8 rounded-2xl bg-emerald-50 text-emerald-600 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
+      <CheckCircle2 size={16} /> Connected
+    </div>
+  );
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={handleConnect}
+      disabled={status !== 'idle'}
+      className={cn(
+        "h-14 px-8 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all duration-300",
+        status === 'pending' ? "bg-slate-50 text-slate-400 cursor-default" :
+        status === 'connecting' ? "bg-slate-50 text-slate-400" :
+        status === 'error' ? "bg-red-50 text-red-500" :
+        "bg-[#F5F5F7] text-[#1D1D1F] hover:bg-[#1D1D1F] hover:text-white border border-black/[0.05]"
+      )}
+    >
+      {status === 'pending' ? "Request Sent" : 
+       status === 'connecting' ? "Connecting..." : 
+       status === 'error' ? "Failed" : 
+       "Connect"}
+      <UserPlus size={16} />
+    </motion.button>
   );
 }
 

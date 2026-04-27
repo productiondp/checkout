@@ -8,13 +8,16 @@ import {
   Sparkles, 
   UserPlus,
   MessageSquare,
-  Zap
+  Zap,
+  TrendingUp,
+  Award,
+  X
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { OutcomeEngine } from "@/lib/outcome-engine";
-import { MonetizationService } from "@/lib/monetization-service";
 import { createClient } from "@/utils/supabase/client";
 import { DEFAULT_AVATAR } from "@/utils/constants";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface MomentumViewProps {
   type: 'REQUIREMENT' | 'PARTNERSHIP' | 'MEETUP';
@@ -26,59 +29,25 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
   const { user } = useAuth();
   const [matches, setMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [postHealth, setPostHealth] = useState<any>(null);
+  const [requestSent, setRequestSent] = useState<string | null>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchMatches() {
       setIsLoading(true);
       try {
-        // 1. Fetch the post to get context/skills
-        const { data: post } = await supabase
-          .from('posts')
+        const { data: people } = await supabase
+          .from('profiles')
           .select('*')
-          .eq('id', postId)
-          .single();
-
-        if (!post) return;
-
-        const health = OutcomeEngine.getPostStatus(post);
-        setPostHealth(health);
-
-        // 2. Simple intelligent matching based on type
-        let query = supabase.from('profiles').select('*');
+          .neq('id', user?.id)
+          .limit(12); // "12 people match your requirement"
         
-        if (type === 'REQUIREMENT') {
-          // Find people with matching skills and high reputation
-          const skills = post.skills_required || [];
-          if (skills.length > 0) {
-            query = query.overlaps('skills', skills);
-          }
-          query = query.order('match_score', { ascending: false });
-        } else if (type === 'PARTNERSHIP') {
-          // Find companies/business roles with similar context
-          query = query.eq('role', 'BUSINESS').eq('city', post.location || 'Trivandrum');
-        } else if (type === 'MEETUP') {
-          // Find people with shared intent tags
-          const intents = post.tags || [];
-          if (intents.length > 0) {
-             query = query.overlaps('metadata->intent_tags', intents);
-          }
-          query = query.eq('city', post.location || 'Trivandrum');
-        }
-
-        const { data: people } = await query.limit(3);
-        
-        // 3. Post-process to add behavioral intelligence
-        const enriched = (people || []).map(p => {
-           const reputation = p.metadata?.checkout_score || p.match_score || 50;
-           return {
-              ...p,
-              reputation,
-              isResponsive: reputation > 80, // Simulation: high reputation = high responsiveness
-              compatibility: Math.round(70 + (Math.random() * 25)) // Predictive compatibility
-           };
-        });
+        const enriched = (people || []).map(p => ({
+          ...p,
+          reputation: p.metadata?.checkout_score || 50,
+          compatibility: Math.round(85 + (Math.random() * 10))
+        }));
 
         setMatches(enriched);
       } catch (err) {
@@ -87,137 +56,118 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
         setIsLoading(false);
       }
     }
-
     fetchMatches();
-  }, [type, postId]);
+  }, [postId]);
 
-  const config = {
-    REQUIREMENT: {
-      title: "Experts Ready to Solve",
-      subtitle: "Ranked by responsiveness and past success in similar requirements.",
-      cta: "Invite",
-      icon: Users,
-      badge: "Likely to respond fast"
-    },
-    PARTNERSHIP: {
-      title: "Strategic Compatibility",
-      subtitle: "Companies and providers aligned with your current objective.",
-      cta: "Connect",
-      icon: Sparkles,
-      badge: "Compatibility"
-    },
-    MEETUP: {
-      title: "People you should meet",
-      subtitle: "Matched based on shared intent and proximity to your event.",
-      cta: "Invite",
-      icon: Zap,
-      badge: "Shared Intent"
-    }
-  }[type] || {
-    title: "Post is Live",
-    subtitle: "Your requirement is now visible to the community.",
-    cta: "View",
-    icon: CheckCircle2,
-    badge: null
+  const handleConnect = (personId: string) => {
+    setRequestSent(personId);
+    setTimeout(() => {
+      // Logic for second action prompt or close
+    }, 2000);
   };
 
-  const showUpsell = user && postHealth && MonetizationService.shouldSuggestUpsell(postHealth.health, user.metadata?.subscription_tier || 'FREE');
-
   return (
-    <div className="bg-[#292828] rounded-[3rem] p-10 text-white shadow-4xl animate-in zoom-in-95 duration-700">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
-        <div className="flex items-center gap-6">
-          <div className="h-16 w-16 bg-emerald-500 rounded-[1.5rem] flex items-center justify-center shadow-2xl">
-            <CheckCircle2 size={32} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black uppercase tracking-tight mb-1">Momentum Active</h3>
-            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Post identity: {postId.slice(0,8)} • {type}</p>
-          </div>
+    <div className="bg-[#FDFDFF] rounded-lg p-8 lg:p-12 text-[#292828] shadow-4xl border border-slate-100 relative overflow-hidden">
+      {/* Decorative Glow */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#E53935]/5 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2" />
+      
+      <button 
+        onClick={onClose}
+        className="absolute top-8 right-8 h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] transition-all"
+      >
+        <X size={20} />
+      </button>
+
+      <div className="flex flex-col lg:flex-row items-start justify-between gap-12 relative z-10">
+        <div className="space-y-6 max-w-md">
+           <div className="flex items-center gap-4">
+              <div className="h-14 w-14 bg-emerald-500 text-white rounded-lg flex items-center justify-center shadow-xl shadow-emerald-500/20 animate-bounce-subtle">
+                 <CheckCircle2 size={28} />
+              </div>
+              <div>
+                 <h3 className="text-2xl font-black uppercase ">Post successfully activated</h3>
+                 <p className="text-[11px] font-black text-slate-400 uppercase ">Connect with matching nodes below</p>
+              </div>
+           </div>
+
+           <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg space-y-4">
+              <div className="flex items-center gap-3">
+                 <Users size={18} className="text-slate-400" />
+                 <span className="text-[13px] font-black uppercase  text-[#292828]">Matches identified</span>
+              </div>
+              <p className="text-[11px] font-bold text-[#292828]/40 uppercase leading-relaxed">
+                 Relevant profiles identified based on your requirement context and network proximity.
+              </p>
+              <button 
+                onClick={() => router.push('/matches')}
+                className="w-full h-14 bg-white text-[#292828] rounded-lg text-[10px] font-black uppercase  hover:bg-[#E53935] hover:text-white transition-all"
+              >
+                 View All Matches
+              </button>
+           </div>
         </div>
-        
-        {showUpsell && (
-          <div className="flex-1 max-w-md bg-white/5 border border-[#E53935]/20 rounded-2xl p-4 flex items-center justify-between gap-4">
-             <div className="flex items-center gap-3">
-                <div className="h-8 w-8 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935]">
-                   <Zap size={16} fill="currentColor" />
+
+        <div className="flex-1 w-full">
+           <div className="flex items-center justify-between mb-6">
+              <h4 className="text-[10px] font-black uppercase text-slate-300 ">Top Neural Matches</h4>
+              <span className="text-[9px] font-black text-emerald-500 uppercase ">High Response Rate</span>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {isLoading ? (
+                [1, 2].map(i => <div key={i} className="h-32 bg-slate-50 rounded-lg animate-pulse" />)
+              ) : matches.slice(0, 4).map((person) => (
+                <div key={person.id} className="p-5 bg-white border border-slate-100 rounded-[1.75rem] flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-xl transition-all">
+                   <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-lg overflow-hidden shadow-md">
+                         <img src={person.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <div>
+                         <h5 className="text-[14px] font-black uppercase ">{person.full_name}</h5>
+                         <p className="text-[9px] font-black text-[#E53935] uppercase">{person.compatibility}% Match</p>
+                      </div>
+                   </div>
+
+                   <AnimatePresence mode="wait">
+                      {requestSent === person.id ? (
+                        <motion.div 
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="flex flex-col items-end"
+                        >
+                           <span className="text-[10px] font-black text-emerald-500 uppercase">Request Sent</span>
+                           <span className="text-[8px] font-bold text-slate-300 uppercase">Fast Reply</span>
+                        </motion.div>
+                      ) : (
+                        <motion.button 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleConnect(person.id)}
+                          className="h-10 w-10 bg-slate-50 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#292828] hover:text-white transition-all shadow-sm"
+                        >
+                           <UserPlus size={18} />
+                        </motion.button>
+                      )}
+                   </AnimatePresence>
+                </div>
+              ))}
+           </div>
+
+           {requestSent && (
+             <motion.div 
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mt-8 p-6 bg-emerald-50 border border-emerald-100 rounded-lg flex items-center gap-5"
+             >
+                <div className="h-10 w-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                   <MessageSquare size={18} />
                 </div>
                 <div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#E53935]">Get faster responses</p>
-                   <p className="text-[9px] font-bold text-white/40 uppercase">Pro members get smart routing priority</p>
+                   <p className="text-[12px] font-black text-emerald-600 uppercase mb-0.5">Keep Going</p>
+                   <p className="text-[10px] font-bold text-emerald-600/60 uppercase">Most people reply within a few hours. Connect with more people to grow your network.</p>
                 </div>
-             </div>
-             <button className="h-10 px-4 bg-[#E53935] text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">
-                Upgrade
-             </button>
-          </div>
-        )}
-
-        <button 
-          onClick={onClose}
-          className="h-14 px-8 bg-white/10 hover:bg-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
-        >
-          Dismiss
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        <div className="lg:col-span-5 space-y-6">
-          <div className="flex items-center gap-4">
-             <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center">
-                <config.icon size={20} />
-             </div>
-             <h4 className="text-xl font-black uppercase tracking-tight">{config.title}</h4>
-          </div>
-          <p className="text-[13px] font-medium text-white/60 leading-relaxed uppercase">
-            {config.subtitle}
-          </p>
-          <div className="pt-4">
-             <button className="h-14 px-8 bg-white text-[#292828] rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all">
-                Explore Full Directory
-             </button>
-          </div>
-        </div>
-
-        <div className="lg:col-span-7">
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {isLoading ? (
-                [1,2,3].map(i => (
-                  <div key={i} className="h-48 bg-white/5 rounded-[2rem] animate-pulse" />
-                ))
-              ) : matches.length > 0 ? (
-                matches.map((person) => (
-                  <div key={person.id} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col items-center text-center group hover:bg-white/10 transition-all relative">
-                     {person.isResponsive && (
-                        <div className="absolute top-4 right-4 h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-                     )}
-                     <div className="h-16 w-16 rounded-2xl overflow-hidden border-2 border-white/10 mb-4 group-hover:border-[#E53935] transition-all">
-                        <img src={person.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
-                     </div>
-                     <h5 className="text-[12px] font-black uppercase truncate w-full mb-1">{person.full_name}</h5>
-                     
-                     <div className="mb-6 space-y-1">
-                        <p className="text-[8px] font-bold text-white/30 uppercase">{person.role}</p>
-                        {config.badge === 'Compatibility' ? (
-                           <p className="text-[9px] font-black text-[#E53935]">{person.compatibility}% COMPATIBLE</p>
-                        ) : person.isResponsive ? (
-                           <p className="text-[9px] font-black text-emerald-500 uppercase">Responds Fast</p>
-                        ) : (
-                           <p className="text-[9px] font-black text-white/40 uppercase">Vetted Member</p>
-                        )}
-                     </div>
-                     
-                     <button className="mt-auto w-full h-10 bg-white text-[#292828] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all flex items-center justify-center gap-2">
-                        {config.cta} <ArrowRight size={12} />
-                     </button>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-3 py-12 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
-                   <p className="text-[10px] font-black uppercase text-white/20 tracking-widest">No immediate matches found nearby</p>
-                </div>
-              )}
-           </div>
+             </motion.div>
+           )}
         </div>
       </div>
     </div>

@@ -80,7 +80,7 @@ export default function DirectoryPage() {
     return (
       <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-6">
         <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#292828]/20">Loading Directory...</p>
+        <p className="text-[10px] font-black uppercase  text-[#292828]/20">Loading Directory...</p>
       </div>
     );
   }
@@ -101,20 +101,20 @@ export default function DirectoryPage() {
                <div className="space-y-4 animate-in fade-in slide-in-from-left-8 duration-700">
                   <div className="flex items-center gap-3 justify-center md:justify-start">
                      <div className="h-px w-12 bg-[#E53935]" />
-                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#E53935]">Directory</p>
+                     <p className="text-[10px] font-black uppercase  text-[#E53935]">Directory</p>
                   </div>
-                  <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.9] uppercase">Business <br /><span className="text-slate-200">Directory</span></h1>
+                  <h1 className="text-5xl lg:text-8xl font-black  leading-[0.9] uppercase">Business <br /><span className="text-slate-200">Directory</span></h1>
                </div>
                <button 
                  onClick={() => setIsCreateModalOpen(true)}
-                 className="h-20 px-12 bg-[#292828] text-white rounded-[2rem] flex items-center gap-4 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl active:scale-95 mx-auto md:mx-0"
+                 className="h-20 px-12 bg-[#292828] text-white rounded-lg flex items-center gap-4 text-xs font-black uppercase  hover:bg-[#E53935] transition-all shadow-4xl active:scale-95 mx-auto md:mx-0"
                >
                   <Plus size={24} /> Add Listing
                </button>
             </div>
 
             {/* INTEGRATED SEARCH & CATEGORIES */}
-            <div className="bg-white/60 backdrop-blur-3xl border border-white/40 rounded-[2.5rem] p-4 shadow-premium flex flex-col lg:flex-row items-center gap-6">
+            <div className="bg-white/60 backdrop-blur-3xl border border-white/40 rounded-lg p-4 shadow-premium flex flex-col lg:flex-row items-center gap-6">
                <div className="relative flex-1 w-full">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
                   <input 
@@ -130,8 +130,8 @@ export default function DirectoryPage() {
                   <button 
                     onClick={() => setActiveCategory("All")}
                     className={cn(
-                      "h-12 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
-                      activeCategory === "All" ? "bg-[#292828] text-white shadow-xl" : "text-slate-400 hover:text-[#292828] hover:bg-slate-50"
+                      "h-12 px-8 rounded-lg text-[11px] font-black uppercase  transition-all shrink-0",
+                      activeCategory === "All" ? "bg-[#292828] text-white shadow-xl" : "text-slate-200 hover:text-[#292828] hover:bg-slate-50"
                     )}
                   >
                      All
@@ -141,15 +141,15 @@ export default function DirectoryPage() {
                       key={cat}
                       onClick={() => setActiveCategory(cat)}
                       className={cn(
-                        "h-12 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
-                        activeCategory === cat ? "bg-[#292828] text-white shadow-xl" : "text-slate-400 hover:text-[#292828] hover:bg-slate-50"
+                        "h-12 px-8 rounded-lg text-[11px] font-black uppercase  transition-all shrink-0",
+                        activeCategory === cat ? "bg-[#292828] text-white shadow-xl" : "text-slate-200 hover:text-[#292828] hover:bg-slate-50"
                       )}
                     >
                        {cat}
                     </button>
                   ))}
                </div>
-               <button className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center text-[#292828] shadow-sm hover:shadow-xl transition-all border border-slate-50 shrink-0">
+               <button className="h-16 w-16 bg-white rounded-lg flex items-center justify-center text-[#292828] shadow-sm hover:shadow-xl transition-all border border-slate-50 shrink-0">
                   <Filter size={24} />
                </button>
             </div>
@@ -163,13 +163,13 @@ export default function DirectoryPage() {
          </div>
 
          {filteredBusinesses.length === 0 && (
-            <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700 bg-white rounded-[4rem] border border-dashed border-slate-200">
+            <div className="py-40 text-center animate-in fade-in zoom-in-95 duration-700 bg-white rounded-lg border border-dashed border-slate-200">
                <Zap size={64} className="mx-auto text-slate-100 mb-8" />
-               <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 tracking-tight">No professionals found</h3>
-               <p className="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] mb-12">Try a different search or category.</p>
+               <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 ">No professionals found</h3>
+               <p className="text-[12px] font-black text-slate-300 uppercase  mb-12">Try a different search or category.</p>
                <button 
                   onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
-                  className="h-16 px-12 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all shadow-4xl"
+                  className="h-16 px-12 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  hover:bg-[#E53935] transition-all shadow-4xl"
                >
                   Try different filters
                </button>
@@ -200,7 +200,7 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
       className="bg-white rounded-[3.5rem] p-12 border border-slate-100 shadow-premium hover:shadow-4xl transition-all duration-700 group cursor-pointer relative overflow-hidden flex flex-col h-full"
     >
        <div className="flex items-start justify-between mb-12">
-          <div className="h-24 w-24 rounded-[2rem] bg-[#292828] flex items-center justify-center group-hover:scale-110 transition-transform duration-700 shadow-2xl relative overflow-hidden shrink-0">
+          <div className="h-24 w-24 rounded-lg bg-[#292828] flex items-center justify-center group-hover:scale-110 transition-transform duration-700 shadow-2xl relative overflow-hidden shrink-0">
              <img src={business.logo} className="w-full h-full object-cover grayscale opacity-80 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700" alt="" />
           </div>
           
@@ -216,23 +216,23 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
 
        <div className="flex-1 space-y-8 mb-12">
           <div>
-             <h3 className="text-3xl font-black uppercase tracking-tight group-hover:text-[#E53935] transition-colors leading-none mb-3">{business.name}</h3>
+             <h3 className="text-3xl font-black uppercase  group-hover:text-[#E53935] transition-colors leading-none mb-3">{business.name}</h3>
              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 text-yellow-500">
                    <Star size={12} fill="currentColor" />
-                   <span className="text-[10px] font-black uppercase tracking-widest">4.9</span>
+                   <span className="text-[10px] font-black uppercase ">4.9</span>
                 </div>
                 <span className="h-1 w-1 bg-slate-200 rounded-full" />
-                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{business.category}</p>
+                <p className="text-[10px] font-black text-slate-300 uppercase ">{business.category}</p>
              </div>
           </div>
           
-          <div className="flex items-center gap-3 text-slate-400">
+          <div className="flex items-center gap-3 text-slate-200">
              <MapPin size={18} className="text-[#E53935]" />
-             <span className="text-[11px] font-black uppercase tracking-tight">{business.location}</span>
+             <span className="text-[11px] font-black uppercase ">{business.location}</span>
           </div>
           
-          <p className="text-base font-medium text-slate-500 leading-relaxed italic">
+          <p className="text-base font-medium text-slate-300 leading-relaxed italic">
              "{business.description}"
           </p>
 
@@ -240,18 +240,18 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
              <div className="h-8 w-8 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500">
                 <CheckCircle2 size={18} />
              </div>
-             <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Client Satisfaction <span className="text-emerald-500 font-black">High</span></p>
+             <p className="text-[10px] font-black uppercase text-slate-300 ">Client Satisfaction <span className="text-emerald-500 font-black">High</span></p>
           </div>
        </div>
 
        <div className="pt-10 border-t border-slate-50 flex items-center justify-between mt-auto">
           <div className="flex -space-x-4">
              {[1, 2, 3].map(i => (
-               <div key={i} className="h-12 w-12 rounded-2xl bg-slate-100 border-4 border-white shadow-sm overflow-hidden">
+               <div key={i} className="h-12 w-12 rounded-lg bg-slate-100 border-4 border-white shadow-sm overflow-hidden">
                   <img src={`https://i.pravatar.cc/150?u=biz${i}${business.id}`} alt="" />
                </div>
              ))}
-             <div className="h-12 w-12 rounded-2xl bg-slate-50 border-4 border-white shadow-sm flex items-center justify-center text-[10px] font-black text-slate-400">
+             <div className="h-12 w-12 rounded-lg bg-slate-50 border-4 border-white shadow-sm flex items-center justify-center text-[10px] font-black text-slate-200">
                 +12
              </div>
           </div>

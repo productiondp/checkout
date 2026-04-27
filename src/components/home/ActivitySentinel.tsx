@@ -51,23 +51,23 @@ export default function ActivitySentinel() {
 
   return (
     <div className="fixed bottom-24 right-6 z-[40] w-[320px] animate-in slide-in-from-right-10 duration-700">
-      <div className="bg-white border-2 border-[#E53935]/10 rounded-[2rem] shadow-4xl overflow-hidden relative group">
+      <div className="bg-white border-2 border-[#E53935]/10 rounded-lg shadow-4xl overflow-hidden relative group">
         {/* Subtle Ambient Glow */}
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#E53935]/5 rounded-full blur-[40px] group-hover:bg-[#E53935]/10 transition-colors" />
         
         <button 
           onClick={() => setIsVisible(false)}
-          className="absolute top-4 right-4 h-8 w-8 bg-slate-50 text-slate-300 rounded-xl flex items-center justify-center hover:text-[#292828] transition-all"
+          className="absolute top-4 right-4 h-8 w-8 bg-slate-50 text-slate-300 rounded-lg flex items-center justify-center hover:text-[#292828] transition-all"
         >
           <X size={14} />
         </button>
 
         <div className="p-8">
-          <div className="h-12 w-12 bg-[#E53935] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 mb-6">
+          <div className="h-12 w-12 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-lg shadow-red-500/20 mb-6">
             {promptType === 'post' ? <Target size={24} /> : <Users size={24} />}
           </div>
 
-          <h3 className="text-xl font-black text-[#292828] uppercase tracking-tight mb-2">
+          <h3 className="text-xl font-black text-[#292828] uppercase  mb-2">
             Accelerate <span className="text-[#E53935]">Growth</span>
           </h3>
           
@@ -87,7 +87,7 @@ export default function ActivitySentinel() {
                   window.dispatchEvent(new CustomEvent('open-post-modal'));
                   setIsVisible(false);
                 }}
-                className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] transition-all group/btn shadow-xl shadow-slate-900/10"
+                className="w-full h-14 bg-[#292828] text-white rounded-lg flex items-center justify-center gap-3 font-black text-[10px] uppercase  hover:bg-[#E53935] transition-all group/btn shadow-xl shadow-slate-900/10"
               >
                 Create Requirement (Post) <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
               </button>
@@ -95,7 +95,7 @@ export default function ActivitySentinel() {
               <Link 
                 href="/matches"
                 onClick={() => setIsVisible(false)}
-                className="w-full h-14 bg-[#292828] text-white rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest hover:bg-[#E53935] transition-all group/btn shadow-xl shadow-slate-900/10"
+                className="w-full h-14 bg-[#292828] text-white rounded-lg flex items-center justify-center gap-3 font-black text-[10px] uppercase  hover:bg-[#E53935] transition-all group/btn shadow-xl shadow-slate-900/10"
               >
                 Explore Matches <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
               </Link>
@@ -103,7 +103,7 @@ export default function ActivitySentinel() {
             
             <button 
               onClick={() => setIsVisible(false)}
-              className="w-full h-12 text-[9px] font-black uppercase text-slate-300 hover:text-[#292828] transition-all tracking-widest"
+              className="w-full h-12 text-[9px] font-black uppercase text-slate-300 hover:text-[#292828] transition-all "
             >
               Maybe Later
             </button>

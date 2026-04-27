@@ -152,14 +152,14 @@ export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
 
       {/* MAP CONTROLS (ZOOM/TARGET) */}
       <div className="absolute right-10 bottom-10 flex flex-col gap-4 z-50">
-        <div className="flex flex-col bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <div className="flex flex-col bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden">
            <button onClick={() => handleZoom(0.2)} className="h-12 w-12 flex items-center justify-center hover:bg-slate-50 transition-all text-[#292828]"><Plus size={20} /></button>
            <div className="h-[1px] w-full bg-slate-50" />
            <button onClick={() => handleZoom(-0.2)} className="h-12 w-12 flex items-center justify-center hover:bg-slate-50 transition-all text-[#292828]"><Minus size={20} /></button>
         </div>
         <button 
           onClick={() => { setZoom(1); setOffset({x:0, y:0}); }}
-          className="h-14 w-14 bg-white text-[#E53935] rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 hover:scale-110 active:scale-95 transition-all"
+          className="h-14 w-14 bg-white text-[#E53935] rounded-lg flex items-center justify-center shadow-xl border border-slate-100 hover:scale-110 active:scale-95 transition-all"
         >
           <Target size={24} />
         </button>
@@ -181,7 +181,7 @@ function MapMarker({ entity, onClick, isSelected }: { entity: any, onClick: () =
     switch (entity.type) {
       case 'Person': return 'bg-[#E53935]';
       case 'Community': return 'bg-[#292828]';
-      case 'Post': return 'bg-[#3B82F6]';
+      case 'Post': return 'bg-[#E53935]';
       default: return 'bg-slate-400';
     }
   };
@@ -245,7 +245,7 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
          <div className="w-12 h-1.5 bg-slate-100 rounded-full mb-6" />
          <div className="flex items-center gap-2 text-slate-300">
             <Sparkles size={16} />
-            <p className="text-xs font-black uppercase tracking-widest">Select a marker to view details</p>
+            <p className="text-xs font-black uppercase ">Select a marker to view details</p>
          </div>
       </div>
     );
@@ -264,15 +264,15 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
         <div className="flex flex-col lg:flex-row items-start justify-between gap-12">
           <div className="flex items-start gap-8">
             <div className={cn(
-              "h-24 w-24 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shrink-0",
-              entity.type === 'Person' ? 'bg-[#E53935]' : entity.type === 'Community' ? 'bg-[#292828]' : 'bg-[#3B82F6]'
+              "h-24 w-24 rounded-lg flex items-center justify-center text-white shadow-2xl shrink-0",
+              entity.type === 'Person' ? 'bg-[#E53935]' : entity.type === 'Community' ? 'bg-[#292828]' : 'bg-[#E53935]'
             )}>
               {entity.type === 'Person' ? <Users size={40} /> : entity.type === 'Community' ? <Globe size={40} /> : <Zap size={40} />}
             </div>
             <div>
               <div className="flex items-center gap-4 mb-3">
                 <span className={cn(
-                  "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                  "px-4 py-1.5 rounded-full text-[10px] font-black uppercase ",
                   entity.type === 'Person' ? 'bg-red-50 text-[#E53935]' : 'bg-slate-50 text-[#292828]'
                 )}>
                   {entity.type}
@@ -282,18 +282,18 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
                   <span className="text-xs font-black text-[#292828] uppercase">{entity.matchScore}% Match Score</span>
                 </div>
               </div>
-              <h2 className="text-4xl font-black text-[#292828] tracking-tight mb-2">{entity.name || entity.title || entity.author}</h2>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+              <h2 className="text-4xl font-black text-[#292828]  mb-2">{entity.name || entity.title || entity.author}</h2>
+              <p className="text-sm font-bold text-slate-400 uppercase ">
                 {entity.role || entity.category || entity.type}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-4">
-             <button className="h-16 px-10 bg-[#292828] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
+             <button className="h-16 px-10 bg-[#292828] text-white rounded-lg font-black text-xs uppercase  hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
                 {entity.type === 'Person' ? 'Connect' : entity.type === 'Community' ? 'Join Community' : 'Apply'}
              </button>
-             <button className="h-16 px-10 bg-white border border-slate-100 text-[#292828] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
+             <button className="h-16 px-10 bg-white border border-slate-100 text-[#292828] rounded-lg font-black text-xs uppercase  hover:bg-slate-50 transition-all">
                 View Profile
              </button>
           </div>
@@ -301,20 +301,20 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-slate-50">
            <div className="space-y-6">
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935]">Description</h3>
+              <h3 className="text-xs font-black uppercase  text-[#E53935]">Description</h3>
               <p className="text-xl font-bold text-[#292828] leading-relaxed italic">
                  "{entity.description || "Building regional business relationships."}"
               </p>
               <div className="flex flex-wrap gap-2 pt-4">
                 {(entity.tags || ["Strategy", "Network", "Growth"]).map((tag: string) => (
-                  <span key={tag} className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase">{tag}</span>
+                  <span key={tag} className="px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase">{tag}</span>
                 ))}
               </div>
            </div>
 
-           <div className="space-y-8 bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
+           <div className="space-y-8 bg-slate-50/50 p-8 rounded-lg border border-slate-100">
               <div className="flex items-center justify-between">
-                 <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest">Rules</h4>
+                 <h4 className="text-[11px] font-black uppercase text-[#292828]/40 ">Rules</h4>
                  <ShieldCheck size={18} className="text-emerald-500" />
               </div>
               <div className="space-y-4">
@@ -332,7 +332,7 @@ function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) 
                    </div>
                  ))}
               </div>
-              <button className="w-full h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] hover:text-white transition-all shadow-sm">
+              <button className="w-full h-14 bg-white border border-slate-200 rounded-lg flex items-center justify-center gap-3 text-[10px] font-black uppercase  hover:bg-[#292828] hover:text-white transition-all shadow-sm">
                  Connect <ArrowRight size={16} />
               </button>
            </div>

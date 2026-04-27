@@ -12,6 +12,7 @@ export interface UserProfile {
   onboarding_completed?: boolean;
   company_name?: string;
   business_type?: string;
+  industry?: string;
   phone?: string;
   experience_years?: number;
   experience_months?: number;

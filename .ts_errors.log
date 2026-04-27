@@ -1,0 +1,133 @@
+src/app/admin/page.tsx(199,165): error TS2783: 'color' is specified more than once, so this usage will be overwritten.
+src/app/advisors/page.tsx(47,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/chat/page.tsx(74,45): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/chat/page.tsx(87,47): error TS7006: Parameter 'u' implicitly has an 'any' type.
+src/app/chat/page.tsx(144,11): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/app/chat/page.tsx(165,24): error TS2345: Argument of type '"MESSAGE_INITIATED"' is not assignable to parameter of type 'EventType'.
+src/app/chat/page.tsx(477,38): error TS2339: Property 'profile' does not exist on type 'UserProfile'.
+src/app/chat/page.tsx(478,37): error TS2339: Property 'profile' does not exist on type 'UserProfile'.
+src/app/chat/page.tsx(479,41): error TS2339: Property 'profile' does not exist on type 'UserProfile'.
+src/app/connections/page.tsx(47,31): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/app/connections/page.tsx(70,23): error TS2345: Argument of type '"CONNECT_ACCEPTED"' is not assignable to parameter of type 'EventType'.
+src/app/directory/[id]/page.tsx(104,43): error TS7006: Parameter 'service' implicitly has an 'any' type.
+src/app/directory/[id]/page.tsx(104,52): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/app/directory/[id]/page.tsx(118,43): error TS7006: Parameter 'exp' implicitly has an 'any' type.
+src/app/directory/page.tsx(49,54): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/directory/page.tsx(188,11): error TS2322: Type '"Lead"' is not assignable to type 'PostType | undefined'.
+src/app/events/[id]/page.tsx(254,34): error TS2552: Cannot find name 'ArrowRight'. Did you mean 'ArrowUpRight'?
+src/app/home/page.tsx(204,44): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/home/page.tsx(370,31): error TS2345: Argument of type '"ACTION_CREATED"' is not assignable to parameter of type 'EventType'.
+src/app/marketplace/[id]/page.tsx(85,17): error TS2304: Cannot find name 'ConnectButton'.
+src/app/marketplace/page.tsx(36,10): error TS2305: Module '"@/lib/match-engine"' has no exported member 'calculateMatchScore'.
+src/app/marketplace/page.tsx(41,28): error TS2304: Cannot find name 'MarketplaceCategory'.
+src/app/marketplace/page.tsx(53,56): error TS2304: Cannot find name 'MarketplaceCategory'.
+src/app/marketplace/page.tsx(54,48): error TS2304: Cannot find name 'ListingSort'.
+src/app/marketplace/page.tsx(56,44): error TS2304: Cannot find name 'MarketplaceListing'.
+src/app/marketplace/page.tsx(60,11): error TS2339: Property 'userProfile' does not exist on type 'AuthContextType'.
+src/app/marketplace/page.tsx(78,21): error TS2304: Cannot find name 'MarketplaceListing'.
+src/app/marketplace/page.tsx(78,53): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/marketplace/page.tsx(89,38): error TS2304: Cannot find name 'MarketplaceCategory'.
+src/app/marketplace/page.tsx(242,73): error TS2304: Cannot find name 'ListingSort'.
+src/app/marketplace/page.tsx(302,70): error TS2304: Cannot find name 'MarketplaceListing'.
+src/app/marketplace/page.tsx(355,61): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/app/marketplace/page.tsx(377,12): error TS2304: Cannot find name 'ConnectButton'.
+src/app/matches/page.tsx(95,43): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/matches/page.tsx(96,39): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/app/matches/page.tsx(109,32): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/matches/page.tsx(109,34): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/app/matches/page.tsx(163,7): error TS2304: Cannot find name 'analytics'.
+src/app/meetup/page.tsx(54,33): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/app/meetup/page.tsx(81,25): error TS2339: Property 'skills' does not exist on type 'UserProfile'.
+src/app/onboarding/page.tsx(114,21): error TS2345: Argument of type '{ onboarding_completed: true; full_name: string; role: Role; industry: string; intents: string[]; bio: string; location: string; avatar_url: string; }' is not assignable to parameter of type 'Partial<UserProfile>'.
+  Types of property 'role' are incompatible.
+    Type 'Role' is not assignable to type 'Role | undefined'.
+      Type '"BUSINESS"' is not assignable to type 'Role | undefined'.
+src/app/onboarding/page.tsx(308,53): error TS2304: Cannot find name 'ShieldCheck'.
+src/app/profile/page.tsx(133,45): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/app/profile/page.tsx(306,39): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(307,39): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(308,39): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(312,57): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(467,29): error TS2304: Cannot find name 'Sparkles'.
+src/app/profile/page.tsx(488,34): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(489,34): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(490,34): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(497,37): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(498,37): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(499,37): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(502,76): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(506,41): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(507,41): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/profile/page.tsx(508,41): error TS2339: Property 'checkoutScore' does not exist on type '{ id: string; full_name: string; role: string; company: string; bio: string; checkoutRank: string; avatar_url: string; location: string; email: string; phone: string; website: string; expertise: string[]; intents: string[]; metadata: any; }'.
+src/app/settings/page.tsx(67,30): error TS2339: Property 'city' does not exist on type 'UserProfile'.
+src/components/admin/ObservabilityDashboard.tsx(102,23): error TS2304: Cannot find name 'CheckCircle2'.
+src/components/admin/ObservabilityDashboard.tsx(108,23): error TS2304: Cannot find name 'Target'.
+src/components/auth/AuthModal.tsx(122,25): error TS2345: Argument of type '"SIGNUP_COMPLETED"' is not assignable to parameter of type 'EventType'.
+src/components/auth/AuthModal.tsx(196,16): error TS2304: Cannot find name 'isResetting'.
+src/components/auth/AuthModal.tsx(201,19): error TS2304: Cannot find name 'isResetting'.
+src/components/auth/AuthModal.tsx(222,56): error TS2304: Cannot find name 'setIsResetting'.
+src/components/auth/AuthModal.tsx(228,15): error TS2304: Cannot find name 'isResetting'.
+src/components/auth/AuthModal.tsx(258,32): error TS2304: Cannot find name 'setIsResetting'.
+src/components/auth/AuthModal.tsx(339,25): error TS2304: Cannot find name 'showPassword'.
+src/components/auth/AuthModal.tsx(349,34): error TS2304: Cannot find name 'setShowPassword'.
+src/components/auth/AuthModal.tsx(349,51): error TS2304: Cannot find name 'showPassword'.
+src/components/auth/AuthModal.tsx(352,20): error TS2304: Cannot find name 'showPassword'.
+src/components/auth/AuthModal.tsx(360,36): error TS2304: Cannot find name 'setIsResetting'.
+src/components/auth/AuthModal.tsx(417,82): error TS2304: Cannot find name 'setIsResetting'.
+src/components/connection/ConnectButton.tsx(151,39): error TS2304: Cannot find name 'ArrowRight'.
+src/components/explore/CheckoutMap.tsx(44,29): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/CheckoutMap.tsx(44,32): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/explore/CheckoutMap.tsx(61,26): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/CheckoutMap.tsx(61,29): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/explore/DiscoveryTerminal.tsx(47,21): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/DiscoveryTerminal.tsx(48,18): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/DiscoveryTerminal.tsx(53,47): error TS2339: Property 'skills' does not exist on type 'UserProfile'.
+src/components/explore/DiscoveryTerminal.tsx(68,20): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/explore/DiscoveryTerminal.tsx(68,23): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/explore/MapListView.tsx(34,29): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/MapListView.tsx(34,32): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/explore/MapListView.tsx(48,26): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/explore/MapListView.tsx(48,29): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/explore/MapListView.tsx(110,12): error TS2304: Cannot find name 'Search'.
+src/components/home/ActivitySentinel.tsx(23,9): error TS2322: Type '"FIRST_MANDATE_CREATED"' is not assignable to type 'EventType'.
+src/components/home/ActivitySentinel.tsx(24,9): error TS2322: Type '"CONNECT_REQUEST_SENT"' is not assignable to type 'EventType'.
+src/components/home/ActivitySentinel.tsx(25,9): error TS2322: Type '"MESSAGE_INITIATED"' is not assignable to type 'EventType'.
+src/components/home/ActivitySentinel.tsx(30,48): error TS2322: Type '"FIRST_MANDATE_CREATED"' is not assignable to type 'EventType'.
+src/components/home/ConnectionSentinel.tsx(38,37): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/layout/ClientLayout.tsx(35,39): error TS2339: Property 'generateReport' does not exist on type 'InsightsEngine'.
+src/components/layout/GlobalHeader.tsx(83,37): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/layout/GlobalHeader.tsx(109,11): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/components/layout/RightSocialRail.tsx(41,35): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/modals/DealEngine.tsx(47,43): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/modals/MomentumView.tsx(46,45): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/modals/PostModal.tsx(264,62): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/modals/PostModal.tsx(266,51): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/search/UnifiedSearch.tsx(10,10): error TS2305: Module '"@/data/directory"' has no exported member 'MOCK_BUSINESSES'.
+src/components/search/UnifiedSearch.tsx(21,44): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/search/UnifiedSearch.tsx(37,12): error TS2554: Expected 3 arguments, but got 2.
+src/data/directory.ts(1,10): error TS2305: Module '"@/types/directory"' has no exported member 'DirectoryPartner'.
+src/hooks/useAuth.tsx(81,25): error TS2345: Argument of type '"AUTH_WATCHDOG"' is not assignable to parameter of type 'EventType'.
+src/hooks/useAuth.tsx(125,28): error TS2345: Argument of type '"AUTH_RETRY"' is not assignable to parameter of type 'EventType'.
+src/hooks/useAuth.tsx(142,25): error TS2345: Argument of type '"PROFILE_SYNC_SUCCESS"' is not assignable to parameter of type 'EventType'.
+src/hooks/useAuth.tsx(176,79): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/hooks/useAuth.tsx(176,86): error TS7006: Parameter 'currentSession' implicitly has an 'any' type.
+src/hooks/useAuth.tsx(233,16): error TS2367: This comparison appears to be unintentional because the types '"guest" | "authenticated" | "onboarding"' and '"loading"' have no overlap.
+src/lib/checkout-score.ts(139,23): error TS2345: Argument of type '"CHECKOUT_SCORE_STABILIZED"' is not assignable to parameter of type 'EventType'.
+src/utils/health_monitor.ts(5,20): error TS2305: Module '"@/utils/insights_engine"' has no exported member 'InsightReport'.
+src/utils/health_monitor.ts(58,35): error TS2339: Property 'generateReport' does not exist on type 'InsightsEngine'.
+src/utils/insights_engine.ts(52,37): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(52,78): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(53,39): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(53,82): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(54,41): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(54,91): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(55,37): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/insights_engine.ts(55,113): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/utils/optimization_engine.ts(5,20): error TS2305: Module '"@/utils/insights_engine"' has no exported member 'InsightReport'.
+src/utils/optimization_engine.ts(52,3): error TS2741: Property 'lastOverrideEnd' is missing in type '{ weights: null; expiresAt: null; mode: "normal"; }' but required in type '{ weights: { intent: number; expertise: number; recency: number; location: number; } | null; expiresAt: number | null; lastOverrideEnd: number | null; mode: "normal" | "growth" | "precision"; }'.
+src/utils/optimization_engine.ts(130,16): error TS2339: Property 'generateReport' does not exist on type 'InsightsEngine'.
+src/utils/optimization_engine.ts(130,38): error TS7006: Parameter 'report' implicitly has an 'any' type.
+src/utils/optimization_engine.ts(159,35): error TS2339: Property 'generateReport' does not exist on type 'InsightsEngine'.
+src/utils/optimization_engine.ts(267,14): error TS2339: Property 'generateReport' does not exist on type 'InsightsEngine'.
+src/utils/optimization_engine.ts(267,36): error TS7006: Parameter 'report' implicitly has an 'any' type.
+src/utils/optimization_engine.ts(319,5): error TS2741: Property 'lastOverrideEnd' is missing in type '{ weights: null; expiresAt: null; mode: "normal"; }' but required in type '{ weights: { intent: number; expertise: number; recency: number; location: number; } | null; expiresAt: number | null; lastOverrideEnd: number | null; mode: "normal" | "growth" | "precision"; }'.

@@ -28,13 +28,13 @@ export default function HistoryPage() {
            {activities.map((a, i) => (
              <div key={i} className="bg-white border border-[#292828]/5 rounded-[1.625rem] p-8 flex items-center justify-between group hover:border-[#E53935]/10 transition-all shadow-sm hover:shadow-xl hover:shadow-slate-200/20">
                 <div className="flex items-center gap-6">
-                   <div className={`h-14 w-14 rounded-2xl flex items-center justify-center ${a.bg} ${a.color} transition-transform group-hover:rotate-6`}>
+                   <div className={`h-14 w-14 rounded-lg flex items-center justify-center ${a.bg} ${a.color} transition-transform group-hover:rotate-6`}>
                       <a.icon size={24} />
                    </div>
                    <div>
                       <h3 className="text-lg font-black text-[#292828] uppercase">{a.label}</h3>
                       <div className="flex items-center gap-3 mt-1.5 font-bold uppercase text-[10px]">
-                         <span className="text-slate-400">{a.time}</span>
+                         <span className="text-slate-200">{a.time}</span>
                          <span className="h-1 w-1 bg-slate-200 rounded-full" />
                          <span className="text-[#E53935]">{a.type}</span>
                       </div>
@@ -42,7 +42,7 @@ export default function HistoryPage() {
                 </div>
                 <div className="text-right hidden sm:block">
                    <p className="text-xl font-black text-[#292828] uppercase leading-none">{a.value}</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase mt-1">Status</p>
+                   <p className="text-[10px] font-black text-slate-200 uppercase mt-1">Status</p>
                 </div>
              </div>
            ))}

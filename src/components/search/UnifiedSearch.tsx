@@ -41,7 +41,7 @@ export default function UnifiedSearch() {
     <div className="w-full max-w-4xl mx-auto px-6">
       <div className="relative group">
         <div className="absolute inset-0 bg-[#E53935]/5 blur-3xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
-        <div className="relative bg-white border border-slate-100 rounded-[2rem] p-2 flex items-center shadow-premium">
+        <div className="relative bg-white border border-slate-100 rounded-lg p-2 flex items-center shadow-premium">
           <div className="flex-1 flex items-center px-6 gap-4">
             <Search className="text-slate-300" size={24} />
             <input 
@@ -61,9 +61,9 @@ export default function UnifiedSearch() {
       </div>
 
       {query && (
-        <div className="mt-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-4xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 max-h-[60vh] overflow-y-auto no-scrollbar">
+        <div className="mt-6 bg-white border border-slate-100 rounded-lg shadow-4xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 max-h-[60vh] overflow-y-auto no-scrollbar">
           <div className="p-4 border-b border-slate-50 flex items-center justify-between px-8 bg-slate-50/50">
-             <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">{searchResults.length} Matches</p>
+             <p className="text-[10px] font-black uppercase text-slate-300 ">{searchResults.length} Matches</p>
              <Zap size={14} className="text-[#E53935]" />
           </div>
 
@@ -77,19 +77,19 @@ export default function UnifiedSearch() {
                 }}
                 className="p-6 flex items-center gap-6 hover:bg-slate-50 cursor-pointer transition-colors group"
               >
-                <div className="h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 grayscale group-hover:grayscale-0 transition-all">
+                <div className="h-14 w-14 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 grayscale group-hover:grayscale-0 transition-all">
                   {result.type === "ADVISOR" ? <User size={24} /> : result.type === "BUSINESS" ? <Building2 size={24} /> : <Briefcase size={24} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-lg font-black uppercase tracking-tight truncate">{result.name || result.title}</h4>
+                    <h4 className="text-lg font-black uppercase  truncate">{result.name || result.title}</h4>
                     <span className="px-2 py-0.5 bg-slate-100 text-[8px] font-black uppercase text-slate-400 rounded-md">{result.type}</span>
                   </div>
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{result.category} • {result.location}</p>
+                  <p className="text-[10px] font-black text-slate-300 uppercase ">{result.category} • {result.location}</p>
                 </div>
                 <div className="text-right shrink-0">
-                   <p className="text-2xl font-black text-[#E53935] tracking-tighter leading-none">{result.matchScore}%</p>
-                   <p className="text-[8px] font-black text-slate-200 uppercase tracking-widest">Match</p>
+                   <p className="text-2xl font-black text-[#E53935]  leading-none">{result.matchScore}%</p>
+                   <p className="text-[8px] font-black text-slate-200 uppercase ">Match</p>
                 </div>
                 <ArrowUpRight size={20} className="text-slate-100 group-hover:text-[#E53935] transition-colors ml-4" />
               </div>
@@ -97,7 +97,7 @@ export default function UnifiedSearch() {
 
             {searchResults.length === 0 && (
               <div className="py-20 text-center">
-                  <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.4em]">No matches found.</p>
+                  <p className="text-[10px] font-black text-slate-200 uppercase ">No matches found.</p>
               </div>
             )}
           </div>

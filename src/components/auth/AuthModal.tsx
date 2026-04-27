@@ -121,10 +121,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
         setIsSuccess(true);
         analytics.track('SIGNUP_COMPLETED', undefined, { role: role.toUpperCase(), email: formData.email });
         
-        // Auto-redirect after a short delay for success animation
+        // 🛡️ DELEGATED TO useAuth: Navigation to /onboarding happens automatically
         setTimeout(() => {
           onClose();
-          router.push("/onboarding");
         }, 1500);
       } else {
         const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
@@ -137,8 +136,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           analytics.track('SESSION_START', user.id, { method: 'password' });
         }
         onClose();
-        router.push("/home");
-        // router.refresh(); // REMOVED: redundant and causes flicker
+        // 🛡️ DELEGATED TO useAuth: Navigation to /home happens automatically
       }
     } catch (err: any) {
       console.error("Auth Failure:", err);
@@ -173,7 +171,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[480px] bg-[#1a1a1a] rounded-[2.5rem] shadow-[0_0_100px_-20px_rgba(229,57,53,0.3)] border border-white/5 overflow-hidden animate-in zoom-in-95 fade-in duration-500">
+      <div className="relative w-full max-w-[480px] bg-[#1a1a1a] rounded-lg shadow-[0_0_100px_-20px_rgba(229,57,53,0.3)] border border-white/5 overflow-hidden animate-in zoom-in-95 fade-in duration-500">
 
         {/* Subtle Ambient Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#E53935]/10 rounded-full blur-[80px]" />
@@ -191,10 +189,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
           {/* Header */}
           <div className="space-y-2 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53935]/10 border border-[#E53935]/20 text-[#E53935] text-[9px] font-black uppercase tracking-widest mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53935]/10 border border-[#E53935]/20 text-[#E53935] text-[9px] font-black uppercase  mb-2">
               Join the Network
             </div>
-            <h2 className="text-4xl font-black text-white tracking-tighter">
+            <h2 className="text-4xl font-black text-white ">
               {isResetting ? "Reset Password" : mode === "signin" ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="text-white/40 font-bold text-[13px]">
@@ -211,8 +209,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
           {resetSent ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-3xl p-8 text-center">
-                   <div className="h-20 w-20 bg-[#E53935] rounded-3xl mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
+                <div className="bg-[#E53935]/5 border border-[#E53935]/20 rounded-lg p-8 text-center">
+                   <div className="h-20 w-20 bg-[#E53935] rounded-lg mx-auto flex items-center justify-center text-white shadow-[0_0_40px_-10px_#E53935] mb-6">
                       <Mail size={32} />
                    </div>
                    <h3 className="text-xl font-black text-white mb-2 uppercase">Reset Link Sent</h3>
@@ -222,7 +220,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                 </div>
                <button 
                  onClick={() => { setResetSent(false); setIsResetting(false); }}
-                 className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"
+                 className="w-full py-4 bg-white/5 border border-white/5 rounded-lg text-[11px] font-black uppercase text-white/40 hover:text-white transition-all"
                >
                   Back to Sign In
                </button>
@@ -230,7 +228,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           ) : isResetting ? (
             <form onSubmit={handleResetPassword} className="space-y-6">
               {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-[13px] font-bold">
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-500 text-[13px] font-bold">
                   <AlertCircle size={16} /> {error}
                 </div>
               )}
@@ -245,13 +243,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Recovery Email"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 transition-all placeholder:text-white/20"
+                  className="w-full bg-white/5 border border-white/5 rounded-lg py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 transition-all placeholder:text-white/20"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-5 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4"
+                className="w-full py-5 bg-white text-black rounded-lg font-black text-[11px] uppercase  hover:bg-[#E53935] hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4"
               >
                 {isLoading ? "Sending..." : "Send Reset Link"}
               </button>
@@ -266,12 +264,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           ) : (
             <>
               {/* Role Switcher - Premium Style */}
-          <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5">
+          <div className="flex p-1.5 bg-black/40 rounded-lg border border-white/5">
             {(["Business", "Professional", "Student"] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setRole(r)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase transition-all duration-500 ${role === r
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-[10px] font-black uppercase transition-all duration-500 ${role === r
                     ? "bg-[#E53935] text-white shadow-[0_0_20px_-5px_#E53935]"
                     : "text-white/40 hover:text-white/70"
                   }`}
@@ -287,14 +285,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
                 <AlertCircle size={16} />
                 {error}
               </div>
             )}
 
             {isSuccess && (
-              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-3 text-green-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3 text-green-500 text-[13px] font-bold animate-in fade-in slide-in-from-top-2">
                 <CheckCircle2 size={16} />
                 Login successful. Redirecting...
               </div>
@@ -313,7 +311,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="Full Name"
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                    className="w-full bg-white/5 border border-white/5 rounded-lg py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
                   />
                 </div>
               )}
@@ -329,7 +327,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Email Address"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                  className="w-full bg-white/5 border border-white/5 rounded-lg py-4 pl-14 pr-6 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
                 />
               </div>
 
@@ -344,7 +342,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Password"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-12 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
+                  className="w-full bg-white/5 border border-white/5 rounded-lg py-4 pl-14 pr-12 text-[14px] font-bold text-white outline-none focus:border-[#E53935]/50 focus:ring-4 focus:ring-[#E53935]/10 transition-all placeholder:text-white/20"
                 />
                 <button
                   type="button"
@@ -372,7 +370,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
             <button
               type="submit"
               disabled={isLoading || isSuccess}
-              className={`w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 mt-2 overflow-hidden relative group ${isLoading || isSuccess ? "bg-white/10 text-white/30 cursor-wait" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
+              className={`w-full py-5 rounded-lg font-black text-[13px] uppercase  shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 mt-2 overflow-hidden relative group ${isLoading || isSuccess ? "bg-white/10 text-white/30 cursor-wait" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
                 }`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
@@ -396,14 +394,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
               <div className="w-full border-t border-white/5"></div>
             </div>
             <div className="relative flex justify-center text-[10px] font-black uppercase">
-              <span className="px-4 bg-[#1a1a1a] text-white/20 tracking-widest">Or continue with</span>
+              <span className="px-4 bg-[#1a1a1a] text-white/20 ">Or continue with</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
             <button 
               disabled 
-              className="py-4 bg-white/5 border border-white/5 rounded-2xl cursor-not-allowed opacity-50 text-[11px] font-black uppercase flex items-center justify-center gap-3 text-white group relative"
+              className="py-4 bg-white/5 border border-white/5 rounded-lg cursor-not-allowed opacity-50 text-[11px] font-black uppercase flex items-center justify-center gap-3 text-white group relative"
             >
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white text-black text-[9px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                 Coming soon

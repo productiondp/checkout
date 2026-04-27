@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { 
   Target, 
   MapPin, 
@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";
 import { createClient } from "@/utils/supabase/client";
 import dynamic from "next/dynamic";
-import { calculateMatchScore, rankEntities } from "@/lib/match-engine";
+import { rankEntities, SessionContext, NetworkStats } from "@/lib/match-engine";
 import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -43,6 +43,9 @@ import ConnectionSentinel from "@/components/home/ConnectionSentinel";
 import UnifiedSearch from "@/components/search/UnifiedSearch";
 import ActivitySentinel from "@/components/home/ActivitySentinel";
 import { optimization } from "@/utils/optimization_engine";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import StartHereCard from "@/components/home/StartHereCard";
+import { suggestionTelemetry } from "@/utils/suggestion_telemetry";
 
 const UniversalFeedCard = dynamic(() => import("@/components/ui/UniversalFeedCard"), { ssr: false });
 const DealEngine = dynamic(() => import("@/components/modals/DealEngine"), { ssr: false });
@@ -52,15 +55,26 @@ const Feed = dynamic(() => import("@/components/home/HomeFeed"), { ssr: false })
 const ActiveComposer = dynamic(() => import("@/components/home/ActiveComposer"), { ssr: false });
 
 const SMART_FILTERS = [
-  { id: 'All', label: 'Everything', icon: LayoutGrid },
+  { id: 'All', label: 'All', icon: LayoutGrid },
   { id: 'REQUIREMENT', label: 'Needs', icon: Target },
-  { id: 'PARTNERSHIP', label: 'Partners', icon: Sparkles },
-  { id: 'MEETUP', label: 'Meetups', icon: Users },
+  { id: 'PARTNERSHIP', label: 'Collabs', icon: Sparkles },
+  { id: 'MEETUP', label: 'Events', icon: Users },
 ];
 
 export default function CheckoutHomeFeed() {
+  return (
+    <ProtectedRoute>
+       <HomeContent />
+    </ProtectedRoute>
+  );
+}
+
+function HomeContent() {
   const { user: authUser } = useAuth();
   const router = useRouter();
+  
+  if (!authUser) return null;
+  
   const [activeFilter, setActiveFilter] = useState("All");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
@@ -76,16 +90,102 @@ export default function CheckoutHomeFeed() {
   });
 
   const [postInitialType, setPostInitialType] = useState<any>(null);
+  
+  // 🛡️ STEP 1 & 3: RATE LIMITING & TRUST WEIGHT
+  const [sessionContext, setSessionContext] = useState<SessionContext>({
+    recent_actions: [],
+    interactions: {
+      impressions: {},
+      clicks: {},
+      connects: {},
+      replies: {},
+      last_interaction_time: Date.now()
+    },
+    network_stats: {
+      category_quality: {
+        'REQUIREMENT': 0.85,
+        'PARTNERSHIP': 0.70,
+        'MEETUP': 0.90
+      },
+      trending_categories: ['MEETUP'],
+      peer_group_focus: {
+        'REQUIREMENT': 0.1
+      },
+      unique_users_per_category: {
+        'REQUIREMENT': 150,
+        'PARTNERSHIP': 80,
+        'MEETUP': 200
+      },
+      anomaly_flags: {
+        'PARTNERSHIP': false // Set to true if spike detected
+      }
+    },
+    user_trust_weight: 1.0 // Default high trust
+  });
+
+  const lastActionTime = useRef<number>(0);
 
   const supabase = createClient();
 
+  const trackAction = (type: 'POST' | 'CONNECT' | 'VIEW' | 'CLICK' | 'REPLY', category?: string) => {
+    const cat = category?.toUpperCase() || "UNKNOWN";
+    const now = Date.now();
+
+    // 🛡️ RATE LIMITING (Prevent rapid bot clicks)
+    if (now - lastActionTime.current < 1000) {
+       console.warn("[SECURITY] Action rate-limited.");
+       return; 
+    }
+    lastActionTime.current = now;
+
+    setSessionContext(prev => {
+      const newInteractions = { 
+        ...prev.interactions,
+        last_interaction_time: now 
+      };
+      
+      if (type === 'CLICK') newInteractions.clicks[cat] = (newInteractions.clicks[cat] || 0) + 1;
+      if (type === 'CONNECT') newInteractions.connects[cat] = (newInteractions.connects[cat] || 0) + 1;
+      if (type === 'REPLY') newInteractions.replies[cat] = (newInteractions.replies[cat] || 0) + 1;
+      
+      // 🛡️ LOW-QUALITY USER FILTER
+      // If user connects frequently but never replies/gets replies, reduce trust
+      const totalConnects = Object.values(newInteractions.connects).reduce((a,b)=>a+b, 0);
+      const totalReplies = Object.values(newInteractions.replies).reduce((a,b)=>a+b, 0);
+      let trustWeight = 1.0;
+      if (totalConnects > 5 && totalReplies === 0) {
+         trustWeight = 0.5; // Spam mitigation
+      }
+
+      return {
+        ...prev,
+        last_clicked_category: type === 'CLICK' ? cat : prev.last_clicked_category,
+        recent_actions: [
+          { type, timestamp: now, category: cat },
+          ...prev.recent_actions.slice(0, 9)
+        ],
+        interactions: newInteractions,
+        user_trust_weight: trustWeight
+      };
+    });
+  };
+
+  const recordImpressions = (visiblePosts: any[]) => {
+    setSessionContext(prev => {
+      const newImps = { ...prev.interactions.impressions };
+      visiblePosts.forEach(p => {
+        const type = p.type?.toUpperCase() || "UNKNOWN";
+        newImps[type] = (newImps[type] || 0) + 1;
+      });
+      return {
+        ...prev,
+        interactions: { ...prev.interactions, impressions: newImps }
+      };
+    });
+  };
+
   const initHome = async () => {
     setIsLoading(true);
-    if (!authUser) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const { data: postsData, error: primaryError } = await supabase
         .from('posts')
@@ -94,41 +194,51 @@ export default function CheckoutHomeFeed() {
           budget, due_date, skills_required, urgency,
           partnershipType, industry, commitmentLevel,
           mode, dateTime, payment_type, max_slots, context,
-          author_profile:profiles!author_id(id, full_name, avatar_url, role, location, skills, match_score)
+          author_profile:profiles!author_id(id, full_name, avatar_url, role, location, skills, metadata)
         `)
         .order('created_at', { ascending: false })
         .limit(100);
 
       if (primaryError) throw primaryError;
 
-      const { CheckoutScoreService } = await import("@/lib/checkout-score");
+      // 🛡️ FETCH CONNECTIONS FOR INSTANT STATUS
+      const { data: connections } = await supabase
+        .from('connections')
+        .select('sender_id, receiver_id, status')
+        .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
 
       const mapped = (postsData || []).map(p => {
         const author = p.author_profile;
-        const checkoutScore = author?.metadata?.checkout_score || author?.match_score || 50;
-        
+        const conn = (connections || []).find(c => 
+          (c.sender_id === authUser.id && c.receiver_id === author?.id) ||
+          (c.receiver_id === authUser.id && c.sender_id === author?.id)
+        );
+
         return {
           ...p,
           author_id: author?.id,
           user_id: author?.id,
-          author: author?.full_name || "Anonymous",
+          authorName: author?.full_name || "Anonymous",
           avatar: author?.avatar_url || DEFAULT_AVATAR,
           time: p.created_at ? new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "Just now", 
           rank: author?.role || "Member",
           matchScore: p.match_score || 0,
-          badge: CheckoutScoreService.getRank(checkoutScore)
+          connectionStatus: conn ? conn.status.toLowerCase() : 'none'
         };
       });
 
-      // INTELLIGENT RANKING (Match Engine V3)
-      const ranked = rankEntities(authUser, mapped);
+      const ranked = rankEntities(authUser, mapped, sessionContext);
       setPosts(ranked);
+      recordImpressions(ranked.slice(0, 5));
     } catch (err: any) {
       console.error("Feed Loading Error:", err);
-      alert(`Feed failed to load: ${err.message || 'Unknown error'}. Please refresh.`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const registerAction = (type: string) => {
+    // Logic for registering actions
   };
 
   useEffect(() => {
@@ -136,7 +246,7 @@ export default function CheckoutHomeFeed() {
        initHome();
        analytics.trackScreen('HOME', authUser?.id);
     }
-  }, [authUser]);
+  }, [authUser, sessionContext.recent_actions.length]);
 
   const filteredPosts = useMemo(() => {
     let base = posts;
@@ -148,151 +258,165 @@ export default function CheckoutHomeFeed() {
         return type === activeFilter;
       });
     }
-    
-    // Visibility Limit: Ensure others' requirements are visible. The ranking engine handles relevance.
     return base;
   }, [activeFilter, posts]);
 
   const handleOpenPosting = async (type: any = null) => {
     if (!authUser) return;
-    
-    // ANTI-SPAM GUARD: Limit 3 posts per day
-    const today = new Date().toISOString().split('T')[0];
-    const { count } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .eq('author_id', authUser.id)
-      .gte('created_at', today);
-      
-    if (count !== null && count >= 10) {
-      alert("Daily limit reached. High-trust members get more slots. Keep engaging to grow!");
-      return;
-    }
-    
     setEditPost(null); 
     setPostInitialType(type);
     setIsPosting(true);
   };
 
+  const handleReply = async (post: any) => {
+    if (!authUser) return;
+    try {
+      const { ConnectionService } = await import("@/services/connection-service");
+      await ConnectionService.ensureConnection(authUser.id, post.author_id);
+      router.push(`/chat?user=${post.author_id}`);
+    } catch (err) {
+      console.error("Reply failed:", err);
+    }
+  };
+
   return (
-    <div className="relative min-h-screen bg-slate-50/30 selection:bg-[#E53935]/10 font-sans pb-16">
+    <div className="relative min-h-screen bg-[#FBFBFD] selection:bg-[#E53935]/10 font-sans pb-16">
       
-      {/* 2. FEED AREA */}
       <main className="w-[94%] mx-auto max-w-5xl pt-12">
-         <div className="grid grid-cols-1 gap-4">
-            
-            {/* NEW ACTIVE COMPOSER */}
-            <ActiveComposer 
+          <div className="grid grid-cols-1 gap-4">
+              
+              <StartHereCard 
+                onAction={() => handleOpenPosting()} 
+                onExplore={() => { trackAction('CLICK', 'MATCHES'); router.push('/connections'); }} 
+              />
+
+             <ActiveComposer 
                user={authUser} 
                onPost={(type) => handleOpenPosting(type)} 
-            />
+             />
 
-            {/* REDESIGNED FILTER BAR */}
-            <div className="flex items-center justify-end gap-2 mb-4 px-2">
-               <div className="relative">
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                    className="h-9 px-4 bg-white border border-[#292828]/5 rounded-lg flex items-center gap-3 text-[10px] font-black uppercase text-[#292828] shadow-sm hover:border-[#292828]/20 transition-all group"
-                  >
-                     <LayoutGrid size={14} className="text-[#E53935]" />
-                     {SMART_FILTERS.find(f => f.id === activeFilter)?.label}
-                     <motion.div
-                        animate={{ rotate: isFilterDropdownOpen ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                     >
-                        <ChevronDown size={12} className="text-slate-300 group-hover:text-[#292828]" />
-                     </motion.div>
-                  </motion.button>
-                  {isFilterDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-[#292828]/10 rounded-xl shadow-4xl p-1 z-[100] animate-in fade-in slide-in-from-top-2 duration-300">
-                       {SMART_FILTERS.map(f => (
-                         <button 
-                           key={f.id}
-                           onClick={() => { setActiveFilter(f.id); setIsFilterDropdownOpen(false); }}
-                           className={cn(
-                             "w-full h-10 px-4 flex items-center gap-3 rounded-lg text-[10px] font-black uppercase transition-all",
-                             activeFilter === f.id ? "bg-[#292828] text-white" : "text-slate-400 hover:bg-slate-50 hover:text-[#292828]"
-                           )}
-                         >
-                            <f.icon size={12} />
-                            {f.label}
-                         </button>
-                       ))}
-                    </div>
-                  )}
-               </div>
+             <div className="flex items-center justify-end gap-2 mb-4 px-2">
+                <div className="relative">
+                   <motion.button 
+                     whileHover={{ scale: 1.02 }}
+                     whileTap={{ scale: 0.98 }}
+                     onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                     className="h-10 px-5 bg-white border border-black/[0.08] rounded-full flex items-center gap-3 text-[11px] font-bold text-[#1D1D1F] shadow-sm hover:border-black/[0.15] transition-all group"
+                   >
+                      <LayoutGrid size={14} className="text-[#E53935]" />
+                      {SMART_FILTERS.find(f => f.id === activeFilter)?.label}
+                      <motion.div
+                         animate={{ rotate: isFilterDropdownOpen ? 180 : 0 }}
+                         transition={{ duration: 0.3 }}
+                      >
+                         <ChevronDown size={12} className="text-[#86868B] group-hover:text-[#1D1D1F]" />
+                      </motion.div>
+                   </motion.button>
+                   {isFilterDropdownOpen && (
+                     <div className="absolute top-full left-0 mt-2 w-56 bg-white/80 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-2xl p-1.5 z-[100] animate-in fade-in slide-in-from-top-2 duration-300">
+                        {SMART_FILTERS.map(f => (
+                          <button 
+                            key={f.id}
+                            onClick={() => { setActiveFilter(f.id); setIsFilterDropdownOpen(false); trackAction('CLICK', f.id); }}
+                            className={cn(
+                              "w-full h-11 px-4 flex items-center gap-3 rounded-xl text-[11px] font-bold transition-all",
+                              activeFilter === f.id ? "bg-[#1D1D1F] text-white" : "text-[#86868B] hover:bg-[#F5F5F7] hover:text-[#1D1D1F]"
+                            )}
+                          >
+                             <f.icon size={14} />
+                             {f.label}
+                          </button>
+                        ))}
+                     </div>
+                   )}
+                </div>
 
-               <motion.button 
-                 whileHover={{ scale: 1.1, rotate: 5 }}
-                 whileTap={{ scale: 0.9 }}
-                 className="h-9 w-9 bg-white border border-[#292828]/5 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#292828] hover:border-[#292828]/20 shadow-sm transition-all"
-               >
-                  <Filter size={14} />
-               </motion.button>
-            </div>
+                 <motion.button 
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
+                   className="h-10 w-10 bg-white border border-black/[0.08] rounded-full flex items-center justify-center text-[#86868B] hover:text-[#1D1D1F] hover:border-black/[0.15] shadow-sm transition-all"
+                 >
+                    <Filter size={14} />
+                 </motion.button>
+             </div>
 
-            {/* MOMENTUM SYSTEM */}
-            {isPostActionLoop.active && (
-              <MomentumView 
-                postId={isPostActionLoop.postId}
-                type={isPostActionLoop.type}
-                onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })}
-              />
-            )}
+             {isPostActionLoop.active && (
+               <MomentumView 
+                 postId={isPostActionLoop.postId}
+                 type={isPostActionLoop.type}
+                 onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })}
+               />
+             )}
 
-            <Feed 
-               posts={filteredPosts} 
-               isLoading={isLoading} 
-               currentUserId={authUser?.id}
-               onAction={(post) => { setSelectedDeal(post); setIsModalOpen(true); }}
-               onEdit={(p) => { setEditPost(p); setIsPosting(true); }}
-               onCreate={handleOpenPosting}
-               onDelete={async (p) => {
-                  if(confirm("Delete this?")) {
-                     await supabase.from('posts').delete().eq('id', p.id);
-                     initHome();
+             <Feed 
+                posts={filteredPosts} 
+                isLoading={isLoading} 
+                currentUserId={authUser?.id}
+                onAction={handleReply}
+                onEdit={(p) => { setEditPost(p); setIsPosting(true); }}
+                onCreate={handleOpenPosting}
+                onDelete={async (p) => {
+                  const { error } = await supabase
+                    .from('posts')
+                    .delete()
+                    .eq('id', p.id)
+                    .eq('author_id', authUser.id);
+                  
+                  if (error) {
+                    alert(error.message);
+                    return;
                   }
-               }}
-            />
-         </div>
-      </main>
 
-      {/* HIGH-PERFORMANCE FLOATING ACTION BUTTON */}
-      <div className="fixed bottom-8 right-8 z-[100] animate-in fade-in slide-in-from-bottom-4 duration-700">
-         <motion.button 
-           whileHover={{ scale: 1.05, y: -2 }}
-           whileTap={{ scale: 0.95 }}
-           onClick={handleOpenPosting}
-           className="h-14 px-8 bg-[#292828] text-white rounded-full flex items-center gap-4 shadow-3xl hover:bg-black transition-all ring-1 ring-white/10 backdrop-blur-xl group"
-         >
-            <div className="h-6 w-6 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-[#E53935] group-hover:text-white transition-all">
-               <Plus size={18} strokeWidth={3} />
-            </div>
-            <span className="text-[12px] font-black uppercase tracking-tight">Post Now</span>
-         </motion.button>
-      </div>
+                  // Update UI instantly
+                  setPosts(prev => prev.filter(post => post.id !== p.id));
+                }}
+             />
+          </div>
+       </main>
 
-      {/* MODALS */}
-      {isPosting && (
-        <PostModal 
-          isOpen={isPosting} 
-          onClose={() => setIsPosting(false)} 
-          initialFormType={postInitialType}
-          onPostSuccess={(newPost) => {
-             initHome();
-             setIsPosting(false);
-             setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type });
-             analytics.track('ACTION_CREATED', authUser?.id, { type: newPost.type });
-          }} 
-          editPost={editPost}
-        />
-      )}
-      
-      {selectedDeal && (
-        <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />
-      )}
+        <div className="fixed bottom-8 right-8 z-[100] animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <motion.button 
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleOpenPosting}
+            className="h-14 px-8 bg-[#1D1D1F] text-white rounded-full flex items-center gap-4 shadow-2xl hover:bg-black transition-all ring-1 ring-white/10 backdrop-blur-xl group"
+          >
+             <div className="h-6 w-6 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-[#E53935] group-hover:text-white transition-all">
+                <Plus size={18} strokeWidth={3} />
+             </div>
+             <span className="text-[13px] font-bold">New Post</span>
+          </motion.button>
+       </div>
+
+       {isPosting && (
+         <PostModal 
+           isOpen={isPosting} 
+           onClose={() => setIsPosting(false)} 
+           initialFormType={postInitialType}
+           onPostSuccess={(newPost) => {
+              trackAction('POST', newPost.type);
+              initHome();
+              setIsPosting(false);
+              setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type });
+              analytics.track('ACTION_CREATED', authUser?.id, { type: newPost.type });
+              
+              setTimeout(() => {
+                 const el = document.getElementById(`post-${newPost.id}`);
+                 if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.style.boxShadow = "0 0 40px -10px rgba(41,40,40,0.1)";
+                    el.style.transition = "box-shadow 0.8s ease-out";
+                    setTimeout(() => { el.style.boxShadow = "none"; }, 3000);
+                 }
+              }, 800);
+           }} 
+           editPost={editPost}
+         />
+       )}
+       
+       {selectedDeal && (
+         <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />
+       )}
     </div>
   );
 }

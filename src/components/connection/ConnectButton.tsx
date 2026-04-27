@@ -74,7 +74,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
         onClick={handleClick}
         disabled={config.disabled}
         className={cn(
-          "h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl",
+          "h-12 px-8 rounded-lg font-black text-[10px] uppercase  flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl",
           config.class,
           className
         )}
@@ -85,16 +85,16 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
 
       {showModal && (
         <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-4xl animate-in zoom-in-95 duration-500">
+           <div className="bg-white w-full max-w-lg rounded-lg p-10 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-8">
                  <h2 className="text-xl font-black uppercase text-[#292828]">Connect</h2>
-                 <button onClick={() => setShowModal(false)} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center"><X size={20} /></button>
+                 <button onClick={() => setShowModal(false)} className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center"><X size={20} /></button>
               </div>
               
-              <div className="p-6 bg-slate-50 rounded-3xl mb-8 flex items-center gap-4 border border-slate-100">
+              <div className="p-6 bg-slate-50 rounded-lg mb-8 flex items-center gap-4 border border-slate-100">
                  <Sparkles className="text-[#E53935]" size={20} />
                  <div>
-                    <p className="text-[11px] font-black text-[#292828] uppercase tracking-wider">Message Required</p>
+                    <p className="text-[11px] font-black text-[#292828] uppercase ">Message Required</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase leading-relaxed mt-1">
                        Connecting with <span className="text-[#292828]">{userName}</span> establishes a secure connection.
                     </p>
@@ -110,13 +110,13 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
                     <textarea 
                       rows={4}
                       placeholder="Write a brief message to connect..."
-                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none italic"
+                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none italic"
                     />
                     <p className="text-[8px] font-bold text-slate-300 uppercase text-center">You’ll be able to message once accepted</p>
                  </div>
                ) : (
                  <div className="py-10 text-center animate-in zoom-in-95 duration-500">
-                    <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-3xl mx-auto mb-6 flex items-center justify-center">
+                    <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-lg mx-auto mb-6 flex items-center justify-center">
                        <Check size={40} strokeWidth={3} />
                     </div>
                     <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Request sent</h3>
@@ -127,14 +127,14 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
               <div className="mt-10 flex gap-4">
                   {!isSuccess ? (
                     <>
-                      <button onClick={() => setShowModal(false)} className="flex-1 h-16 rounded-2xl bg-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-[#292828] transition-all">Cancel</button>
+                      <button onClick={() => setShowModal(false)} className="flex-1 h-16 rounded-lg bg-slate-50 text-slate-400 font-black text-[10px] uppercase  hover:text-[#292828] transition-all">Cancel</button>
                       <button 
                         onClick={() => {
                           sendRequest(userId);
                           setIsSuccess(true);
                           analytics.track('CONNECTION_SENT', undefined, { targetUserId: userId });
                         }}
-                        className="flex-2 h-16 px-12 bg-[#E53935] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-[#292828] transition-all flex items-center justify-center gap-3"
+                        className="flex-2 h-16 px-12 bg-[#E53935] text-white rounded-lg font-black text-[10px] uppercase  shadow-2xl hover:bg-[#292828] transition-all flex items-center justify-center gap-3"
                       >
                          Send Request <Send size={16} />
                       </button>
@@ -146,7 +146,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
                          setIsSuccess(false);
                          router.push('/matches');
                       }}
-                      className="w-full h-16 bg-[#292828] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-4xl flex items-center justify-center gap-3"
+                      className="w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  hover:bg-[#E53935] transition-all shadow-4xl flex items-center justify-center gap-3"
                     >
                        Discover More <ArrowRight size={18} />
                     </button>

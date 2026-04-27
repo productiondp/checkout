@@ -41,10 +41,12 @@ import {
   BrainCircuit,
   Wallet,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { detectBaseTag } from "@/utils/match-engine";
 
 export default function PremiumProfilePage() {
   const [userData, setUserData] = useState({
@@ -61,6 +63,7 @@ export default function PremiumProfilePage() {
      website: "",
      expertise: [] as string[],
      intents: [] as string[],
+     base_tag: "",
      metadata: {} as any
   });
 
@@ -119,6 +122,7 @@ export default function PremiumProfilePage() {
             website: profile.website || "",
             expertise: profile.skills || [],
             intents: profile.domains || [],
+            base_tag: profile.base_tag || "",
             metadata: metadata
           });
 
@@ -152,6 +156,9 @@ export default function PremiumProfilePage() {
     const dataToSave = updatedData || userData;
     if (!dataToSave.id) return;
     
+    // STEP 4: PROFILE BASE TAG UPDATE
+    const detectedBaseTag = detectBaseTag(dataToSave.role, dataToSave.expertise);
+
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -159,6 +166,7 @@ export default function PremiumProfilePage() {
         .update({
           full_name: dataToSave.full_name,
           role: dataToSave.role.toUpperCase(),
+          base_tag: detectedBaseTag,
           bio: dataToSave.bio,
           location: dataToSave.location,
           avatar_url: dataToSave.avatar_url,
@@ -175,7 +183,7 @@ export default function PremiumProfilePage() {
 
       if (error) throw error;
 
-      setUserData(dataToSave);
+      setUserData({ ...dataToSave, base_tag: detectedBaseTag });
       updateProfile({
         full_name: dataToSave.full_name,
         role: dataToSave.role,
@@ -240,7 +248,7 @@ export default function PremiumProfilePage() {
     return (
       <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
         <Loader2 className="animate-spin text-[#E53935]" size={48} />
-        <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em] italic animate-pulse">Loading Profile...</p>
+        <p className="text-[10px] font-black uppercase text-white/40  italic animate-pulse">Loading Profile...</p>
       </div>
     );
   }
@@ -270,7 +278,7 @@ export default function PremiumProfilePage() {
                   {/* IDENTITY & AVATAR GLOW */}
                   <div className="relative">
                      <div className="absolute inset-0 bg-[#E53935]/20 blur-2xl rounded-full animate-pulse" />
-                     <div className="h-40 w-40 rounded-[2.5rem] overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/50 transition-all duration-700 shadow-4xl relative">
+                     <div className="h-40 w-40 rounded-lg overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/50 transition-all duration-700 shadow-4xl relative">
                         <img 
                           src={userData.avatar_url} 
                           className="w-full h-full object-cover rounded-[1.8rem]" 
@@ -291,32 +299,32 @@ export default function PremiumProfilePage() {
                   <div className="text-center md:text-left flex-1">
                      <div className="flex flex-col gap-4 mb-4">
                         <div className="flex items-center justify-center md:justify-start gap-3">
-                           <h1 className="text-5xl md:text-6xl font-black text-white leading-none tracking-tighter uppercase italic">{userData.full_name}</h1>
+                           <h1 className="text-5xl md:text-6xl font-black text-white leading-none  uppercase italic">{userData.full_name}</h1>
                            <CheckCircle2 size={24} className="text-[#E53935] fill-[#E53935]/10" />
                         </div>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                           <div className="px-4 py-1.5 bg-[#E53935] rounded-[8px] text-[10px] font-black uppercase text-white shadow-lg tracking-widest">
+                           <div className="px-4 py-1.5 bg-[#E53935] rounded-[8px] text-[10px] font-black uppercase text-white shadow-lg ">
                               {userData.role}
                            </div>
-                           <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-[8px] text-[10px] font-black uppercase text-white tracking-widest">
+                           <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-[8px] text-[10px] font-black uppercase text-white ">
                               Rank {userData.checkoutRank}
                            </div>
                            <div className={cn(
-                             "px-4 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border shadow-lg transition-all",
+                             "px-4 py-1.5 rounded-[8px] text-[10px] font-black uppercase  flex items-center gap-2 border shadow-lg transition-all",
                              userData.checkoutScore >= 75 ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" :
                              userData.checkoutScore >= 50 ? "bg-amber-500/20 border-amber-500/50 text-amber-400" :
                              userData.checkoutScore >= 25 ? "bg-[#E53935]/20 border-[#E53935]/50 text-[#E53935]" :
-                             "bg-slate-500/20 border-slate-500/50 text-slate-400"
+                             "bg-slate-500/20 border-slate-500/50 text-slate-200"
                            )}>
                               <ShieldCheck size={12} />
                               Checkout Score: {userData.checkoutScore}
                            </div>
-                           <div className="px-4 py-1.5 border border-white/5 rounded-[8px] text-[10px] font-black uppercase text-white/40 tracking-widest">
+                           <div className="px-4 py-1.5 border border-white/5 rounded-[8px] text-[10px] font-black uppercase text-white/40 ">
                               Elite Verified
                            </div>
                         </div>
                      </div>
-                     <div className="flex flex-wrap justify-center md:justify-start gap-8 text-white/30 text-[12px] font-black uppercase tracking-widest pt-2">
+                     <div className="flex flex-wrap justify-center md:justify-start gap-8 text-white/30 text-[12px] font-black uppercase  pt-2">
                         <span className="flex items-center gap-2.5 group/info"> 
                            <Building size={16} className="text-[#E53935] group-hover/info:scale-110 transition-transform" /> 
                            <span className="group-hover/info:text-white transition-colors">{userData.company}</span>
@@ -332,7 +340,7 @@ export default function PremiumProfilePage() {
                   <div className="flex items-center gap-4">
                      <button 
                         onClick={() => setShowEditModal(true)} 
-                        className="h-16 px-10 bg-white text-[#0A0A0A] rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform hover:-translate-y-1 active:scale-95"
+                        className="h-16 px-10 bg-white text-[#0A0A0A] rounded-[8px] font-black text-[11px] uppercase  shadow-2xl hover:bg-[#E53935] hover:text-white transition-all transform hover:-translate-y-1 active:scale-95"
                      >
                        Edit Profile
                      </button>
@@ -355,26 +363,59 @@ export default function PremiumProfilePage() {
             {/* COLUMN 1: STRATEGIC SIDEBAR */}
             <div className="lg:col-span-3 space-y-8">
                
-               {/* Skills & Expertise */}
+               {/* Skills & Expertise (STEP 4: EDITABLE) */}
                <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-8 flex items-center gap-3 tracking-[0.2em]">
-                     <BrainCircuit size={16} className="text-[#E53935]" /> Core Expertise
-                  </h3>
+                  <div className="flex items-center justify-between mb-8">
+                     <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 ">
+                        <BrainCircuit size={16} className="text-[#E53935]" /> Your Skills
+                     </h3>
+                     <button 
+                        onClick={() => {
+                           const s = prompt("Add skill:");
+                           if (s) {
+                              const newExpertise = [...userData.expertise, s];
+                              setUserData({...userData, expertise: newExpertise});
+                              handleSaveProfile({...userData, expertise: newExpertise});
+                           }
+                        }}
+                        className="h-6 w-6 bg-[#0A0A0A] text-white rounded-md flex items-center justify-center hover:bg-[#E53935] transition-all"
+                     >
+                        <Plus size={12} />
+                     </button>
+                  </div>
                   <div className="flex flex-wrap gap-2.5">
                       {userData.expertise && userData.expertise.length > 0 ? userData.expertise.map(skill => (
-                        <span key={skill} className="px-4 py-2 bg-[#0A0A0A]/5 border border-[#0A0A0A]/5 rounded-[8px] text-[10px] font-black text-[#0A0A0A] uppercase tracking-tighter hover:bg-[#E53935] hover:text-white transition-all cursor-default">
+                        <span 
+                           key={skill} 
+                           className="px-4 py-2 bg-[#0A0A0A]/5 border border-[#0A0A0A]/5 rounded-[8px] text-[10px] font-black text-[#0A0A0A] uppercase flex items-center gap-2 group/skill hover:bg-red-50 hover:text-[#E53935] transition-all cursor-default"
+                        >
                            {skill}
+                           <X 
+                              size={10} 
+                              className="opacity-0 group-hover/skill:opacity-100 cursor-pointer" 
+                              onClick={() => {
+                                 const newExpertise = userData.expertise.filter(sk => sk !== skill);
+                                 setUserData({...userData, expertise: newExpertise});
+                                 handleSaveProfile({...userData, expertise: newExpertise});
+                              }}
+                           />
                         </span>
                       )) : (
                         <p className="text-[11px] font-bold text-slate-300 italic px-2">No skills defined.</p>
                       )}
                   </div>
+                  {userData.base_tag && (
+                     <div className="mt-6 pt-6 border-t border-[#0A0A0A]/5">
+                        <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase mb-2">Unified Base Tag</p>
+                        <span className="px-3 py-1 bg-[#E53935]/10 text-[#E53935] rounded-full text-[9px] font-black uppercase tracking-widest">{userData.base_tag}</span>
+                     </div>
+                  )}
                </div>
 
                {/* ABOUT & CONTACT BLOCK */}
                <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5">
-                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-6 flex items-center gap-2 tracking-[0.2em]">
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase mb-6 flex items-center gap-2 ">
                      <div className="h-1 w-4 bg-[#E53935] rounded-full" /> Personal Bio
                   </h3>
                   <p className="text-[14px] text-[#0A0A0A] font-bold leading-relaxed mb-10 italic">"{userData.bio}"</p>
@@ -386,8 +427,8 @@ export default function PremiumProfilePage() {
                               <info.icon size={18} />
                            </div>
                            <div className="flex-1 min-w-0">
-                              <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase leading-none mb-1.5 tracking-widest">{info.label}</p>
-                              <p className={cn("text-[12px] font-black truncate uppercase tracking-tighter", info.link ? "text-[#E53935]" : "text-[#0A0A0A]")}>{info.value}</p>
+                              <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase leading-none mb-1.5 ">{info.label}</p>
+                              <p className={cn("text-[12px] font-black truncate uppercase ", info.link ? "text-[#E53935]" : "text-[#0A0A0A]")}>{info.value}</p>
                            </div>
                         </div>
                      ))}
@@ -400,10 +441,10 @@ export default function PremiumProfilePage() {
                <div className="bg-white rounded-[8px] p-10 border border-[#292828]/5 shadow-2xl relative overflow-hidden">
                   <div className="flex items-center justify-between mb-10 pb-6 border-b border-[#0A0A0A]/5">
                      <div>
-                        <h3 className="text-sm font-black uppercase text-[#0A0A0A] flex items-center gap-3 tracking-tighter italic">
+                        <h3 className="text-sm font-black uppercase text-[#0A0A0A] flex items-center gap-3  italic">
                            <Target size={20} className="text-[#E53935]" /> My Posts
                         </h3>
-                        <p className="text-[9px] font-black text-slate-400 uppercase mt-2 leading-none tracking-widest opacity-60">Showing to your network</p>
+                        <p className="text-[9px] font-black text-slate-200 uppercase mt-2 leading-none  opacity-60">Showing to your network</p>
                      </div>
                      <button 
                         onClick={() => setIsAddingDep(!isAddingDep)} 
@@ -417,12 +458,12 @@ export default function PremiumProfilePage() {
                      <div className="mb-10 p-10 bg-slate-50 rounded-[8px] border border-[#0A0A0A]/5 animate-in fade-in slide-in-from-top-4 shadow-inner">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                            <div className="space-y-2">
-                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Requirement Title</p>
-                              <input type="text" placeholder="e.g. Senior Frontend Lead" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-[8px] border border-slate-200 text-sm font-black uppercase tracking-tighter focus:border-[#E53935] outline-none shadow-sm" />
+                              <p className="text-[8px] font-black text-slate-200 uppercase ">Requirement Title</p>
+                              <input type="text" placeholder="e.g. Senior Frontend Lead" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-[8px] border border-slate-200 text-sm font-black uppercase  focus:border-[#E53935] outline-none shadow-sm" />
                            </div>
                            <div className="space-y-2">
-                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Post Category</p>
-                              <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-[8px] border border-slate-200 text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#E53935] bg-white">
+                              <p className="text-[8px] font-black text-slate-200 uppercase ">Post Category</p>
+                              <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-[8px] border border-slate-200 text-[10px] font-black uppercase  outline-none focus:border-[#E53935] bg-white">
                                  <option>Hiring</option>
                                  <option>Partnership</option>
                                  <option>Procurement</option>
@@ -431,7 +472,7 @@ export default function PremiumProfilePage() {
                               </select>
                            </div>
                         </div>
-                        <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-[8px] text-[11px] font-black uppercase tracking-[0.3em] hover:bg-[#0A0A0A] transition-all shadow-2xl">Post Now</button>
+                        <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-[8px] text-[11px] font-black uppercase  hover:bg-[#0A0A0A] transition-all shadow-2xl">Post Now</button>
                      </div>
                   )}
 
@@ -448,15 +489,15 @@ export default function PremiumProfilePage() {
                               </div>
                               <div>
                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className="px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-black uppercase rounded-[4px] tracking-widest">{dep.type}</span>
-                                    <h4 className="text-[16px] font-black text-[#0A0A0A] uppercase italic tracking-tighter">{dep.title}</h4>
+                                    <span className="px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-black uppercase rounded-[4px] ">{dep.type}</span>
+                                    <h4 className="text-[16px] font-black text-[#0A0A0A] uppercase italic ">{dep.title}</h4>
                                  </div>
                                  <div className="flex items-center gap-4">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <p className="text-[10px] font-black text-slate-200 uppercase  flex items-center gap-1.5">
                                        <Activity size={10} /> Active
                                     </p>
                                     <div className="h-1 w-1 bg-slate-200 rounded-full" />
-                                    <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">High Priority</p>
+                                    <p className="text-[10px] font-black text-[#E53935] uppercase ">High Priority</p>
                                  </div>
                               </div>
                            </div>
@@ -465,7 +506,7 @@ export default function PremiumProfilePage() {
                      )) : (
                         <div className="py-20 text-center opacity-30">
                            <Sparkles size={40} className="mx-auto mb-4 text-[#0A0A0A]" />
-                           <p className="text-[11px] font-black text-[#0A0A0A] uppercase tracking-[0.3em] italic">No active strategic needs</p>
+                           <p className="text-[11px] font-black text-[#0A0A0A] uppercase  italic">No active strategic needs</p>
                         </div>
                      )}
                   </div>
@@ -477,7 +518,7 @@ export default function PremiumProfilePage() {
 
                {/* PERFORMANCE VITALS (STATS) */}
                <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 space-y-10">
-                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 tracking-[0.2em]">
+                  <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 ">
                      <Activity size={18} className="text-[#E53935]" /> My Stats
                   </h3>
 
@@ -490,25 +531,25 @@ export default function PremiumProfilePage() {
                         userData.checkoutScore >= 25 ? "bg-[#E53935]" :
                         "bg-slate-500"
                      )} />
-                     <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase tracking-widest mb-4">Network Authority Score</p>
+                     <p className="text-[8px] font-black text-[#0A0A0A]/30 uppercase  mb-4">Network Authority Score</p>
                      <div className="flex items-center gap-6">
                         <div className={cn(
                            "h-20 w-20 rounded-full border-[6px] flex items-center justify-center shadow-inner",
                            userData.checkoutScore >= 75 ? "border-emerald-500 text-emerald-600 bg-emerald-50" :
                            userData.checkoutScore >= 50 ? "border-amber-500 text-amber-600 bg-amber-50" :
                            userData.checkoutScore >= 25 ? "border-[#E53935] text-[#E53935] bg-red-50" :
-                           "border-slate-300 text-slate-400 bg-slate-100"
+                           "border-slate-300 text-slate-200 bg-slate-100"
                         )}>
                            <span className="text-2xl font-black">{userData.checkoutScore}</span>
                         </div>
                         <div>
-                           <p className="text-[14px] font-black text-[#0A0A0A] uppercase tracking-tighter italic mb-1">
+                           <p className="text-[14px] font-black text-[#0A0A0A] uppercase  italic mb-1">
                               {userData.checkoutScore >= 75 ? "Elite Partner" :
                                userData.checkoutScore >= 50 ? "Verified Pro" :
                                userData.checkoutScore >= 25 ? "Active Node" :
                                "New Member"}
                            </p>
-                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight">
+                           <p className="text-[9px] font-bold text-slate-200 uppercase  leading-tight">
                               Ranked in top 12%<br />of global network
                            </p>
                         </div>
@@ -520,7 +561,7 @@ export default function PremiumProfilePage() {
                         <div key={i} className="space-y-4">
                            <div className="flex justify-between items-end">
                               <div>
-                                 <span className="text-[9px] font-black text-[#0A0A0A]/40 uppercase tracking-widest block mb-1">Performance Metric</span>
+                                 <span className="text-[9px] font-black text-[#0A0A0A]/40 uppercase  block mb-1">Performance Metric</span>
                                  <span className="text-[11px] font-black text-[#0A0A0A] uppercase flex items-center gap-2.5 italic">
                                     <metric.icon size={14} className="text-[#E53935]" /> {metric.label}
                                  </span>
@@ -555,8 +596,8 @@ export default function PremiumProfilePage() {
             >
                <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                   <div>
-                     <h2 className="text-4xl font-black text-[#0A0A0A] uppercase tracking-tighter italic leading-none mb-2">Edit Profile</h2>
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Update your account details</p>
+                     <h2 className="text-4xl font-black text-[#0A0A0A] uppercase  italic leading-none mb-2">Edit Profile</h2>
+                     <p className="text-[10px] font-black text-slate-200 uppercase ">Update your account details</p>
                   </div>
                   <button onClick={() => setShowEditModal(false)} className="h-12 w-12 bg-white border border-slate-100 rounded-[8px] flex items-center justify-center text-slate-300 hover:bg-[#E53935] hover:text-white transition-all shadow-sm"><X size={20} /></button>
                </div>
@@ -565,22 +606,22 @@ export default function PremiumProfilePage() {
                   {/* Basic Identity */}
                   <div className="grid grid-cols-2 gap-8">
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <User size={12} className="text-[#E53935]" /> Full Name
                         </p>
-                        <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.full_name} onChange={(e) => setUserData({...userData, full_name: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <ShieldCheck size={12} className="text-[#E53935]" /> Strategic Role
                         </p>
-                        <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                   </div>
 
                   {/* Bio */}
                   <div className="space-y-3">
-                     <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                     <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                         <FileText size={12} className="text-[#E53935]" /> Node Bio / Intent
                      </p>
                      <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-32 p-6 rounded-[8px] bg-slate-50 border border-slate-100 font-bold text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none shadow-inner" />
@@ -589,42 +630,42 @@ export default function PremiumProfilePage() {
                   {/* Location & Company */}
                   <div className="grid grid-cols-2 gap-8">
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <MapPin size={12} className="text-[#E53935]" /> Global Location
                         </p>
-                        <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.location} onChange={(e) => setUserData({...userData, location: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <Building size={12} className="text-[#E53935]" /> Organization Name
                         </p>
-                        <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.company} onChange={(e) => setUserData({...userData, company: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                   </div>
 
                   {/* Contact */}
                   <div className="grid grid-cols-2 gap-8">
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <Phone size={12} className="text-[#E53935]" /> Direct Phone
                         </p>
-                        <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                      <div className="space-y-3">
-                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-[9px] font-black text-[#0A0A0A] uppercase  flex items-center gap-2">
                            <Globe size={12} className="text-[#E53935]" /> External Website
                         </p>
-                        <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase tracking-tighter text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
+                        <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase  text-sm outline-none focus:border-[#E53935] focus:bg-white transition-all shadow-inner" />
                      </div>
                   </div>
                </div>
 
                <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex gap-5">
-                  <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border border-slate-200 rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 hover:bg-white hover:text-[#0A0A0A] transition-all">Discard</button>
+                  <button onClick={() => setShowEditModal(false)} className="flex-1 h-16 border border-slate-200 rounded-[8px] font-black text-[11px] uppercase  text-slate-200 hover:bg-white hover:text-[#0A0A0A] transition-all">Discard</button>
                   <button 
                      onClick={() => handleSaveProfile()} 
                      disabled={isSaving} 
-                     className="flex-[2] h-16 bg-[#0A0A0A] text-white rounded-[8px] font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50 active:scale-95 group"
+                     className="flex-[2] h-16 bg-[#0A0A0A] text-white rounded-[8px] font-black text-[11px] uppercase  hover:bg-[#E53935] shadow-2xl transition-all disabled:opacity-50 active:scale-95 group"
                   >
                      {isSaving ? "Saving..." : <span className="flex items-center justify-center gap-2">Save Changes <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>}
                   </button>

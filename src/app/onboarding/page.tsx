@@ -1,448 +1,544 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
-  Zap, 
-  Target, 
   ArrowRight, 
   CheckCircle2, 
-  Plus, 
-  X,
-  Sparkles,
-  Rocket,
-  Building,
-  User,
-  Briefcase,
-  GraduationCap,
-  MapPin,
-  Phone,
-  Camera,
-  ChevronLeft,
+  User, 
+  Briefcase, 
+  MapPin, 
+  Camera, 
+  ChevronLeft, 
   Loader2,
-  ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  Award,
+  Laptop,
+  Terminal,
+  Activity,
+  Plus,
+  Compass,
+  Zap,
+  Globe,
+  Rocket,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { analytics } from "@/utils/analytics";
 
-type Role = 'business' | 'msme' | 'freelancer' | 'student';
+type Role = 'BUSINESS' | 'PROFESSIONAL' | 'ADVISOR' | 'STUDENT';
 
 type OnboardingState = {
   name: string;
   role: Role;
-  company_name?: string;
-  business_type?: string;
-  services: string[];
-  skills: string[];
-  experience_years: number;
-  experience_months: number;
-  intent_tags: string[];
-  phone?: string;
-  avatar_url?: string;
-  location?: string;
+  jobRole: string;
+  industry: string;
+  intents: string[];
+  bio: string;
+  location: string;
+  avatar_url: string;
 };
 
+import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/identity-engine";
+
+import { detectBaseTag } from "@/utils/match-engine";
+
 export default function OnboardingPage() {
-  const { user, updateProfile } = useAuth();
+  const { user, session, updateProfile, initAuth } = useAuth();
   const [step, setStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [customFocus, setCustomFocus] = useState("");
+  const [libraryFocus, setLibraryFocus] = useState<any[]>([]);
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [onboardingData, setOnboardingData] = useState<OnboardingState>({
-    name: user?.full_name || "",
-    role: (user?.role?.toLowerCase() as Role) || "business",
-    services: [],
-    skills: [],
-    experience_years: 0,
-    experience_months: 0,
-    intent_tags: [],
-    location: user?.location || "Trivandrum",
-    avatar_url: user?.avatar_url || "",
-    phone: ""
+    name: "",
+    role: "BUSINESS",
+    jobRole: "",
+    industry: "",
+    intents: [],
+    bio: "",
+    location: "Trivandrum",
+    avatar_url: ""
   });
+
+  // Fetch Focus Library
+  useEffect(() => {
+    async function fetchLibrary() {
+      const { data } = await supabase
+        .from('focus_library')
+        .select('*')
+        .order('usage_count', { ascending: false })
+        .limit(10);
+      if (data) setLibraryFocus(data);
+    }
+    fetchLibrary();
+  }, []);
 
   useEffect(() => {
     if (user) {
-      analytics.trackScreen('ONBOARDING', user.id);
-      
-      // Step Persistence & Hydration
-      const initialStep = user.expertise?.length ? 3 : (user.company_name ? 2 : 1);
-      setStep(initialStep);
-
       setOnboardingData(prev => ({
         ...prev,
         name: user.full_name || prev.name,
-        role: (user.role?.toLowerCase() as Role) || prev.role,
-        company_name: user.company_name || prev.company_name,
-        business_type: user.business_type || prev.business_type,
-        skills: user.expertise || prev.skills,
-        intent_tags: user.intents || prev.intent_tags,
+        role: (user.role as Role) || prev.role,
+        jobRole: user.job_role || prev.jobRole,
+        industry: user.industry || prev.industry,
+        intents: user.intents || prev.intents,
+        bio: user.bio || prev.bio,
         location: user.location || prev.location,
         avatar_url: user.avatar_url || prev.avatar_url,
       }));
     }
   }, [user]);
 
-  const getProfilePayload = (isFinal = false) => {
-    return {
-      full_name: onboardingData.name,
-      role: onboardingData.role.toUpperCase(),
-      avatar_url: onboardingData.avatar_url,
-      location: onboardingData.location,
-      phone: onboardingData.phone,
-      skills: onboardingData.skills,
-      intent_tags: onboardingData.intent_tags, // Using intent_tags directly
-      domains: onboardingData.intent_tags,    // Backward compatibility
-      business_type: onboardingData.business_type,
-      company_name: onboardingData.company_name,
-      experience_years: onboardingData.experience_years,
-      experience_months: onboardingData.experience_months,
-      services: onboardingData.services,
-      onboarding_completed: isFinal
-    };
+  const saveCustomFocus = async (label: string, industry: string) => {
+    // Step 3: Clean & Normalize
+    const cleanLabel = label.trim().toLowerCase();
+    if (cleanLabel.length < 3 || !isNaN(Number(cleanLabel))) return;
+
+    // 1. Check if exists
+    const { data: existing } = await supabase.from('focus_library').select('*').eq('label', cleanLabel).eq('industry', industry).single();
+    
+    if (existing) {
+      // Step 4: Increment usage
+      await supabase.from('focus_library').update({ usage_count: (existing.usage_count || 0) + 1 }).eq('id', existing.id);
+    } else {
+      // Store new (Step 4: local count starts at 1, will show to others when usage >= 2)
+      await supabase.from('focus_library').insert({ label: cleanLabel, industry, usage_count: 1 });
+    }
   };
 
-  const saveProgress = async () => {
-    if (!user?.id) return;
+  const saveProgress = async (isFinal = false) => {
+    const userId = session?.user?.id;
+    if (!userId) return;
     setIsSaving(true);
+    setError(null);
     
-    const { error: saveError } = await supabase
-      .from('profiles')
-      .update(getProfilePayload())
-      .eq('id', user.id);
+    // Save all selected focus areas to library
+    for (const intent of onboardingData.intents) {
+      await saveCustomFocus(intent, onboardingData.industry);
+    }
 
+    // STEP 3: ONBOARDING BASE TAG DETECTION
+    const detectedBaseTag = detectBaseTag(onboardingData.jobRole, onboardingData.intents);
+
+    const finalIntents = onboardingData.intents.length > 0 ? onboardingData.intents : ["general"];
+
+    const payload = {
+      full_name: onboardingData.name,
+      role: onboardingData.role,
+      industry: onboardingData.industry || "General",
+      base_tag: detectedBaseTag,
+      intent_tags: finalIntents,
+      skills: finalIntents, // Sync skills with intents for profile
+      bio: onboardingData.bio,
+      location: onboardingData.location,
+      avatar_url: onboardingData.avatar_url,
+      onboarding_completed: isFinal
+    };
+
+    console.log("ONBOARDING BASE TAG DETECTED:", detectedBaseTag);
+    console.log("SAVING PROFILE DATA:", payload);
+
+    const { data, error: saveError } = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', userId)
+      .select();
+    
     if (saveError) {
-      console.error("Auto-save error:", saveError);
-      // Fallback: try without metadata if it fails
+      console.error("ONBOARDING ERROR:", saveError);
+      alert(saveError.message);
+    } else {
+      console.log("PROFILE SAVED SUCCESSFULLY:", data);
+      if (isFinal) {
+        // Step 3 & 4 & 5: Force State + Routing
+        await initAuth();
+        updateProfile({ ...onboardingData, onboarding_completed: true });
+      }
     }
     setIsSaving(false);
   };
 
-  const updateData = (updates: Partial<OnboardingState>) => {
-    setOnboardingData(prev => ({ ...prev, ...updates }));
+  const nextStep = async () => {
+    if (step === 1 && !onboardingData.name) {
+      setError("Enter your name.");
+      return;
+    }
+    await saveProgress();
+    setStep(prev => prev + 1);
     setError(null);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
+    const userId = session?.user?.id;
+    if (!file || !userId) return;
 
     try {
       setIsUploading(true);
-      setError(null);
-
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = fileName;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { 
-          upsert: true,
-          contentType: file.type 
-        });
-
-      if (uploadError) {
-        setError("Profile photo service unavailable. Please try again later.");
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      updateData({ avatar_url: publicUrl });
+      const filePath = `${userId}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setOnboardingData(prev => ({ ...prev, avatar_url: publicUrl }));
     } catch (err: any) {
-      console.error("Upload error:", err);
-      if (!error) setError("Failed to upload image.");
+      setError("Upload failed.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const nextStep = async () => {
-    if (step === 1 && (!onboardingData.name || !onboardingData.role)) {
-      setError("Name and Role are required.");
-      return;
-    }
-    if (step === 2 && (onboardingData.role === 'business' || onboardingData.role === 'msme')) {
-      if (!onboardingData.company_name || !onboardingData.business_type) {
-        setError("Company details are required.");
-        return;
-      }
-    }
-    if (step === 3 && onboardingData.intent_tags.length === 0) {
-      setError("Select at least one intent.");
-      return;
-    }
+  if (isCompleted) {
+    return (
+      <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] flex items-center justify-center p-4 lg:p-8 font-sans selection:bg-[#FF3B30]/10 overflow-hidden relative">
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] opacity-30" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative w-full max-w-5xl bg-white rounded-lg border border-black/[0.05] shadow-[0_20px_60px_rgba(0,0,0,0.04)] overflow-hidden"
+        >
+          <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-black/[0.03]">
+             
+             {/* CONTENT PANEL */}
+             <div className="flex-1 p-10 lg:p-14 space-y-10">
+                <div className="space-y-6">
+                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F5F5F7] border border-black/[0.05] rounded-full text-[#86868B] text-[10px] font-bold uppercase tracking-wider">
+                      <CheckCircle2 size={12} className="text-[#34C759]" />
+                      Setup Complete
+                   </div>
+                   <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-[#1D1D1F] leading-[0.9] uppercase">
+                      Find the <br /> 
+                      <span className="text-[#FF3B30]">right people</span> <br />
+                      to work with.
+                   </h1>
+                   <p className="text-[#86868B] font-medium text-lg lg:text-xl max-w-md leading-tight">
+                      Your account is ready. Post what you're looking for or explore current projects.
+                   </p>
+                </div>
 
-    await saveProgress();
-    setStep(prev => prev + 1);
-  };
+                <div className="pt-10 border-t border-black/[0.03] grid grid-cols-1 sm:grid-cols-3 gap-6">
+                   {[
+                     { icon: Globe, label: "Global Scope", desc: "Access 8K+ Nodes", color: "text-[#E53935]", bg: "bg-[#E53935]/5" },
+                     { icon: Zap, label: "Smart Match", desc: "Contextual Synergy", color: "text-[#FF9500]", bg: "bg-[#FF9500]/5" },
+                     { icon: Rocket, label: "Fast Track", desc: "Start in 60s", color: "text-[#34C759]", bg: "bg-[#34C759]/5" }
+                   ].map((stat, i) => (
+                     <div key={i} className="flex items-center gap-4">
+                        <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center shrink-0", stat.bg)}>
+                           <stat.icon size={20} className={stat.color} />
+                        </div>
+                        <div className="min-w-0">
+                           <p className="text-[12px] font-bold text-[#1D1D1F] truncate">{stat.label}</p>
+                           <p className="text-[10px] font-medium text-[#86868B] truncate uppercase tracking-tight">{stat.desc}</p>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
 
-  const completeOnboarding = async () => {
-    if (!onboardingData.intent_tags?.length) return;
-    
-    setIsSubmitting(true);
-    const { error: finalError } = await supabase
-      .from('profiles')
-      .update(getProfilePayload(true))
-      .eq('id', user?.id);
+             {/* ACTION PANEL */}
+             <div className="w-full lg:w-[380px] p-10 lg:p-14 bg-[#FAFAFB] flex flex-col justify-center gap-6">
+                <button 
+                  onClick={() => router.push("/")}
+                  className="w-full h-20 bg-[#1D1D1F] text-white rounded-lg flex flex-col justify-center items-center gap-1 group transition-all active:scale-[0.98] shadow-2xl shadow-black/20 hover:bg-black"
+                >
+                   <div className="flex items-center gap-3">
+                      <Plus size={20} strokeWidth={3} />
+                      <span className="text-base font-bold uppercase">Post a Need</span>
+                   </div>
+                   <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Connect with the network</span>
+                </button>
 
-    if (!finalError) {
-      updateProfile({ 
-        full_name: onboardingData.name,
-        role: onboardingData.role.toUpperCase() as any,
-        avatar_url: onboardingData.avatar_url,
-        location: onboardingData.location,
-        expertise: onboardingData.skills,
-        intents: onboardingData.intent_tags,
-        onboarding_completed: true 
-      });
-      analytics.track('ONBOARDING_COMPLETED', user?.id, { role: onboardingData.role });
-      router.push("/home");
-    } else {
-      console.error("Final sync error:", finalError);
-      setError("Something went wrong. Try again.");
-    }
-    setIsSubmitting(false);
-  };
+                <button 
+                  onClick={() => router.push("/")}
+                  className="w-full h-16 bg-white border border-black/[0.08] rounded-lg flex items-center justify-center gap-3 transition-all hover:bg-[#F5F5F7] active:scale-95 group"
+                >
+                   <span className="text-sm font-bold uppercase tracking-tight text-[#1D1D1F]">Find People</span>
+                   <ArrowRight size={18} className="text-[#86868B] group-hover:translate-x-1 transition-transform" />
+                </button>
 
-  const PRESETS = {
-    BUSINESS_TYPES: ["Agency", "Manufacturer", "Retail", "Service", "Startup", "Other"],
-    SERVICES: ["Web Dev", "Marketing", "Legal", "Design", "Logistics", "Sales"],
-    SKILLS: ["React", "Python", "UI/UX", "Copywriting", "SEO", "Project MGMT"],
-    INTENTS: ["Hiring", "Finding Clients", "Partnerships", "Networking", "Learning", "Investors"]
-  };
+                <p className="text-center text-[10px] font-bold text-[#86868B] uppercase tracking-widest pt-4">
+                   Step into the ecosystem
+                </p>
+             </div>
+
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-[100dvh] bg-[#292828] flex items-center justify-center p-4 lg:p-10 relative overflow-hidden font-sans selection:bg-[#E53935]/20">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#292828] via-[#1a1a1a] to-[#E53935]/5" />
-      <div className="absolute top-[-20%] right-[-20%] h-[800px] w-[800px] bg-[#E53935]/5 blur-[200px] rounded-full animate-pulse" />
+    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-[#FF3B30]/10">
       
-      <div className="relative w-full max-w-2xl bg-white rounded-[3.5rem] lg:rounded-[4.5rem] shadow-4xl overflow-hidden flex flex-col h-full max-h-[95vh] border border-[#292828]/5">
+      {/* ── BACKGROUND ── */}
+      <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
+
+      <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-[0_40px_100px_rgba(0,0,0,0.05)] flex flex-col h-full max-h-[85vh] overflow-hidden border border-slate-100">
         
-        <div className="h-2.5 bg-slate-50 w-full shrink-0 flex gap-1 p-1">
-           {[1, 2, 3, 4].map(s => (
-             <div key={s} className={cn("h-full flex-1 rounded-full transition-all duration-1000 ease-out", s <= step ? "bg-[#E53935]" : "bg-slate-100")} />
-           ))}
+        {/* ── PROGRESS ── */}
+        <div className="h-1.5 bg-slate-50 w-full flex p-0 relative z-50">
+           <div 
+             className="h-full bg-[#FF3B30] transition-all duration-1000 ease-out" 
+             style={{ width: `${(step / 3) * 100}%` }}
+           />
         </div>
 
-        <div className="px-12 lg:px-20 pt-16 pb-8 flex items-center justify-between shrink-0">
-           <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                 <div className="h-2 w-2 rounded-full bg-[#E53935] animate-ping" />
-                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#292828]/30 italic">Step {step}</span>
+        <div className="flex-1 flex flex-col min-h-0">
+           <header className="px-10 lg:px-20 pt-12 pb-8 flex items-start justify-between shrink-0 border-b border-slate-50">
+              <div className="space-y-4">
+                 <div className="inline-flex items-center gap-2 text-[#FF3B30] text-[11px] font-black uppercase tracking-wider">
+                    <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
+                    Step {step} of 3 // About you
+                 </div>
+                 <h1 className="text-5xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
+                    {step === 1 && "Who are you?"}
+                    {step === 2 && "What do you do?"}
+                    {step === 3 && "Almost done"}
+                 </h1>
               </div>
-              <h1 className="text-5xl font-black uppercase tracking-tighter text-[#292828] leading-none">
-                 {step === 1 && "Basics"}
-                 {step === 2 && "Role"}
-                 {step === 3 && "Experience"}
-                 {step === 4 && "Final Step"}
-              </h1>
-           </div>
-           {(isSaving || isUploading) && (
-             <div className="flex items-center gap-3 px-5 py-2.5 bg-[#292828]/5 rounded-2xl animate-in fade-in zoom-in">
-                <Loader2 className="animate-spin text-[#E53935]" size={16} />
-                <span className="text-[9px] font-black text-[#292828]/40 uppercase tracking-widest">{isUploading ? "Uploading" : "Auto Saving"}</span>
-             </div>
-           )}
-        </div>
+           </header>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar px-12 lg:px-20 py-8">
-           <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-                className="space-y-12"
-              >
-                 {step === 1 && (
-                    <div className="space-y-10">
-                       <div className="space-y-4">
-                          <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Name</p>
-                          <input 
-                            type="text" 
-                            value={onboardingData.name}
-                            onChange={e => updateData({ name: e.target.value })}
-                            placeholder="FULL NAME"
-                            className="w-full h-24 bg-slate-50 border-2 border-slate-100 rounded-[2.25rem] px-12 text-2xl font-black text-[#292828] outline-none focus:border-[#E53935]/20 focus:bg-white transition-all uppercase placeholder:text-slate-200"
-                          />
-                       </div>
-                       
-                       <div className="space-y-4">
-                          <div className="flex items-center justify-between px-1">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Role</p>
-                             <span className="text-[8px] font-bold text-slate-300 uppercase italic">Choose how you primarily operate</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                             {(['business', 'msme', 'freelancer', 'student'] as Role[]).map(r => (
-                               <button
-                                 key={r}
-                                 onClick={() => updateData({ role: r })}
-                                 className={cn(
-                                   "h-28 rounded-[2.25rem] border-2 transition-all flex flex-col items-center justify-center gap-3 group relative overflow-hidden",
-                                   onboardingData.role === r ? "bg-[#292828] border-black text-white shadow-2xl scale-[1.02]" : "bg-white border-slate-100 text-slate-300 hover:border-[#292828]/20"
-                                 )}
-                               >
-                                  {r === 'business' && <Building size={24} />}
-                                  {r === 'msme' && <Zap size={24} />}
-                                  {r === 'freelancer' && <User size={24} />}
-                                  {r === 'student' && <GraduationCap size={24} />}
-                                  <span className="text-[11px] font-black uppercase tracking-[0.2em]">{r}</span>
-                                  {onboardingData.role === r && <div className="absolute top-4 right-6 h-2 w-2 rounded-full bg-[#E53935]" />}
-                               </button>
-                             ))}
-                          </div>
-                       </div>
-                    </div>
-                 )}
-
-                 {step === 2 && (
-                    <div className="space-y-10">
-                       {(onboardingData.role === 'business' || onboardingData.role === 'msme') ? (
-                          <>
-                             <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Company Name</p>
+           <main className="flex-1 overflow-y-auto no-scrollbar px-10 lg:px-20 py-10">
+              <AnimatePresence mode="wait">
+                 <motion.div
+                   key={step}
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   className="space-y-12 pb-12"
+                 >
+                    {step === 1 && (
+                       <div className="space-y-10">
+                          <div className="space-y-4">
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Your Name</label>
+                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
+                                <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
                                 <input 
                                   type="text" 
-                                  value={onboardingData.company_name}
-                                  onChange={e => updateData({ company_name: e.target.value })}
-                                  placeholder="COMPANY NAME"
-                                  className="w-full h-24 bg-slate-50 border-2 border-slate-100 rounded-[2.25rem] px-12 text-2xl font-black text-[#292828] outline-none focus:border-[#E53935]/20 uppercase placeholder:text-slate-200"
+                                  value={onboardingData.name}
+                                  onChange={e => setOnboardingData(prev => ({ ...prev, name: e.target.value }))}
+                                  placeholder="Full Name"
+                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
                              </div>
-                             <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Company Type</p>
-                                <div className="flex flex-wrap gap-2.5">
-                                   {PRESETS.BUSINESS_TYPES.map(bt => (
-                                     <button key={bt} onClick={() => updateData({ business_type: bt })} className={cn("px-7 py-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all", onboardingData.business_type === bt ? "bg-[#292828] text-white border-black" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{bt}</button>
-                                   ))}
-                                </div>
-                             </div>
-                             <div className="space-y-4">
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Skills</p>
-                                <div className="flex flex-wrap gap-3">
-                                   {PRESETS.SKILLS.map(s => (
-                                     <button key={s} onClick={() => { const current = onboardingData.skills; updateData({ skills: current.includes(s) ? current.filter(x => x !== s) : [...current, s] }); }} className={cn("px-8 py-5 rounded-[1.5rem] border-2 text-[11px] font-black uppercase tracking-widest transition-all", onboardingData.skills.includes(s) ? "bg-[#E53935] text-white border-[#E53935] shadow-xl" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{s}</button>
-                                   ))}
-                                </div>
-                             </div>
-                          </>
-                       ) : (
-                          <div className="space-y-6">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Skills</p>
-                             <div className="flex flex-wrap gap-3">
-                                {PRESETS.SKILLS.map(s => (
-                                  <button key={s} onClick={() => { const current = onboardingData.skills; updateData({ skills: current.includes(s) ? current.filter(x => x !== s) : [...current, s] }); }} className={cn("px-8 py-5 rounded-[1.5rem] border-2 text-[11px] font-black uppercase tracking-widest transition-all", onboardingData.skills.includes(s) ? "bg-[#E53935] text-white border-[#E53935] shadow-xl" : "bg-white text-slate-400 hover:border-[#292828]/10")}>{s}</button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Select Role</label>
+                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                {[
+                                  { id: 'BUSINESS', label: 'Company', icon: Briefcase },
+                                  { id: 'PROFESSIONAL', label: 'Individual', icon: Laptop },
+                                  { id: 'ADVISOR', label: 'Advisor', icon: ShieldCheck },
+                                  { id: 'STUDENT', label: 'Student', icon: Award }
+                                ].map(r => (
+                                  <button
+                                    key={r.id}
+                                    onClick={() => setOnboardingData(prev => ({ ...prev, role: r.id as Role }))}
+                                    className={cn(
+                                      "p-8 rounded-lg border transition-all text-left flex flex-col gap-4 relative h-40 justify-center group",
+                                      onboardingData.role === r.id ? "bg-[#FF3B30]/5 border-[#FF3B30]/20 text-[#FF3B30]" : "bg-slate-50 border-slate-100 text-slate-400 hover:bg-white hover:border-slate-200"
+                                    )}
+                                  >
+                                     <r.icon size={28} className={cn("transition-colors", onboardingData.role === r.id ? "text-[#FF3B30]" : "text-slate-300 group-hover:text-slate-400")} />
+                                     <p className="text-[14px] font-black uppercase">{r.label}</p>
+                                     {onboardingData.role === r.id && <div className="absolute top-0 right-0 h-1.5 w-full bg-[#FF3B30]" />}
+                                  </button>
                                 ))}
                              </div>
                           </div>
-                       )}
-                    </div>
-                 )}
+                       </div>
+                    )}
 
-                 {step === 3 && (
-                    <div className="space-y-12">
-                       <div className="grid grid-cols-2 gap-6">
+                    {step === 2 && (
+                       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                          
+                          {/* 1. IDENTITY INPUT */}
                           <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Experience (Years)</p>
-                             <div className="relative">
-                                <select value={onboardingData.experience_years} onChange={e => updateData({ experience_years: parseInt(e.target.value) })} className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-8 text-lg font-black text-[#292828] outline-none appearance-none focus:border-[#E53935]/20">
-                                   {[...Array(21)].map((_, i) => <option key={i} value={i}>{i} YEARS</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={20} />
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">What do you do?</label>
+                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
+                                <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
+                                <input 
+                                  type="text" 
+                                  value={onboardingData.jobRole}
+                                  onChange={e => {
+                                    const val = e.target.value;
+                                    const detection = detectIndustry(val);
+                                    
+                                    // Step 1: Only suggest if confidence > 0.6
+                                    const highConfidence = detection.confidence > 0.6;
+                                    
+                                    setOnboardingData(prev => ({ 
+                                      ...prev, 
+                                      jobRole: val,
+                                      // Step 2: Disambiguation - if multiple, don't auto-pick
+                                      industry: (highConfidence && detection.industries.length === 1) ? detection.industries[0] : prev.industry 
+                                    }));
+                                  }}
+                                  placeholder="e.g. Video Editor, Founder, Developer"
+                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
+                                />
+                             </div>
+                             
+                             {/* INDUSTRY DISAMBIGUATION / FALLBACK */}
+                             <AnimatePresence>
+                               {onboardingData.jobRole.length > 2 && (
+                                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
+                                   <span className="text-[10px] font-black uppercase text-slate-400">
+                                     {detectIndustry(onboardingData.jobRole).industries.length > 1 ? "Did you mean:" : "Industry Detected:"}
+                                   </span>
+                                   <div className="flex flex-wrap gap-2">
+                                      {(detectIndustry(onboardingData.jobRole).industries.length > 0 
+                                        ? detectIndustry(onboardingData.jobRole).industries 
+                                        : ALL_INDUSTRIES
+                                      ).map(ind => (
+                                        <button 
+                                          key={ind}
+                                          onClick={() => setOnboardingData(prev => ({ ...prev, industry: ind }))}
+                                          className={cn(
+                                            "h-8 px-4 rounded-full text-[10px] font-black uppercase flex items-center gap-2 transition-all",
+                                            onboardingData.industry === ind ? "bg-[#1A1A1A] text-white shadow-lg" : "bg-white border border-slate-100 text-slate-400 hover:border-slate-300"
+                                          )}
+                                        >
+                                           {ind}
+                                           {onboardingData.industry === ind && <CheckCircle2 size={10} />}
+                                        </button>
+                                      ))}
+                                   </div>
+                                 </motion.div>
+                               )}
+                             </AnimatePresence>
+                          </div>
+
+                          {/* 2. FOCUS AREAS */}
+                          <div className="space-y-6">
+                             <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Suggested for you</label>
+                                <span className="text-[10px] font-bold text-slate-300 uppercase">{onboardingData.intents.length}/3</span>
+                             </div>
+
+                             <div className="flex flex-wrap gap-2.5">
+                                {/* Step 6 & 7: Priority Engine + Limit 4 */}
+                                {[
+                                  ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"]),
+                                  ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
+                                ].slice(0, 4).map(intent => {
+                                  const isSelected = onboardingData.intents.includes(intent);
+                                  return (
+                                    <button 
+                                      key={intent}
+                                      onClick={() => { 
+                                        const current = onboardingData.intents; 
+                                        if (isSelected) setOnboardingData(prev => ({ ...prev, intents: current.filter(x => x !== intent) }));
+                                        else if (current.length < 3) setOnboardingData(prev => ({ ...prev, intents: [...current, intent] }));
+                                      }} 
+                                      className={cn(
+                                        "h-11 px-6 rounded-lg border transition-all text-[11px] font-black uppercase tracking-wider",
+                                        isSelected ? "bg-[#FF3B30] text-white border-[#FF3B30] shadow-lg shadow-[#FF3B30]/20" : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                                      )}
+                                    >
+                                       {intent}
+                                    </button>
+                                  );
+                                })}
+
+                                {/* CUSTOM INPUT */}
+                                <div className="relative">
+                                   <input 
+                                     type="text"
+                                     value={customFocus}
+                                     onChange={e => setCustomFocus(e.target.value)}
+                                     onKeyDown={e => {
+                                       if (e.key === 'Enter' && customFocus.trim() && onboardingData.intents.length < 3) {
+                                         const val = customFocus.trim().toLowerCase();
+                                         if (!onboardingData.intents.includes(val)) {
+                                            setOnboardingData(prev => ({ ...prev, intents: [...prev.intents, val] }));
+                                         }
+                                         setCustomFocus("");
+                                       }
+                                     }}
+                                     placeholder="+ Add your own"
+                                     className="h-11 px-6 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-[11px] font-black uppercase outline-none focus:bg-white focus:border-[#FF3B30]/30 transition-all w-44"
+                                   />
+                                </div>
                              </div>
                           </div>
+
+                          {/* 3. BIO (SIMPLIFIED) */}
                           <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Months</p>
-                             <div className="relative">
-                                <select value={onboardingData.experience_months} onChange={e => updateData({ experience_months: parseInt(e.target.value) })} className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-8 text-lg font-black text-[#292828] outline-none appearance-none focus:border-[#E53935]/20">
-                                   {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} MONTHS</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={20} />
-                             </div>
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">About You</label>
+                             <textarea 
+                               value={onboardingData.bio}
+                               onChange={e => setOnboardingData(prev => ({ ...prev, bio: e.target.value }))}
+                               placeholder="Short description of your background..."
+                               className="w-full h-24 bg-slate-50 border border-slate-100 rounded-lg p-6 text-lg font-bold text-[#1A1A1A] outline-none placeholder:text-slate-200 focus:bg-white transition-all resize-none shadow-sm"
+                             />
                           </div>
                        </div>
+                    )}
 
-                       <div className="space-y-6">
-                          <div className="flex items-center justify-between">
+                    {step === 3 && (
+                       <div className="space-y-12">
+                          <div className="flex justify-center">
+                             <div className="relative group">
+                                <div className="h-44 w-44 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 relative shadow-xl">
+                                   <img src={onboardingData.avatar_url || `https://ui-avatars.com/api/?name=${onboardingData.name}&background=f1f5f9&color=64748b&bold=true`} className="w-full h-full object-cover" />
+                                </div>
+                                <button onClick={() => fileInputRef.current?.click()} className="absolute -bottom-3 -right-3 h-14 w-14 bg-[#FF3B30] text-white rounded-lg flex items-center justify-center shadow-xl border-4 border-white z-20 hover:scale-110 transition-transform"><Camera size={20} /></button>
+                                <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                             </div>
+                          </div>
+
+                          <div className="space-y-4">
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Location</label>
+                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
+                                <MapPin size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" />
+                                <input type="text" value={onboardingData.location} onChange={e => setOnboardingData(prev => ({ ...prev, location: e.target.value }))} className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none uppercase" />
+                             </div>
+                          </div>
+
+                          <div className="bg-emerald-50 rounded-lg p-8 flex items-center gap-6 border border-emerald-100">
+                             <div className="h-14 w-14 bg-white rounded-lg flex items-center justify-center text-emerald-500 shrink-0 shadow-lg shadow-emerald-500/10"><CheckCircle2 size={32} /></div>
                              <div>
-                                <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Your Goals (MAX 4)</p>
-                                <p className="text-[8px] font-bold text-slate-300 uppercase italic mt-1">These help us match you with the right people</p>
+                                <p className="text-[16px] font-black text-emerald-800 uppercase tracking-wider mb-0.5">All set</p>
+                                <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-tight">Your profile is ready to go.</p>
                              </div>
-                             <span className={cn("text-[10px] font-black", onboardingData.intent_tags.length >= 4 ? "text-[#E53935]" : "text-slate-200")}>{onboardingData.intent_tags.length}/4</span>
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                             {PRESETS.INTENTS.map(intent => (
-                               <button key={intent} disabled={!onboardingData.intent_tags.includes(intent) && onboardingData.intent_tags.length >= 4} onClick={() => { const current = onboardingData.intent_tags; updateData({ intent_tags: current.includes(intent) ? current.filter(x => x !== intent) : [...current, intent] }); }} className={cn("h-20 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all", onboardingData.intent_tags.includes(intent) ? "bg-[#292828] text-white border-black shadow-xl" : "bg-white text-slate-400 hover:border-[#292828]/10 disabled:opacity-20")}>{intent}</button>
-                             ))}
                           </div>
                        </div>
-                    </div>
+                    )}
+                 </motion.div>
+              </AnimatePresence>
+           </main>
+
+           <footer className="px-10 lg:px-20 py-8 bg-white border-t border-slate-100 flex items-center gap-6 shrink-0">
+              {step > 1 && <button onClick={() => setStep(step - 1)} className="h-16 w-16 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#1A1A1A] transition-all border border-slate-100"><ChevronLeft size={24} /></button>}
+              <button 
+                onClick={step === 3 ? () => saveProgress(true) : nextStep} 
+                disabled={isSaving || isUploading} 
+                className="flex-1 h-16 bg-[#1A1A1A] hover:bg-black text-white rounded-lg text-[15px] font-black uppercase flex items-center justify-center gap-4 shadow-xl active:scale-95 disabled:opacity-50 transition-all tracking-widest"
+              >
+                 {isSaving ? (
+                   <div className="flex items-center gap-3">
+                     <Loader2 className="animate-spin" size={24} />
+                     <span>{step === 3 ? "Setting things up..." : "Saving..."}</span>
+                   </div>
+                 ) : (
+                   <>
+                     <span>{step === 3 ? "Finish" : "Continue"}</span>
+                     <ArrowRight size={24} />
+                   </>
                  )}
-
-                 {step === 4 && (
-                    <div className="space-y-12">
-                       <div className="flex justify-center">
-                          <div className="relative group">
-                             <div className="h-44 w-44 rounded-[4rem] overflow-hidden bg-slate-50 border-4 border-white shadow-2xl group-hover:border-[#E53935]/20 transition-all duration-500 ring-8 ring-slate-50/50 relative">
-                                {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><Loader2 className="animate-spin text-white" size={32} /></div>}
-                                <img src={onboardingData.avatar_url || `https://i.pravatar.cc/150?u=${user?.id}`} alt="Photo" className="w-full h-full object-cover" />
-                             </div>
-                             <button 
-                               onClick={() => fileInputRef.current?.click()}
-                               disabled={isUploading}
-                               className="absolute -bottom-2 -right-2 h-16 w-16 bg-[#292828] text-white rounded-3xl flex items-center justify-center shadow-4xl hover:bg-[#E53935] hover:scale-110 active:scale-95 transition-all disabled:opacity-50"
-                             >
-                                <Camera size={24} />
-                             </button>
-                             <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
-                          </div>
-                       </div>
-
-                       <div className="space-y-8">
-                          <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Phone Number</p>
-                             <div className="relative">
-                                <Phone size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-200" />
-                                <input type="tel" value={onboardingData.phone} onChange={e => updateData({ phone: e.target.value })} placeholder="+91 9XX XXXXXXX" className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[2rem] pl-20 pr-8 text-lg font-black text-[#292828] outline-none focus:border-[#E53935]/20" />
-                             </div>
-                          </div>
-                          <div className="space-y-4">
-                             <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Location</p>
-                             <div className="relative">
-                                <MapPin size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-[#E53935]" />
-                                <input type="text" value={onboardingData.location} onChange={e => updateData({ location: e.target.value })} placeholder="BANGALORE, KA" className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-[2rem] pl-20 pr-8 text-lg font-black text-[#292828] outline-none focus:border-[#E53935]/20 uppercase" />
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                 )}
-              </motion.div>
-           </AnimatePresence>
-        </div>
-
-        <div className="px-12 lg:px-20 py-12 bg-slate-50/30 border-t border-slate-100 flex items-center gap-6 shrink-0 relative">
-           {error && <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white px-8 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-2xl animate-in slide-in-from-bottom-2">{error}</div>}
-           {step > 1 && <button onClick={() => setStep(step - 1)} className="h-24 w-24 bg-white border-2 border-slate-100 rounded-[2.25rem] flex items-center justify-center text-[#292828]/20 hover:text-[#292828] hover:border-[#292828]/10 hover:shadow-xl transition-all active:scale-95"><ChevronLeft size={28} /></button>}
-           <button onClick={step === 4 ? completeOnboarding : nextStep} disabled={isSubmitting || isUploading} className="flex-1 h-24 bg-[#292828] text-white rounded-[2.5rem] text-sm font-black uppercase tracking-[0.4em] hover:bg-[#E53935] shadow-4xl active:scale-[0.98] transition-all flex items-center justify-center gap-6 group disabled:opacity-50">{isSubmitting ? "Finishing..." : (step === 4 ? "Enter Checkout" : "Continue")}{!isSubmitting && <ArrowRight size={22} className="group-hover:translate-x-3 transition-transform duration-500" />}</button>
-        </div>
-
-        <div className="px-12 py-6 border-t border-slate-50 flex items-center justify-between bg-white shrink-0">
-           <div className="flex items-center gap-3"><ShieldCheck className="text-emerald-500" size={16} /><span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Secure connection active</span></div>
-           <div className="flex items-center gap-1">{[1,2,3,4].map(i => (<div key={i} className={cn("h-1 w-4 rounded-full transition-all", i === step ? "bg-[#E53935] w-8" : "bg-slate-100")} />))}</div>
+              </button>
+           </footer>
         </div>
       </div>
     </div>

@@ -41,11 +41,11 @@ export default function EventsPage() {
       <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#292828] tracking-tight mb-3">Events</h1>
-            <p className="text-slate-400 font-bold text-base sm:text-lg uppercase tracking-tight">Where opportunities happen in real time</p>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#292828]  mb-3">Events</h1>
+            <p className="text-slate-200 font-bold text-base sm:text-lg uppercase ">Where opportunities happen in real time</p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="h-14 px-8 bg-[#292828] text-white rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-xl active:scale-95 shrink-0">
+            <button className="h-14 px-8 bg-[#292828] text-white rounded-lg flex items-center gap-3 text-xs font-black uppercase  hover:bg-[#E53935] transition-all shadow-xl active:scale-95 shrink-0">
               <Plus size={18} /> Add Event
             </button>
           </div>
@@ -62,10 +62,10 @@ export default function EventsPage() {
               placeholder="Search events, industry, or location..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-16 bg-white border border-slate-100 rounded-2xl pl-16 pr-6 text-sm font-bold text-[#292828] focus:border-[#E53935] outline-none transition-all shadow-sm"
+              className="w-full h-16 bg-white border border-slate-100 rounded-lg pl-16 pr-6 text-sm font-bold text-[#292828] focus:border-[#E53935] outline-none transition-all shadow-sm"
             />
           </div>
-          <button className="h-16 px-6 bg-white border border-slate-100 text-[#292828] rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm shrink-0">
+          <button className="h-16 px-6 bg-white border border-slate-100 text-[#292828] rounded-lg flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm shrink-0">
             <Filter size={18} />
           </button>
         </div>
@@ -76,7 +76,7 @@ export default function EventsPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
           <div className="flex items-center gap-3 text-[#E53935]">
             <Zap size={20} fill="currentColor" />
-            <h2 className="text-xs font-black uppercase tracking-[0.2em]">Featured Events</h2>
+            <h2 className="text-xs font-black uppercase ">Featured Events</h2>
           </div>
         </div>
         
@@ -85,18 +85,18 @@ export default function EventsPage() {
             <div 
               key={event.id}
               onClick={() => router.push(`/events/${event.id}`)}
-              className="min-w-[300px] sm:min-w-[360px] md:min-w-[480px] bg-white rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
+              className="min-w-[300px] sm:min-w-[360px] md:min-w-[480px] bg-white rounded-lg sm:rounded-lg overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
             >
               <div className="h-56 relative overflow-hidden">
                 <img src={event.banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#292828]/60 to-transparent" />
                 <div className="absolute top-6 left-6">
-                  <div className="px-4 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-[9px] font-black uppercase text-[#E53935] shadow-xl tracking-widest">Featured</div>
+                  <div className="px-4 py-1.5 bg-white/95 backdrop-blur-md rounded-lg text-[9px] font-black uppercase text-[#E53935] shadow-xl ">Featured</div>
                 </div>
               </div>
               <div className="p-10">
                 <div className="flex items-center gap-4 mb-4">
-                  <span className="px-3 py-1 bg-slate-50 text-slate-400 rounded-lg text-[9px] font-black uppercase">{event.tags[0]}</span>
+                  <span className="px-3 py-1 bg-slate-50 text-slate-200 rounded-lg text-[9px] font-black uppercase">{event.tags[0]}</span>
                   <div className="flex items-center gap-1.5">
                     <TrendingUp size={12} className="text-emerald-500" />
                     <span className="text-[10px] font-black text-[#292828] uppercase">{event.matchScore}% Match</span>
@@ -104,13 +104,13 @@ export default function EventsPage() {
                 </div>
                 <h3 className="text-3xl font-black text-[#292828] mb-6 group-hover:text-[#E53935] transition-colors leading-tight">{event.name}</h3>
                 <div className="space-y-3">
-                   <div className="flex items-center gap-3 text-slate-400">
+                   <div className="flex items-center gap-3 text-slate-200">
                       <Calendar size={16} />
-                      <span className="text-xs font-bold uppercase tracking-tight">{event.date}</span>
+                      <span className="text-xs font-bold uppercase ">{event.date}</span>
                    </div>
-                   <div className="flex items-center gap-3 text-slate-400">
+                   <div className="flex items-center gap-3 text-slate-200">
                       <MapPin size={16} />
-                      <span className="text-xs font-bold uppercase tracking-tight line-clamp-1">{event.location}</span>
+                      <span className="text-xs font-bold uppercase  line-clamp-1">{event.location}</span>
                    </div>
                 </div>
                 <div className="flex items-center justify-between mt-10 pt-8 border-t border-slate-50">
@@ -118,7 +118,7 @@ export default function EventsPage() {
                       <Users size={16} className="text-slate-300" />
                       <span className="text-xs font-black text-[#292828] uppercase">{event.attendeeCount.toLocaleString()} People</span>
                    </div>
-                   <button className="h-12 px-8 bg-[#292828] text-white rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join Event</button>
+                   <button className="h-12 px-8 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase  group-hover:bg-[#E53935] transition-all">Join Event</button>
                 </div>
               </div>
             </div>
@@ -134,8 +134,8 @@ export default function EventsPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "h-14 px-8 text-[11px] font-black uppercase tracking-widest transition-all relative shrink-0",
-                activeTab === tab ? "text-[#E53935]" : "text-slate-400 hover:text-[#292828]"
+                "h-14 px-8 text-[11px] font-black uppercase  transition-all relative shrink-0",
+                activeTab === tab ? "text-[#E53935]" : "text-slate-200 hover:text-[#292828]"
               )}
             >
               {tab} Events
@@ -151,12 +151,12 @@ export default function EventsPage() {
         </div>
 
         {filteredEvents.length === 0 && (
-          <div className="py-32 text-center bg-white rounded-[3rem] border border-slate-50 shadow-sm">
+          <div className="py-32 text-center bg-white rounded-lg border border-slate-50 shadow-sm">
             <div className="h-24 w-24 bg-slate-50 rounded-full mx-auto flex items-center justify-center text-slate-200 mb-8">
               <Calendar size={48} />
             </div>
-            <h3 className="text-2xl font-black text-[#292828] uppercase tracking-tight">No Events Found</h3>
-            <p className="text-slate-400 font-bold mt-2">Try adjusting your search or filters.</p>
+            <h3 className="text-2xl font-black text-[#292828] uppercase ">No Events Found</h3>
+            <p className="text-slate-200 font-bold mt-2">Try adjusting your search or filters.</p>
           </div>
         )}
       </main>
@@ -169,33 +169,33 @@ function EventCard({ event }: { event: Event }) {
   return (
     <div 
       onClick={() => router.push(`/events/${event.id}`)}
-      className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full"
+      className="bg-white rounded-lg overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full"
     >
       <div className="h-48 relative overflow-hidden">
         <img src={event.banner} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" alt="" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#292828]/40 to-transparent" />
         <div className="absolute top-4 right-4">
-           <div className="h-10 w-10 bg-white/95 backdrop-blur-md rounded-xl flex items-center justify-center text-[#E53935] shadow-lg border border-white/10">
+           <div className="h-10 w-10 bg-white/95 backdrop-blur-md rounded-lg flex items-center justify-center text-[#E53935] shadow-lg border border-white/10">
               <TrendingUp size={18} />
            </div>
         </div>
       </div>
       <div className="p-8 flex-1 flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-           <span className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">{event.matchScore}% Match</span>
+           <span className="text-[10px] font-black text-[#E53935] uppercase ">{event.matchScore}% Match</span>
            <span className="h-1 w-1 bg-slate-200 rounded-full" />
-           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{event.tags[0]}</span>
+           <span className="text-[10px] font-bold text-slate-200 uppercase ">{event.tags[0]}</span>
         </div>
         <h3 className="text-2xl font-black text-[#292828] mb-6 group-hover:text-[#E53935] transition-colors leading-tight line-clamp-2">{event.name}</h3>
         
         <div className="space-y-3 mt-auto">
-           <div className="flex items-center gap-3 text-slate-400">
+           <div className="flex items-center gap-3 text-slate-200">
               <Calendar size={14} />
-              <span className="text-[11px] font-bold uppercase tracking-tight">{event.date}</span>
+              <span className="text-[11px] font-bold uppercase ">{event.date}</span>
            </div>
-           <div className="flex items-center gap-3 text-slate-400">
+           <div className="flex items-center gap-3 text-slate-200">
               <MapPin size={14} />
-              <span className="text-[11px] font-bold uppercase tracking-tight line-clamp-1">{event.location}</span>
+              <span className="text-[11px] font-bold uppercase  line-clamp-1">{event.location}</span>
            </div>
         </div>
 
@@ -204,7 +204,7 @@ function EventCard({ event }: { event: Event }) {
               <Users size={14} className="text-slate-300" />
               <span className="text-[11px] font-black text-[#292828] uppercase">{event.attendeeCount.toLocaleString()}</span>
            </div>
-           <button className="h-10 px-6 bg-white border border-slate-200 text-[#292828] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#292828] hover:text-white hover:border-[#292828] transition-all">Join</button>
+           <button className="h-10 px-6 bg-white border border-slate-200 text-[#292828] rounded-lg text-[10px] font-black uppercase  hover:bg-[#292828] hover:text-white hover:border-[#292828] transition-all">Join</button>
         </div>
       </div>
     </div>

@@ -76,7 +76,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="w-full max-w-lg bg-white rounded-[2.5rem] p-12 shadow-4xl animate-in zoom-in-95 duration-500 overflow-hidden relative">
+      <div className="w-full max-w-lg bg-white rounded-lg p-12 shadow-4xl animate-in zoom-in-95 duration-500 overflow-hidden relative">
         
         {/* Backdrop Accent */}
         <div className="absolute top-0 right-0 p-8 opacity-[0.05] pointer-events-none">
@@ -87,20 +87,20 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
           <h2 className="text-2xl font-black text-[#292828] uppercase">
             Performance <span className="text-[#E53935]">Review</span>
           </h2>
-          <button onClick={onClose} className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
+          <button onClick={onClose} className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
             <X size={20} />
           </button>
         </div>
 
         <div className="text-center mb-10 relative z-10">
-          <p className="text-[10px] font-black uppercase text-[#292828]/40 tracking-[0.3em] mb-4">Reviewing Session With</p>
+          <p className="text-[10px] font-black uppercase text-[#292828]/40  mb-4">Reviewing Session With</p>
           <div className="flex items-center justify-center gap-4 mb-4">
-             <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-lg border-2 border-slate-50">
+             <div className="h-16 w-16 rounded-lg overflow-hidden shadow-lg border-2 border-slate-50">
                 <img src={booking.advisor?.avatar_url || DEFAULT_AVATAR} className="w-full h-full object-cover grayscale" alt="" />
              </div>
              <div className="text-left">
                 <h3 className="text-xl font-black text-[#292828] leading-tight">{booking.advisor?.full_name || "Expert Advisor"}</h3>
-                <span className="text-[10px] font-bold text-[#E53935] uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] font-bold text-[#E53935] uppercase  flex items-center gap-1">
                    <ShieldCheck size={10} /> Verified Session
                 </span>
              </div>
@@ -110,7 +110,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
         <div className="space-y-10 relative z-10">
           {/* STAR RATING AREA */}
           <div className="flex flex-col items-center">
-             <span className="text-[9px] font-black uppercase text-slate-400 mb-6 tracking-widest">Performance Score</span>
+             <span className="text-[9px] font-black uppercase text-slate-400 mb-6 ">Performance Score</span>
              <div className="flex gap-3">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -142,7 +142,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest flex items-center gap-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block  flex items-center gap-2">
                <MessageSquare size={12} /> Session Feedback
             </label>
             <textarea 
@@ -150,14 +150,14 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
               placeholder="Describe the impact of this advisory session..." 
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl font-medium text-[#292828] outline-none focus:border-[#E53935] transition-all placeholder:text-slate-300" 
+              className="w-full p-6 bg-slate-50 border border-slate-200 rounded-lg font-medium text-[#292828] outline-none focus:border-[#E53935] transition-all placeholder:text-slate-300" 
             />
           </div>
           
           <button 
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full h-16 bg-[#292828] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-[#E53935] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+            className="w-full h-16 bg-[#292828] text-white rounded-[1.5rem] font-black text-xs uppercase  shadow-2xl hover:bg-[#E53935] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
           >
              {isSubmitting ? "Submitting..." : (
                 <>Submit Review <Zap size={18} className="fill-white" /></>

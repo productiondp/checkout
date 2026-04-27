@@ -89,7 +89,7 @@ export default function DesktopSidebar() {
       <div className="flex-1 space-y-12">
         {navGroups.map((group, idx) => (
           <div key={idx} className="space-y-6">
-            <h3 className="px-4 text-[9px] font-black uppercase text-[#292828]/30 tracking-[0.3em] flex items-center justify-between">
+            <h3 className="px-4 text-[9px] font-black uppercase text-[#292828]/30  flex items-center justify-between">
               {group.group}
             </h3>
             <div className="space-y-1.5">
@@ -100,7 +100,7 @@ export default function DesktopSidebar() {
                     key={item.label}
                     href={item.href}
                     className={cn(
-                      "group flex items-center gap-4 px-4 h-11 rounded-xl transition-all duration-300 relative overflow-hidden",
+                      "group flex items-center gap-4 px-4 h-11 rounded-lg transition-all duration-300 relative overflow-hidden",
                       isActive 
                         ? "bg-[#292828] text-white" 
                         : "text-slate-500 hover:text-[#292828] hover:bg-slate-50"
@@ -119,7 +119,7 @@ export default function DesktopSidebar() {
                     />
                     
                     <span className={cn(
-                      "text-[12px] font-bold uppercase tracking-tight",
+                      "text-[12px] font-bold uppercase ",
                       isActive ? "text-white" : "text-slate-500"
                     )}>
                       {item.label}

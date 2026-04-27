@@ -1,240 +1,240 @@
-import { UserProfile, Entity } from "@/types/core";
-import { analytics } from "@/utils/analytics";
-import { OutcomeEngine } from "./outcome-engine";
-import { MonetizationService } from "./monetization-service";
-import { SystemOS } from "./system-os";
+import { UserProfile } from "@/types/core";
+import { dependencyEngine } from "@/utils/dependency_engine";
 
 /**
- * Adaptive Weight Configuration (V10 System OS Aligned)
+ * 🧠 SIGNAL PROTECTION & ANOMALY DEFENSE (V34)
+ * 
+ * Secures outcome-driven learning against manipulation and spam.
+ * Principles: Integrity-First, Unique-Weighted, Spam-Resistant.
  */
-interface MatchWeights {
-  context: number;
-  intent: number;
-  location: number;
-  activity: number;
-  recency: number;
-  discovery: number;
-  outcome: number;
-  precision: number;
+
+export interface SessionInteraction {
+  impressions: Record<string, number>;
+  clicks: Record<string, number>;
+  connects: Record<string, number>;
+  replies: Record<string, number>;
+  last_interaction_time: number;
 }
 
-/**
- * Get dynamic weights based on user profile and system health
- */
-export function getAdaptiveWeights(user: UserProfile): MatchWeights {
-  const premium = MonetizationService.getFeatures(user);
-  const correction = SystemOS.getCorrection();
-  const experiment = SystemOS.getExperiment(user.id || "guest");
+export interface NetworkStats {
+  // Computed via SecurityGraph: sum(action * user_reputation)
+  category_quality: Record<string, number>; // Normalized 0-1 (Smoothed rolling avg)
   
-  const baseWeights = {
-    context: 0.20,
-    intent: 0.20,
-    location: 0.15,
-    activity: 0.15,
-    recency: 0.10,
-    discovery: 0.05 * (correction.discoveryMultiplier || 1.0) * (experiment.discoveryMultiplier || 1.0),
-    outcome: 0.15,
-    precision: premium.matchPrecision
-  };
-
-  // 1. Cold Start
-  const isNew = user.created_at && (Date.now() - new Date(user.created_at).getTime() < 172800000);
-  if (!user.onboarding_completed || isNew) {
-    return { ...baseWeights, recency: 0.25, discovery: 0.20, outcome: 0.10 };
-  }
-
-  // 2. High Probability Responders
-  const reputation = user.metadata?.checkout_score || user.matchScore || 80;
-  if (reputation > 85) {
-     return { ...baseWeights, outcome: 0.30, intent: 0.25, activity: 0.20 };
-  }
-
-  return baseWeights;
+  // Validated via SecurityGraph: Requires >=15 unique users, avg rep >= 0.5, no sybil flag
+  trending_categories: string[];
+  
+  peer_group_focus: Record<string, number>;
+  
+  // V34/V35 Additions
+  unique_users_per_category: Record<string, number>;
+  anomaly_flags: Record<string, boolean>; // True if sudden spike lacks diversity or Sybil cluster detected
 }
 
-/**
- * Checkout Adaptive Match Engine (V10) - System Aware
- */
-export function calculateMatchScore(user: UserProfile, target: any, weights?: MatchWeights): MatchResult {
-  const WEIGHTS = weights || getAdaptiveWeights(user);
-  const correction = SystemOS.getCorrection();
-  const experiment = SystemOS.getExperiment(user.id || "guest");
-  
+export interface SessionContext {
+  last_clicked_category?: string;
+  last_connected_type?: string;
+  recent_actions: {
+    type: 'POST' | 'CONNECT' | 'VIEW' | 'CLICK' | 'REPLY';
+    timestamp: number;
+    category?: string;
+  }[];
+  interactions: SessionInteraction;
+  network_stats?: NetworkStats;
+  user_trust_weight?: number; // 0.0 - 1.0, based on connect/reply ratio
+}
+
+const WEIGHTS = {
+  INTENT: 0.40,
+  SKILL: 0.25,
+  RECENCY: 0.20,
+  PROXIMITY: 0.10,
+  ACTIVITY: 0.05
+};
+
+export function calculatePersonalizedScore(
+  user: UserProfile, 
+  item: any, 
+  context: SessionContext
+): { score: number; label?: string; confidence: number } {
   let score = 0;
-  const reasons: string[] = [];
-  const labels: string[] = [];
+  const itemType = item.type?.toUpperCase() || "UNKNOWN";
   
-  // 1. Context & Intent (Adaptive + Precision)
-  const userRole = (user.role || "").toUpperCase();
-  const targetContext = (target.context || target.author_role || "").toUpperCase();
-  if (userRole === targetContext) {
-    score += 100 * WEIGHTS.context * WEIGHTS.precision;
-    reasons.push(`${user.role} ecosystem`);
+  // 1. Base Intent Scoring (40%)
+  const explicitNeeds = user.intents || [];
+  const inferredNeeds = dependencyEngine.inferNeeds(user.role || "", user.industry || "");
+  const itemTags = item.intents || item.tags || item.intent_tags || item.skills_required || [];
+  
+  let intentScore = 0;
+  
+  if (itemTags.length > 0) {
+     let totalWeight = 0;
+     let matchedWeight = 0;
+     
+     // Evaluate Explicit Needs (Weight 1.0)
+     explicitNeeds.forEach(need => {
+        totalWeight += 1.0;
+        if (itemTags.includes(need)) matchedWeight += 1.0;
+     });
+     
+     // Evaluate Inferred Needs (Weight 0.4)
+     inferredNeeds.forEach(inf => {
+        // Prevent double counting if inferred is also explicit
+        if (!explicitNeeds.includes(inf.tag)) {
+           totalWeight += 0.4;
+           if (itemTags.includes(inf.tag)) matchedWeight += 0.4;
+        }
+     });
+     
+     if (totalWeight > 0) {
+        let overlap = matchedWeight / totalWeight;
+        intentScore = overlap * 100;
+        if (overlap > 0.5) intentScore *= 1.2; 
+     }
+     
+     score += Math.min(100, intentScore) * WEIGHTS.INTENT;
   }
 
-  // 2. Skill Overlap
-  const userSkills = new Set((user.expertise || []).map(e => e.toLowerCase()));
-  const targetSkills = Array.isArray(target.skills_required || target.expertise) ? (target.skills_required || target.expertise) : [];
-  const skillOverlap = targetSkills.filter((s: string) => userSkills.has(s.toLowerCase()));
-  if (skillOverlap.length > 0) {
-    score += 100 * WEIGHTS.intent * WEIGHTS.precision;
-    reasons.push(`Matches your ${skillOverlap[0]} skill`);
+  // 2. Skill/Domain Match (25%)
+  const userSkills = user.expertise || (user as any).skills || [];
+  const requiredSkills = item.skills_required || item.skills || [];
+  if (userSkills.length > 0 && requiredSkills.length > 0) {
+    const common = userSkills.filter(s => requiredSkills.includes(s));
+    const skillScore = (common.length / requiredSkills.length) * 100;
+    score += Math.min(100, skillScore) * WEIGHTS.SKILL;
   }
 
-  // 3. Location Relevance (Local Density V9)
-  const locationMatch = (user.location || "").toLowerCase() === (target.location || "").toLowerCase();
-  if (locationMatch) {
-    const locWeight = target.type === 'MEETUP' ? WEIGHTS.location * 1.5 : WEIGHTS.location;
-    score += 100 * locWeight;
-  }
-
-  // 4. Reputation & Quality (Sustainability V7 + OS V10)
-  const authorRep = target.author_profile?.metadata?.checkout_score || 50;
-  const authorQuality = (target.author_profile?.metadata?.avg_quality_given || 70) / 100;
-  const qualityWeight = (correction.qualityWeight || 1.0) * (experiment.qualityWeight || 1.0);
-  
-  score += authorRep * WEIGHTS.activity * (0.8 + (authorQuality * 0.4 * qualityWeight)); 
-
-  // 5. Outcome, Monetization & OS Correction (V10)
-  const { health, boostFactor, statusText } = OutcomeEngine.getPostStatus(target);
-  
+  // 3. Recency Decay (20%)
   const now = Date.now();
-  const createdAt = new Date(target.created_at || now).getTime();
+  const createdAt = new Date(item.created_at || now).getTime();
   const ageHours = (now - createdAt) / (1000 * 60 * 60);
-  const ageDays = ageHours / 24;
-  const decayFactor = Math.max(0.1, 1 - (ageDays * 0.15));
+  
+  let recencyScore = 0;
+  if (ageHours <= 6) recencyScore = 100;
+  else if (ageHours <= 24) recencyScore = 60;
+  else recencyScore = 20;
+  score += recencyScore * WEIGHTS.RECENCY;
 
-  const targetPremium = MonetizationService.getFeatures(target.author_profile);
-  const routingMultiplier = targetPremium.routingSpeed === 'PRIORITY' ? 1.25 : targetPremium.routingSpeed === 'FAST' ? 1.15 : 1.0;
-
-  // OS Boost Elasticity (Prevents addiction to boosting)
-  const effectiveBoost = boostFactor * (correction.boostElasticity || 1.0);
-
-  if (health === 'AT_RISK' || health === 'BOOSTED') {
-     score += 100 * WEIGHTS.outcome * effectiveBoost * decayFactor * routingMultiplier;
-  } else if (health === 'FULFILLED' || health === 'SUCCESSFUL' || health === 'SOLVED') {
-     score -= 40; 
+  // 4. Proximity (10%)
+  if (user.location && item.location && user.location === item.location) {
+    score += 100 * WEIGHTS.PROXIMITY;
   }
 
-  // 5c. Responder Load Balancing & Routing Spread (V10)
-  const responderLoad = OutcomeEngine.getResponderPriority(user);
-  const routingSpread = correction.routingSpread || 1.0;
-  if (responderLoad < 1.0 && target.type === 'REQUIREMENT') {
-     score *= (0.8 / routingSpread); // Spread opportunities wider if imbalanced
+  // 5. Activity/Reputation (5%)
+  const reputation = item.author_profile?.metadata?.checkout_score || 50;
+  score += reputation * WEIGHTS.ACTIVITY;
+
+  // 🛡️ STEP 1 & 5: PROTECTED GLOBAL QUALITY BOOST (V34)
+  let networkBoost = 0;
+  const stats = context.network_stats;
+  let isNetworkConfident = false;
+
+  if (stats) {
+    // Check anomaly flags (sudden spike, low diversity)
+    const isAnomaly = stats.anomaly_flags[itemType];
+    const uniqueUsers = stats.unique_users_per_category[itemType] || 0;
+    
+    // Only trust global signal if enough unique users and no anomaly
+    if (!isAnomaly && uniqueUsers >= 10) {
+       isNetworkConfident = true;
+       // Signal Smoothing: category_quality is assumed to be a rolling average
+       const globalQuality = stats.category_quality[itemType] || 0;
+       const trendingBoost = stats.trending_categories.includes(itemType) ? 0.05 : 0;
+       const peerBoost = stats.peer_group_focus[itemType] || 0;
+       
+       networkBoost = Math.min(0.1, (globalQuality * 0.2) + trendingBoost + (peerBoost * 0.5));
+    } else {
+       // Trust Decay: penalize slightly or ignore if data is stale/anomalous
+       networkBoost = 0;
+    }
   }
 
-  // 6. Recency
-  let recencyValue = Math.max(0, 100 - (ageHours * 2)); 
-  score += recencyValue * WEIGHTS.recency;
+  // 🛡️ STEP 3: APPLY PERSONAL + GLOBAL BALANCE
+  score *= (1 + networkBoost);
 
-  // 7. Anti-Fatigue (V6)
-  const authorPostCount = target.author_profile?.metadata?.daily_post_count || 0;
-  if (authorPostCount > 2) score -= (authorPostCount - 2) * 10;
+  // 🛡️ ADAPTIVE FEEDBACK (V32 Protocol) + SPAM FILTER (V34)
+  const { interactions } = context;
+  const imps = interactions.impressions[itemType] || 0;
+  const clicks = interactions.clicks[itemType] || 0;
+  const connects = interactions.connects[itemType] || 0;
+  const totalInteractions = clicks + connects;
 
-  // 8. Adaptive Trust & Confidence Visibility (V13)
-  const authorMeta = target.author_profile?.metadata || {};
-  const isVerified = !authorMeta.verification_skipped;
-  
-  const trustScore = isVerified ? 100 : (authorMeta.trust_score || 15);
-  const trustConfidence = isVerified ? 1.0 : (authorMeta.trust_confidence || 0.5);
-  
-  // Effective Trust = Base Trust adjusted by system confidence
-  const effectiveTrust = trustScore * trustConfidence;
-  
-  // Penalty ranges from -20 (low trust/conf) to 0 (high trust/conf)
-  const trustPenalty = Math.min(0, Math.max(-20, (effectiveTrust - 50) * 0.4));
-  score += trustPenalty;
+  let qualityBoost = 0;
+  let confidence = Math.min(1, imps / 10);
 
-  const finalScore = Math.min(100, Math.max(0, Math.round(score)));
-  if (finalScore > 90) labels.push("Top Match");
+  // 🛡️ STEP 3: LOW-QUALITY USER FILTER (Apply user trust weight)
+  const userTrustWeight = context.user_trust_weight ?? 1.0;
+
+  if (imps >= 5 && totalInteractions >= 3) {
+    const clickRate = clicks / imps;
+    const connectRate = connects / imps;
+    let qualitySignal = (clickRate * 0.4) + (connectRate * 0.6);
+    
+    // Apply user trust weight to prevent spammer influence
+    qualitySignal *= userTrustWeight;
+    
+    qualityBoost = Math.min(0.2, qualitySignal * 0.5) * confidence;
+  }
+
+  const idleTime = now - interactions.last_interaction_time;
+  let behavioralMultiplier = idleTime < 10 * 60 * 1000 ? 1.0 : idleTime < 30 * 60 * 1000 ? 0.7 : 0.4;
+  score *= (1 + (qualityBoost * behavioralMultiplier));
+
+  // 🛡️ STEP 9: STRICT TRUST SIGNAL LABELS
+  let label = undefined;
+  if (confidence > 0.5 && qualityBoost > 0.05 && itemType === context.last_clicked_category && userTrustWeight > 0.5) {
+    label = "Based on your recent activity";
+  } else if (networkBoost > 0.05 && isNetworkConfident) {
+    label = "Popular in your network";
+  } else if (score > 85) {
+    label = "Relevant to your activity";
+  }
 
   return {
-    score: finalScore,
-    reasons: reasons.slice(0, 2),
-    labels,
-    outcomeStatus: statusText
+    score: Math.min(100, Math.round(score)),
+    label,
+    confidence
   };
 }
 
-/**
- * Intelligent Ranking with Outcome Diversification
- */
-export function rankEntities(user: UserProfile, entities: any[]): any[] {
-  const weights = getAdaptiveWeights(user);
-  
-  // 1. Calculate base scores with outcome and monetization intelligence
+export function rankEntities(user: UserProfile, entities: any[], context: SessionContext): any[] {
   const scored = entities.map(entity => {
-    const result = calculateMatchScore(user, entity, weights);
-    return { 
-      ...entity, 
-      matchScore: result.score, 
-      matchReasons: result.reasons, 
-      priorityLabels: result.labels,
-      outcomeStatus: result.outcomeStatus,
-      isDiscovery: result.labels.includes("Discovery")
-    };
+    const { score, label, confidence } = calculatePersonalizedScore(user, entity, context);
+    return { ...entity, matchScore: score, personalizationLabel: label, scoreConfidence: confidence };
   });
 
-  // 2. Separate into buckets for mix
-  const highRelevance = scored.filter(p => p.matchScore > 75).sort((a,b) => b.matchScore - a.matchScore);
-  const outcomeBoosted = scored.filter(p => p.outcomeStatus === "Needs Response" || p.outcomeStatus === "Urgent").sort((a,b) => b.matchScore - a.matchScore);
-  const rest = scored.filter(p => !highRelevance.includes(p) && !outcomeBoosted.includes(p)).sort((a,b) => b.matchScore - a.matchScore);
+  const sorted = scored.sort((a, b) => b.matchScore - a.matchScore);
 
   const ranked: any[] = [];
-  
-  // 3. Growth & Lifecycle Prompt Injection (V9)
-  const userPosts = scored.filter(p => (p.author_id === user.id || p.user_id === user.id));
-  
-  // A. Check for success/growth events
-  for (const post of userPosts) {
-     const growthOp = OutcomeEngine.getGrowthOpportunity(post, user);
-     if (growthOp) {
-        ranked.push({
-           id: `growth-${post.id}`,
-           type: 'SYSTEM_PROMPT',
-           subtype: growthOp.type,
-           title: growthOp.title,
-           content: growthOp.content,
-           cta: growthOp.cta,
-           targetPostId: post.id,
-           labels: ["Growth"]
-        });
-        break; // Only one growth prompt per session to avoid clutter
-     }
-  }
+  const pool = [...sorted];
+  const typeCounts: Record<string, number> = {};
+  const totalSlots = entities.length;
+  const categoryCap = Math.max(2, Math.floor(totalSlots * 0.5));
 
-  // B. Fallback to health-based nudge if no success event
-  if (ranked.length === 0) {
-     const atRisk = userPosts.find(p => p.outcomeStatus === "Needs Response");
-     if (atRisk) {
-        ranked.push({
-           id: 'lifecycle-prompt',
-           type: 'SYSTEM_PROMPT',
-           title: "BOOST POST",
-           content: `Your post for ${atRisk.title} is losing views. Boost reach to get more results.`,
-           cta: "BOOST REACH",
-           targetPostId: atRisk.id,
-           labels: ["Momentum"]
-        });
-     }
-  }
+  let consecutiveTypeCount = 0;
+  let lastType = "";
 
-  const totalSlots = scored.length;
-  for (let i = 0; i < totalSlots; i++) {
-    let pick = null;
-    const mod = i % 4;
-
-    if (mod === 0 && highRelevance.length > 0) pick = highRelevance.shift();
-    else if (mod === 1 && outcomeBoosted.length > 0) pick = outcomeBoosted.shift();
-    else if (rest.length > 0) pick = rest.shift();
-    
-    if (!pick) {
-      pick = highRelevance.shift() || outcomeBoosted.shift() || rest.shift();
+  while (pool.length > 0) {
+    let pickIndex = -1;
+    for (let i = 0; i < pool.length; i++) {
+      const itemType = pool[i].type || "UNKNOWN";
+      if (ranked.length > 0 && ranked.length % 5 === 0) {
+        if (pool[i].scoreConfidence < 0.5) { pickIndex = i; break; }
+        continue;
+      }
+      if ((typeCounts[itemType] || 0) >= categoryCap) continue;
+      if (itemType === lastType && consecutiveTypeCount >= 2) continue;
+      pickIndex = i;
+      break;
     }
+    if (pickIndex === -1) pickIndex = 0;
 
-    if (pick) ranked.push(pick);
+    const pick = pool.splice(pickIndex, 1)[0];
+    const currentType = pick.type || "UNKNOWN";
+    typeCounts[currentType] = (typeCounts[currentType] || 0) + 1;
+    if (currentType === lastType) consecutiveTypeCount++;
+    else { consecutiveTypeCount = 1; lastType = currentType; }
+    ranked.push(pick);
   }
 
   return ranked;
 }
-

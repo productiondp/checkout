@@ -59,27 +59,27 @@ export default function AdvisorProfilePage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <button 
             onClick={() => router.push('/advisors')}
-            className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 hover:text-[#E53935] transition-all"
+            className="flex items-center gap-3 text-slate-200 font-black uppercase text-[10px]  mb-12 hover:text-[#E53935] transition-all"
           >
             <ArrowLeft size={16} /> Back to Advisors
           </button>
 
           <div className="flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-left gap-10 lg:gap-20">
-            <div className="h-48 w-48 sm:h-64 sm:w-64 rounded-[3rem] sm:rounded-[4rem] overflow-hidden border-[6px] sm:border-[8px] border-slate-50 shadow-4xl shrink-0 rotate-3 transition-transform hover:rotate-0 duration-700">
+            <div className="h-48 w-48 sm:h-64 sm:w-64 rounded-lg sm:rounded-lg overflow-hidden border-[6px] sm:border-[8px] border-slate-50 shadow-4xl shrink-0 rotate-3 transition-transform hover:rotate-0 duration-700">
                <img src={advisor.avatar} className="w-full h-full object-cover grayscale transition-all duration-700 hover:grayscale-0" alt="" />
             </div>
 
             <div className="flex-1">
                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-6">
-                  <div className="px-5 py-2 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-xl shadow-2xl tracking-[0.2em] flex items-center gap-2">
+                  <div className="px-5 py-2 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl  flex items-center gap-2">
                      <ShieldCheck size={14} /> Verified Advisor
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl text-[10px] font-black text-[#292828] uppercase">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg text-[10px] font-black text-[#292828] uppercase">
                      <Sparkles size={14} className="text-[#E53935]" /> {advisor.matchScore}% Match
                   </div>
                </div>
-               <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-[#292828] uppercase tracking-tighter leading-[0.85] mb-8">{advisor.name}</h1>
-               <p className="text-lg sm:text-xl font-bold text-slate-400 uppercase tracking-widest">{advisor.role} @ {advisor.industry}</p>
+               <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-[#292828] uppercase  leading-[0.85] mb-8">{advisor.name}</h1>
+               <p className="text-lg sm:text-xl font-bold text-slate-200 uppercase ">{advisor.role} @ {advisor.industry}</p>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -87,11 +87,11 @@ export default function AdvisorProfilePage() {
                  userId={advisor.id} 
                  userName={advisor.name} 
                  label="Connect" 
-                 className="h-20 px-12 !rounded-[2rem] text-xs" 
+                 className="h-20 px-12 !rounded-lg text-xs" 
                />
               <div className="flex items-center justify-center gap-3 text-slate-300">
                  <Clock size={16} />
-                 <span className="text-[10px] font-black uppercase tracking-widest">{advisor.availability}</span>
+                 <span className="text-[10px] font-black uppercase ">{advisor.availability}</span>
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function AdvisorProfilePage() {
           {/* MAIN COLUMN */}
           <div className="lg:col-span-2 space-y-16">
             <section>
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-8 flex items-center gap-3">
+              <h3 className="text-xs font-black uppercase  text-[#E53935] mb-8 flex items-center gap-3">
                  <BrainCircuit size={18} /> Professional Bio
               </h3>
               <p className="text-2xl lg:text-3xl font-bold text-[#292828] leading-relaxed italic">
@@ -114,15 +114,15 @@ export default function AdvisorProfilePage() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-slate-50">
                <div>
-                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-8">Expertise</h4>
+                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40  mb-8">Expertise</h4>
                   <div className="flex flex-wrap gap-3">
                      {advisor.expertise.map(tag => (
-                       <span key={tag} className="px-6 py-3 bg-white border border-slate-100 rounded-2xl text-[11px] font-black uppercase text-[#292828] shadow-sm">{tag}</span>
+                       <span key={tag} className="px-6 py-3 bg-white border border-slate-100 rounded-lg text-[11px] font-black uppercase text-[#292828] shadow-sm">{tag}</span>
                      ))}
                   </div>
                </div>
                <div>
-                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40 tracking-widest mb-8">Experience Highlights</h4>
+                  <h4 className="text-[11px] font-black uppercase text-[#292828]/40  mb-8">Experience Highlights</h4>
                   <div className="space-y-4">
                      {advisor.highlights.map((h, i) => (
                        <div key={i} className="flex items-center gap-4 text-[#292828] font-bold text-sm">
@@ -136,16 +136,16 @@ export default function AdvisorProfilePage() {
             <section className="bg-[#292828] rounded-[3.5rem] p-12 lg:p-16 text-white relative overflow-hidden group">
                <Zap size={200} className="absolute -right-20 -bottom-20 text-white/[0.03] group-hover:rotate-12 transition-transform duration-[5s]" />
                <div className="relative z-10">
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#E53935] mb-10">Focus</h3>
+                  <h3 className="text-[11px] font-black uppercase  text-[#E53935] mb-10">Focus</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                      {advisor.focus.map((f, i) => (
                        <div key={i} className="flex items-start gap-5">
-                          <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                          <div className="h-10 w-10 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
                              <Award size={20} className="text-[#E53935]" />
                           </div>
                           <div>
-                             <p className="text-lg font-black uppercase tracking-tight leading-tight mb-2">{f}</p>
-                             <p className="text-xs font-medium text-white/40 uppercase tracking-widest">Business Goal</p>
+                             <p className="text-lg font-black uppercase  leading-tight mb-2">{f}</p>
+                             <p className="text-xs font-medium text-white/40 uppercase ">Business Goal</p>
                           </div>
                        </div>
                      ))}
@@ -156,47 +156,47 @@ export default function AdvisorProfilePage() {
 
           {/* SIDEBAR */}
           <aside className="space-y-10">
-             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-8 flex items-center gap-2">
+             <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+                <h3 className="text-[11px] font-black uppercase text-[#292828]  mb-8 flex items-center gap-2">
                    <TrendingUp size={16} className="text-[#E53935]" /> Profile Matching
                 </h3>
                 <div className="space-y-8">
                    <div className="flex items-end justify-between">
-                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Industry Relevance</p>
+                      <p className="text-[10px] font-black uppercase text-slate-300 ">Industry Relevance</p>
                       <p className="text-2xl font-black text-[#292828]">98%</p>
                    </div>
                    <div className="flex items-end justify-between">
-                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Intent Match</p>
+                      <p className="text-[10px] font-black uppercase text-slate-300 ">Intent Match</p>
                       <p className="text-2xl font-black text-[#292828]">94%</p>
                    </div>
                    <div className="flex items-end justify-between">
-                      <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Response Rate</p>
+                      <p className="text-[10px] font-black uppercase text-slate-300 ">Response Rate</p>
                       <p className="text-2xl font-black text-emerald-500">100%</p>
                    </div>
                 </div>
-                <div className="mt-12 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                <div className="mt-12 p-6 bg-slate-50 rounded-lg border border-slate-100">
                    <div className="flex items-center gap-3 mb-3">
                       <Info size={14} className="text-[#292828]/20" />
-                      <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Rules</p>
+                      <p className="text-[9px] font-black uppercase text-slate-200 ">Rules</p>
                    </div>
                    <p className="text-[11px] font-bold text-[#292828]/40 uppercase leading-relaxed">This advisor is a high-authority match for your current business needs.</p>
                 </div>
              </div>
 
-             <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-sm">
-                <h3 className="text-[11px] font-black uppercase text-[#292828] tracking-widest mb-8 flex items-center gap-2">
+             <div className="p-10 bg-white border border-slate-100 rounded-lg shadow-sm">
+                <h3 className="text-[11px] font-black uppercase text-[#292828]  mb-8 flex items-center gap-2">
                    <MessageSquare size={16} className="text-[#E53935]" /> Advisor Rules
                 </h3>
                 <ul className="space-y-4">
-                   <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
+                   <li className="text-xs font-bold text-slate-200 uppercase leading-relaxed flex items-start gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
                       Connections required before messaging.
                    </li>
-                   <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
+                   <li className="text-xs font-bold text-slate-200 uppercase leading-relaxed flex items-start gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
                       Requests are outcome-driven only.
                    </li>
-                   <li className="text-xs font-bold text-slate-400 uppercase leading-relaxed flex items-start gap-3">
+                   <li className="text-xs font-bold text-slate-200 uppercase leading-relaxed flex items-start gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#E53935] mt-1 shrink-0" />
                       Zero noise tolerance policy.
                    </li>
@@ -211,26 +211,26 @@ export default function AdvisorProfilePage() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
            <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setIsRequestModalOpen(false)} />
            
-           <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] sm:rounded-[3.5rem] p-8 sm:p-12 lg:p-16 shadow-premium animate-in zoom-in-95 duration-500">
+           <div className="relative w-full max-w-2xl bg-white rounded-lg sm:rounded-[3.5rem] p-8 sm:p-12 lg:p-16 shadow-premium animate-in zoom-in-95 duration-500">
               <button onClick={() => setIsRequestModalOpen(false)} className="absolute top-6 right-6 sm:top-10 sm:right-10 text-slate-300 hover:text-[#292828] transition-all hover:rotate-90"><X size={28} /></button>
               
               <div className="mb-12">
-                 <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E53935] mb-4">Send Request</h2>
-                 <h3 className="text-4xl font-black text-[#292828] uppercase tracking-tighter leading-none">Request <br /> <span className="text-slate-300">Guidance</span></h3>
+                 <h2 className="text-xs font-black uppercase  text-[#E53935] mb-4">Send Request</h2>
+                 <h3 className="text-4xl font-black text-[#292828] uppercase  leading-none">Request <br /> <span className="text-slate-300">Guidance</span></h3>
               </div>
 
               {requestStatus === "Sent" ? (
                 <div className="py-20 text-center animate-in zoom-in-95 duration-700">
-                   <div className="h-24 w-24 bg-emerald-50 rounded-[2.5rem] mx-auto flex items-center justify-center text-emerald-500 mb-8 shadow-inner shadow-emerald-500/20">
+                   <div className="h-24 w-24 bg-emerald-50 rounded-lg mx-auto flex items-center justify-center text-emerald-500 mb-8 shadow-inner shadow-emerald-500/20">
                       <CheckCircle2 size={48} strokeWidth={3} />
                    </div>
-                   <h4 className="text-2xl font-black text-[#292828] uppercase tracking-tight mb-3">Request Sent</h4>
-                   <p className="text-slate-400 font-bold uppercase text-[11px] tracking-widest leading-relaxed px-12">
+                   <h4 className="text-2xl font-black text-[#292828] uppercase  mb-3">Request Sent</h4>
+                   <p className="text-slate-200 font-bold uppercase text-[11px]  leading-relaxed px-12">
                       Your request has been sent to {advisor.name}. You will be notified once it is accepted.
                    </p>
                    <button 
                      onClick={() => setIsRequestModalOpen(false)}
-                     className="mt-12 h-14 px-12 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+                     className="mt-12 h-14 px-12 border-2 border-slate-100 rounded-lg text-[10px] font-black uppercase  hover:bg-slate-50 transition-all"
                    >
                       Back to Profile
                    </button>
@@ -238,7 +238,7 @@ export default function AdvisorProfilePage() {
               ) : (
                 <div className="space-y-10">
                    <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 block px-4">Subject Topic</label>
+                      <label className="text-[10px] font-black uppercase text-slate-200  mb-4 block px-4">Subject Topic</label>
                       <input 
                         type="text" 
                         placeholder="e.g. Scaling regional logistics" 
@@ -248,20 +248,20 @@ export default function AdvisorProfilePage() {
                       />
                    </div>
                    <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 block px-4">Request Details</label>
+                      <label className="text-[10px] font-black uppercase text-slate-200  mb-4 block px-4">Request Details</label>
                       <textarea 
                         rows={4}
                         placeholder="Describe what you need help with..." 
                         value={requestData.description}
                         onChange={e => setRequestData({...requestData, description: e.target.value})}
-                        className="w-full p-8 bg-slate-50 border border-transparent rounded-[2rem] text-sm font-bold text-[#292828] outline-none focus:bg-white focus:border-[#E53935] transition-all shadow-inner"
+                        className="w-full p-8 bg-slate-50 border border-transparent rounded-lg text-sm font-bold text-[#292828] outline-none focus:bg-white focus:border-[#E53935] transition-all shadow-inner"
                       />
                    </div>
 
                    <button 
                      onClick={handleSendRequest}
                      disabled={requestStatus === "Sending"}
-                     className="w-full h-20 bg-[#292828] text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-[#E53935] transition-all disabled:opacity-50 relative overflow-hidden group"
+                     className="w-full h-20 bg-[#292828] text-white rounded-lg font-black text-sm uppercase  shadow-2xl hover:bg-[#E53935] transition-all disabled:opacity-50 relative overflow-hidden group"
                    >
                       <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[2s]" />
                       <span className="relative z-10">{requestStatus === "Sending" ? "Sending Request..." : "Send Request"}</span>
@@ -269,7 +269,7 @@ export default function AdvisorProfilePage() {
                    
                    <div className="flex items-center justify-center gap-2 text-slate-300">
                       <Lock size={12} />
-                      <p className="text-[9px] font-black uppercase tracking-widest">Secured & Private</p>
+                      <p className="text-[9px] font-black uppercase ">Secured & Private</p>
                    </div>
                 </div>
               )}

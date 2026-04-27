@@ -26,10 +26,10 @@ export default function MatchCard({
   onConnect,
 }: MatchCardProps) {
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-soft border border-white/60 hover:shadow-premium transition-all duration-300 group">
+    <div className="bg-white rounded-lg p-8 shadow-soft border border-white/60 hover:shadow-premium transition-all duration-300 group">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#292828]/5 border border-[#292828]/10 flex items-center justify-center text-3xl font-bold text-primary shadow-sm overflow-hidden">
+          <div className="w-16 h-16 rounded-lg bg-[#292828]/5 border border-[#292828]/10 flex items-center justify-center text-3xl font-bold text-primary shadow-sm overflow-hidden">
             {avatar ? avatar : title[0]}
           </div>
           <div>
@@ -57,7 +57,7 @@ export default function MatchCard({
         </div>
       </div>
 
-      <div className="bg-[#292828]/5/50 rounded-2xl p-5 mb-8 border border-[#292828]/5">
+      <div className="bg-[#292828]/5/50 rounded-lg p-5 mb-8 border border-[#292828]/5">
         <p className="text-[14px] text-text-main leading-relaxed font-medium">
           {reason}
         </p>
@@ -76,7 +76,7 @@ export default function MatchCard({
 
       <button
         onClick={onConnect}
-        className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+        className="w-full py-4 bg-primary text-white rounded-lg font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
       >
         <Zap size={18} fill="white" />
         Initiate Business Lead Engine

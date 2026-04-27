@@ -51,5 +51,12 @@ export const logger = {
 
   async traceFlow(userId: string, stage: 'created' | 'matched' | 'responded' | 'outcome', data: any) {
     await this.track('flow_trace', userId, { stage, ...data });
+  },
+
+  error(message: string, error: any, userId?: string) {
+    console.error(`[LOGGER ERROR] ${message}:`, error);
+    if (userId) {
+      this.track('flow_trace', userId, { stage: 'outcome', status: 'error', message, error: error?.message || String(error) });
+    }
   }
 };

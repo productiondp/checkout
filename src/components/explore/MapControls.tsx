@@ -32,11 +32,11 @@ export default function MapControls({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search people, skills, opportunities..."
-          className="w-full h-16 bg-white/90 backdrop-blur-xl border border-slate-100 rounded-[2rem] pl-16 pr-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] shadow-2xl transition-all"
+          className="w-full h-16 bg-white/90 backdrop-blur-xl border border-slate-100 rounded-lg pl-16 pr-6 text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] shadow-2xl transition-all"
         />
       </div>
 
-      <div className="flex items-center gap-3 bg-white/90 backdrop-blur-xl p-2 rounded-[2rem] border border-slate-100 shadow-2xl">
+      <div className="flex items-center gap-3 bg-white/90 backdrop-blur-xl p-2 rounded-lg border border-slate-100 shadow-2xl">
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
           className={cn(
@@ -51,7 +51,7 @@ export default function MapControls({
           <button 
             onClick={() => setViewMode("map")}
             className={cn(
-              "h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              "h-10 px-6 rounded-full text-[10px] font-black uppercase  transition-all flex items-center gap-2",
               viewMode === "map" ? "bg-white text-[#292828] shadow-sm" : "text-slate-400 hover:text-[#292828]"
             )}
           >
@@ -60,7 +60,7 @@ export default function MapControls({
           <button 
             onClick={() => setViewMode("list")}
             className={cn(
-              "h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              "h-10 px-6 rounded-full text-[10px] font-black uppercase  transition-all flex items-center gap-2",
               viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-slate-400 hover:text-[#292828]"
             )}
           >

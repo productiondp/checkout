@@ -78,22 +78,22 @@ export default function ConnectionSentinel() {
    if (isLoading || requests.length === 0) return null;
 
    return (
-      <section className="bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden p-8 animate-in slide-in-from-right duration-500">
+      <section className="bg-white rounded-lg border border-slate-100 shadow-xl overflow-hidden p-8 animate-in slide-in-from-right duration-500">
          <div className="flex items-center justify-between mb-8">
             <div>
-               <h3 className="text-sm font-black text-[#292828] uppercase tracking-tight">Connection <span className="text-[#E53935]">Requests</span></h3>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{requests.length} people waiting</p>
+               <h3 className="text-sm font-black text-[#292828] uppercase ">Connection <span className="text-[#E53935]">Requests</span></h3>
+               <p className="text-[10px] font-bold text-slate-400 uppercase  mt-1">{requests.length} people waiting</p>
             </div>
-            <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#E53935] animate-pulse">
+            <div className="h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center text-[#E53935] animate-pulse">
                <Zap size={18} fill="currentColor" />
             </div>
          </div>
 
          <div className="space-y-4">
             {requests.map((req) => (
-               <div key={req.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-[#E53935]/20 transition-all">
+               <div key={req.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 group hover:border-[#E53935]/20 transition-all">
                   <div className="flex items-center gap-4 mb-4">
-                     <div className="h-12 w-12 rounded-xl bg-white overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center text-slate-300">
+                     <div className="h-12 w-12 rounded-lg bg-white overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center text-slate-300">
                         {req.sender.avatar_url ? (
                            <img src={req.sender.avatar_url} className="w-full h-full object-cover" alt="" />
                         ) : (
@@ -112,13 +112,13 @@ export default function ConnectionSentinel() {
                   <div className="flex gap-2">
                      <button 
                         onClick={() => handleAction(req.id, 'ACCEPTED')}
-                        className="flex-1 h-10 bg-[#292828] text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 h-10 bg-[#292828] text-white rounded-lg text-[9px] font-black uppercase  hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
                      >
                         <UserCheck size={14} /> Accept
                      </button>
                      <button 
                         onClick={() => handleAction(req.id, 'REJECTED')}
-                        className="w-10 h-10 bg-white border border-slate-100 text-slate-400 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"
+                        className="w-10 h-10 bg-white border border-slate-100 text-slate-400 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"
                      >
                         <UserX size={14} />
                      </button>

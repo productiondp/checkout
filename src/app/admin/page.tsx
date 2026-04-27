@@ -2,54 +2,21 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  Activity, 
   Terminal,
-  Cpu,
-  Fingerprint,
-  Globe,
-  Lock,
-  Unlock,
   Shield,
-  ShieldAlert,
   Power,
-  Users,
-  Waves,
-  Wifi,
-  Satellite,
-  Radar as RadarIcon,
-  Crosshair,
-  BarChart,
-  Link as LinkIcon,
-  Database,
   Unlink,
-  AlertTriangle,
   Zap,
-  User,
-  Maximize2,
-  Scan,
-  RefreshCw,
-  Search,
-  ChevronRight,
-  TrendingUp,
-  Activity as ActivityIcon,
-  ShieldCheck,
-  Eye,
-  ZapOff,
-  Boxes,
-  Code,
   Radio,
-  MessageSquare,
   Crosshair as TargetIcon,
-  Compass,
-  Disc,
-  Cpu as CpuIcon,
   Network,
-  DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { suggestionTelemetry } from "@/utils/suggestion_telemetry";
 
 // ── MATRIX RAIN COMPONENT ──
 const MatrixRain = () => {
@@ -113,6 +80,9 @@ export default function SentinelRedDashboard() {
   const [securityLogs, setSecurityLogs] = useState<string[]>([]);
   const [isBooting, setIsBooting] = useState(false);
   const [bootLog, setBootLog] = useState<string[]>([]);
+  const [telemetryMetrics, setTelemetryMetrics] = useState<any[]>([]);
+  const [variantMetrics, setVariantMetrics] = useState<any>({ A: {}, B: {} });
+  const [ghostTraffic, setGhostTraffic] = useState(0);
   
   const supabase = createClient();
 
@@ -156,6 +126,10 @@ export default function SentinelRedDashboard() {
       if (profs) setUsers(profs);
       if (evs) setEvents(evs);
       if (pts) setPosts(pts);
+      const metricsData = suggestionTelemetry.getMetrics();
+      setTelemetryMetrics(metricsData?.industryMetrics || []);
+      setVariantMetrics(metricsData?.variantMetrics || { A: {}, B: {} });
+      setGhostTraffic(metricsData?.ghostTraffic || 0);
     } catch (e) {}
   };
 
@@ -229,9 +203,9 @@ export default function SentinelRedDashboard() {
               <Zap size={14} className={isSecurityLocked ? "" : "animate-bounce"} />
               <span className="uppercase">{isSecurityLocked ? "PROTECTED" : "OVERRIDE ACTIVE"}</span>
            </button>
-           <button onClick={() => router.push('/home')} className="h-10 w-10 flex items-center justify-center transition-all hover:bg-white/5 rounded">
+           <Link href="/home" className="h-10 w-10 flex items-center justify-center transition-all hover:bg-white/5 rounded">
               <Power size={18} style={{ color: theme.primary }} />
-           </button>
+           </Link>
         </div>
       </header>
 
@@ -341,38 +315,62 @@ export default function SentinelRedDashboard() {
             </div>
          </div>
 
-         {/* BOTTOM PANEL: SYSTEM EVENT INGRESS (NOW RUNNING LOGS) */}
-         <div className="col-span-6 row-span-2 bg-black border-t border-x flex flex-col" style={{ borderColor: `${theme.primary}22` }}>
-            <div className="px-10 py-8 border-b flex items-center justify-between bg-black/60" style={{ borderColor: `${theme.primary}22` }}>
-               <h3 className="uppercase" style={getHeadingStyle('14px')}>Live Event Logs</h3>
+         {/* BOTTOM PANEL: SUGGESTION TELEMETRY DASHBOARD */}
+         <div className="col-span-6 row-span-2 bg-black border-t border-x flex flex-col overflow-hidden" style={{ borderColor: `${theme.primary}22` }}>
+            <div className="px-10 py-4 border-b flex items-center justify-between bg-black/60 shrink-0" style={{ borderColor: `${theme.primary}22` }}>
+               <h3 className="uppercase flex items-center gap-4" style={getHeadingStyle('14px')}>
+                 Suggestion Telemetry
+                 <div className="flex gap-4 opacity-80 text-[10px] items-center">
+                    <div className="flex gap-2">
+                       <span className="text-emerald-500">Var A ({variantMetrics.A?.sampleSize || 0}): {(variantMetrics.A?.ctr * 100 || 0).toFixed(1)}% CTR</span>
+                       <span className="text-amber-500">Var B ({variantMetrics.B?.sampleSize || 0}): {(variantMetrics.B?.ctr * 100 || 0).toFixed(1)}% CTR</span>
+                    </div>
+                    <div className="h-3 w-px bg-white/20" />
+                    <span className={cn(ghostTraffic > 0.4 ? "text-red-500" : "text-white/40")}>
+                       Ghost Traffic: {(ghostTraffic * 100).toFixed(1)}%
+                    </span>
+                 </div>
+               </h3>
                <Terminal size={18} style={{ color: theme.primary }} className="animate-pulse" />
             </div>
-            <div className="flex-1 overflow-hidden relative bg-black/40">
-               <div className="p-10 h-full">
-                  <motion.div animate={{ y: ["0%", "-50%"] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="flex flex-col gap-4">
-                     {[...Array(40)].map((_, i) => {
-                        const ev = events.length > 0 ? events[i % events.length] : null;
-                        const log = securityLogs[i % securityLogs.length];
-                        const isLog = i % 2 === 0 && log;
-                        
-                        return (
-                          <div key={i} className="flex items-center gap-12 text-[14px] border-b border-white/5 pb-2 opacity-80 hover:opacity-100 transition-opacity">
-                             <span className="shrink-0 text-white/10 font-black text-[12px]">[{new Date().toLocaleTimeString()}]</span>
-                             {isLog ? (
-                               <div className="flex-1 truncate uppercase font-black" style={{ color: theme.primary }}>
-                                  DATA STREAM :: {log.slice(11)}
-                               </div>
-                             ) : (
-                               <div className="flex-1 truncate uppercase font-black" style={{ color: theme.secondary }}>
-                                   {ev ? `EVENT LOG :: ${ev.event_type} :: USER ${ev.user_id?.slice(0, 8)}` : "SYSTEM :: IDLE :: NO RECENT EVENTS"}
-                               </div>
-                             )}
-                             <div className="h-2 w-2 rounded-full animate-ping shadow-[0_0_10px_currentColor]" style={{ backgroundColor: theme.primary }} />
-                          </div>
-                        );
-                     })}
-                  </motion.div>
-               </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar relative bg-black/40 p-6">
+               <table className="w-full text-left border-collapse">
+                  <thead>
+                     <tr className="border-b text-[10px] uppercase font-black opacity-50" style={{ borderColor: `${theme.primary}44`, color: theme.primary }}>
+                        <th className="pb-2">Industry</th>
+                        <th className="pb-2">CTR</th>
+                        <th className="pb-2">Escape</th>
+                        <th className="pb-2">Off-List</th>
+                        <th className="pb-2">P→C</th>
+                        <th className="pb-2">C→R</th>
+                        <th className="pb-2">Status</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {telemetryMetrics.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-4 text-[10px] text-white/40 uppercase">No Data</td></tr>
+                     ) : telemetryMetrics.map((m: any, i: number) => (
+                        <tr key={i} className="border-b text-[11px] font-bold uppercase transition-colors hover:bg-white/5" style={{ borderColor: `${theme.primary}22`, color: theme.secondary }}>
+                           <td className="py-3">{m.industry}</td>
+                           <td className="py-3">{(m.ctr * 100).toFixed(1)}%</td>
+                           <td className="py-3">{(m.escapeRate * 100).toFixed(1)}%</td>
+                           <td className="py-3">{(m.offListRate * 100).toFixed(1)}%</td>
+                           <td className="py-3">{(m.ptcRate * 100).toFixed(1)}%</td>
+                           <td className="py-3">{(m.ctrRate * 100).toFixed(1)}%</td>
+                           <td className="py-3">
+                              <span className={cn(
+                                 "px-2 py-1 rounded text-[9px] font-black",
+                                 m.status === 'OK' ? "bg-emerald-500/20 text-emerald-500" :
+                                 m.status === 'WATCH' ? "bg-amber-500/20 text-amber-500" :
+                                 "bg-red-500/20 text-red-500 animate-pulse"
+                              )}>
+                                 {m.status}
+                              </span>
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
             </div>
          </div>
       </div>
@@ -404,7 +402,7 @@ function TopStat({ label, value, color }: any) {
 
 function HackerBadge({ label, value }: any) {
   return (
-    <div className="px-6 py-2 border-2 border-red-500/20 bg-black/60 rounded-sm flex items-center gap-4">
+    <div className="px-6 py-2 border-2 border-red-500/20 bg-black/60 rounded-lg flex items-center gap-4">
        <span className="text-[10px] font-black opacity-30 uppercase text-red-500">{label}</span>
        <span className="text-[16px] font-black text-white">{value}</span>
     </div>

@@ -72,20 +72,32 @@ export class MeetupService {
    */
   static async updateStatus(meetupId: string, status: 'upcoming' | 'live' | 'completed') {
     const supabase = createClient();
+    
+    let updateData: any = { status };
+    if (status === 'completed') {
+       updateData.completed_at = new Date().toISOString();
+    }
+
     const res = await supabase
       .from('posts')
-      .update({ status })
+      .update(updateData)
       .eq('id', meetupId);
 
     if (status === 'completed') {
       // Send System Message about outcome
-      const { data: meetup } = await supabase.from('posts').select('room_id').eq('id', meetupId).single();
+      const { data: meetup } = await supabase.from('posts').select('room_id, author_id').eq('id', meetupId).single();
       if (meetup?.room_id) {
         await supabase.from('messages').insert({
           room_id: meetup.room_id,
           content: "This meetup has ended. How was your experience?",
           type: 'SYSTEM'
         });
+      }
+
+      // Recalculate trust score for the host
+      if (meetup?.author_id) {
+        const { TrustEngine } = await import("@/lib/trust-engine");
+        await TrustEngine.recalculateAdvisorScore(meetup.author_id);
       }
     }
     return res;

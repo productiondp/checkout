@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { calculateMatchScore, getRelevanceLabel, IntentMode } from "@/utils/match-engine";
+import { useUserSuccess } from "@/hooks/useUserSuccess";
 
 interface HomeFeedProps {
   posts: any[];
@@ -45,6 +46,7 @@ export default function HomeFeed({
 }: HomeFeedProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const insights = useUserSuccess(user?.id);
   
   // 🛡️ ACTION & CONTEXT TRACKING
   const [sessionActions, setSessionActions] = useState<string[]>([]);
@@ -117,28 +119,36 @@ export default function HomeFeed({
       location: user.location
     };
 
-    return posts
-      .map((post, i) => {
-        const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge } = calculateMatchScore(userProfile, post, i, intentMode);
-        const rel = getRelevanceLabel(score, customLabel, signals);
-        return {
-          ...post,
-          authorName: post.author?.full_name || "Member",
-          relevanceScore: score,
-          relevanceLabel: rel?.label || null,
-          relevanceSignals: signals,
-          actionScore,
-          ctaHint,
-          nudge,
-          tier
-        };
-      })
-      .filter((post) => {
+    const processed = posts.map((post, i) => {
+      const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge } = calculateMatchScore(userProfile, post, i, intentMode);
+      
+      return {
+        ...post,
+        authorName: post.author?.full_name || "Member",
+        relevanceScore: score,
+        relevanceLabel: customLabel || null,
+        relevanceSignals: signals,
+        actionScore,
+        ctaHint,
+        nudge,
+        tier
+      };
+    });
+
+    // ── V1.10 FEED GUARDRAILS ──
+    const { SignalGuard } = require("@/utils/signal-guard");
+    const guarded = SignalGuard.applyFeedGuardrails(processed, {
+      maxTopOpportunities: 3,
+      neutralRatio: 0.35
+    });
+
+    return guarded
+      .filter((post: any) => {
         const authorId = post.author_id || post.author?.id;
         if (authorId === user.id) return true;
         return post.relevanceScore > 0;
       })
-      .sort((a, b) => {
+      .sort((a: any, b: any) => {
         if (a.tier !== b.tier) return a.tier - b.tier;
         return (b.actionScore || 0) - (a.actionScore || 0);
       });
@@ -229,6 +239,22 @@ export default function HomeFeed({
                     <ArrowRight size={18} />
                  </button>
               </div>
+             
+             {/* ── STEP 6: USER SUCCESS SIGNALS ── */}
+             <div className="flex flex-wrap gap-3">
+                {insights.map((insight, i) => (
+                   <motion.div 
+                     key={i}
+                     initial={{ opacity: 0, x: -10 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     transition={{ delay: 0.2 + (i * 0.1) }}
+                     className="px-5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-full flex items-center gap-3 shadow-sm"
+                   >
+                      <Sparkles size={12} className="text-emerald-600" />
+                      <span className="text-[10px] font-black uppercase text-emerald-700">{insight}</span>
+                   </motion.div>
+                ))}
+             </div>
             </div>
 
             {/* ── STEP 1: INTENT MODES & INSIGHTS ── */}

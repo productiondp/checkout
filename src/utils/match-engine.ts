@@ -39,6 +39,7 @@ export interface MatchPost {
     quality_score?: number;
     activity_level?: number;
     last_active?: string;
+    advisor_score?: number;
   };
 }
 
@@ -137,22 +138,55 @@ export const calculateMatchScore = (
   // Freshness & Urgency
   const ageHrs = post.created_at ? (Date.now() - new Date(post.created_at).getTime()) / (1000 * 60 * 60) : 100;
   const hasUrgency = URGENCY_KEYWORDS.some(k => `${post.title} ${post.content}`.toLowerCase().includes(k));
+  const urgencyScore = hasUrgency ? 0.8 : (ageHrs <= 12 ? 0.6 : 0);
+  
+  // 🛡️ TRUST ENGINE BOOST
+  const advisorScore = post.author_profile?.advisor_score || 0;
+  const trustBoost = advisorScore / 5; // Normalized boost
 
-  let urgencyScore = 0;
-  if (hasUrgency) urgencyScore = 0.8;
-  else if (ageHrs <= 12) urgencyScore = 0.6;
+  // ── V1.10 SIGNAL GUARDRAIL ──
+  const { SignalGuard } = require("./signal-guard");
+  
+  const isHighMatch = baseScore >= 0.8;
+  const isHighActivity = activityLevel > 0.7;
+  const actionScoreFinal = (baseScore * 0.4) + (responseProb * 0.2) + (urgencyScore * 0.2) + (trustBoost * 0.2);
 
-  const actionScore = (baseScore * 0.4) + (responseProb * 0.3) + (urgencyScore * 0.2);
+  const potentialSignals = [];
+  const secondarySignals: string[] = [];
+  
+  // 1. CTA CANDIDATES
+  if (post.type === 'MEETUP' && isSameBase && isHighMatch) {
+    potentialSignals.push(SignalGuard.validateCTA("You should join this", { 
+      trust: advisorScore, 
+      match: baseScore, 
+      active: isHighActivity 
+    }));
+  }
+
+  // 2. PRIORITY CANDIDATES
+  if (actionScoreFinal > 0.85) potentialSignals.push("Top opportunity");
+  if (isSameBase && tier === 1 && baseScore >= 0.8) potentialSignals.push("Best match for you");
+  if (post.type === 'MEETUP' && advisorScore === 0) potentialSignals.push("New advisor");
+
+  const primarySignal = SignalGuard.resolveSignal(potentialSignals);
+
+  // 3. SECONDARY SIGNALS (Step 3)
+  if (isAuthorActive) secondarySignals.push("Best time to connect");
+  if (responseProb > 0.9) secondarySignals.push("High chance of reply");
+  if (hasUrgency) secondarySignals.push("Urgent");
+  
+  // Add some personality-based secondary signals
+  if (post.author_profile?.quality_score > 0.8) secondarySignals.push("High success rate");
 
   return {
     score: Math.min(1.0, baseScore),
-    label,
-    signals,
+    label: primarySignal,
+    signals: secondarySignals,
     baseTags: [postBase],
     tier,
-    actionScore,
-    ctaHint,
-    nudge
+    actionScore: actionScoreFinal,
+    ctaHint: primarySignal === "You should join this" ? primarySignal : undefined,
+    nudge: primarySignal
   };
 };
 
@@ -167,6 +201,7 @@ export const detectBaseTag = (text: string = "", tags: string[] = []): string =>
 export const getRelevanceLabel = (score: number, customLabel?: string, signals: string[] = []): { label: string; color: string; signals: string[] } | null => {
   if (!customLabel) return null;
   const colorMap: Record<string, string> = {
+    "Top opportunity": "emerald",
     "Best opportunity": "emerald",
     "Also useful for you": "blue",
     "Based on your activity": "slate"

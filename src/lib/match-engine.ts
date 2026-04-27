@@ -123,6 +123,12 @@ export function calculatePersonalizedScore(
   const reputation = item.author_profile?.metadata?.checkout_score || 50;
   score += reputation * WEIGHTS.ACTIVITY;
 
+  // 🛡️ STEP 5: TRUST ENGINE BOOST (NEW)
+  const trustScore = item.author_profile?.advisor_score || 0;
+  // Boost by up to 20 points for high trust (normalized to weight if needed, but here we add as a tactical boost)
+  const trustBoost = Math.min(20, trustScore * 4); 
+  score += trustBoost;
+
   // 🛡️ STEP 1 & 5: PROTECTED GLOBAL QUALITY BOOST (V34)
   let networkBoost = 0;
   const stats = context.network_stats;

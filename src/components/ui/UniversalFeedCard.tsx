@@ -28,9 +28,13 @@ import {
   IndianRupee,
   AlertCircle,
   Tag,
-  UserPlus,
-  MessageSquare
+  MessageSquare,
+  Activity
 } from "lucide-react";
+import { TrustBadge } from "@/components/trust/TrustBadge";
+import { TrustInsights } from "@/components/trust/TrustInsights";
+import { OutcomeSelector } from "@/components/trust/OutcomeSelector";
+import { MeetupFeedback } from "@/components/trust/MeetupFeedback";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -164,15 +168,31 @@ export default function UniversalFeedCard({
    const [maxSlots, setMaxSlots] = React.useState(post.max_slots || 0);
    const [joinStatus, setJoinStatus] = React.useState<'IDLE' | 'JOINED' | 'FULL'>('IDLE');
    const [isJoining, setIsJoining] = React.useState(false);
+   const [activeSignals, setActiveSignals] = React.useState<any[]>([]);
  
    React.useEffect(() => {
      if (nType === 'MEETUP' && post.id && authUser) {
        const fetchMeetupData = async () => {
          const { MeetupService } = await import("@/services/meetup-service");
+         const { conversionLearning } = await import("@/utils/conversion-learning");
+         
          const status = await MeetupService.getMeetupStatus(post.id, authUser.id);
          setParticipantCount(status.count);
          setMaxSlots(status.maxSlots);
          setJoinStatus(status.status as any);
+
+         // 🧠 V1.12 ADAPTIVE SIGNAL SELECTION
+         const available = [
+           { type: 'SEAT_URGENCY', active: status.maxSlots > 0 && (status.count / status.maxSlots) >= 0.6 },
+           { type: 'SOCIAL_PROOF', active: status.count >= 3 },
+           { type: 'TIME_SENSITIVITY', active: post.metadata?.timeline === 'Today' }
+         ];
+         
+         const selected = conversionLearning.selectSignals(available as any);
+         setActiveSignals(selected);
+         
+         // TRACK IMPRESSION
+         conversionLearning.trackImpression(post.id, selected);
        };
        fetchMeetupData();
      }
@@ -185,10 +205,15 @@ export default function UniversalFeedCard({
     setIsJoining(true);
     try {
       const { MeetupService } = await import("@/services/meetup-service");
+      const { conversionLearning } = await import("@/utils/conversion-learning");
+      
       const { roomId } = await MeetupService.joinMeetup(post.id, authUser.id);
       setJoinStatus('JOINED');
       setParticipantCount(prev => prev + 1);
       
+      // 🧠 V1.12 TRACK CONVERSION
+      conversionLearning.trackConversion(post.id);
+
       // Open the group chat
       if (roomId) {
         router.push(`/chat?room=${roomId}`);
@@ -255,37 +280,34 @@ export default function UniversalFeedCard({
         </div>
       )}
 
-      {/* 🛡️ PERSONALIZATION SIGNAL (Explainable Feed) */}
-      {(relevanceLabel) && !isOwner && (
+      {/* 🛡️ SIGNAL PRIORITY LAYER (V1.9) */}
+      {(relevanceLabel || (relevanceSignals && relevanceSignals.length > 0)) && !isOwner && (
         <div className="absolute top-4 left-8 z-20">
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                 <div className={cn(
-                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm border",
-                    relevanceColor === 'emerald' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                    relevanceColor === 'blue' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                    "bg-[#0A0A0A] text-white border-white/10"
-                 )}>
-                    {relevanceColor === 'emerald' && <Zap size={10} strokeWidth={3} />}
-                    {relevanceColor === 'blue' && <Target size={10} strokeWidth={3} />}
-                    {relevanceColor === 'slate' && <Activity size={10} strokeWidth={3} />}
-                    {relevanceLabel || "Match"}
-                 </div>
-
-                 {/* STEP 8: PULSE SIGNALS */}
-                 {post.relevanceSignals?.map((sig: string) => (
-                    <div key={sig} className={cn(
-                       "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border",
-                       sig === 'Urgent' ? "bg-red-50 text-[#E53935] border-red-100 animate-pulse" :
-                       sig === 'New' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                       "bg-slate-50 text-slate-500 border-slate-100"
-                    )}>
-                       {sig === 'Urgent' && <Zap size={10} />}
-                       {sig === 'New' && <Sparkles size={10} />}
-                       {sig === 'Recently active' && <CheckCircle2 size={10} />}
-                       {sig}
-                    </div>
-                 ))}
+          <div className="flex flex-col gap-1.5">
+            {/* Primary Signal (Badge) */}
+            {relevanceLabel && (
+              <div className={cn(
+                "w-fit px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm border",
+                relevanceLabel === 'Top opportunity' || relevanceLabel === 'Best opportunity' || relevanceLabel === 'You should join this'
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                  : "bg-[#0A0A0A] text-white border-white/10"
+              )}>
+                {(relevanceLabel === 'Top opportunity' || relevanceLabel === 'Best opportunity' || relevanceLabel === 'You should join this') 
+                  ? <Zap size={10} strokeWidth={3} /> 
+                  : <Target size={10} strokeWidth={3} />}
+                {relevanceLabel}
               </div>
+            )}
+
+            {/* Secondary Signals (Subtle Text) */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {relevanceSignals?.map((sig: string) => (
+                <span key={sig} className="text-[9px] font-bold text-[#86868B] uppercase tracking-widest opacity-60">
+                  + {sig}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -412,11 +434,44 @@ export default function UniversalFeedCard({
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">{rank || "Strategic Advisor"}</p>
-                  <div className="flex items-center justify-end gap-1.5">
+                  <div className="flex items-center justify-end gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[11px] font-black text-[#292828]">{score}% Score</span>
+                    {post.author_profile?.advisor_score > 0 && (
+                      <TrustBadge score={post.author_profile.advisor_score} showLabel={false} />
+                    )}
                   </div>
                 </div>
+                
+                {/* V1.7 EXPLAINABILITY LAYER */}
+                <div className="w-full mt-4">
+                  <TrustInsights advisorId={post.author_id} />
+                </div>
+              </div>
+            )}
+            {/* TRUST ENGINE: FEEDBACK & OUTCOMES */}
+            {nType === 'MEETUP' && post.status === 'completed' && (
+              <div className="w-full mt-6 space-y-4 pt-6 border-t border-slate-100">
+                {isOwner ? (
+                  !post.outcome_data ? (
+                    <OutcomeSelector 
+                      meetupId={post.id} 
+                      advisorId={currentUserId || ''} 
+                      onProcessed={() => router.refresh()} 
+                    />
+                  ) : (
+                    <div className="p-4 bg-emerald-50 rounded-2xl text-center">
+                      <p className="text-[10px] font-black uppercase text-emerald-600">Outcome Recorded: {post.outcome_data.type}</p>
+                    </div>
+                  )
+                ) : (
+                  joinStatus === 'JOINED' && (
+                    <MeetupFeedback 
+                      meetupId={post.id} 
+                      userId={currentUserId || ''} 
+                    />
+                  )
+                )}
               </div>
             )}
           </>}
@@ -502,79 +557,113 @@ export default function UniversalFeedCard({
           </AnimatePresence>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end gap-2">
             {!isOwner && (
               <>
                 {/* 1. PRIMARY ACTION (Join for Meetups, Reply for Others) */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={nType === 'MEETUP' ? handleJoin : (e) => { e.stopPropagation(); onAction?.(post); }}
-                  disabled={isJoining || (nType === 'MEETUP' && joinStatus === 'FULL')}
-                  className={cn(
-                    "h-14 px-8 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-3 transition-all",
-                    nType === 'MEETUP' 
-                      ? (joinStatus === 'JOINED' ? "bg-emerald-500 hover:bg-emerald-600" : joinStatus === 'FULL' ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800")
-                      : cfg.ctaBg
-                  )}
-                >
-                  {isJoining ? (
-                    <Activity className="animate-spin" size={20} />
-                  ) : nType === 'MEETUP' ? (
-                    joinStatus === 'JOINED' ? <CheckCircle2 size={20} /> : <Users size={20} strokeWidth={2.5} />
-                  ) : (
-                    <MessageSquare size={20} strokeWidth={2.5} />
-                  )}
-                  <span className="hidden sm:block">
-                    {nType === 'MEETUP' 
-                      ? (joinStatus === 'JOINED' ? 'Joined' : joinStatus === 'FULL' ? 'Full' : 'Join') 
-                      : cfg.ctaLabel}
-                  </span>
-                  {nType === 'MEETUP' && (
-                    <span className="text-[10px] opacity-40 font-black ml-1">
-                       {participantCount}/{post.max_slots || 5}
-                    </span>
-                  )}
-                </motion.button>
-
-                {/* 2. MESSAGE HOST (Optional for Meetups) */}
-                {nType === 'MEETUP' && (
-                   <motion.button
+                <div className="flex items-center gap-3">
+                  <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={(e) => { e.stopPropagation(); onAction?.(post); }}
-                    className="h-14 w-14 rounded-2xl border border-black/[0.05] text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center justify-center transition-all"
-                    title="Message Host"
-                   >
-                     <MessageSquare size={20} />
-                   </motion.button>
-                )}
+                    onClick={nType === 'MEETUP' ? handleJoin : (e) => { e.stopPropagation(); onAction?.(post); }}
+                    disabled={isJoining || (nType === 'MEETUP' && joinStatus === 'FULL')}
+                    className={cn(
+                      "h-14 px-8 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-3 transition-all",
+                      nType === 'MEETUP' 
+                        ? (joinStatus === 'JOINED' ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20" : joinStatus === 'FULL' ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800 shadow-xl")
+                        : cfg.ctaBg
+                    )}
+                  >
+                    {isJoining ? (
+                      <Zap className="animate-spin" size={20} />
+                    ) : nType === 'MEETUP' ? (
+                      joinStatus === 'JOINED' ? <CheckCircle2 size={20} /> : <Users size={20} strokeWidth={2.5} />
+                    ) : (
+                      <MessageSquare size={20} strokeWidth={2.5} />
+                    )}
+                    <span className="hidden sm:block">
+                      {nType === 'MEETUP' 
+                        ? (joinStatus === 'JOINED' 
+                            ? "You're in" 
+                            : joinStatus === 'FULL' 
+                              ? 'Full' 
+                              : (relevanceLabel === 'Top opportunity' || relevanceLabel === 'You should join this' 
+                                  ? 'Join Meetup' 
+                                  : relevanceLabel === 'Best match for you' || relevanceLabel === 'Good match for you'
+                                    ? 'Good match — Join'
+                                    : 'View details')) 
+                        : cfg.ctaLabel}
+                    </span>
+                  </motion.button>
 
-                {/* 3. CONNECT BUTTON (Single Responsibility: Relationship) */}
-                {nType !== 'MEETUP' && (
-                  <ConnectButton 
-                    initialStatus={post.connectionStatus} 
-                    userId={currentUserId} 
-                    targetId={post.author?.id || post.author_id}
-                    post={post}
-                  />
+                  {/* 2. MESSAGE HOST (Optional for Meetups) */}
+                  {nType === 'MEETUP' && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={(e) => { e.stopPropagation(); onAction?.(post); }}
+                      className="h-14 w-14 rounded-2xl border border-black/[0.05] text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center justify-center transition-all"
+                      title="Message Host"
+                    >
+                      <MessageSquare size={20} />
+                    </motion.button>
+                  )}
+
+                  {/* 3. CONNECT BUTTON (Single Responsibility: Relationship) */}
+                  {nType !== 'MEETUP' && (
+                    <ConnectButton 
+                      initialStatus={post.connectionStatus} 
+                      userId={currentUserId} 
+                      targetId={post.author?.id || post.author_id}
+                      post={post}
+                    />
+                  )}
+
+                  {/* Bookmark */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
+                    className={cn(
+                      "h-14 w-14 rounded-2xl border flex items-center justify-center transition-all duration-300",
+                      bookmarked
+                        ? "bg-amber-500 border-amber-500 text-white shadow-xl shadow-amber-500/10"
+                        : "border-black/[0.05] text-[#86868B] hover:text-amber-500 hover:bg-[#F5F5F7]"
+                    )}
+                  >
+                    <Bookmark size={20} fill={bookmarked ? "currentColor" : "none"} />
+                  </motion.button>
+                </div>
+
+                {/* V1.12 ADAPTIVE MICRO-SIGNALS ROW */}
+                {nType === 'MEETUP' && !isOwner && (
+                  <div className="flex items-center gap-4 px-2">
+                    {joinStatus === 'JOINED' ? (
+                      <p className="text-[10px] font-black uppercase text-emerald-600 animate-pulse">Chat is open • Say hi</p>
+                    ) : (
+                      <>
+                        {activeSignals.map(sigType => (
+                          <React.Fragment key={sigType}>
+                            {sigType === 'SEAT_URGENCY' && (
+                               <p className="text-[10px] font-black uppercase text-[#E53935]">
+                                 {maxSlots - participantCount === 1 ? "Last seat left" : `${maxSlots - participantCount} seats left`}
+                               </p>
+                            )}
+                            {sigType === 'SOCIAL_PROOF' && (
+                               <p className="text-[10px] font-bold text-[#86868B] uppercase">
+                                 {participantCount} people joined
+                               </p>
+                            )}
+                            {sigType === 'TIME_SENSITIVITY' && (
+                               <p className="text-[10px] font-black uppercase text-amber-600">Starting Today</p>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </>
+                    )}
+                  </div>
                 )}
               </>
             )}
-
-            {/* Bookmark */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
-              className={cn(
-                "h-14 w-14 rounded-2xl border flex items-center justify-center transition-all duration-300",
-                bookmarked
-                  ? "bg-amber-500 border-amber-500 text-white shadow-xl shadow-amber-500/10"
-                  : "border-black/[0.05] text-[#86868B] hover:text-amber-500 hover:bg-[#F5F5F7]"
-              )}
-            >
-              <Bookmark size={20} fill={bookmarked ? "currentColor" : "none"} />
-            </motion.button>
           </div>
         </div>
       </div>

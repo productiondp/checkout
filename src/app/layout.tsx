@@ -5,6 +5,7 @@ import { Inter, Outfit } from "next/font/google";
 import { AuthProvider } from "@/hooks/useAuth";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import ProtocolGuard from "@/components/auth/ProtocolGuard";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-outfit" });
@@ -45,12 +46,14 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${outfit.variable} h-full overflow-hidden`}>
       <body className="font-sans bg-white h-full overscroll-none">
         <AuthProvider>
-          <ErrorBoundary>
-            <ProtocolGuard />
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </ErrorBoundary>
+          <NotificationProvider>
+            <ErrorBoundary>
+              <ProtocolGuard />
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </ErrorBoundary>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

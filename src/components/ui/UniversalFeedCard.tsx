@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+
+import ConnectButton from "@/components/ui/ConnectButton";
 import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
+import { useConnections } from "@/hooks/useConnections";
 import { createClient } from "@/utils/supabase/client";
 import { 
   Zap, 
@@ -25,10 +28,12 @@ import {
   IndianRupee,
   AlertCircle,
   Tag,
-  UserPlus
+  UserPlus,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface UniversalFeedCardProps {
   post: any;
@@ -61,7 +66,7 @@ const TYPE_CONFIG: Record<string, {
     chipBg: "bg-[#F5F5F7]",
     chipText: "text-[#E53935]",
     ctaLabel: "Reply",
-    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    ctaBg: "bg-[#E53935] hover:bg-[#C62828] shadow-lg shadow-red-500/20",
     glowColor: "rgba(0, 113, 227, 0.1)",
   },
   PARTNERSHIP: {
@@ -73,19 +78,19 @@ const TYPE_CONFIG: Record<string, {
     chipBg: "bg-[#F5F5F7]",
     chipText: "text-[#1D1D1F]",
     ctaLabel: "Connect",
-    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    ctaBg: "bg-[#E53935] hover:bg-[#C62828] shadow-lg shadow-red-500/20",
     glowColor: "rgba(29, 29, 31, 0.1)",
   },
   MEETUP: {
     icon: Users,
-    label: "Event",
+    label: "Meetup",
     accentColor: "#34C759",
     gradient: "from-[#34C759] to-[#4CD964]",
     bgColor: "bg-emerald-50/50",
-    chipBg: "bg-[#F5F5F7]",
-    chipText: "text-[#34C759]",
-    ctaLabel: "Join",
-    ctaBg: "bg-[#1D1D1F] hover:bg-black shadow-lg",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-600",
+    ctaLabel: "Join Meetup",
+    ctaBg: "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20",
     glowColor: "rgba(52, 199, 89, 0.1)",
   },
 };
@@ -105,8 +110,9 @@ function normalizeType(type: string): keyof typeof TYPE_CONFIG {
     PARTNERSHIP: "PARTNERSHIP",
     MEETUP: "MEETUP",
     REQUIREMENT: "REQUIREMENT",
+    meetup: "MEETUP"
   };
-  return (map[type?.toUpperCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
+  return (map[type?.toLowerCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
 }
 
 export default function UniversalFeedCard({
@@ -122,6 +128,7 @@ export default function UniversalFeedCard({
   const [bookmarked, setBookmarked] = React.useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -153,13 +160,59 @@ export default function UniversalFeedCard({
   const circumference = 2 * Math.PI * 18;
 
   const { user: authUser } = useAuth();
+   const [participantCount, setParticipantCount] = React.useState(0);
+   const [maxSlots, setMaxSlots] = React.useState(post.max_slots || 0);
+   const [joinStatus, setJoinStatus] = React.useState<'IDLE' | 'JOINED' | 'FULL'>('IDLE');
+   const [isJoining, setIsJoining] = React.useState(false);
+ 
+   React.useEffect(() => {
+     if (nType === 'MEETUP' && post.id && authUser) {
+       const fetchMeetupData = async () => {
+         const { MeetupService } = await import("@/services/meetup-service");
+         const status = await MeetupService.getMeetupStatus(post.id, authUser.id);
+         setParticipantCount(status.count);
+         setMaxSlots(status.maxSlots);
+         setJoinStatus(status.status as any);
+       };
+       fetchMeetupData();
+     }
+   }, [post.id, authUser?.id, nType]);
   
+  const handleJoin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!authUser || isJoining || joinStatus === 'JOINED' || joinStatus === 'FULL') return;
+
+    setIsJoining(true);
+    try {
+      const { MeetupService } = await import("@/services/meetup-service");
+      const { roomId } = await MeetupService.joinMeetup(post.id, authUser.id);
+      setJoinStatus('JOINED');
+      setParticipantCount(prev => prev + 1);
+      
+      // Open the group chat
+      if (roomId) {
+        router.push(`/chat?room=${roomId}`);
+      }
+    } catch (err: any) {
+      if (err.message === "MEETUP_FULL") setJoinStatus('FULL');
+      console.error("Join failed:", err);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   const handleInteraction = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (authUser?.base_tag && post.base_tag) {
       analytics.trackInteraction(authUser.base_tag, post.base_tag, 'CLICK');
     }
-    onAction?.();
+    
+    if (nType === 'MEETUP') {
+      // For meetups, we might want a different primary action or just the Join button
+      onAction?.(post);
+    } else {
+      onAction?.(post);
+    }
   };
 
   const isTopPriority = post.tier === 1 && post.actionScore > 0.8;
@@ -343,7 +396,7 @@ export default function UniversalFeedCard({
             {post.mode && <MetaChip icon={Users} label={post.mode} gradient={cfg.gradient} />}
             {post.dateTime && <MetaChip icon={Calendar} label={post.dateTime} />}
             {post.payment_type && <MetaChip icon={IndianRupee} label={post.payment_type} />}
-            {post.max_slots && <MetaChip icon={Tag} label={`${post.max_slots} Slots`} />}
+            {maxSlots > 0 && <MetaChip icon={Tag} label={`${participantCount}/${maxSlots} Joined`} gradient={cfg.gradient} />}
             
             {/* ADVISOR SPOTLIGHT FOR MEETUPS */}
             {(context?.toUpperCase() === 'ADVISOR' || post.author_profile?.role?.toUpperCase() === 'ADVISOR') && (
@@ -452,27 +505,60 @@ export default function UniversalFeedCard({
           <div className="flex items-center gap-3">
             {!isOwner && (
               <>
-                {/* 1. REPLY / MESSAGE BUTTON (Primary for communication) */}
+                {/* 1. PRIMARY ACTION (Join for Meetups, Reply for Others) */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={(e) => { e.stopPropagation(); onAction?.(post); }}
+                  onClick={nType === 'MEETUP' ? handleJoin : (e) => { e.stopPropagation(); onAction?.(post); }}
+                  disabled={isJoining || (nType === 'MEETUP' && joinStatus === 'FULL')}
                   className={cn(
-                    "h-14 px-8 rounded-2xl text-[14px] font-bold text-white flex items-center gap-3 transition-all",
-                    cfg.ctaBg
+                    "h-14 px-8 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-3 transition-all",
+                    nType === 'MEETUP' 
+                      ? (joinStatus === 'JOINED' ? "bg-emerald-500 hover:bg-emerald-600" : joinStatus === 'FULL' ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800")
+                      : cfg.ctaBg
                   )}
                 >
-                  {cfg.ctaLabel}
-                  <ArrowUpRight size={18} strokeWidth={2.5} />
+                  {isJoining ? (
+                    <Activity className="animate-spin" size={20} />
+                  ) : nType === 'MEETUP' ? (
+                    joinStatus === 'JOINED' ? <CheckCircle2 size={20} /> : <Users size={20} strokeWidth={2.5} />
+                  ) : (
+                    <MessageSquare size={20} strokeWidth={2.5} />
+                  )}
+                  <span className="hidden sm:block">
+                    {nType === 'MEETUP' 
+                      ? (joinStatus === 'JOINED' ? 'Joined' : joinStatus === 'FULL' ? 'Full' : 'Join') 
+                      : cfg.ctaLabel}
+                  </span>
+                  {nType === 'MEETUP' && (
+                    <span className="text-[10px] opacity-40 font-black ml-1">
+                       {participantCount}/{post.max_slots || 5}
+                    </span>
+                  )}
                 </motion.button>
 
-                {/* 2. CONNECT BUTTON (Single Responsibility: Relationship) */}
-                <ConnectButton 
-                  initialStatus={post.connectionStatus} 
-                  userId={currentUserId} 
-                  targetId={post.author?.id || post.author_id}
-                  post={post}
-                />
+                {/* 2. MESSAGE HOST (Optional for Meetups) */}
+                {nType === 'MEETUP' && (
+                   <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => { e.stopPropagation(); onAction?.(post); }}
+                    className="h-14 w-14 rounded-2xl border border-black/[0.05] text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center justify-center transition-all"
+                    title="Message Host"
+                   >
+                     <MessageSquare size={20} />
+                   </motion.button>
+                )}
+
+                {/* 3. CONNECT BUTTON (Single Responsibility: Relationship) */}
+                {nType !== 'MEETUP' && (
+                  <ConnectButton 
+                    initialStatus={post.connectionStatus} 
+                    userId={currentUserId} 
+                    targetId={post.author?.id || post.author_id}
+                    post={post}
+                  />
+                )}
               </>
             )}
 
@@ -489,80 +575,10 @@ export default function UniversalFeedCard({
             >
               <Bookmark size={20} fill={bookmarked ? "currentColor" : "none"} />
             </motion.button>
-            </div>
           </div>
         </div>
-      </motion.div>
-    );
-}
-
-function ConnectButton({ userId, targetId }: { userId?: string; targetId?: string }) {
-  const [status, setStatus] = useState<'idle' | 'connecting' | 'pending' | 'connected' | 'error'>('idle');
-  const { user } = useAuth();
-  const supabase = createClient();
-
-  React.useEffect(() => {
-    if (!userId || !targetId) return;
-    const check = async () => {
-      const { data } = await supabase
-        .from('connections')
-        .select('status')
-        .or(`and(sender_id.eq.${userId},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${userId})`)
-        .maybeSingle();
-      
-      if (data) {
-        setStatus(data.status.toLowerCase() as any);
-      }
-    };
-    check();
-  }, [userId, targetId]);
-
-  const handleConnect = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!userId || !targetId || status !== 'idle') return;
-
-    setStatus('connecting');
-    
-    try {
-      const { ConnectionService } = await import("@/services/connection-service");
-      const result = await ConnectionService.connect(userId, targetId);
-      
-      if (result.success) {
-        setStatus(result.status === 'ACCEPTED' ? 'connected' : 'pending');
-      } else {
-        setStatus('error');
-      }
-    } catch (err) {
-      console.error("Connect failed:", err);
-      setStatus('error');
-    }
-  };
-
-  if (status === 'connected') return (
-    <div className="h-14 px-8 rounded-2xl bg-emerald-50 text-emerald-600 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
-      <CheckCircle2 size={16} /> Connected
-    </div>
-  );
-
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={handleConnect}
-      disabled={status !== 'idle'}
-      className={cn(
-        "h-14 px-8 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all duration-300",
-        status === 'pending' ? "bg-slate-50 text-slate-400 cursor-default" :
-        status === 'connecting' ? "bg-slate-50 text-slate-400" :
-        status === 'error' ? "bg-red-50 text-red-500" :
-        "bg-[#F5F5F7] text-[#1D1D1F] hover:bg-[#1D1D1F] hover:text-white border border-black/[0.05]"
-      )}
-    >
-      {status === 'pending' ? "Request Sent" : 
-       status === 'connecting' ? "Connecting..." : 
-       status === 'error' ? "Failed" : 
-       "Connect"}
-      <UserPlus size={16} />
-    </motion.button>
+      </div>
+    </motion.div>
   );
 }
 

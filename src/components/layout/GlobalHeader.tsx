@@ -33,16 +33,17 @@ import {
 import MobileDrawer from "./MobileDrawer";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function FullyActiveGlobalHeader() {
   const router = useRouter();
   const { user: authUser, logout } = useAuth();
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const supabase = createClient();
   const profileRef = useRef<HTMLDivElement>(null);
@@ -80,7 +81,6 @@ export default function FullyActiveGlobalHeader() {
       
       if (notes) {
         setNotifications(notes);
-        setUnreadCount(notes.filter(n => !n.read).length);
       }
     }
     fetchNotifications();
@@ -108,7 +108,6 @@ export default function FullyActiveGlobalHeader() {
         filter: `user_id=eq.${authUser.id}`
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev]);
-        setUnreadCount(prev => prev + 1);
       })
       .subscribe();
 
@@ -119,11 +118,10 @@ export default function FullyActiveGlobalHeader() {
 
   const markAllAsRead = async () => {
     if (!authUser) return;
-    setUnreadCount(0);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true })
       .eq('user_id', authUser.id);
   };
 
@@ -203,6 +201,36 @@ export default function FullyActiveGlobalHeader() {
           {/* NOTIFICATIONS & PROFILE */}
           <div className="flex items-center gap-1 border-r border-[#292828]/10 pr-1 lg:pr-3">
             
+            {/* CHAT BUBBLE */}
+            <Link 
+              href="/chat"
+              className={cn(
+                "h-9 w-9 flex items-center justify-center rounded-lg transition-all relative font-medium text-[#292828] hover:bg-[#292828]/5"
+              )}
+            >
+              <MessageSquare size={18} />
+              {unreadMessagesCount > 0 && (
+                <div className="absolute top-1.5 right-1.5 h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
+                  {unreadMessagesCount}
+                </div>
+              )}
+            </Link>
+
+            {/* CONNECTIONS HUB */}
+            <Link 
+              href="/connections"
+              className={cn(
+                "h-9 w-9 flex items-center justify-center rounded-lg transition-all relative font-medium text-[#292828] hover:bg-[#292828]/5"
+              )}
+            >
+              <Users size={18} />
+              {pendingRequestsCount > 0 && (
+                <div className="absolute top-1.5 right-1.5 h-4 min-w-[16px] px-1 bg-[#34C759] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
+                  {pendingRequestsCount}
+                </div>
+              )}
+            </Link>
+
             {/* NOTIFICATIONS */}
             <div className="relative" ref={notificationsRef}>
               <button 
@@ -210,7 +238,6 @@ export default function FullyActiveGlobalHeader() {
                   setIsNotificationsOpen(!isNotificationsOpen);
                   setIsProfileOpen(false);
                   setIsLocationOpen(false);
-                  if (!isNotificationsOpen && unreadCount > 0) markAllAsRead();
                 }}
                 className={cn(
                   "h-9 w-9 flex items-center justify-center rounded-lg transition-all relative font-medium text-[#292828]",
@@ -218,7 +245,7 @@ export default function FullyActiveGlobalHeader() {
                 )}
               >
                 <Bell size={18} />
-                {unreadCount > 0 && (
+                {notifications.filter(n => !n.is_read).length > 0 && (
                   <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-[#E53935] rounded-full ring-2 ring-white animate-pulse" />
                 )}
               </button>

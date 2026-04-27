@@ -1,48 +1,88 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
-export type ConnectionState = "CONNECT" | "PENDING" | "ACCEPT_IGNORE" | "CONNECTED" | "MESSAGE";
+export type ConnectionStatus = "PENDING" | "ACCEPTED" | "NONE";
 
 interface ConnectionContextType {
-  connections: Record<string, ConnectionState>;
-  sendRequest: (userId: string) => void;
-  acceptRequest: (userId: string) => void;
-  ignoreRequest: (userId: string) => void;
-  getConnectionState: (userId: string) => ConnectionState;
+  connectionMap: Record<string, ConnectionStatus>;
+  refreshConnections: () => Promise<void>;
+  getConnectionStatus: (userId: string) => ConnectionStatus;
+  isLoading: boolean;
 }
 
 const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
 
-export function ConnectionProvider({ children }: { children: ReactNode }) {
-  // Store connection states keyed by user/entity ID
-  const [connections, setConnections] = useState<Record<string, ConnectionState>>({
-    "a1": "CONNECTED", // Mock advisor connected
-    "m1": "PENDING",   // Mock marketplace request sent
-  });
+export function ConnectionProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const [connectionMap, setConnectionMap] = useState<Record<string, ConnectionStatus>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
-  const sendRequest = (id: string) => {
-    setConnections(prev => ({ ...prev, [id]: "PENDING" }));
-  };
+  const fetchConnections = useCallback(async () => {
+    if (!user?.id) {
+      setConnectionMap({});
+      setIsLoading(false);
+      return;
+    }
 
-  const acceptRequest = (id: string) => {
-    setConnections(prev => ({ ...prev, [id]: "CONNECTED" }));
-  };
+    try {
+      const { data, error } = await supabase
+        .from('connections')
+        .select('sender_id, receiver_id, status')
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
-  const ignoreRequest = (id: string) => {
-    setConnections(prev => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  };
+      if (error) throw error;
 
-  const getConnectionState = (id: string): ConnectionState => {
-    return connections[id] || "CONNECT";
-  };
+      const map: Record<string, ConnectionStatus> = {};
+      data?.forEach(conn => {
+        const otherId = conn.sender_id === user.id ? conn.receiver_id : conn.sender_id;
+        map[otherId] = conn.status as ConnectionStatus;
+      });
+
+      setConnectionMap(map);
+    } catch (err) {
+      console.error("Error fetching connections:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id, supabase]);
+
+  useEffect(() => {
+    fetchConnections();
+
+    // ── REALTIME SYNC ──
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('connections_sync')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'connections'
+      }, () => {
+        fetchConnections();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, fetchConnections, supabase]);
+
+  const getConnectionStatus = useCallback((targetId: string): ConnectionStatus => {
+    return connectionMap[targetId] || "NONE";
+  }, [connectionMap]);
+
+  const value = useMemo(() => ({
+    connectionMap,
+    refreshConnections: fetchConnections,
+    getConnectionStatus,
+    isLoading
+  }), [connectionMap, fetchConnections, getConnectionStatus, isLoading]);
 
   return (
-    <ConnectionContext.Provider value={{ connections, sendRequest, acceptRequest, ignoreRequest, getConnectionState }}>
+    <ConnectionContext.Provider value={value}>
       {children}
     </ConnectionContext.Provider>
   );

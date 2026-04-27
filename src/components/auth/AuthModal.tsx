@@ -20,7 +20,7 @@ import { createClient } from "@/utils/supabase/client";
 import { analytics } from "@/utils/analytics";
 
 type AuthMode = "signin" | "signup";
-type Role = "Business" | "Professional" | "Student";
+type Role = "Business" | "Professional" | "Student" | "Advisor";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -263,23 +263,33 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
             </form>
           ) : (
             <>
-              {/* Role Switcher - Premium Style */}
-          <div className="flex p-1.5 bg-black/40 rounded-lg border border-white/5">
-            {(["Business", "Professional", "Student"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRole(r)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-[10px] font-black uppercase transition-all duration-500 ${role === r
-                    ? "bg-[#E53935] text-white shadow-[0_0_20px_-5px_#E53935]"
-                    : "text-white/40 hover:text-white/70"
-                  }`}
-              >
-                {r === "Business" && <Briefcase size={12} />}
-                {r === "Professional" && <User size={12} />}
-                {r === "Student" && <GraduationCap size={12} />}
-                <span className={role === r ? "block" : "hidden sm:block"}>{r}</span>
-              </button>
-            ))}
+          {/* Intent Detection - Frictionless Style */}
+          <div className="space-y-3">
+             <p className="text-[10px] font-black uppercase text-white/20 tracking-widest ml-1">What do you want to do?</p>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("Professional")}
+                  className={cn(
+                    "h-16 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all",
+                    role === "Professional" ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white/5 border-white/5 text-white/40 hover:border-white/10"
+                  )}
+                >
+                   <Briefcase size={18} />
+                   <span className="text-[10px] font-black uppercase tracking-tight">Find work</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("Advisor")}
+                  className={cn(
+                    "h-16 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all",
+                    role === "Advisor" ? "bg-[#E53935] border-[#E53935] text-white shadow-xl shadow-red-500/20" : "bg-white/5 border-white/5 text-white/40 hover:border-white/10"
+                  )}
+                >
+                   <Sparkles size={18} />
+                   <span className="text-[10px] font-black uppercase tracking-tight">Offer help</span>
+                </button>
+             </div>
           </div>
 
           {/* Form */}

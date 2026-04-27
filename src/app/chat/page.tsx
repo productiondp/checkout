@@ -25,7 +25,9 @@ import {
   Zap,
   Target,
   Sparkles,
-  BrainCircuit
+  BrainCircuit,
+  Trash2,
+  ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";
@@ -35,7 +37,10 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { analytics } from "@/utils/analytics";
 import { useAuth, useRequiredUser } from "@/hooks/useAuth";
+import { useNotifications } from "@/contexts/NotificationContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { ConnectionService } from "@/services/connection-service";
+import { motion, AnimatePresence } from "framer-motion";
 
 function ChatContent() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -50,12 +55,32 @@ function ChatContent() {
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const userParam = searchParams.get('user');
+  const initialParam = searchParams.get('initial');
 
   const user = useRequiredUser();
   const supabase = createClient();
+  const { refreshCounts, setActiveChatId } = useNotifications();
+  const [confirmAction, setConfirmAction] = useState<{ type: 'REMOVE' | 'BLOCK'; connectionId: string; partnerName: string } | null>(null);
+
+  // Initialize message with initialParam if provided
+  React.useEffect(() => {
+    if (initialParam) {
+      setMessage(initialParam);
+    }
+  }, [initialParam]);
 
   // 🛡️ SAFE GUARD: Pre-render check
   if (!user) return null;
+
+  // 0. ACTIVE CHAT SYNC (Notification Hardening)
+  React.useEffect(() => {
+    if (selectedChat?.id && selectedChat.id !== "temp") {
+      setActiveChatId(selectedChat.id);
+    } else {
+      setActiveChatId(null);
+    }
+    return () => setActiveChatId(null);
+  }, [selectedChat, setActiveChatId]);
 
   // 1. IDENTITY & NETWORK FETCHING
   React.useEffect(() => {
@@ -63,33 +88,7 @@ function ChatContent() {
       if (!user) return;
       analytics.trackScreen('CHAT', user.id);
 
-      // Fetch All Profiles
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', user.id)
-        .order('full_name', { ascending: true });
-      
-      if (profiles) {
-        const formattedUsers = profiles.map(p => ({
-          id: p.id,
-          partnerId: p.id,
-          name: p.full_name || "Partner",
-          avatar: p.avatar_url || DEFAULT_AVATAR,
-          role: p.role || "Verified Partner",
-          online: true,
-          time: "connected",
-          last: "Start a conversation"
-        }));
-        setAllUsers(formattedUsers);
-
-        if (userParam) {
-           const target = formattedUsers.find(u => u.partnerId === userParam);
-           if (target) setSelectedChat(target);
-        }
-      }
-
-      // Fetch Existing Conversations
+      // A. Fetch Existing Conversations (1-on-1 Connections)
       const { data: connections } = await supabase
         .from('connections')
         .select(`
@@ -100,8 +99,9 @@ function ChatContent() {
         `)
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
+      let formattedChats: any[] = [];
       if (connections) {
-        setChats(connections.map((conn: any) => {
+        formattedChats = connections.map((conn: any) => {
           const partner = conn.sender.id === user.id ? conn.receiver : conn.sender;
           return {
             id: conn.id,
@@ -110,66 +110,195 @@ function ChatContent() {
             avatar: partner.avatar_url || DEFAULT_AVATAR,
             role: partner.role || "Verified Profile",
             online: true,
+            isGroup: false,
             last: "Connected",
-            time: "10:32 AM"
+            time: "Active"
           };
-        }));
+        });
       }
+
+      // B. Fetch Group Meetups (Rooms)
+      const { data: rooms } = await supabase
+        .from('participants')
+        .select(`
+           room_id,
+           room:chat_rooms (
+             id, 
+             name, 
+             is_group,
+             post:posts (id, title, author_id, status, outcome_data)
+           )
+        `)
+        .eq('user_id', user.id);
+
+      if (rooms) {
+        const groupChats = rooms
+          .filter((r: any) => r.room?.is_group)
+          .map((r: any) => ({
+            id: r.room.id,
+            roomId: r.room.id,
+            name: r.room.name || r.room.post?.title || "Meetup Group",
+            avatar: null, // Group icon
+            role: "Group Chat",
+            isGroup: true,
+            isMeetup: !!r.room.post,
+            hostId: r.room.post?.author_id,
+            meetupId: r.room.post?.id,
+            meetupStatus: r.room.post?.status,
+            outcome_data: r.room.post?.outcome_data,
+            online: true,
+            last: "Event Chat",
+            time: "Live"
+          }));
+        formattedChats = [...formattedChats, ...groupChats];
+      }
+
+      setChats(formattedChats);
+
+      // C. Handle query params
+      const roomParam = searchParams.get('room');
+      if (roomParam) {
+        const existing = formattedChats.find(c => (c.roomId === roomParam || c.id === roomParam));
+        if (existing) setSelectedChat(existing);
+      } else if (userParam) {
+        const existing = formattedChats.find(c => c.partnerId === userParam);
+        if (existing) {
+          setSelectedChat(existing);
+        } else {
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', userParam).single();
+          if (profile) {
+            setSelectedChat({
+              id: "temp",
+              partnerId: profile.id,
+              name: profile.full_name || "Partner",
+              avatar: profile.avatar_url || DEFAULT_AVATAR,
+              role: profile.role || "Verified Partner",
+              online: true,
+              isGroup: false,
+              last: "New Conversation",
+              time: "Just now"
+            });
+          }
+        }
+      }
+
+      // Fetch all users for search
+      const { data: allProfiles } = await supabase.from('profiles').select('*').neq('id', user.id).limit(20);
+      if (allProfiles) {
+        setAllUsers(allProfiles.map(p => ({
+          id: p.id,
+          partnerId: p.id,
+          name: p.full_name || "Partner",
+          avatar: p.avatar_url || DEFAULT_AVATAR,
+          role: p.role || "Member",
+          isGroup: false
+        })));
+      }
+
       setIsLoading(false);
     }
     initChat();
-  }, [userParam, user?.id]);
+  }, [userParam, searchParams.get('room'), user?.id]);
 
   // 2. MESSAGE LOADING & REALTIME SUBSCRIPTION
   React.useEffect(() => {
-    if (!selectedChat || selectedChat.id === "temp") return;
+    if (!selectedChat || selectedChat.id === "temp") {
+      setMessages([]);
+      return;
+    }
 
     async function loadMessages() {
-      const { data } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('connection_id', selectedChat.id)
-        .order('created_at', { ascending: true });
-      if (data) setMessages(data);
+      const query = supabase.from('messages').select('*');
+      
+      if (selectedChat.isGroup) {
+        query.eq('room_id', selectedChat.id);
+      } else {
+        query.eq('connection_id', selectedChat.id);
+      }
+
+      const { data } = await query.order('created_at', { ascending: true });
+      
+      if (data) {
+        setMessages(data);
+        
+        // Mark as Read
+        const unreadIds = data.filter(m => !m.is_read && m.sender_id !== user.id).map(m => m.id);
+        if (unreadIds.length > 0) {
+          await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
+          refreshCounts();
+        }
+      }
     }
     loadMessages();
 
     const channel = supabase
-      .channel(`connection_${selectedChat.id}`)
+      .channel(`chat_${selectedChat.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'messages',
-        filter: `connection_id=eq.${selectedChat.id}`
-      }, (payload) => {
-        setMessages(prev => [...prev, payload.new]);
+        filter: selectedChat.isGroup ? `room_id=eq.${selectedChat.id}` : `connection_id=eq.${selectedChat.id}`
+      }, async (payload) => {
+        setMessages(prev => {
+          if (prev.find(m => m.id === payload.new.id)) return prev;
+          return [...prev, payload.new];
+        });
+        
+        if (payload.new.sender_id !== user.id) {
+           await supabase.from('messages').update({ is_read: true }).eq('id', payload.new.id);
+           refreshCounts();
+        }
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [selectedChat]);
+  }, [selectedChat?.id]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !selectedChat || !user) return;
 
-    const newMessage = {
-      connection_id: selectedChat.id === "temp" ? null : selectedChat.id,
+    let newMessage: any = {
       sender_id: user.id,
-      content: message
+      content: message,
+      type: 'USER',
+      is_read: false
     };
+
+    if (selectedChat.isGroup) {
+      newMessage.room_id = selectedChat.id;
+    } else {
+      let connectionId = selectedChat.id;
+      if (connectionId === "temp") {
+        try {
+          const result = await ConnectionService.ensureConnection(user.id, selectedChat.partnerId);
+          connectionId = result.id;
+          setSelectedChat(prev => ({ ...prev, id: connectionId }));
+        } catch (err) {
+          console.error("Connection failed:", err);
+          return;
+        }
+      }
+      newMessage.connection_id = connectionId;
+      newMessage.receiver_id = selectedChat.partnerId;
+    }
+
     setMessage("");
 
-    if (selectedChat.id !== "temp") {
-       await supabase.from('messages').insert([newMessage]);
-       analytics.track('MESSAGE_INITIATED', user.id, { connectionId: selectedChat.id });
+    // Optimistic Update
+    const tempId = Math.random().toString();
+    setMessages(prev => [...prev, { ...newMessage, id: tempId, created_at: new Date().toISOString() }]);
+
+    const { data, error } = await supabase.from('messages').insert([newMessage]).select().single();
+    
+    if (error) {
+      console.error("Message error:", error);
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+    } else {
+      setMessages(prev => prev.map(m => m.id === tempId ? data : m));
+      analytics.track('MESSAGE_SENT', user.id, { isGroup: selectedChat.isGroup });
     }
   };
-
-   const filteredUsers = allUsers.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex h-full bg-white overflow-hidden selection:bg-[#E53935]/10">
@@ -207,37 +336,32 @@ function ChatContent() {
               <p className="text-[10px] font-black text-slate-200 uppercase ">Active Chats</p>
            </div>
            {chats.filter(c => 
-             c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-             c.role.toLowerCase().includes(searchQuery.toLowerCase())
+             c.name.toLowerCase().includes(searchQuery.toLowerCase())
            ).map((chat) => (
              <button 
-               key={chat.partnerId} 
+               key={chat.id} 
                onClick={() => setSelectedChat(chat)}
                className={cn(
                  "w-full flex items-center gap-4 p-4 rounded-lg transition-all group relative",
-                 selectedChat?.partnerId === chat.partnerId ? "bg-[#292828] text-white shadow-2xl" : "hover:bg-slate-50"
+                 selectedChat?.id === chat.id ? "bg-[#292828] text-white shadow-2xl" : "hover:bg-slate-50"
                )}
              >
                 <div className="relative shrink-0">
                    <div className="h-14 w-14 rounded-lg overflow-hidden border-2 border-transparent group-hover:border-slate-200 transition-all">
                       <img src={chat.avatar || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                    </div>
-                   <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-[3px] border-white shadow-sm" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                    <div className="flex justify-between items-center mb-1">
                       <h4 className="text-[15px] font-bold truncate  uppercase">
                          {chat.name}
                       </h4>
-                      <span className="text-[9px] font-black opacity-40 uppercase  whitespace-nowrap">
-                         {chat.time}
-                      </span>
                    </div>
                    <p className="text-[11px] font-bold opacity-60 truncate uppercase ">
                       {chat.role}
                    </p>
                 </div>
-                {selectedChat?.partnerId === chat.partnerId && (
+                {selectedChat?.id === chat.id && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-[#E53935] rounded-r-full" />
                 )}
              </button>
@@ -260,51 +384,155 @@ function ChatContent() {
             {/* Thread Header */}
             <header className="h-16 lg:h-24 px-4 lg:px-10 flex items-center justify-between bg-white border-b border-slate-100 sticky top-0 z-20">
                <div className="flex items-center gap-4">
-                  <button onClick={() => setSelectedChat(null)} className="md:hidden h-10 w-10 rounded-lg flex items-center justify-center text-[#292828] hover:text-[#292828]">
+                  <button onClick={() => setSelectedChat(null)} className="md:hidden h-10 w-10 rounded-lg flex items-center justify-center text-[#292828]">
                      <ChevronLeft size={20} />
                   </button>
                   <div className="flex items-center gap-4">
-                     <Link href={`/profile/${selectedChat.partnerId}`} className="h-12 w-12 rounded-lg overflow-hidden shadow-md block hover:scale-105 transition-transform active:scale-95">
+                     <div className="h-12 w-12 rounded-lg overflow-hidden shadow-md">
                         <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
-                     </Link>
+                     </div>
                      <div>
                         <h2 className="text-[17px] font-black text-[#292828] leading-tight uppercase">{selectedChat.name}</h2>
-                        <div className="flex items-center gap-2">
-                           <span className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-green-500" : "bg-slate-300")} />
-                           <span className="text-[11px] font-black text-[#292828] uppercase">{selectedChat.online ? "Online Now" : "Inactive"}</span>
-                        </div>
+                        <span className="text-[11px] font-black text-[#292828] uppercase opacity-40">{selectedChat.role}</span>
                      </div>
                   </div>
                </div>
                
-               <div className="flex items-center gap-2">
-                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-lg bg-slate-50 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
-                     <Phone size={20} />
+               <div className="flex items-center gap-2 relative group/chat-menu">
+                  <button className="h-12 w-12 flex items-center justify-center rounded-lg bg-slate-50 text-[#292828] hover:bg-[#1D1D1F] hover:text-white transition-all shadow-sm">
+                     <MoreHorizontal size={22} />
                   </button>
-                  <button className="hidden sm:flex h-12 w-12 items-center justify-center rounded-lg bg-slate-50 text-[#292828] hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
-                     <Video size={20} />
-                  </button>
-                  <button 
-                    onClick={() => setShowProfile(!showProfile)}
-                    className={cn(
-                      "h-12 w-12 items-center justify-center rounded-lg transition-all shadow-sm",
-                      showProfile ? "bg-[#292828] text-white" : "bg-slate-50 text-[#292828] hover:bg-[#292828] hover:text-white"
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-black/[0.05] rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover/chat-menu:opacity-100 group-hover/chat-menu:visible transition-all z-50">
+                      {selectedChat.isGroup && selectedChat.hostId === user.id && (
+                        <>
+                           <div className="px-5 py-3 bg-slate-50 border-b border-black/[0.03]">
+                              <p className="text-[9px] font-black uppercase text-slate-400">Host Controls</p>
+                           </div>
+                           <button 
+                              onClick={async () => {
+                                const { MeetupService } = await import("@/services/meetup-service");
+                                await MeetupService.updateStatus(selectedChat.meetupId, 'completed');
+                                window.location.reload();
+                              }}
+                              className="w-full h-12 px-5 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all"
+                           >
+                              <ShieldAlert size={14} className="text-amber-500" /> Lock Chat
+                           </button>
+                           <button 
+                              className="w-full h-12 px-5 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all border-t border-black/[0.03]"
+                           >
+                              <Users size={14} /> Manage Participants
+                           </button>
+                        </>
+                      )}
+                      
+                      {!selectedChat.isGroup && (
+                        <>
+                           <button 
+                              onClick={() => setConfirmAction({ type: 'REMOVE', connectionId: selectedChat.id, partnerName: selectedChat.name })}
+                              className="w-full h-12 px-5 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#E53935] hover:bg-red-50 transition-all"
+                           >
+                              <Trash2 size={14} /> Remove
+                           </button>
+                           <button 
+                              onClick={() => setConfirmAction({ type: 'BLOCK', connectionId: selectedChat.id, partnerName: selectedChat.name })}
+                              className="w-full h-12 px-5 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all border-t border-black/[0.03]"
+                           >
+                              <ShieldAlert size={14} /> Block
+                           </button>
+                        </>
+                      )}
+                   </div>
+                </div>
+             </header>
+
+             {/* THREAD HEADER CONTROLS (Meetup Specific) */}
+            {selectedChat.isMeetup && (
+              <div className="px-4 lg:px-10 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                 <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
+                      selectedChat.meetupStatus === 'live' ? "bg-emerald-500 text-white animate-pulse" : 
+                      selectedChat.meetupStatus === 'completed' ? "bg-slate-200 text-slate-400" : "bg-black text-white"
+                    )}>
+                       {selectedChat.meetupStatus}
+                    </div>
+                    {selectedChat.meetupStatus === 'upcoming' && selectedChat.hostId === user.id && (
+                       <button 
+                        onClick={async () => {
+                           const { MeetupService } = await import("@/services/meetup-service");
+                           await MeetupService.setLive(selectedChat.meetupId);
+                           window.location.reload();
+                        }}
+                        className="flex items-center gap-2 px-4 py-1.5 bg-[#E53935] text-white rounded-lg text-[10px] font-black uppercase hover:bg-red-700 transition-all shadow-lg shadow-red-500/20"
+                       >
+                          <Zap size={12} fill="currentColor" /> Go Live Now
+                       </button>
                     )}
-                  >
-                     <Info size={22} />
-                  </button>
-               </div>
-            </header>
+                 </div>
+              </div>
+            )}
 
              {/* MESSAGE STREAM */}
-            <div className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-6 lg:space-y-8 bg-[#FDFDFF] no-scrollbar">
-               <div className="flex justify-center">
-                  <span className="px-4 py-1.5 bg-[#292828] text-white rounded-full text-[10px] font-black uppercase ">Connected</span>
-               </div>
-
-               {/* Live Message Stream */}
+             <div className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-6 lg:space-y-8 bg-[#FDFDFF] no-scrollbar">
                <div className="space-y-8">
+                  {/* ── JOIN ENTRY CARD (Meetup Summary) ── */}
+                  {selectedChat.isMeetup && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-8 bg-white border border-slate-100 rounded-[2rem] shadow-xl shadow-black/[0.02] text-center max-w-lg mx-auto mb-12 relative overflow-hidden"
+                    >
+                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#E53935] to-amber-500" />
+                       <div className="h-20 w-20 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-[#E53935]">
+                          <Users size={32} />
+                       </div>
+                       <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Welcome to {selectedChat.name}</h3>
+                       <p className="text-[11px] font-bold text-slate-400 uppercase mb-8">You are now a participant in this meetup.</p>
+                       
+                       <div className="grid grid-cols-2 gap-4 text-left">
+                          <div className="p-4 bg-slate-50 rounded-xl">
+                             <p className="text-[8px] font-black text-slate-300 uppercase mb-1">Status</p>
+                             <p className="text-[10px] font-black text-[#292828] uppercase">{selectedChat.meetupStatus}</p>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-xl">
+                             <p className="text-[8px] font-black text-slate-300 uppercase mb-1">Role</p>
+                             <p className="text-[10px] font-black text-[#292828] uppercase">{selectedChat.hostId === user.id ? 'Host' : 'Partner'}</p>
+                          </div>
+                       </div>
+                    </motion.div>
+                  )}
+
                   {messages.map((msg) => {
+                    if (msg.type === 'PINNED') {
+                      return (
+                        <div key={msg.id} className="flex flex-col items-center my-10">
+                           <div className="flex items-center gap-2 mb-3 text-amber-500">
+                              <Bookmark size={14} fill="currentColor" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">Pinned Announcement</span>
+                           </div>
+                           <div className="p-8 bg-amber-50 border-2 border-amber-200/50 rounded-[2rem] shadow-xl shadow-amber-500/5 max-w-[90%] text-center relative">
+                              <div className="absolute -top-3 -right-3 h-10 w-10 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg">
+                                 <Sparkles size={20} />
+                              </div>
+                              <p className="text-[17px] font-black text-[#292828] leading-relaxed italic">
+                                 "{msg.content}"
+                              </p>
+                           </div>
+                        </div>
+                      );
+                    }
+
+                    if (msg.type === 'SYSTEM') {
+                      return (
+                        <div key={msg.id} className="flex justify-center my-6">
+                           <div className="px-4 py-1.5 bg-slate-100 rounded-full text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                              {msg.content}
+                           </div>
+                        </div>
+                      );
+                    }
+
                     const isMe = msg.sender_id === user?.id;
                     return (
                       <div key={msg.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
@@ -324,80 +552,81 @@ function ChatContent() {
                     );
                   })}
                   {messages.length === 0 && (
-                    <div className="text-center py-20 opacity-20 italic text-sm">Beginning of shared history</div>
+                    <div className="text-center py-20 opacity-20 italic text-sm">Say hello to {selectedChat.name}</div>
                   )}
                </div>
             </div>
-            {/* COMPOSER (BOTTOM) */}
+
+             {/* COMPOSER (BOTTOM) OR OUTCOME LAYER */}
             <div className="p-4 lg:p-8 bg-white border-t border-slate-100 pb-32 lg:pb-8">
-               {!selectedChat.id || selectedChat.id === "temp" ? (
-                  <div className="h-16 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 border-dashed">
-                     <p className="text-[10px] font-black uppercase text-slate-200  flex items-center gap-3">
-                        Connect to chat
-                     </p>
-                  </div>
-               ) : (
-                  <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 group focus-within:bg-white focus-within:shadow-xl transition-all">
-                     <div className="relative">
-                        <button 
-                          type="button"
-                          onClick={() => setShowAttachMenu(!showAttachMenu)}
-                          className={cn(
-                            "h-12 w-12 flex items-center justify-center rounded-lg transition-all",
-                            showAttachMenu ? "bg-[#292828] text-white rotate-45" : "text-slate-300 hover:text-[#292828]"
-                          )}
+                {selectedChat.meetupStatus === 'completed' ? (
+                  <div className="space-y-4">
+                     {selectedChat.hostId === user.id && !selectedChat.outcome_data ? (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2rem] text-center shadow-xl shadow-emerald-500/5"
                         >
-                           <Plus size={24} />
-                        </button>
-
-                        {showAttachMenu && (
-                          <div className="absolute bottom-[130%] left-0 w-56 bg-white rounded-lg shadow-4xl border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                             {[
-                               { icon: ImageIcon, label: "Photos & Videos", color: "text-red-500", bg: "bg-red-50" },
-                               { icon: FileText, label: "Documents", color: "text-blue-500", bg: "bg-blue-50" },
-                                { icon: User, label: "Share Contact", color: "text-green-500", bg: "bg-green-50" },
-                               { icon: Paperclip, label: "Profile", color: "text-amber-500", bg: "bg-amber-50" },
-                             ].map((it, i) => (
-                               <button 
-                                 key={i} 
-                                 type="button"
-                                 onClick={() => setShowAttachMenu(false)}
-                                 className="w-full flex items-center gap-3 p-3 rounded-lg text-[13px] font-black text-[#292828] hover:bg-slate-50 transition-all group"
-                               >
-                                  <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110", it.bg, it.color)}>
-                                     <it.icon size={18} />
-                                  </div>
-                                  {it.label}
+                           <div className="h-16 w-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
+                              <Trophy size={32} />
+                           </div>
+                           <h3 className="text-xl font-black text-[#292828] uppercase mb-2">What was the outcome?</h3>
+                           <p className="text-[11px] font-bold text-slate-400 uppercase mb-8">Help us measure the value of this meetup.</p>
+                           
+                           <div className="grid grid-cols-2 gap-3 mb-6">
+                              {[
+                                { id: 'COLLAB', label: 'Started Collab', icon: Sparkles },
+                                { id: 'HIRE', label: 'Found Talent', icon: Briefcase },
+                                { id: 'KNOWLEDGE', label: 'Learned Tons', icon: BrainCircuit },
+                                { id: 'OTHER', label: 'Networking', icon: Users }
+                              ].map(type => (
+                                <button 
+                                  key={type.id}
+                                  onClick={async () => {
+                                    const { MeetupService } = await import("@/services/meetup-service");
+                                    await MeetupService.submitOutcome(selectedChat.meetupId, { type: type.id, summary: `Successfully completed ${selectedChat.name}` });
+                                    window.location.reload();
+                                  }}
+                                  className="h-14 bg-white border border-emerald-100 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-emerald-500 hover:text-white transition-all group"
+                                >
+                                   <type.icon size={16} />
+                                   <span className="text-[9px] font-black uppercase">{type.label}</span>
                                 </button>
-                             ))}
-                          </div>
+                              ))}
+                           </div>
+                        </motion.div>
+                     ) : (
+                        <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                           <p className="text-[10px] font-black uppercase text-slate-300">
+                             {selectedChat.outcome_data 
+                               ? `Outcome Captured: ${selectedChat.outcome_data.type}`
+                               : "This meetup has ended. Chat is archived."}
+                           </p>
+                        </div>
+                     )}
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 focus-within:bg-white focus-within:shadow-xl transition-all">
+                      <input 
+                        type="text" 
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type your message..." 
+                        className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
+                      />
+                      <button 
+                        type="submit"
+                        disabled={!message.trim()}
+                        className={cn(
+                          "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
+                          message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-[#292828] grayscale"
                         )}
-                     </div>
-                     <input 
-                       type="text" 
-                       value={message}
-                       onChange={(e) => setMessage(e.target.value)}
-                       placeholder="Type your message..." 
-                       className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
-                     />
-                     <div className="flex items-center gap-2 pr-2">
-                        <button type="button" className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-[#292828] transition-colors">
-                           <ImageIcon size={20} />
-                        </button>
-                        <button 
-                          type="submit"
-                          className={cn(
-                           "h-12 w-12 flex items-center justify-center rounded-full transition-all shadow-lg active:scale-95",
-                           message.length > 0 ? "bg-[#E53935] text-white shadow-red-500/20" : "bg-slate-200 text-[#292828] grayscale"
-                          )}
-                        >
-                           <Send size={20} />
-                        </button>
-                     </div>
+                      >
+                        <Send size={20} />
+                      </button>
                   </form>
-               )}
+                )}
             </div>
-
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#FDFDFF]">
@@ -410,170 +639,55 @@ function ChatContent() {
         )}
       </main>
 
-      {/* 3. PROFILE / CONTEXT DRAWER (RIGHT) */}
-      {selectedChat && showProfile && (
-        <aside className="hidden xl:flex flex-col w-80 lg:w-[380px] border-l border-[#292828]/10 bg-white animate-in slide-in-from-right duration-300 shrink-0">
-           <div className="p-8 h-full overflow-y-auto no-scrollbar">
-              <div className="flex justify-between items-center mb-8">
-                 <h3 className="text-[11px] font-bold text-[#292828] group-hover:text-white/30 uppercase ">Profile Info</h3>
-                 <button onClick={() => setShowProfile(false)} className="h-9 w-9 bg-[#292828]/5 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#292828]/10 transition-colors">
-                    <X size={18} />
-                 </button>
+      {/* 🚫 MODERATION CONFIRMATION */}
+      <AnimatePresence>
+        {confirmAction && (
+          <div className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-xl flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-[2rem] p-10 shadow-4xl text-center"
+            >
+              <div className={cn(
+                "h-20 w-20 rounded-2xl flex items-center justify-center mx-auto mb-8",
+                confirmAction.type === 'BLOCK' ? "bg-black text-white" : "bg-red-50 text-[#E53935]"
+              )}>
+                {confirmAction.type === 'BLOCK' ? <ShieldAlert size={32} /> : <Trash2 size={32} />}
               </div>
-
-              <div className="text-center mb-10">
-                 <div className="relative inline-block mb-6">
-                    <Link href={`/profile/${selectedChat.id}`} className="h-32 w-32 mx-auto rounded-lg overflow-hidden shadow-2xl ring-8 ring-[#292828]/5 block hover:scale-105 transition-transform active:scale-95">
-                       <img src={selectedChat.avatar} className="w-full h-full object-cover" alt="" />
-                    </Link>
-                    <div className="absolute -bottom-2 -right-2 h-12 w-12 bg-white rounded-lg shadow-xl flex items-center justify-center text-[#E53935] border border-[#292828]/5">
-                       <ShieldCheck size={24} fill="currentColor" fillOpacity={0.1} />
-                    </div>
-                 </div>
-                 
-                 <h2 className="text-2xl font-bold text-[#292828] group-hover:text-white leading-tight mb-1 font-outfit uppercase ">{selectedChat.name}</h2>
-                 <p className="text-[13px] font-bold text-[#E53935] mb-6 uppercase ">{selectedChat.role || "Verified Profile"}</p>
-                 
-                 <div className="flex justify-center gap-2 mb-8">
-                    <div className="px-4 py-2 bg-[#292828] text-white rounded-lg flex items-center gap-2 shadow-lg shadow-slate-900/10">
-                       <Zap size={14} className="text-yellow-400 fill-yellow-400" />
-                       <span className="text-[12px] font-black">{selectedChat.checkoutScore}</span>
-                    </div>
-                    <div className={cn(
-                       "px-4 py-2 rounded-lg flex items-center gap-2 border-2",
-                       selectedChat.badge === "Elite" ? "border-red-500/20 bg-red-50 text-red-600" :
-                       selectedChat.badge === "Gold" ? "border-amber-500/20 bg-amber-50 text-amber-600" :
-                       "border-slate-500/20 bg-slate-50 text-slate-200"
-                    )}>
-                       <span className="text-[10px] font-black uppercase ">{selectedChat.badge}</span>
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-1 gap-3 mb-10">
-                    <div className="p-5 bg-[#292828]/5 rounded-[1.5rem] border border-[#292828]/5 text-left group hover:bg-white hover:shadow-xl transition-all cursor-default">
-                       <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 bg-white rounded-lg flex items-center justify-center text-[#292828] shadow-sm group-hover:scale-110 transition-transform">
-                             <Trophy size={20} />
-                          </div>
-                          <div>
-                             <p className="text-[10px] font-bold text-[#292828] group-hover:text-white/30 uppercase ">Rank</p>
-                             <p className="text-[15px] font-bold text-[#292828] group-hover:text-white">#{selectedChat.rank?.pos} in {selectedChat.rank?.city}</p>
-                             <p className="text-[11px] font-bold text-[#E53935]">{selectedChat.rank?.domain} Expert</p>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
+              
+              <h3 className="text-2xl font-black text-[#1D1D1F] uppercase italic mb-4">
+                {confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Link?"}
+              </h3>
+              
+              <p className="text-[12px] font-bold text-[#86868B] uppercase mb-10 leading-relaxed">
+                Confirm {confirmAction.type.toLowerCase()} for <strong>{confirmAction.partnerName}</strong>.
+              </p>
+              
+              <div className="flex gap-4">
+                <button onClick={() => setConfirmAction(null)} className="flex-1 h-16 bg-[#F5F5F7] text-[#1D1D1F] rounded-xl font-black uppercase text-[10px]">Cancel</button>
+                <button 
+                  onClick={async () => {
+                    if (confirmAction.type === 'BLOCK') {
+                      await ConnectionService.blockUser(confirmAction.connectionId);
+                    } else {
+                      await ConnectionService.removeConnection(confirmAction.connectionId);
+                    }
+                    setConfirmAction(null);
+                    window.location.reload();
+                  }}
+                  className={cn(
+                    "flex-1 h-16 rounded-xl font-black uppercase text-[10px] text-white shadow-xl",
+                    confirmAction.type === 'BLOCK' ? "bg-black" : "bg-[#E53935]"
+                  )}
+                >
+                  Confirm
+                </button>
               </div>
-
-              <div className="space-y-10">
-                 {/* AI Insight Section */}
-                 <div className="p-6 bg-[#292828]/5 border border-[#292828]/5 rounded-lg mb-2 overflow-hidden relative group/ai">
-                    <div className="absolute top-0 right-0 p-3 opacity-20"><BrainCircuit size={40} className="text-[#292828]" /></div>
-                    <h4 className="text-[10px] font-black text-[#292828]/40 uppercase  mb-3 flex items-center gap-2">
-                       <Sparkles size={10} className="text-[#E53935]" /> Expert Tip
-                    </h4>
-                    <p className="text-[13px] font-bold text-[#292828] leading-tight relative z-10">
-                       {getChatInsight({
-                         role: user?.profile?.role || "Professional",
-                         bio: user?.profile?.bio || "",
-                         domains: user?.profile?.skills || []
-                       }, selectedChat)}
-                     </p>
-                  </div>
-
-                 {/* Bio Section */}
-                 {selectedChat.bio && (
-                    <div>
-                       <p className="text-[14px] font-medium text-[#292828]/70 leading-relaxed bg-[#292828]/5 p-5 rounded-lg italic border-l-4 border-[#292828]">
-                          "{selectedChat.bio}"
-                       </p>
-                    </div>
-                 )}
-
-                 {/* Requirements Section */}
-                 {selectedChat.requirements && (
-                    <div>
-                        <div className="flex items-center gap-2 mb-6">
-                           <Target size={16} className="text-[#E53935]" />
-                           <h4 className="text-[11px] font-black text-[#292828]/30 uppercase ">Requirements</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                           {selectedChat.requirements.map((req: string, i: number) => (
-                              <span key={i} className="px-4 py-2 bg-white border border-[#292828]/10 rounded-lg text-[12px] font-bold text-[#292828] shadow-sm hover:border-[#E53935] hover:text-[#E53935] transition-all cursor-default">
-                                 {req}
-                              </span>
-                           ))}
-                        </div>
-                    </div>
-                 )}
-
-                 {/* Collaboration Stats */}
-                 <div>
-                    <h4 className="text-[11px] font-black text-[#292828]/30 uppercase  mb-6">Activity</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-5 bg-[#292828]/5 rounded-lg border border-[#292828]/5 text-center">
-                          <p className="text-2xl font-black text-[#292828]">12</p>
-                          <p className="text-[10px] font-black text-[#292828]/40 uppercase mt-1">Shared Files</p>
-                       </div>
-                       <div className="p-5 bg-red-50 rounded-lg border border-red-500/10 text-center">
-                          <p className="text-2xl font-black text-[#E53935]">4</p>
-                          <p className="text-[10px] font-black text-red-500/40 uppercase mt-1">Contracts</p>
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* Action Buttons */}
-                 <div className="pt-6 space-y-3">
-                    <Link href={`/profile/${selectedChat.id}`} className="w-full h-14 bg-[#292828] text-white rounded-lg flex items-center justify-center font-black text-[11px] uppercase  shadow-2xl shadow-slate-900/20 hover:bg-[#E53935] hover:-translate-y-1 transition-all active:translate-y-0">
-                       View Full Profile
-                    </Link>
-                    <button className="w-full h-14 bg-[#292828]/5 text-[#292828] rounded-lg flex items-center justify-center font-black text-[11px] uppercase  hover:bg-[#292828]/10 transition-all">
-                       Flag as High Priority
-                    </button>
-                 </div>
-              </div>
-           </div>
-        </aside>
-      )}
-      {/* 4. CHAT SETTINGS MODAL */}
-      {showSettings && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-           <div className="absolute inset-0 bg-[#292828]/40 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowSettings(false)} />
-           <div className="relative w-full max-w-[480px] bg-white rounded-[1.95rem] shadow-4xl overflow-hidden animate-in zoom-in-95 duration-500">
-              <div className="p-8 border-b border-[#292828]/5 flex items-center justify-between">
-                 <h3 className="text-xl font-black text-[#292828] uppercase">Chat Settings</h3>
-                 <button onClick={() => setShowSettings(false)} className="h-10 w-10 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]">
-                    <X size={20} />
-                 </button>
-              </div>
-              <div className="p-10 space-y-8">
-                 <div className="space-y-4">
-                    <p className="text-[10px] font-bold text-[#292828]/40 uppercase">Privacy & Security</p>
-                    <div className="space-y-1">
-                       {[
-                         { label: "Privacy", desc: "Always active for all chats", active: true },
-                         { label: "Read Receipts", desc: "Show when you've seen messages", active: true },
-                         { label: "Status", desc: "Show active status to others", active: false }
-                       ].map((s, i) => (
-                         <div key={i} className="flex items-center justify-between p-4 rounded-lg hover:bg-[#292828]/5 transition-all">
-                            <div>
-                               <p className="text-[14px] font-bold text-[#292828]">{s.label}</p>
-                               <p className="text-[11px] font-medium text-[#292828]/40">{s.desc}</p>
-                            </div>
-                            <div className={cn("h-6 w-11 rounded-full p-1 transition-colors cursor-pointer", s.active ? "bg-[#E53935]" : "bg-slate-200")}>
-                               <div className={cn("h-4 w-4 bg-white rounded-full transition-transform shadow-sm", s.active ? "translate-x-5" : "translate-x-0")} />
-                            </div>
-                         </div>
-                       ))}
-                     </div>
-                  </div>
-                  <div className="pt-4">
-                     <button className="w-full h-14 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase shadow-xl hover:bg-black transition-all">Save Changes</button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

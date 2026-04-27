@@ -58,7 +58,7 @@ const SMART_FILTERS = [
   { id: 'All', label: 'All', icon: LayoutGrid },
   { id: 'REQUIREMENT', label: 'Needs', icon: Target },
   { id: 'PARTNERSHIP', label: 'Collabs', icon: Sparkles },
-  { id: 'MEETUP', label: 'Events', icon: Users },
+  { id: 'MEETUP', label: 'Meetups', icon: Users },
 ];
 
 export default function CheckoutHomeFeed() {
@@ -207,12 +207,21 @@ function HomeContent() {
         .select('sender_id, receiver_id, status')
         .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
 
-      const mapped = (postsData || []).map(p => {
-        const author = p.author_profile;
-        const conn = (connections || []).find(c => 
-          (c.sender_id === authUser.id && c.receiver_id === author?.id) ||
-          (c.receiver_id === authUser.id && c.sender_id === author?.id)
-        );
+      const mapped = (postsData || [])
+        .filter(p => {
+          const authorId = p.author_profile?.id || p.author_id;
+          const conn = (connections || []).find(c => 
+            (c.sender_id === authUser.id && c.receiver_id === authorId) ||
+            (c.receiver_id === authUser.id && c.sender_id === authorId)
+          );
+          return conn?.status !== 'BLOCKED';
+        })
+        .map(p => {
+          const author = p.author_profile;
+          const conn = (connections || []).find(c => 
+            (c.sender_id === authUser.id && c.receiver_id === author?.id) ||
+            (c.receiver_id === authUser.id && c.sender_id === author?.id)
+          );
 
         return {
           ...p,
@@ -245,6 +254,18 @@ function HomeContent() {
     if (authUser) {
        initHome();
        analytics.trackScreen('HOME', authUser?.id);
+
+       // Check for deep-link actions
+       const params = new URLSearchParams(window.location.search);
+       const action = params.get('action');
+       if (action === 'host_meetup') handleOpenPosting('MEETUP');
+       if (action === 'post_need') handleOpenPosting('REQUIREMENT');
+       
+       // Clear params to prevent re-triggering
+       if (action) {
+         const newUrl = window.location.pathname;
+         window.history.replaceState({}, '', newUrl);
+       }
     }
   }, [authUser, sessionContext.recent_actions.length]);
 
@@ -273,7 +294,7 @@ function HomeContent() {
     try {
       const { ConnectionService } = await import("@/services/connection-service");
       await ConnectionService.ensureConnection(authUser.id, post.author_id);
-      router.push(`/chat?user=${post.author_id}`);
+      router.push(`/chat?user=${post.author_id}&initial=${encodeURIComponent(`Re: ${post.title}`)}`);
     } catch (err) {
       console.error("Reply failed:", err);
     }

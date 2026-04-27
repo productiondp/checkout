@@ -23,8 +23,10 @@ import { DEFAULT_AVATAR } from "@/utils/constants";
 import { createClient } from "@/utils/supabase/client";
 import { ConnectButton } from "@/components/connection/ConnectButton";
 import { analytics } from "@/utils/analytics";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdvisorsPage() {
+  const { user: authUser } = useAuth();
   const [advisors, setAdvisors] = useState<Advisor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,32 +35,56 @@ export default function AdvisorsPage() {
 
   useEffect(() => {
     async function loadAdvisors() {
+      if (!authUser) return;
       const supabase = createClient();
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, full_name, headline, city, experience_years, skills, expertise, avatar_url, matchScore, bio')
           .eq('role', 'ADVISOR')
+          .neq('id', authUser.id)
           .limit(20);
 
         if (error) throw error;
 
+        // 🛡️ FETCH CONNECTIONS FOR BLOCK FILTERING
+        const { data: connections } = await supabase
+          .from('connections')
+          .select('sender_id, receiver_id, status')
+          .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
+
         if (data) {
-          const mapped: Advisor[] = data.map(p => ({
-            id: p.id,
-            name: p.full_name || "Elite Advisor",
-            role: p.headline || "Professional Advisor",
-            industry: p.city || "National Network",
-            experience: p.experience_years ? `${p.experience_years}+ Years` : "10+ Years",
-            expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
-            avatar: p.avatar_url || DEFAULT_AVATAR,
-            matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
-            bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
-            bio: p.bio || "",
-            highlights: [],
-            focus: [],
-            availability: "On Demand"
-          }));
+          const mapped: Advisor[] = data
+            .filter(p => {
+              const conn = (connections || []).find(c => 
+                (c.sender_id === authUser.id && c.receiver_id === p.id) ||
+                (c.receiver_id === authUser.id && c.sender_id === p.id)
+              );
+              return conn?.status !== 'BLOCKED';
+            })
+            .map(p => {
+              const conn = (connections || []).find(c => 
+                (c.sender_id === authUser.id && c.receiver_id === p.id) ||
+                (c.receiver_id === authUser.id && c.sender_id === p.id)
+              );
+
+              return {
+                id: p.id,
+                name: p.full_name || "Elite Advisor",
+                role: p.headline || "Professional Advisor",
+                industry: p.city || "National Network",
+                experience: p.experience_years ? `${p.experience_years}+ Years` : "10+ Years",
+                expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
+                avatar: p.avatar_url || DEFAULT_AVATAR,
+                matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
+                bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
+                bio: p.bio || "",
+                highlights: [],
+                focus: [],
+                availability: "On Demand",
+                connectionStatus: conn ? conn.status.toLowerCase() : 'none'
+              };
+            });
           setAdvisors(mapped);
         }
       } catch (err) {
@@ -69,7 +95,7 @@ export default function AdvisorsPage() {
     }
     loadAdvisors();
     analytics.trackScreen('ADVISORS');
-  }, []);
+  }, [authUser]);
 
   const filteredAdvisors = advisors.filter(advisor => 
     advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -25,48 +25,19 @@ import {
   UserPlus
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/utils/supabase/client";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
-  const [connectionCount, setConnectionCount] = useState(0);
-  const supabase = createClient();
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from('connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', user.id)
-        .eq('status', 'PENDING');
-      
-      setConnectionCount(count || 0);
-    };
-
-    fetchCount();
-
-    const channel = supabase
-      .channel('sidebar_connections')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'connections' 
-      }, fetchCount)
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
 
   const navGroups = [
     {
       group: "Directory",
       items: [
         { label: "Feed", icon: Home, href: "/home" },
-        { label: "Connections", icon: UserPlus, href: "/connections", badge: connectionCount > 0 ? connectionCount.toString() : null },
-        { label: "Chat", icon: MessageSquare, href: "/chat" },
+        { label: "Connections", icon: UserPlus, href: "/connections", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
+        { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount.toString() : null },
         { label: "Communities", icon: Globe, href: "/communities" },
       ]
     },

@@ -80,18 +80,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     timeoutRef.current = setTimeout(() => {
       if (authState === "loading") {
         log("WATCHDOG_TRIGGERED");
-        const elapsed = Date.now() - loaderStart.current;
-        analytics.track('AUTH_WATCHDOG', undefined, { elapsed });
-
-        if (AUTH_SAFE_MODE) {
-           if (session && !profileLoaded) {
-              setAuthState(user?.onboarding_completed ? "authenticated" : "onboarding");
-           } else if (!session) {
-              setAuthState("guest");
-           }
+        
+        // Force resolve to Guest if no session after 4s
+        if (!session) {
+           setAuthState("guest");
+           setProfileLoaded(true);
+        } else if (!profileLoaded) {
+           // If we have a session but profile is slow, try to resolve anyway
+           setAuthState(user?.onboarding_completed ? "authenticated" : "onboarding");
+           setProfileLoaded(true);
         }
       }
-    }, 5000);
+    }, 4000);
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, [authState, session, profileLoaded, user]);
 
@@ -395,19 +395,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else finalStatus = uiStatus;
 
     return (
-      <>
-        <FullScreenLoader 
-          status={finalStatus} 
-          onRetry={() => { setUiStatus('loading'); initAuth(); }}
-          onHome={() => { router.replace(user ? "/home" : "/"); setUiStatus('loading'); }}
-        />
-        {/* DEBUG OVERLAY (HYDRATION SAFE) */}
-        {showDebug && (
-          <div className="fixed bottom-4 left-4 z-[100000] p-3 bg-black/80 backdrop-blur text-[9px] font-mono text-emerald-400/80 rounded-lg border border-white/5 pointer-events-none">
-            {window.location.pathname} • {authState} • {isAuthReady ? 'READY' : 'WAIT'}
-          </div>
-        )}
-      </>
+      <FullScreenLoader 
+        status={finalStatus} 
+        onRetry={() => { setUiStatus('loading'); initAuth(); }}
+        onHome={() => { router.replace(user ? "/home" : "/"); setUiStatus('loading'); }}
+      />
     );
   }
 

@@ -20,6 +20,7 @@ import {
   Zap,
   Globe,
   Rocket,
+  Sparkles,
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -248,21 +249,27 @@ export default function OnboardingPage() {
              {/* ACTION PANEL */}
              <div className="w-full lg:w-[380px] p-10 lg:p-14 bg-[#FAFAFB] flex flex-col justify-center gap-6">
                 <button 
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/?action=" + (onboardingData.role === 'ADVISOR' ? 'host_meetup' : 'post_need'))}
                   className="w-full h-20 bg-[#1D1D1F] text-white rounded-lg flex flex-col justify-center items-center gap-1 group transition-all active:scale-[0.98] shadow-2xl shadow-black/20 hover:bg-black"
                 >
                    <div className="flex items-center gap-3">
-                      <Plus size={20} strokeWidth={3} />
-                      <span className="text-base font-bold uppercase">Post a Need</span>
+                      {onboardingData.role === 'ADVISOR' ? <Sparkles size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} />}
+                      <span className="text-base font-bold uppercase">
+                         {onboardingData.role === 'ADVISOR' ? "Host a Meetup" : "Post a Need"}
+                      </span>
                    </div>
-                   <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Connect with the network</span>
+                   <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">
+                      {onboardingData.role === 'ADVISOR' ? "Share your expertise" : "Connect with the network"}
+                   </span>
                 </button>
 
                 <button 
                   onClick={() => router.push("/")}
                   className="w-full h-16 bg-white border border-black/[0.08] rounded-lg flex items-center justify-center gap-3 transition-all hover:bg-[#F5F5F7] active:scale-95 group"
                 >
-                   <span className="text-sm font-bold uppercase tracking-tight text-[#1D1D1F]">Find People</span>
+                   <span className="text-sm font-bold uppercase tracking-tight text-[#1D1D1F]">
+                      {onboardingData.role === 'ADVISOR' ? "Explore Needs" : "Find People"}
+                   </span>
                    <ArrowRight size={18} className="text-[#86868B] group-hover:translate-x-1 transition-transform" />
                 </button>
 
@@ -302,7 +309,7 @@ export default function OnboardingPage() {
                  </div>
                  <h1 className="text-5xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
                     {step === 1 && "Who are you?"}
-                    {step === 2 && "What do you do?"}
+                    {step === 2 && (onboardingData.role === 'ADVISOR' ? "How can you help?" : "What do you do?")}
                     {step === 3 && "Almost done"}
                  </h1>
               </div>
@@ -356,35 +363,37 @@ export default function OnboardingPage() {
                                 ))}
                              </div>
                           </div>
-                       </div>
-                    )}
+                        </div>
+                     )}
 
-                    {step === 2 && (
-                       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                     {step === 2 && (
+                        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                           
                           {/* 1. IDENTITY INPUT */}
                           <div className="space-y-4">
-                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">What do you do?</label>
+                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                                {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
+                             </label>
                              <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
-                                <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
+                                {onboardingData.role === 'ADVISOR' ? (
+                                   <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E53935]" size={24} />
+                                ) : (
+                                   <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
+                                )}
                                 <input 
                                   type="text" 
                                   value={onboardingData.jobRole}
                                   onChange={e => {
                                     const val = e.target.value;
                                     const detection = detectIndustry(val);
-                                    
-                                    // Step 1: Only suggest if confidence > 0.6
                                     const highConfidence = detection.confidence > 0.6;
-                                    
                                     setOnboardingData(prev => ({ 
                                       ...prev, 
                                       jobRole: val,
-                                      // Step 2: Disambiguation - if multiple, don't auto-pick
                                       industry: (highConfidence && detection.industries.length === 1) ? detection.industries[0] : prev.industry 
                                     }));
                                   }}
-                                  placeholder="e.g. Video Editor, Founder, Developer"
+                                  placeholder={onboardingData.role === 'ADVISOR' ? "e.g. Startup Strategy, Marketing Guidance" : "e.g. Video Editor, Founder, Developer"}
                                   className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
                              </div>

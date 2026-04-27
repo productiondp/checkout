@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface MobileDrawerProps {
 export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
   const supabase = createClient();
   const { logout } = useAuth();
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   
   const menuItems = [
     { label: "Requirement Feed", href: "/home", icon: Home },
@@ -91,8 +93,18 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
               className="flex items-center justify-between p-4 rounded-lg text-[14px] font-bold text-[#292828] hover:bg-[#292828]/5 transition-all group active:scale-95"
             >
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-lg bg-white border border-[#292828]/10 flex items-center justify-center text-[#292828] group-hover:text-[#E53935] shadow-sm transition-colors">
+                <div className="h-10 w-10 rounded-lg bg-white border border-[#292828]/10 flex items-center justify-center text-[#292828] group-hover:text-[#E53935] shadow-sm transition-colors relative">
                   <item.icon size={18} />
+                  {item.label === "Chat" && unreadMessagesCount > 0 && (
+                    <div className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-[#E53935] text-white rounded-full flex items-center justify-center text-[8px] font-black ring-2 ring-white">
+                      {unreadMessagesCount}
+                    </div>
+                  )}
+                  {item.label === "Network Hub" && pendingRequestsCount > 0 && (
+                    <div className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-[#34C759] text-white rounded-full flex items-center justify-center text-[8px] font-black ring-2 ring-white">
+                      {pendingRequestsCount}
+                    </div>
+                  )}
                 </div>
                 {item.label}
               </div>

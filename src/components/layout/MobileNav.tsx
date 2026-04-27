@@ -13,9 +13,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PostModal from "../modals/PostModal";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const menu = [
@@ -40,9 +42,16 @@ export default function MobileNav() {
 
         <Link 
           href={menu[1].href}
-          className="flex flex-col items-center justify-center w-14 h-14 group"
+          className="flex flex-col items-center justify-center w-14 h-14 group relative"
         >
-          <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
+          <div className="relative">
+            <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
+            {pendingRequestsCount > 0 && (
+              <div className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 bg-[#34C759] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
+                {pendingRequestsCount}
+              </div>
+            )}
+          </div>
           <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Network</span>
         </Link>
 
@@ -59,10 +68,15 @@ export default function MobileNav() {
         {/* 3. RIGHT ITEMS */}
         <Link 
           href={menu[3].href}
-          className="flex flex-col items-center justify-center w-14 h-14 group"
+          className="flex flex-col items-center justify-center w-14 h-14 group relative"
         >
           <div className="relative">
              <MessageSquare size={22} className={cn("transition-all", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[3].href ? 2.5 : 2} />
+             {unreadMessagesCount > 0 && (
+               <div className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
+                 {unreadMessagesCount}
+               </div>
+             )}
           </div>
           <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[3].href ? "text-[#E53935]" : "text-[#292828]")}>Chat</span>
         </Link>

@@ -10,9 +10,8 @@ export const ConnectionService = {
    */
   async connect(senderId: string, receiverId: string) {
     const supabase = createClient();
-    console.log("CONNECT CLICK", senderId, receiverId);
-
-    // 1. DUPLICATE PREVENTION
+    
+    // 1. DUPLICATE PREVENTION (Step 4)
     const { data: existing } = await supabase
       .from('connections')
       .select('id, status')
@@ -20,7 +19,6 @@ export const ConnectionService = {
       .maybeSingle();
 
     if (existing) {
-      console.log("Connection already exists:", existing);
       return { success: true, status: existing.status as ConnectionStatus, id: existing.id };
     }
 
@@ -34,15 +32,10 @@ export const ConnectionService = {
           status: "PENDING"
         }
       ])
-      .select();
+      .select()
+      .single();
 
-    console.log("INSERT RESULT:", data, error);
-
-    if (error) {
-      console.error("Connection Error:", error);
-      alert("Failed to connect: " + error.message);
-      throw error;
-    }
+    if (error) throw error;
 
     // 📣 TRIGGER NOTIFICATION
     try {
@@ -51,13 +44,13 @@ export const ConnectionService = {
         user_id: receiverId,
         type: "connection_request",
         actor_id: senderId,
-        reference_id: data[0].id
+        reference_id: data.id
       });
     } catch (nErr) {
       console.warn("Notification trigger failed (Silent):", nErr);
     }
 
-    return { success: true, status: "PENDING" as ConnectionStatus, connectionId: data?.[0]?.id };
+    return { success: true, status: "PENDING" as ConnectionStatus, connectionId: data.id };
   },
 
   /**
@@ -172,5 +165,33 @@ export const ConnectionService = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * 🗑️ REMOVE CONNECTION
+   */
+  async removeConnection(connectionId: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('connections')
+      .delete()
+      .eq('id', connectionId);
+    
+    if (error) throw error;
+    return { success: true };
+  },
+
+  /**
+   * 🚫 BLOCK USER
+   */
+  async blockUser(connectionId: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('connections')
+      .update({ status: 'BLOCKED' })
+      .eq('id', connectionId);
+    
+    if (error) throw error;
+    return { success: true };
   }
 };

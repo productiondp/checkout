@@ -19,6 +19,7 @@ interface PostModalProps {
   onClose: () => void;
   onPostSuccess?: (post: any) => void;
   editPost?: any;
+  initialFormType?: 'REQUIREMENT' | 'PARTNERSHIP' | 'MEETUP';
 }
 
 const AI_ENHANCEMENTS: Record<string, string[]> = {
@@ -27,25 +28,26 @@ const AI_ENHANCEMENTS: Record<string, string[]> = {
   "website": ["Landing Page", "E-commerce", "Portfolio", "Responsive"],
   "marketing": ["Lead Generation", "SEO", "Ad Strategy", "Copywriting"],
   "sales": ["Inside Sales", "Direct Outreach", "Strategy", "Closing"],
-  "legal": ["Contract Drafting", "Consultation", "Compliance", "IP"]
+  "legal": ["Contract Drafting", "Consultation", "Compliance", "IP"],
+  "meetup": ["Q&A Session", "Workshop", "Networking", "Masterclass"]
 };
 
 const SUGGESTION_CHIPS = [
-  { label: "🎬 Video", tag: "Video" },
+  { label: "🚀 Startup", tag: "Startup" },
   { label: "🎨 Design", tag: "Design" },
   { label: "📢 Marketing", tag: "Marketing" },
   { label: "💻 Tech", tag: "Tech" },
-  { label: "⚖️ Legal", tag: "Legal" },
   { label: "📊 Strategy", tag: "Strategy" }
 ];
 
-export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: PostModalProps) {
+export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, initialFormType = 'REQUIREMENT' }: PostModalProps) {
   const { user: authUser } = useAuth();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [type, setType] = useState<'REQUIREMENT' | 'PARTNERSHIP' | 'MEETUP'>(initialFormType);
   
   // Optional Details
   const [timeline, setTimeline] = useState<string>("Flexible");
@@ -53,11 +55,18 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
   const [workType, setWorkType] = useState<string>("One-time");
   const [location, setLocation] = useState<string>("Remote");
 
+  // Meetup Specifics
+  const [meetupFormat, setMeetupFormat] = useState<string>("Online");
+  const [meetupTime, setMeetupTime] = useState<string>("This week");
+  const [meetupPrice, setMeetupPrice] = useState<string>("Free");
+  const [meetupCapacity, setMeetupCapacity] = useState<string>("10");
+
   // Reset & Auto-focus
   useEffect(() => {
     if (isOpen) {
       if (editPost) {
         setContent(editPost.content || "");
+        setType(editPost.type);
         setSelectedTags(editPost.skills_required || []);
         setTimeline(editPost.due_date ? "Fixed" : "Flexible");
         setBudget(editPost.budget || "Open");
@@ -65,6 +74,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
         setLocation(editPost.location || "Remote");
       } else {
         setContent("");
+        setType(initialFormType);
         setSelectedTags([]);
         setTimeline("Flexible");
         setBudget("Open");
@@ -73,7 +83,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
       }
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen, editPost]);
+  }, [isOpen, editPost, initialFormType]);
 
   // LIVE DETECTION
   const currentBaseTag = useMemo(() => detectBaseTag(content, selectedTags), [content, selectedTags]);
@@ -106,39 +116,54 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
 
     try {
       const supabase = createClient();
-      const title = content.split('\n')[0].substring(0, 60) || "New Requirement";
-      // ALWAYS Recalculate at submit for strict indexing
+      const title = content.split('\n')[0].substring(0, 60) || "New Post";
       const finalBaseTag = detectBaseTag(content, selectedTags);
 
       const payload = {
         author_id: authUser.id,
         industry: authUser.industry,
         base_tag: finalBaseTag,
-        type: "REQUIREMENT",
+        type: type,
         title: title,
         content: content,
-        location: location,
-        budget: budget,
+        location: type === 'MEETUP' ? meetupFormat : location,
+        budget: type === 'MEETUP' ? meetupPrice : budget,
         due_date: timeline === "ASAP" ? new Date().toISOString().split('T')[0] : null,
         skills_required: selectedTags.length > 0 ? selectedTags : ["General"],
         metadata: {
-          duration: workType,
+          duration: type === 'MEETUP' ? meetupTime : workType,
           timeline: timeline,
           base_tag_detected: finalBaseTag,
           posted_at: new Date().toISOString(),
-          quality_score: qualityScore
+          quality_score: qualityScore,
+          capacity: type === 'MEETUP' ? meetupCapacity : null,
+          format: type === 'MEETUP' ? meetupFormat : null
         }
       };
 
       const res = editPost 
-        ? await supabase.from('posts').update(payload).eq('id', editPost.id).select().single()
-        : await supabase.from('posts').insert(payload).select().single();
+        ? await supabase.from('posts').update({
+            ...payload,
+            max_slots: type === 'MEETUP' ? parseInt(meetupCapacity) || 5 : 1,
+            payment_type: type === 'MEETUP' ? meetupPrice : 'Free'
+          }).eq('id', editPost.id).select().single()
+        : await supabase.from('posts').insert({
+            ...payload,
+            max_slots: type === 'MEETUP' ? parseInt(meetupCapacity) || 5 : 1,
+            payment_type: type === 'MEETUP' ? meetupPrice : 'Free'
+          }).select().single();
 
       if (res.error) throw res.error;
 
+      // 🛡️ STEP 3: CREATE GROUP THREAD FOR MEETUPS
+      if (type === 'MEETUP' && !editPost) {
+        const { MeetupService } = await import("@/services/meetup-service");
+        await MeetupService.createGroupThread(res.data.id, authUser.id, title);
+      }
+
       onPostSuccess?.(res.data);
       onClose();
-      analytics.track('POST_CREATED', authUser.id, { base_tag: finalBaseTag });
+      analytics.track('POST_CREATED', authUser.id, { base_tag: finalBaseTag, type: type });
     } catch (err: any) {
       console.error("POST ERROR:", err);
       alert("Could not post. Try again.");
@@ -168,10 +193,15 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
         {/* HEADER */}
         <header className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-             <div className="h-10 w-10 bg-[#E53935] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#E53935]/20">
-                <Target size={20} />
+             <div className={cn(
+               "h-10 w-10 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all",
+               type === 'MEETUP' ? "bg-black shadow-black/20" : "bg-[#E53935] shadow-[#E53935]/20"
+             )}>
+                {type === 'MEETUP' ? <Users size={20} /> : <Target size={20} />}
              </div>
-             <h2 className="text-2xl font-black italic tracking-tight text-[#1D1D1F] uppercase">New Requirement</h2>
+             <h2 className="text-2xl font-black italic tracking-tight text-[#1D1D1F] uppercase">
+                {type === 'MEETUP' ? "Host Meetup" : "New Requirement"}
+             </h2>
           </div>
           <button onClick={onClose} className="h-10 w-10 bg-[#F5F5F7] rounded-full flex items-center justify-center text-[#86868B] hover:bg-[#E8E8ED] transition-all">
             <X size={20} />
@@ -186,10 +216,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
               autoFocus
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="What do you need?"
+              placeholder={type === 'MEETUP' ? "What do you want to host?" : "What do you need?"}
               className={cn(
                 "w-full bg-[#F5F5F7] border border-black/[0.03] rounded-3xl p-8 text-2xl font-bold text-[#1D1D1F] placeholder:text-[#86868B]/30 outline-none focus:bg-white focus:border-[#E53935]/20 focus:ring-[12px] focus:ring-[#E53935]/5 transition-all min-h-[160px] resize-none",
-                isShort && "focus:ring-amber-500/5 focus:border-amber-500/20"
+                isShort && "focus:ring-amber-500/5 focus:border-amber-500/20",
+                type === 'MEETUP' && "focus:ring-black/5 focus:border-black/20"
               )}
              />
              <div className="absolute bottom-6 right-8 flex items-center gap-2">
@@ -262,103 +293,106 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
 
               {/* STEP 3: SMART OPTIONAL DETAILS */}
               <div className="space-y-6 pt-4 border-t border-black/[0.03]">
-                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">Optional Details</p>
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">
+                    {type === 'MEETUP' ? "Meetup Details" : "Optional Details"}
+                 </p>
                  
                  <div className="grid grid-cols-2 gap-3">
-                    {/* Timeline */}
-                    <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
-                       {["ASAP", "Flexible"].map(t => (
-                          <button 
-                            key={t}
-                            onClick={() => setTimeline(t)}
-                            className={cn(
-                               "flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all",
-                               timeline === t ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]"
-                            )}
-                          >
-                             {t}
-                          </button>
-                       ))}
-                    </div>
+                    {type === 'MEETUP' ? (
+                       <>
+                          {/* Format */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["Online", "Offline"].map(f => (
+                                <button key={f} onClick={() => setMeetupFormat(f)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", meetupFormat === f ? "bg-black text-white shadow-xl" : "text-[#86868B]")}>{f}</button>
+                             ))}
+                          </div>
+                          {/* Time */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["Today", "This week"].map(t => (
+                                <button key={t} onClick={() => setMeetupTime(t)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", meetupTime === t ? "bg-black text-white shadow-xl" : "text-[#86868B]")}>{t}</button>
+                             ))}
+                          </div>
+                          {/* Price */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["Free", "Paid"].map(p => (
+                                <button key={p} onClick={() => setMeetupPrice(p)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", meetupPrice === p ? "bg-black text-white shadow-xl" : "text-[#86868B]")}>{p}</button>
+                             ))}
+                          </div>
+                          {/* Capacity */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["5", "10", "20+"].map(c => (
+                                <button key={c} onClick={() => setMeetupCapacity(c)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", meetupCapacity === c ? "bg-black text-white shadow-xl" : "text-[#86868B]")}>{c}</button>
+                             ))}
+                          </div>
+                       </>
+                    ) : (
+                       <>
+                          {/* Timeline */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["ASAP", "Flexible"].map(t => (
+                                <button key={t} onClick={() => setTimeline(t)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", timeline === t ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]")}>{t}</button>
+                             ))}
+                          </div>
 
-                    {/* Budget */}
-                    <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
-                       {["Fixed", "Open"].map(b => (
-                          <button 
-                            key={b}
-                            onClick={() => setBudget(b)}
-                            className={cn(
-                               "flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all",
-                               budget === b ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]"
-                            )}
-                          >
-                             {b}
-                          </button>
-                       ))}
-                    </div>
+                          {/* Budget */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["Fixed", "Open"].map(b => (
+                                <button key={b} onClick={() => setBudget(b)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", budget === b ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]")}>{b}</button>
+                             ))}
+                          </div>
 
-                    {/* Location */}
-                    <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
-                       {["Remote", "Local"].map(l => (
-                          <button 
-                            key={l}
-                            onClick={() => setLocation(l)}
-                            className={cn(
-                               "flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all",
-                               location === l ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]"
-                            )}
-                          >
-                             {l}
-                          </button>
-                       ))}
-                    </div>
+                          {/* Location */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["Remote", "Local"].map(l => (
+                                <button key={l} onClick={() => setLocation(l)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", location === l ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]")}>{l}</button>
+                             ))}
+                          </div>
 
-                    {/* Work Type */}
-                    <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
-                       {["One-time", "Ongoing"].map(w => (
-                          <button 
-                            key={w}
-                            onClick={() => setWorkType(w)}
-                            className={cn(
-                               "flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all",
-                               workType === w ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]"
-                            )}
-                          >
-                             {w === "One-time" ? "Once" : "Ongoing"}
-                          </button>
-                       ))}
-                    </div>
+                          {/* Work Type */}
+                          <div className="bg-white border border-black/[0.05] p-2 rounded-[2rem] flex items-center gap-1">
+                             {["One-time", "Ongoing"].map(w => (
+                                <button key={w} onClick={() => setWorkType(w)} className={cn("flex-1 py-3 rounded-[1.5rem] text-[10px] font-black uppercase transition-all", workType === w ? "bg-[#1D1D1F] text-white shadow-xl" : "text-[#86868B] hover:text-[#1D1D1F]")}>{w === "One-time" ? "Once" : "Ongoing"}</button>
+                             ))}
+                          </div>
+                       </>
+                    )}
                  </div>
               </div>
 
               {/* STEP 6: PREVIEW */}
               <div className={cn(
                 "p-6 border rounded-[2rem] transition-colors duration-500",
-                qualityScore >= 2 ? "bg-emerald-50/50 border-emerald-100/50" : "bg-slate-50 border-slate-100"
+                qualityScore >= 2 || type === 'MEETUP' ? "bg-emerald-50/50 border-emerald-100/50" : "bg-slate-50 border-slate-100"
               )}>
                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                       {qualityScore >= 2 ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Activity size={14} className="text-slate-400" />}
+                       {qualityScore >= 2 || type === 'MEETUP' ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Activity size={14} className="text-slate-400" />}
                        <p className={cn(
                          "text-[10px] font-black uppercase tracking-widest",
-                         qualityScore >= 2 ? "text-emerald-600" : "text-slate-400"
-                       )}>{qualityLabel}</p>
+                         qualityScore >= 2 || type === 'MEETUP' ? "text-emerald-600" : "text-slate-400"
+                       )}>{type === 'MEETUP' ? "Meetup Preview" : qualityLabel}</p>
                     </div>
                     <span className="text-[9px] font-black uppercase text-black/10 tracking-widest">{currentBaseTag}</span>
                  </div>
                  <div className="flex flex-wrap gap-x-4 gap-y-2">
                     <div className="flex items-center gap-2">
-                       <div className={cn("h-1.5 w-1.5 rounded-full", qualityScore >= 2 ? "bg-emerald-500" : "bg-slate-300")} />
-                       <p className={cn("text-[13px] font-bold line-clamp-1", qualityScore >= 2 ? "text-emerald-900" : "text-slate-600")}>{content}</p>
+                       <div className={cn("h-1.5 w-1.5 rounded-full", qualityScore >= 2 || type === 'MEETUP' ? "bg-emerald-500" : "bg-slate-300")} />
+                       <p className={cn("text-[13px] font-bold line-clamp-1", qualityScore >= 2 || type === 'MEETUP' ? "text-emerald-900" : "text-slate-600")}>{content}</p>
                     </div>
                     <div className="flex items-center gap-2 opacity-40">
-                       <Clock size={12} />
-                       <span className="text-[11px] font-bold uppercase">{timeline}</span>
+                       {type === 'MEETUP' ? <Globe size={12} /> : <Clock size={12} />}
+                       <span className="text-[11px] font-bold uppercase">{type === 'MEETUP' ? meetupFormat : timeline}</span>
                     </div>
                     <div className="flex items-center gap-2 opacity-40">
-                       <MapPin size={12} />
-                       <span className="text-[11px] font-bold uppercase">{location}</span>
+                       {type === 'MEETUP' ? <Calendar size={12} /> : <MapPin size={12} />}
+                       <span className="text-[11px] font-bold uppercase">{type === 'MEETUP' ? meetupTime : location}</span>
                     </div>
+                    {type === 'MEETUP' && (
+                       <div className="flex items-center gap-2 opacity-40">
+                          <IndianRupee size={12} />
+                          <span className="text-[11px] font-bold uppercase">{meetupPrice}</span>
+                       </div>
+                    )}
                  </div>
               </div>
             </motion.div>
@@ -370,7 +404,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
            <button 
             onClick={handlePost}
             disabled={isPosting || !content.trim()}
-            className="w-full h-20 bg-[#1D1D1F] hover:bg-black text-white rounded-[2rem] text-[14px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all shadow-2xl active:scale-[0.98] disabled:opacity-20 disabled:grayscale group"
+            className={cn(
+               "w-full h-20 rounded-[2rem] text-[14px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all shadow-2xl active:scale-[0.98] disabled:opacity-20 disabled:grayscale group",
+               type === 'MEETUP' ? "bg-black hover:bg-zinc-800 text-white" : "bg-[#1D1D1F] hover:bg-black text-white"
+            )}
            >
               {isPosting ? (
                 <>
@@ -379,7 +416,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost }: 
                 </>
               ) : (
                 <>
-                  <span>Post Requirement</span>
+                  <span>{type === 'MEETUP' ? "Publish Meetup" : "Post Requirement"}</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}

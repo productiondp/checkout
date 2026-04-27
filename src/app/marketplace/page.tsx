@@ -77,20 +77,31 @@ export default function MarketplacePage() {
   const { user } = useAuth();
 
   const fetchData = async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
-      // 1. Fetch data from multiple tables
+      // 🛡️ 1. Fetch connections for block filtering
+      const { data: connections } = await supabase
+        .from('connections')
+        .select('sender_id, receiver_id, status')
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
+      // 2. Fetch data from multiple tables
       const [listings, posts] = await Promise.all([
-        supabase.from('listings').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).order('created_at', { ascending: false }),
-        supabase.from('posts').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).order('created_at', { ascending: false })
+        supabase.from('listings').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).neq('author_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('posts').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).neq('author_id', user.id).order('created_at', { ascending: false })
       ]);
 
       const unified: UnifiedItem[] = [];
+      const blockedIds = (connections || [])
+        .filter(c => c.status === 'BLOCKED')
+        .map(c => c.sender_id === user.id ? c.receiver_id : c.sender_id);
       
       if (listings.data) {
         listings.data.forEach(item => {
           const author = Array.isArray(item.author) ? item.author[0] : item.author;
+          if (blockedIds.includes(author?.id)) return;
+
           unified.push({
             id: item.id,
             title: item.title,
@@ -115,6 +126,8 @@ export default function MarketplacePage() {
       if (posts.data) {
         posts.data.forEach(item => {
           const author = Array.isArray(item.author) ? item.author[0] : item.author;
+          if (blockedIds.includes(author?.id)) return;
+
           unified.push({
             id: item.id,
             title: item.title,

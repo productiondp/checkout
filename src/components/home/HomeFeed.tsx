@@ -121,7 +121,6 @@ export default function HomeFeed({
       .map((post, i) => {
         const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge } = calculateMatchScore(userProfile, post, i, intentMode);
         const rel = getRelevanceLabel(score, customLabel, signals);
-        const conn = post.connections?.find((c: any) => c.user_id === user.id);
         return {
           ...post,
           authorName: post.author?.full_name || "Member",
@@ -130,9 +129,8 @@ export default function HomeFeed({
           relevanceSignals: signals,
           actionScore,
           ctaHint,
-          nudge, // STEP 1: ACTION SUGGESTIONS
-          tier,
-          connectionStatus: conn ? conn.status.toLowerCase() : 'none'
+          nudge,
+          tier
         };
       })
       .filter((post) => {

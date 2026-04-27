@@ -41,6 +41,12 @@ export default function FullScreenLoader({ status = 'loading', onRetry, onHome }
 
   return (
     <div className="fixed inset-0 bg-[#FDFDFF] z-[99999] flex flex-col items-center justify-center">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes loading-bar {
+          0% { width: 0%; }
+          100% { width: 90%; }
+        }
+      `}} />
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.04]"
         style={{
@@ -104,13 +110,15 @@ export default function FullScreenLoader({ status = 'loading', onRetry, onHome }
             <div className="w-full space-y-2 pt-4">
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#E53935] rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${progress}%` }}
+                  className="h-full bg-[#E53935] rounded-full"
+                  style={{ 
+                    animation: 'loading-bar 10s cubic-bezier(0.1, 0, 0.3, 1) forwards' 
+                  }}
                 />
               </div>
               <div className="flex items-center justify-between opacity-40">
                 <p className="text-[9px] text-slate-500 font-black uppercase ">Secure handshake</p>
-                <p className="text-[9px] text-slate-500 font-black ">{progress}%</p>
+                <p className="text-[9px] text-slate-500 font-black ">Syncing</p>
               </div>
             </div>
           )}

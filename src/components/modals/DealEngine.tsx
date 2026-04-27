@@ -24,7 +24,8 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
 
   const handleOpenChats = () => {
     onClose();
-    router.push("/chat");
+    const recipientId = deal.author?.id || deal.author_id || deal.user_id;
+    router.push(`/chat?user=${recipientId}&initial=${encodeURIComponent(`Re: ${deal.title}`)}`);
   };
 
   const handleSubmitProposal = async () => {
@@ -55,44 +56,21 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
         throw new Error("You cannot connect to your own post.");
       }
 
-      // 2. Check for existing connection
-      const { data: existing } = await supabase
-        .from('connections')
-        .select('id')
-        .or(`and(sender_id.eq.${authUser.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${authUser.id})`)
-        .maybeSingle();
-
-      let targetId = existing?.id;
+      // 2. Establish Connection (Step 5)
+      const { ConnectionService } = await import("@/services/connection-service");
+      const connResult = await ConnectionService.connect(authUser.id, recipientId);
       
-      if (!targetId) {
-        // 3. Perform the EXACT insert from matches/page.tsx
-        const { data, error: insertErr } = await supabase
-          .from('connections')
-          .insert({
-            sender_id: authUser.id,
-            receiver_id: recipientId,
-            status: 'PENDING'
-          })
-          .select()
-          .single();
+      const targetId = connResult.connectionId || (connResult as any).id;
 
-        if (insertErr) {
-           throw new Error(`Security Policy: ${insertErr.message}`);
-        }
-        targetId = data?.id;
-      }
-
-      // 4. Send separate message only if connection is established
+      // 3. Send Message (Step 6)
       if (targetId) {
-        try {
-          await supabase.from('messages').insert({
-            connection_id: targetId,
-            sender_id: authUser.id,
-            content: proposal || `Hi ${deal.author}, I saw your post: ${deal.title}`
-          });
-        } catch (e) {
-          console.warn("Message sync skipped");
-        }
+        await supabase.from('messages').insert({
+          connection_id: targetId,
+          sender_id: authUser.id,
+          receiver_id: recipientId,
+          content: proposal || `Hi ${deal.author}, I saw your post: ${deal.title}`,
+          is_read: false
+        });
       }
 
       analytics.track('CONNECTION_SENT', authUser.id, { receiverId: recipientId, postId: deal.id });

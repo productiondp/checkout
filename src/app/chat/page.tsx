@@ -41,6 +41,7 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { ConnectionService } from "@/services/connection-service";
 import { motion, AnimatePresence } from "framer-motion";
+import { ClarityInput } from "@/components/ui/ClarityInput";
 
 function ChatContent() {
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -575,9 +576,9 @@ function ChatContent() {
                            
                            <div className="grid grid-cols-2 gap-3 mb-6">
                               {[
-                                { id: 'COLLAB', label: 'Started Collab', icon: Sparkles },
-                                { id: 'HIRE', label: 'Found Talent', icon: Briefcase },
-                                { id: 'KNOWLEDGE', label: 'Learned Tons', icon: BrainCircuit },
+                                { id: 'COLLAB', label: 'Partnership Started', icon: Sparkles },
+                                { id: 'HIRE', label: 'Professional Engagement', icon: Briefcase },
+                                { id: 'KNOWLEDGE', label: 'Learning Milestone', icon: BrainCircuit },
                                 { id: 'OTHER', label: 'Networking', icon: Users }
                               ].map(type => (
                                 <button 
@@ -607,12 +608,10 @@ function ChatContent() {
                   </div>
                 ) : (
                   <form onSubmit={handleSendMessage} className="flex items-center gap-4 bg-slate-50 rounded-[1.625rem] p-2 pl-6 shadow-sm border border-slate-100 focus-within:bg-white focus-within:shadow-xl transition-all">
-                      <input 
-                        type="text" 
+                      <ClarityInput 
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type your message..." 
-                        className="flex-1 bg-transparent border-none outline-none text-[15px] font-bold text-[#292828] py-4"
                       />
                       <button 
                         type="submit"
@@ -657,11 +656,11 @@ function ChatContent() {
               </div>
               
               <h3 className="text-2xl font-black text-[#1D1D1F] uppercase italic mb-4">
-                {confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Link?"}
+                {confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Partner?"}
               </h3>
               
               <p className="text-[12px] font-bold text-[#86868B] uppercase mb-10 leading-relaxed">
-                Confirm {confirmAction.type.toLowerCase()} for <strong>{confirmAction.partnerName}</strong>.
+                Confirm {confirmAction.type === 'BLOCK' ? 'block' : 'remove'} for <strong>{confirmAction.partnerName}</strong>.
               </p>
               
               <div className="flex gap-4">

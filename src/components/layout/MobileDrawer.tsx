@@ -38,7 +38,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   
   const menuItems = [
-    { label: "Requirement Feed", href: "/home", icon: Home },
+    { label: "Home Feed", href: "/home", icon: Home },
     { label: "Network Hub", href: "/connections", icon: Users },
     { label: "Chat", href: "/chat", icon: MessageSquare },
   ];

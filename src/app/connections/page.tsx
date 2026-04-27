@@ -185,7 +185,7 @@ function ConnectionsContent() {
                   {[
                     { id: 'DISCOVER', label: 'Discover', count: discoverList.length },
                     { id: 'REQUESTS', label: 'Requests', count: requests.filter(r => r.receiver_id === authUser?.id).length },
-                    { id: 'CONNECTED', label: 'Connected', count: connectedList.length }
+                    { id: 'CONNECTED', label: 'Partnered', count: connectedList.length }
                   ].map(tab => (
                     <button 
                       key={tab.id}
@@ -243,7 +243,7 @@ function ConnectionsContent() {
                        <h3 className="text-[12px] font-black uppercase tracking-widest text-black/20 ml-4">Incoming Requests</h3>
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                           {requests.filter(r => r.receiver_id === authUser?.id).map((req, i) => (
-                            <PartnerCard key={req.id} partner={req.sender} index={i} onAction={() => handleAccept(req.id)} actionLabel="Accept Link" setConfirmAction={setConfirmAction} />
+                            <PartnerCard key={req.id} partner={req.sender} index={i} onAction={() => handleAccept(req.id)} actionLabel="Accept Partner" setConfirmAction={setConfirmAction} />
                           ))}
                        </div>
                     </div>
@@ -269,7 +269,7 @@ function ConnectionsContent() {
                   connectedList.filter(searchFilter).map((p, i) => (
                     <PartnerCard key={p.id} partner={p} index={i} onAction={() => router.push(`/chat?user=${p.id}`)} actionLabel="Chat" variant="connected" setConfirmAction={setConfirmAction} />
                   ))
-                ) : <EmptyState title="No connections" description="Start by connecting with people in Discover." icon={Users} />
+                ) : <EmptyState title="No partners" description="Start by linking with people in Discover." icon={Users} />
               )}
             </AnimatePresence>
           </div>
@@ -298,11 +298,11 @@ function ConnectionsContent() {
               </div>
               
               <h3 className="text-3xl font-black text-[#1D1D1F] uppercase italic leading-none mb-4">
-                {confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Link?"}
+                {confirmAction.type === 'BLOCK' ? "Block User?" : "Unlink Partner?"}
               </h3>
               
               <p className="text-[#86868B] font-bold uppercase text-sm mb-10 leading-relaxed">
-                Are you sure you want to {confirmAction.type.toLowerCase()} <strong>{confirmAction.partnerName}</strong>? 
+                Are you sure you want to {confirmAction.type === 'BLOCK' ? 'block' : 'unlink'} <strong>{confirmAction.partnerName}</strong>? 
                 {confirmAction.type === 'BLOCK' && " They will no longer be able to see your posts or contact you."}
               </p>
               
@@ -436,7 +436,7 @@ function PartnerCard({ partner, index, onAction, actionLabel, disabled, variant,
                   }}
                   className="w-full h-12 px-5 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#E53935] hover:bg-red-50 transition-all"
                >
-                  <Trash2 size={14} /> Remove
+                  <Trash2 size={14} /> Unlink
                </button>
                <button 
                   onClick={async (e) => {

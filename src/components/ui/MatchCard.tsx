@@ -76,7 +76,7 @@ export default function MatchCard({
 
       <button
         onClick={onConnect}
-        className="w-full py-4 bg-primary text-white rounded-lg font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+        className="w-full py-4 bg-primary text-white rounded-lg font-bold text-[14px] shadow-lg shadow-primary/10 hover:bg-red-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
       >
         <Zap size={18} fill="white" />
         Initiate Business Lead Engine

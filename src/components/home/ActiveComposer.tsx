@@ -14,7 +14,7 @@ import { DEFAULT_AVATAR } from "@/utils/constants";
 
 interface ActiveComposerProps {
   user: any;
-  onPost: (type: 'REQUIREMENT' | 'PARTNERSHIP' | 'MEETUP') => void;
+  onPost: (type: 'REQUIREMENT' | 'PARTNER' | 'MEETUP') => void;
 }
 
 export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
@@ -54,9 +54,9 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
       {/* 2. ACTION TABS */}
       <div className="flex items-center justify-start gap-2 mt-6 pt-5 border-t border-black/[0.03]">
         {[
-          { id: 'REQUIREMENT', label: 'Post a Need', icon: Target },
-          { id: 'PARTNERSHIP', label: 'Collab', icon: Sparkles },
-          { id: 'MEETUP', label: 'Event', icon: Users },
+          { id: 'REQUIREMENT', label: 'Post Requirement', icon: Target },
+          { id: 'PARTNER', label: 'Find Partner', icon: Sparkles },
+          { id: 'MEETUP', label: 'Host Meetup', icon: Users },
         ].map(item => (
           <motion.button 
             key={item.id}

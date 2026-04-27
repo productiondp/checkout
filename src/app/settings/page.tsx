@@ -13,7 +13,8 @@ import {
   ChevronRight,
   LogOut,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Target
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,10 +40,10 @@ export default function SettingsHub() {
   };
 
   const sections = [
+    { id: 'taxonomy', icon: Target, label: "Professional Identity", desc: "Set your industry and focus areas", href: "/settings/taxonomy" },
     { id: 'privacy', icon: User, label: "Account Privacy", desc: "Manage who sees your profile data" },
     { id: 'notifications', icon: Bell, label: "Simple Notifications", desc: "Control how you hear from people" },
     { id: 'security', icon: Shield, label: "Security & Safety", desc: "Two-factor and trusted devices" },
-    { id: 'mobile', icon: Smartphone, label: "Mobile Experience", desc: "Refined dock and gesture settings" },
     { id: 'hub', icon: Globe, label: "Regional Settings", desc: "Set your default business hub" },
   ];
 
@@ -92,23 +93,32 @@ export default function SettingsHub() {
 
         {/* Sections */}
         <div className="grid grid-cols-1 gap-4 mb-20">
-           {sections.map(s => (
-             <button 
-              key={s.label} 
-              className="w-full bg-white border border-[#292828]/5 rounded-lg p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-2xl hover:shadow-slate-200/40 transition-all text-left relative overflow-hidden active:scale-[0.99]"
-             >
-                <div className="flex items-center gap-6 relative z-10">
-                   <div className="h-16 w-16 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
-                      <s.icon size={26} />
-                   </div>
-                   <div>
-                      <h3 className="text-xl font-black text-[#292828] uppercase ">{s.label}</h3>
-                      <p className="text-[13px] font-medium text-slate-200 mt-1">{s.desc}</p>
-                   </div>
-                </div>
-                <ChevronRight size={24} className="text-[#292828]/20 group-hover:text-[#292828] group-hover:translate-x-1 transition-all z-10" />
-             </button>
-           ))}
+           {sections.map(s => {
+             const content = (
+               <div className="w-full bg-white border border-[#292828]/5 rounded-lg p-8 flex items-center justify-between group hover:border-[#E53935]/20 hover:shadow-2xl hover:shadow-slate-200/40 transition-all text-left relative overflow-hidden active:scale-[0.99]">
+                  <div className="flex items-center gap-6 relative z-10">
+                     <div className="h-16 w-16 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shadow-sm">
+                        <s.icon size={26} />
+                     </div>
+                     <div>
+                        <h3 className="text-xl font-black text-[#292828] uppercase ">{s.label}</h3>
+                        <p className="text-[13px] font-medium text-slate-200 mt-1">{s.desc}</p>
+                     </div>
+                  </div>
+                  <ChevronRight size={24} className="text-[#292828]/20 group-hover:text-[#292828] group-hover:translate-x-1 transition-all z-10" />
+               </div>
+             );
+
+             if (s.href) {
+               return <Link key={s.id} href={s.href}>{content}</Link>;
+             }
+
+             return (
+               <button key={s.id} onClick={() => {}} className="w-full">
+                 {content}
+               </button>
+             );
+           })}
 
            {/* Emergency Actions */}
            <div className="mt-8 pt-8 border-t border-[#292828]/5 space-y-4">

@@ -10,9 +10,9 @@ interface OutcomeSelectorProps {
 }
 
 const OPTIONS: { type: OutcomeType; label: string; icon: any; points: number }[] = [
-  { type: 'COLLABORATION', label: 'Started Collaboration', icon: Sparkles, points: OUTCOME_SCORES.COLLABORATION },
-  { type: 'TALENT_FOUND', label: 'Found Talent', icon: Users, points: OUTCOME_SCORES.TALENT_FOUND },
-  { type: 'KNOWLEDGE_GAINED', label: 'Knowledge Gained', icon: BookOpen, points: OUTCOME_SCORES.KNOWLEDGE_GAINED },
+  { type: 'COLLABORATION', label: 'Partnership Started', icon: Sparkles, points: OUTCOME_SCORES.COLLABORATION },
+  { type: 'TALENT_FOUND', label: 'Professional Engagement', icon: Users, points: OUTCOME_SCORES.TALENT_FOUND },
+  { type: 'KNOWLEDGE_GAINED', label: 'Learning Milestone', icon: BookOpen, points: OUTCOME_SCORES.KNOWLEDGE_GAINED },
   { type: 'NONE', label: 'No Outcome', icon: XCircle, points: OUTCOME_SCORES.NONE },
 ];
 

@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // 🧠 KEEP PUBLIC ROUTE LOGIC (SAFE GUARD)
-  const publicRoutes = ['/', '/login', '/onboarding']
+  const publicRoutes = ['/', '/login', '/onboarding', '/admin']
   const isPublic = publicRoutes.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   )

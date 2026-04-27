@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { calculateMatchScore, getRelevanceLabel, IntentMode } from "@/utils/match-engine";
 import { useUserSuccess } from "@/hooks/useUserSuccess";
+import { SignalGuard } from "@/utils/signal-guard";
 
 interface HomeFeedProps {
   posts: any[];
@@ -106,7 +107,7 @@ export default function HomeFeed({
     }
   }, [posts, currentUserId, newlyCreatedPostId]);
 
-  // ── STEP 5: MATCH ENGINE & SCORING ──
+  // --- STEP 5: MATCH ENGINE & SCORING ---
   const processedPosts = React.useMemo(() => {
     if (!user) return posts;
 
@@ -120,7 +121,7 @@ export default function HomeFeed({
     };
 
     const processed = posts.map((post, i) => {
-      const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge } = calculateMatchScore(userProfile, post, i, intentMode);
+      const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge, successProbability } = calculateMatchScore(userProfile, post, i, intentMode);
       
       return {
         ...post,
@@ -131,12 +132,12 @@ export default function HomeFeed({
         actionScore,
         ctaHint,
         nudge,
-        tier
+        tier,
+        successProbability
       };
     });
 
     // ── V1.10 FEED GUARDRAILS ──
-    const { SignalGuard } = require("@/utils/signal-guard");
     const guarded = SignalGuard.applyFeedGuardrails(processed, {
       maxTopOpportunities: 3,
       neutralRatio: 0.35
@@ -178,11 +179,10 @@ export default function HomeFeed({
     );
   }
 
-
   return (
     <div className="space-y-8 pb-20">
       
-      {/* ── STEP 6: LIGHT NOTIFICATION (High Value Only) ── */}
+      {/* --- STEP 6: LIGHT NOTIFICATION (High Value Only) --- */}
       <AnimatePresence>
         {notification && (
           <motion.div 
@@ -200,66 +200,85 @@ export default function HomeFeed({
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-white border border-black/[0.05] rounded-[2.5rem] p-10 lg:p-14 text-[#1D1D1F] shadow-2xl shadow-black/[0.03]"
+        className="space-y-6"
       >
-         <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#E53935]/5 rounded-full blur-[80px]" />
-         
-         <div className="relative z-10 flex flex-col gap-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-              <div className="space-y-4">
-                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F5F5F7] border border-black/[0.03] text-[#86868B] text-[10px] font-bold">
-                    {actionCount === 0 ? "First Steps" : "Active Session"}
+        <div className="flex flex-col md:flex-row gap-4">
+           {/* ACTION CARD 1: POST */}
+           <motion.div 
+             whileHover={{ y: -5 }}
+             className="flex-1 group relative overflow-hidden bg-white border border-black/[0.05] rounded-[2.5rem] p-8 lg:p-10 shadow-xl shadow-black/[0.02] cursor-pointer"
+             onClick={() => onCreate?.()}
+           >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-[40px] group-hover:bg-[#E53935]/10 transition-all" />
+              <div className="relative z-10 space-y-6">
+                 <div className="h-14 w-14 bg-[#E53935] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#E53935]/20 group-hover:scale-110 transition-transform">
+                    <Target size={28} />
                  </div>
-                 <h2 className="text-5xl font-bold tracking-tight leading-none">
-                    {actionCount === 0 ? "Get Started" : "Keep Going"}
-                 </h2>
-                 <p className="text-[#86868B] font-medium text-[16px] max-w-md">
-                    {hasPosted && hasConnected 
-                      ? "Great progress — keep expanding your network."
-                      : hasPosted
-                        ? "Your post is live. Now find the right people to work with."
-                        : "Post what you need or find people to work with to begin."
-                    }
-                 </p>
+                 <div className="space-y-2">
+                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-[#1D1D1F]">
+                       {hasPosted ? "Update Requirement" : "Post Requirement"}
+                    </h3>
+                    <p className="text-[#86868B] text-[12px] font-bold uppercase leading-tight max-w-[200px]">
+                       Share what you need and get matched with experts instantly.
+                    </p>
+                 </div>
+                 <div className="flex items-center gap-3 text-[#E53935] text-[10px] font-black uppercase tracking-widest pt-4 border-t border-black/[0.03]">
+                    <span>Broadcast Now</span>
+                    <Plus size={14} className="group-hover:rotate-90 transition-transform" />
+                 </div>
               </div>
+           </motion.div>
 
-              <div className="flex flex-wrap gap-4">
-                 <button 
-                   onClick={() => onCreate?.()}
-                   className="h-16 px-10 bg-[#1D1D1F] text-white rounded-2xl text-[13px] font-bold hover:bg-black transition-all shadow-xl flex items-center justify-center gap-4 group"
-                 >
-                    {hasPosted ? "Update Post" : "Post a Need"}
-                    <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-                 </button>
-                 <button 
-                   onClick={() => { registerAction('see_people'); router.push('/matches'); }}
-                   className="h-16 px-10 bg-white border border-black/[0.08] text-[#1D1D1F] rounded-2xl text-[13px] font-bold hover:bg-[#F5F5F7] transition-all flex items-center justify-center gap-4 shadow-sm"
-                 >
-                    {hasConnected ? "Network Active" : "Find People"}
-                    <ArrowRight size={18} />
-                 </button>
+           {/* ACTION CARD 2: FIND PARTNER (NEW DESIGN) */}
+           <motion.div 
+             whileHover={{ y: -5 }}
+             className="flex-1 group relative overflow-hidden bg-[#1D1D1F] rounded-[2.5rem] p-8 lg:p-10 shadow-2xl shadow-black/10 cursor-pointer"
+             onClick={() => { registerAction('see_people'); router.push('/matches'); }}
+           >
+              <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px] group-hover:bg-indigo-500/20 transition-all" />
+              <div className="relative z-10 space-y-6">
+                 <div className="h-14 w-14 bg-white/5 border border-white/10 text-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:bg-white group-hover:text-black transition-all">
+                    <Users size={28} />
+                 </div>
+                 <div className="space-y-2">
+                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-white">
+                       {hasConnected ? "Network Active" : "Find Partner"}
+                    </h3>
+                    <p className="text-white/40 text-[12px] font-bold uppercase leading-tight max-w-[200px]">
+                       Explore the network and find the right partners to build with.
+                    </p>
+                 </div>
+                 <div className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-widest pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-2">
+                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                       <span>{hasConnected ? "Explore Deeply" : "Start Discovery"}</span>
+                    </div>
+                    <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform ml-auto" />
+                 </div>
               </div>
-             
-             {/* ── STEP 6: USER SUCCESS SIGNALS ── */}
-             <div className="flex flex-wrap gap-3">
-                {insights.map((insight, i) => (
-                   <motion.div 
-                     key={i}
-                     initial={{ opacity: 0, x: -10 }}
-                     animate={{ opacity: 1, x: 0 }}
-                     transition={{ delay: 0.2 + (i * 0.1) }}
-                     className="px-5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-full flex items-center gap-3 shadow-sm"
-                   >
-                      <Sparkles size={12} className="text-emerald-600" />
-                      <span className="text-[10px] font-black uppercase text-emerald-700">{insight}</span>
-                   </motion.div>
-                ))}
-             </div>
-            </div>
+           </motion.div>
+        </div>
 
-            {/* ── STEP 1: INTENT MODES & INSIGHTS ── */}
+        {/* STRATEGIC INSIGHTS STRIP */}
+        <div className="flex flex-wrap items-center gap-4 px-2">
+           {insights.map((insight, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + (i * 0.1) }}
+                className="px-5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-full flex items-center gap-3 shadow-sm"
+              >
+                 <Sparkles size={12} className="text-emerald-600" />
+                 <span className="text-[10px] font-black uppercase text-emerald-700">{insight}</span>
+              </motion.div>
+           ))}
+        </div>
+
+
+            {/* --- STEP 1: INTENT MODES & INSIGHTS --- */}
             <div className="flex items-center gap-3 bg-[#F5F5F7] p-1.5 rounded-2xl w-fit border border-black/[0.03]">
-               {(['BALANCED', 'URGENT', 'LONG_TERM', 'PARTNERSHIP'] as IntentMode[]).map((mode) => (
+               {(['BALANCED', 'URGENT', 'LONG_TERM', 'PARTNER'] as IntentMode[]).map((mode) => (
                   <button
                      key={mode}
                      onClick={() => setIntentMode(mode)}
@@ -312,7 +331,7 @@ export default function HomeFeed({
                  </div>
               </div>
             )}
-         </div>
+
 
          <div className="absolute bottom-8 right-12 flex items-center gap-3 opacity-60">
             <div className="h-1.5 w-16 bg-[#F5F5F7] rounded-full overflow-hidden">
@@ -322,7 +341,7 @@ export default function HomeFeed({
          </div>
       </motion.div>
 
-      {/* ── STEP 3: PASSIVE MATCH EXPANSION SIGNAL ── */}
+      {/* --- STEP 3: PASSIVE MATCH EXPANSION SIGNAL --- */}
       <AnimatePresence>
         {showPassiveMatch && (
           <motion.div 
@@ -349,7 +368,7 @@ export default function HomeFeed({
         )}
       </AnimatePresence>
 
-      {/* ── STEP 3: INSTANT VALUE SIGNAL ── */}
+      {/* --- STEP 3: INSTANT VALUE SIGNAL --- */}
       <div className="flex flex-wrap items-center justify-between gap-4 px-2">
          <div className="flex flex-wrap gap-3">
             <div className="px-5 py-2.5 bg-white border border-slate-100 rounded-full flex items-center gap-3 shadow-sm">
@@ -496,10 +515,10 @@ export default function HomeFeed({
                                           "h-11 px-5 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 border",
                                           connectedIds.includes(profile.name)
                                             ? "bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]"
-                                            : "bg-white text-black hover:bg-[#E53935] hover:text-white hover:border-[#E53935]"
+                                            : "bg-white text-black hover:bg-amber-500 hover:text-white hover:border-amber-500"
                                        )}
                                      >
-                                        {connectedIds.includes(profile.name) ? "Request Sent" : "Connect"}
+                                        {connectedIds.includes(profile.name) ? "Request Sent" : "Link Partner"}
                                      </button>
                                    </motion.div>
                                  ))}

@@ -56,8 +56,8 @@ const ActiveComposer = dynamic(() => import("@/components/home/ActiveComposer"),
 
 const SMART_FILTERS = [
   { id: 'All', label: 'All', icon: LayoutGrid },
-  { id: 'REQUIREMENT', label: 'Needs', icon: Target },
-  { id: 'PARTNERSHIP', label: 'Collabs', icon: Sparkles },
+  { id: 'REQUIREMENT', label: 'Requirements', icon: Target },
+  { id: 'PARTNER', label: 'Partners', icon: Sparkles },
   { id: 'MEETUP', label: 'Meetups', icon: Users },
 ];
 
@@ -104,7 +104,7 @@ function HomeContent() {
     network_stats: {
       category_quality: {
         'REQUIREMENT': 0.85,
-        'PARTNERSHIP': 0.70,
+        'PARTNER': 0.70,
         'MEETUP': 0.90
       },
       trending_categories: ['MEETUP'],
@@ -113,11 +113,11 @@ function HomeContent() {
       },
       unique_users_per_category: {
         'REQUIREMENT': 150,
-        'PARTNERSHIP': 80,
+        'PARTNER': 80,
         'MEETUP': 200
       },
       anomaly_flags: {
-        'PARTNERSHIP': false // Set to true if spike detected
+        'PARTNER': false // Set to true if spike detected
       }
     },
     user_trust_weight: 1.0 // Default high trust
@@ -259,7 +259,7 @@ function HomeContent() {
        const params = new URLSearchParams(window.location.search);
        const action = params.get('action');
        if (action === 'host_meetup') handleOpenPosting('MEETUP');
-       if (action === 'post_need') handleOpenPosting('REQUIREMENT');
+       if (action === 'post_requirement') handleOpenPosting('REQUIREMENT');
        
        // Clear params to prevent re-triggering
        if (action) {
@@ -275,7 +275,7 @@ function HomeContent() {
       base = posts.filter(p => {
         const type = p.type?.toUpperCase();
         if (activeFilter === 'REQUIREMENT') return type === 'REQUIREMENT' || type === 'LEAD' || type === 'HIRING';
-        if (activeFilter === 'PARTNERSHIP') return type === 'PARTNERSHIP' || type === 'PARTNER';
+        if (activeFilter === 'PARTNER') return type === 'PARTNER' || type === 'PARTNERSHIP';
         return type === activeFilter;
       });
     }

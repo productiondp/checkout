@@ -63,39 +63,39 @@ const TYPE_CONFIG: Record<string, {
 }> = {
   REQUIREMENT: {
     icon: Target,
-    label: "Need",
-    accentColor: "#E53935",
-    gradient: "from-[#E53935] to-[#FF7043]",
-    bgColor: "bg-red-50/50",
+    label: "Requirement",
+    accentColor: "#F59E0B",
+    gradient: "from-[#F59E0B] to-[#D97706]",
+    bgColor: "bg-amber-50/50",
     chipBg: "bg-[#F5F5F7]",
-    chipText: "text-[#E53935]",
+    chipText: "text-amber-600",
     ctaLabel: "Reply",
-    ctaBg: "bg-[#E53935] hover:bg-[#C62828] shadow-lg shadow-red-500/20",
-    glowColor: "rgba(0, 113, 227, 0.1)",
+    ctaBg: "bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20",
+    glowColor: "rgba(245, 158, 11, 0.1)",
   },
-  PARTNERSHIP: {
+  PARTNER: {
     icon: Sparkles,
-    label: "Collab",
-    accentColor: "#1D1D1F",
-    gradient: "from-[#1D1D1F] to-[#4a4a4a]",
-    bgColor: "bg-slate-50/50",
+    label: "Partner",
+    accentColor: "#4F46E5",
+    gradient: "from-[#4F46E5] to-[#4338CA]",
+    bgColor: "bg-indigo-50/50",
     chipBg: "bg-[#F5F5F7]",
-    chipText: "text-[#1D1D1F]",
+    chipText: "text-indigo-600",
     ctaLabel: "Connect",
-    ctaBg: "bg-[#E53935] hover:bg-[#C62828] shadow-lg shadow-red-500/20",
-    glowColor: "rgba(29, 29, 31, 0.1)",
+    ctaBg: "bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20",
+    glowColor: "rgba(79, 70, 229, 0.1)",
   },
   MEETUP: {
     icon: Users,
     label: "Meetup",
-    accentColor: "#34C759",
-    gradient: "from-[#34C759] to-[#4CD964]",
-    bgColor: "bg-emerald-50/50",
-    chipBg: "bg-emerald-50",
-    chipText: "text-emerald-600",
+    accentColor: "#E53935",
+    gradient: "from-[#E53935] to-[#C62828]",
+    bgColor: "bg-red-50/50",
+    chipBg: "bg-[#F5F5F7]",
+    chipText: "text-[#E53935]",
     ctaLabel: "Join Meetup",
-    ctaBg: "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20",
-    glowColor: "rgba(52, 199, 89, 0.1)",
+    ctaBg: "bg-black hover:bg-zinc-800 shadow-xl",
+    glowColor: "rgba(229, 57, 53, 0.1)",
   },
 };
 
@@ -110,13 +110,15 @@ function normalizeType(type: string): keyof typeof TYPE_CONFIG {
   const map: Record<string, string> = {
     LEAD: "REQUIREMENT",
     HIRING: "REQUIREMENT",
-    PARTNER: "PARTNERSHIP",
-    PARTNERSHIP: "PARTNERSHIP",
+    NEED: "REQUIREMENT",
+    PARTNER: "PARTNER",
+    PARTNERSHIP: "PARTNER",
+    COLLAB: "PARTNER",
     MEETUP: "MEETUP",
     REQUIREMENT: "REQUIREMENT",
     meetup: "MEETUP"
   };
-  return (map[type?.toLowerCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
+  return (map[type?.toUpperCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
 }
 
 export default function UniversalFeedCard({
@@ -158,7 +160,7 @@ export default function UniversalFeedCard({
   
   const relevanceColor = 
     relevanceLabel === "Best opportunity" ? "emerald" :
-    relevanceLabel === "Also useful for you" ? "blue" : "slate";
+    relevanceLabel === "Also useful for you" ? "red" : "slate";
 
   const score = matchScore || 50;
   const circumference = 2 * Math.PI * 18;
@@ -281,7 +283,7 @@ export default function UniversalFeedCard({
       )}
 
       {/* 🛡️ SIGNAL PRIORITY LAYER (V1.9) */}
-      {(relevanceLabel || (relevanceSignals && relevanceSignals.length > 0)) && !isOwner && (
+      {((relevanceLabel || (relevanceSignals && relevanceSignals.length > 0)) || post.successProbability > 85) && !isOwner && (
         <div className="absolute top-4 left-8 z-20">
           <div className="flex flex-col gap-1.5">
             {/* Primary Signal (Badge) */}
@@ -296,6 +298,14 @@ export default function UniversalFeedCard({
                   ? <Zap size={10} strokeWidth={3} /> 
                   : <Target size={10} strokeWidth={3} />}
                 {relevanceLabel}
+              </div>
+            )}
+
+            {/* Success Probability Signal (V1.9) */}
+            {post.successProbability > 85 && (
+              <div className="w-fit px-3 py-1 bg-emerald-600 text-white text-[8px] font-black uppercase rounded-lg shadow-lg flex items-center gap-2">
+                 <Sparkles size={10} />
+                 High Chance of Success ({post.successProbability}%)
               </div>
             )}
 
@@ -408,7 +418,7 @@ export default function UniversalFeedCard({
               <MetaChip key={s} icon={Tag} label={s} />
             ))}
           </>}
-          {nType === "PARTNERSHIP" && <>
+          {nType === "PARTNER" && <>
             {post.partnershipType && <MetaChip icon={Sparkles} label={post.partnershipType} gradient={cfg.gradient} />}
             {post.industry && <MetaChip icon={Briefcase} label={post.industry} />}
             {post.commitmentLevel && <MetaChip icon={Zap} label={post.commitmentLevel} />}

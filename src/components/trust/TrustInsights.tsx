@@ -40,11 +40,11 @@ export const TrustInsights: React.FC<TrustInsightsProps> = ({ advisorId }) => {
       {/* Grid Stats */}
       <div className="grid grid-cols-2 gap-2">
         <div className="p-3 bg-white border border-slate-100 rounded-xl">
-          <p className="text-[8px] font-black uppercase text-slate-400 mb-1">Total Sessions</p>
+          <p className="text-[8px] font-black uppercase text-slate-400 mb-1">Total Meetups</p>
           <p className="text-[14px] font-black text-[#292828]">{insights.totalSessions}</p>
         </div>
         <div className="p-3 bg-white border border-slate-100 rounded-xl">
-          <p className="text-[8px] font-black uppercase text-slate-400 mb-1">Outcomes</p>
+          <p className="text-[8px] font-black uppercase text-slate-400 mb-1">Success Outcomes</p>
           <p className="text-[14px] font-black text-[#292828]">{insights.outcomes}</p>
         </div>
       </div>
@@ -58,9 +58,9 @@ export const TrustInsights: React.FC<TrustInsightsProps> = ({ advisorId }) => {
           </div>
         ))}
         {insights.lastOutcome !== 'None' && (
-          <div className="px-2 py-1 bg-blue-50 border border-blue-100 rounded-full flex items-center gap-1.5">
-            <Clock size={10} className="text-blue-600" />
-            <span className="text-[8px] font-black uppercase text-blue-700">Last: {insights.lastOutcome.replace('_', ' ')}</span>
+          <div className="px-2 py-1 bg-red-50 border border-red-100 rounded-full flex items-center gap-1.5">
+            <Clock size={10} className="text-red-600" />
+            <span className="text-[8px] font-black uppercase text-red-700">Last: {insights.lastOutcome.replace('_', ' ')}</span>
           </div>
         )}
       </div>

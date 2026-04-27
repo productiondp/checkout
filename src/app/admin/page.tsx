@@ -62,7 +62,7 @@ interface SystemMetrics {
 export default function SentinelRedDashboard() {
   const router = useRouter();
   const dashboardRef = useRef<HTMLDivElement>(null);
-  const [isLinked, setIsLinked] = useState(false);
+  const [isLinked, setIsLinked] = useState(true);
   const [isSecurityLocked, setIsSecurityLocked] = useState(true);
   const [isGlitching, setIsGlitching] = useState(false);
   const [dataIngress, setDataIngress] = useState(14022);

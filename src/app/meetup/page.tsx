@@ -138,7 +138,7 @@ export default function MeetupPage() {
                     className="h-16 w-16 lg:w-auto lg:px-8 rounded-lg bg-white border-2 border-[#292828] text-[#292828] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group"
                   >
                      <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
-                     <span className="hidden lg:block font-bold text-[11px] uppercase">New Meet Up</span>
+                     <span className="hidden lg:block font-bold text-[11px] uppercase">Host Meetup</span>
                   </button>
                </div>
             </div>
@@ -302,7 +302,7 @@ export default function MeetupPage() {
 
          {/* NEARBY HEATMAP */}
          <section className="space-y-6">
-            <p className="subheading-editorial !text-slate-200">Meet Up Activity Map</p>
+            <p className="subheading-editorial !text-slate-200">Meetup Activity Map</p>
             <div className="h-64 bg-slate-50 border-4 border-white shadow-xl rounded-lg relative overflow-hidden group cursor-crosshair">
                <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#292828_2px,transparent_2px)] [background-size:24px_24px]" />
                
@@ -417,8 +417,8 @@ export default function MeetupPage() {
            <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
            <div className="relative w-full max-w-lg bg-white rounded-lg p-12 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="text-center mb-10">
-                 <h2>Post <span className="text-[#E53935]">Meet Up</span></h2>
-                 <p className="subheading-editorial mt-2 px-10">Show your meeting post to the local business network.</p>
+                 <h2>Host <span className="text-[#E53935] italic">Meetup</span></h2>
+                 <p className="subheading-editorial mt-2 px-10">Show your meetup post to the local business network.</p>
               </div>
 
               <div className="space-y-6">

@@ -41,12 +41,12 @@ export default function EventsPage() {
       <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#292828]  mb-3">Events</h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#292828]  mb-3">Meetups</h1>
             <p className="text-slate-200 font-bold text-base sm:text-lg uppercase ">Where opportunities happen in real time</p>
           </div>
           <div className="flex items-center gap-4">
             <button className="h-14 px-8 bg-[#292828] text-white rounded-lg flex items-center gap-3 text-xs font-black uppercase  hover:bg-[#E53935] transition-all shadow-xl active:scale-95 shrink-0">
-              <Plus size={18} /> Add Event
+              <Plus size={18} /> Host Meetup
             </button>
           </div>
         </div>
@@ -71,12 +71,12 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* FEATURED EVENTS */}
+      {/* FEATURED MEETUPS */}
       <section className="mt-16 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
           <div className="flex items-center gap-3 text-[#E53935]">
             <Zap size={20} fill="currentColor" />
-            <h2 className="text-xs font-black uppercase ">Featured Events</h2>
+            <h2 className="text-xs font-black uppercase ">Featured Meetups</h2>
           </div>
         </div>
         
@@ -118,7 +118,7 @@ export default function EventsPage() {
                       <Users size={16} className="text-slate-300" />
                       <span className="text-xs font-black text-[#292828] uppercase">{event.attendeeCount.toLocaleString()} People</span>
                    </div>
-                   <button className="h-12 px-8 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase  group-hover:bg-[#E53935] transition-all">Join Event</button>
+                   <button className="h-12 px-8 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase  group-hover:bg-[#E53935] transition-all">Join Meetup</button>
                 </div>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function EventsPage() {
                 activeTab === tab ? "text-[#E53935]" : "text-slate-200 hover:text-[#292828]"
               )}
             >
-              {tab} Events
+              {tab} Meetups
               {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E53935] rounded-t-full" />}
             </button>
           ))}
@@ -155,7 +155,7 @@ export default function EventsPage() {
             <div className="h-24 w-24 bg-slate-50 rounded-full mx-auto flex items-center justify-center text-slate-200 mb-8">
               <Calendar size={48} />
             </div>
-            <h3 className="text-2xl font-black text-[#292828] uppercase ">No Events Found</h3>
+            <h3 className="text-2xl font-black text-[#292828] uppercase ">No Meetups Found</h3>
             <p className="text-slate-200 font-bold mt-2">Try adjusting your search or filters.</p>
           </div>
         )}

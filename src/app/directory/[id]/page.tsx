@@ -73,8 +73,8 @@ export default function BusinessProfilePage() {
             </div>
 
             <div className="flex flex-col gap-4 w-full sm:w-auto">
-               <button className="h-20 px-12 bg-[#292828] text-white rounded-lg font-black text-xs uppercase  shadow-4xl hover:bg-[#E53935] transition-all active:scale-95">
-                  Connect
+               <button className="h-20 px-12 bg-[#292828] text-white rounded-lg font-black text-xs uppercase  shadow-4xl hover:bg-amber-500 transition-all active:scale-95">
+                  Link Partner
                </button>
               <button className="h-16 px-12 border-2 border-slate-100 rounded-[1.5rem] font-black text-[10px] uppercase  hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
                  View on City Map <ArrowUpRight size={16} />

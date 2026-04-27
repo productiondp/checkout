@@ -52,7 +52,7 @@ export default function ConnectButton({ targetId, className, size = 'md' }: Conn
       "rounded-2xl bg-emerald-50 text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2",
       className
     )}>
-      <CheckCircle2 size={size === 'sm' ? 14 : 16} /> Connected
+      <CheckCircle2 size={size === 'sm' ? 14 : 16} /> Partnered
     </div>
   );
 
@@ -79,7 +79,7 @@ export default function ConnectButton({ targetId, className, size = 'md' }: Conn
         className
       )}
     >
-      {isConnecting ? "Connecting..." : "Connect"}
+      {isConnecting ? "Linking..." : "Link Partner"}
       <UserPlus size={size === 'sm' ? 14 : 16} />
     </motion.button>
   );

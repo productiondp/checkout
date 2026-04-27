@@ -106,7 +106,7 @@ export default function ObservabilityDashboard() {
                 label="Stability Margin" 
                 value="<12ms" 
                 icon={Target} 
-                color="bg-blue-600" 
+                color="bg-red-600" 
              />
           </div>
 

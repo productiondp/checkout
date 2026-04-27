@@ -58,7 +58,7 @@ export default function EventDetailPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl ">Live Event</div>
+                <div className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl ">Live Meetup</div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 text-[10px] font-bold uppercase">
                    <TrendingUp size={14} className="text-emerald-400" />
                    {event.matchScore}% Match
@@ -93,7 +93,7 @@ export default function EventDetailPage() {
                 {isJoined ? (
                   <><CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> RSVP Confirmed</>
                 ) : (
-                  <><Ticket className="w-5 h-5 sm:w-6 sm:h-6" /> Join Event</>
+                  <><Ticket className="w-5 h-5 sm:w-6 sm:h-6" /> Join Meetup</>
                 )}
               </button>
               <div className="flex items-center justify-center gap-3 text-white/40">
@@ -171,7 +171,7 @@ export default function EventDetailPage() {
             {activeTab === "About" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-lg border border-slate-100 shadow-sm">
                 <div>
-                  <h3 className="text-xs font-black uppercase  text-[#E53935] mb-6">Event Overview</h3>
+                  <h3 className="text-xs font-black uppercase  text-[#E53935] mb-6">Meetup Overview</h3>
                   <p className="text-2xl font-bold text-[#292828] leading-relaxed italic">
                     "{event.description}"
                   </p>
@@ -220,10 +220,10 @@ export default function EventDetailPage() {
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-6">
                    <Sparkles size={18} className="text-[#E53935]" />
-                   <h3 className="text-[11px] font-black uppercase ">Pre-Event Matching</h3>
+                   <h3 className="text-[11px] font-black uppercase ">Pre-Meetup Matching</h3>
                 </div>
                 <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-10">
-                  Based on your business goals, we've identified 12 people you must connect with at this event.
+                  Based on your business goals, we've identified 12 people you must connect with at this meetup.
                 </p>
                 <div className="space-y-4 mb-10">
                    {MOCK_MEMBERS.slice(0, 2).map(m => (

@@ -1,33 +1,46 @@
+import { SignalGuard } from "./signal-guard";
+
 /**
- * CHECKOUT OS MATCH ENGINE (Proactive Assistant V14)
- * 
- * Evolution: From Feed to Intelligent Assistant.
- * Logic: Confidence-based Action Suggestions + Daily Priorities + Nudge System.
- * Goal: A system that proactively guides you toward the best professional outcomes.
+ * MATCH ENGINE V1.90 (SUCCESS PROBABILITY)
  */
 
-import { analytics } from "./analytics";
-
-export type IntentMode = 'URGENT' | 'LONG_TERM' | 'PARTNERSHIP' | 'BALANCED';
+export type IntentMode = 'BALANCED' | 'URGENT' | 'LONG_TERM' | 'PARTNER';
 
 export interface MatchProfile {
   id: string;
-  role: string;
   industry?: string;
   base_tag?: string;
-  intents?: string[];
   skills?: string[];
+  role?: string;
+  intents?: string[];
+  location?: string;
+  metadata?: {
+    focus_areas?: string[];
+    intent?: string;
+    experience_level?: string;
+    specializations?: string[];
+  };
+  metrics?: {
+    replies: number;
+    meaningful_replies: number;
+    connections: number;
+  };
+  author_profile?: {
+    response_rate?: number;
+    activity_level?: number;
+    advisor_score?: number;
+  };
 }
 
 export interface MatchPost {
   id: string;
   title: string;
   content: string;
+  industry?: string;
   base_tag?: string;
   skills_required?: string[];
   type: string;
   created_at?: string;
-  impressions?: number;
   metrics?: {
     clicks: number;
     connections: number;
@@ -41,170 +54,112 @@ export interface MatchPost {
     last_active?: string;
     advisor_score?: number;
   };
+  metadata?: {
+    focus_areas?: string[];
+    intent?: string;
+    experience_level?: string;
+    specializations?: string[];
+  };
 }
 
-export const BASE_TAG_MAP: Record<string, string[]> = {
-  "design": ["designer", "ui/ux", "branding", "ui", "ux", "graphic", "visual", "logo", "illustrator", "sketch", "photoshop", "figma", "canva", "creative"],
-  "video": ["video", "editor", "reels", "editing", "motion", "vfx", "cinematographer", "colorist", "youtube", "content creator", "filmmaker", "camera"],
-  "finance": ["ca", "accountant", "tax", "audit", "finance", "chartered accountant", "bookkeeping", "gst", "accounting", "ledger", "tally", "cfo", "investment"],
-  "tech": ["developer", "app", "ui", "backend", "coding", "software", "frontend", "programming", "dev", "engineer", "fullstack", "react", "nextjs", "python", "javascript", "cloud", "aws"],
-  "marketing": ["marketing", "social media", "ads", "growth", "seo", "sem", "copywriter", "content strategy", "brand manager", "campaign", "digital marketing", "influencer", "pr"],
-  "sales": ["sales", "leads", "closing", "bdr", "sdr", "business development", "outreach", "client acquisition", "deal", "revenue"],
-  "strategy": ["founder", "ceo", "management", "operations", "strategy", "advisor", "consultant", "business model", "startup", "planning"]
-};
+const URGENCY_KEYWORDS = ["urgent", "asap", "deadline", "today", "immediately", "quick"];
 
-const STATIC_DEPENDENCY_MAP: Record<string, string[]> = {
-  "video": ["design", "marketing"],
-  "design": ["marketing"],
-  "tech": ["design", "marketing"],
-  "finance": ["strategy"],
-  "marketing": ["design", "video"],
-  "sales": ["marketing", "strategy"],
-  "strategy": ["finance", "tech", "marketing"]
-};
-
-const URGENCY_KEYWORDS = ["urgent", "today", "asap", "emergency", "fast", "immediately"];
-
-export const calculateMatchScore = (
-  user: MatchProfile, 
-  post: MatchPost, 
-  index: number = 0,
-  mode: IntentMode = 'BALANCED'
-): { 
-  score: number; 
-  label?: string; 
-  signals: string[]; 
-  baseTags: string[]; 
-  tier: number;
-  actionScore: number;
-  ctaHint?: string;
-  nudge?: string; // STEP 1: ACTION SUGGESTIONS
-} => {
-  const userBase = user.base_tag || detectBaseTag("", user.skills || user.intents);
-  const postBase = post.base_tag || detectBaseTag(`${post.title} ${post.content}`, post.skills_required);
-
-  if (!userBase || !postBase) {
-     return { score: 0.0, signals: [], baseTags: postBase ? [postBase] : [], tier: 0, actionScore: 0 };
-  }
-
+export const calculateMatchScore = (user: any, post: any, index: number = 0, mode: IntentMode = 'BALANCED') => {
   const signals: string[] = [];
-  let baseScore = 0;
-  let tier = 0;
-  let label = undefined;
-  let ctaHint = undefined;
-  let nudge = undefined;
-
-  // 1. TIER ALLOCATION
-  const isSameBase = userBase === postBase;
-  const userStaticDeps = STATIC_DEPENDENCY_MAP[userBase] || [];
-  const isStaticDependency = userStaticDeps.includes(postBase);
-  const dynamicSynergy = analytics.getDynamicSynergy(userBase);
-  const behaviorData = dynamicSynergy[postBase] || { score: 0, hasHighIntent: false };
-
-  if (isSameBase) {
-    tier = 1;
-    baseScore = 0.8;
-    label = "Best opportunity";
-  } else if (isStaticDependency) {
-    tier = 2;
-    baseScore = 0.5;
-    label = "Also useful for you";
-  } else if (behaviorData.hasHighIntent && behaviorData.score >= 0.5) {
-    tier = 3;
-    baseScore = 0.3;
-    label = "Based on your activity";
-  }
-
-  if (tier === 0) return { score: 0, signals: [], baseTags: [postBase], tier: 0, actionScore: 0 };
-
-  // 2. RESPONSE PROBABILITY & ACTIVITY
-  const responseRate = post.author_profile?.response_rate || 0.5;
-  const activityLevel = post.author_profile?.activity_level || 0.5;
-  const responseProb = (responseRate * 0.7) + (activityLevel * 0.3);
-
-  // STEP 3: BEST TIME SIGNAL
-  const isAuthorActive = activityLevel > 0.8;
-  if (isAuthorActive) {
-    signals.push("Best time to connect");
-  }
-
-  // STEP 1: ACTION SUGGESTIONS (High Confidence)
-  if (isSameBase && responseProb > 0.8 && isAuthorActive) {
-    nudge = "You should connect with this now";
-  } else if (responseProb > 0.9) {
-    nudge = "High chance of reply — act now";
-  }
-
-  // Freshness & Urgency
-  const ageHrs = post.created_at ? (Date.now() - new Date(post.created_at).getTime()) / (1000 * 60 * 60) : 100;
-  const hasUrgency = URGENCY_KEYWORDS.some(k => `${post.title} ${post.content}`.toLowerCase().includes(k));
-  const urgencyScore = hasUrgency ? 0.8 : (ageHrs <= 12 ? 0.6 : 0);
   
-  // 🛡️ TRUST ENGINE BOOST
+  // 1. BASE RELEVANCE
+  const postText = `${post.title} ${post.content}`.toLowerCase();
+  const userSkills = user.skills || [];
+  const skillMatches = userSkills.filter((skill: string) => postText.includes(skill.toLowerCase()));
+  const baseScore = skillMatches.length > 0 ? Math.min(0.8, skillMatches.length * 0.2) : 0.1;
+
+  // 2. TRUST & PERFORMANCE
   const advisorScore = post.author_profile?.advisor_score || 0;
-  const trustBoost = advisorScore / 5; // Normalized boost
-
-  // ── V1.10 SIGNAL GUARDRAIL ──
-  const { SignalGuard } = require("./signal-guard");
+  const trustBoost = advisorScore / 5;
   
-  const isHighMatch = baseScore >= 0.8;
-  const isHighActivity = activityLevel > 0.7;
-  const actionScoreFinal = (baseScore * 0.4) + (responseProb * 0.2) + (urgencyScore * 0.2) + (trustBoost * 0.2);
-
-  const potentialSignals = [];
-  const secondarySignals: string[] = [];
+  const responseProb = post.author_profile?.response_rate || 0.5;
+  const activityLevel = post.author_profile?.activity_level || 0.5;
   
-  // 1. CTA CANDIDATES
-  if (post.type === 'MEETUP' && isSameBase && isHighMatch) {
-    potentialSignals.push(SignalGuard.validateCTA("You should join this", { 
-      trust: advisorScore, 
-      match: baseScore, 
-      active: isHighActivity 
-    }));
+  const now = new Date();
+  const postDate = post.created_at ? new Date(post.created_at) : now;
+  const ageHrs = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60);
+  
+  const hasUrgency = URGENCY_KEYWORDS.some(k => postText.includes(k));
+  
+  // 🚀 SUCCESS PROBABILITY LAYER (V1.90)
+  const completionRate = user.metrics?.meaningful_replies ? (user.metrics.meaningful_replies / (user.metrics.replies || 1)) : 0.7;
+  const responseRate = user.author_profile?.response_rate || 0.8;
+  const repeatRate = (user.metrics?.connections || 0) > 5 ? 0.9 : 0.6;
+  
+  const performanceScore = (completionRate * 0.4) + (responseRate * 0.3) + (repeatRate * 0.3);
+  
+  const successProbability = (performanceScore * 0.5) + (trustBoost * 0.3) + (activityLevel * 0.2);
+  const successLabel = successProbability > 0.85 ? "High chance of success" : 
+                       successProbability > 0.75 ? "Strong match for this project" : null;
+
+  // 🏛️ STRUCTURED TAXONOMY BOOST (V1.80)
+  let taxonomyBoost = 0;
+  if (user.industry && post.industry === user.industry) {
+    taxonomyBoost += 0.4;
+    signals.push("Same Industry");
+    
+    const userFocus = user.metadata?.focus_areas || [];
+    const postFocus = post.metadata?.focus_areas || [];
+    const focusOverlap = userFocus.filter((f: string) => postFocus.includes(f));
+    if (focusOverlap.length > 0) {
+      taxonomyBoost += 0.3;
+      signals.push(`${focusOverlap.length} Focus Match`);
+    }
+
+    if (user.metadata?.experience_level && post.metadata?.experience_level === user.metadata?.experience_level) {
+      taxonomyBoost += 0.2;
+      signals.push("Perfect Experience Match");
+    }
+
+    const userSpecs = user.metadata?.specializations || [];
+    const postSpecs = post.metadata?.specializations || [];
+    const specOverlap = userSpecs.filter((s: string) => postSpecs.includes(s));
+    if (specOverlap.length > 0) {
+      taxonomyBoost += 0.25;
+      signals.push(`${specOverlap.length} Specialization Match`);
+    }
   }
 
-  // 2. PRIORITY CANDIDATES
-  if (actionScoreFinal > 0.85) potentialSignals.push("Top opportunity");
-  if (isSameBase && tier === 1 && baseScore >= 0.8) potentialSignals.push("Best match for you");
-  if (post.type === 'MEETUP' && advisorScore === 0) potentialSignals.push("New advisor");
-
-  const primarySignal = SignalGuard.resolveSignal(potentialSignals);
-
-  // 3. SECONDARY SIGNALS (Step 3)
-  if (isAuthorActive) secondarySignals.push("Best time to connect");
-  if (responseProb > 0.9) secondarySignals.push("High chance of reply");
-  if (hasUrgency) secondarySignals.push("Urgent");
+  // Final Score Logic
+  let actionScore = (taxonomyBoost * 0.45) + (trustBoost * 0.25) + (performanceScore * 0.15) + (successProbability * 0.15);
   
-  // Add some personality-based secondary signals
-  if (post.author_profile?.quality_score > 0.8) secondarySignals.push("High success rate");
+  // Apply Mode Multipliers
+  if (mode === 'URGENT' && hasUrgency) actionScore *= 1.2;
+  if (mode === 'PARTNER' && post.type === 'PARTNER') actionScore *= 1.2;
+
+  if (successLabel) signals.push(successLabel);
+
+  // TIERING
+  const tier = actionScore > 0.8 ? 1 : actionScore > 0.5 ? 2 : 3;
+  const label = actionScore > 0.8 ? "Best opportunity" : actionScore > 0.5 ? "Also useful for you" : null;
 
   return {
-    score: Math.min(1.0, baseScore),
-    label: primarySignal,
-    signals: secondarySignals,
-    baseTags: [postBase],
+    score: Math.round(actionScore * 100),
+    actionScore,
+    label,
     tier,
-    actionScore: actionScoreFinal,
-    ctaHint: primarySignal === "You should join this" ? primarySignal : undefined,
-    nudge: primarySignal
+    signals: signals.slice(0, 3),
+    successProbability: Math.round(successProbability * 100),
+    ctaHint: successProbability > 0.85 ? "Strategic Match" : null,
+    nudge: successLabel
   };
 };
 
-export const detectBaseTag = (text: string = "", tags: string[] = []): string => {
-  const combined = [text, ...tags].join(" ").toLowerCase();
-  for (const [base, keywords] of Object.entries(BASE_TAG_MAP)) {
-    if (keywords.some(k => combined.includes(k))) return base;
-  }
+export const getRelevanceLabel = (score: number) => {
+  if (score > 80) return "Best opportunity";
+  if (score > 50) return "Also useful for you";
+  return null;
+};
+
+export const detectBaseTag = (content: string, skills: string[]): string => {
+  const text = content.toLowerCase();
+  if (text.includes("video") || text.includes("reels") || skills.includes("Video Editing")) return "video";
+  if (text.includes("logo") || text.includes("design") || skills.includes("Graphic Design")) return "design";
+  if (text.includes("web") || text.includes("app") || skills.includes("Web Development")) return "tech";
   return "general";
-};
-
-export const getRelevanceLabel = (score: number, customLabel?: string, signals: string[] = []): { label: string; color: string; signals: string[] } | null => {
-  if (!customLabel) return null;
-  const colorMap: Record<string, string> = {
-    "Top opportunity": "emerald",
-    "Best opportunity": "emerald",
-    "Also useful for you": "blue",
-    "Based on your activity": "slate"
-  };
-  return { label: customLabel, color: colorMap[customLabel] || "slate", signals };
 };

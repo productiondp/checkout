@@ -73,7 +73,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
               <div className="space-y-4">
                  <h2 className="text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
                     Find the right <br/>
-                    <span className="text-[#E53935]">people to work with.</span>
+                    <span className="text-indigo-600">partners to build with.</span>
                  </h2>
                  <p className="text-lg font-medium text-[#86868B] max-w-md mx-auto lg:mx-0">
                     Your account is ready. Post what you're looking for or explore current projects.
@@ -89,7 +89,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                 className="h-16 px-10 bg-[#1D1D1F] text-white rounded-2xl text-[14px] font-bold hover:bg-black transition-all shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto"
               >
                  <Plus size={20} strokeWidth={2.5} />
-                 <span>Post a Need</span>
+                 <span>Post Requirement</span>
               </motion.button>
               
               <motion.button 
@@ -98,7 +98,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                 onClick={onExplore}
                 className="h-16 px-10 bg-white border border-black/[0.1] text-[#1D1D1F] rounded-2xl text-[14px] font-bold hover:bg-[#F5F5F7] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
               >
-                 <span>Find People</span>
+                 <span>Find Partner</span>
                  <ArrowRight size={20} />
               </motion.button>
            </div>

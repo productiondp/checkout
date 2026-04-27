@@ -21,9 +21,9 @@ export default function MobileNav() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const menu = [
-    { label: "Feed", href: "/home", icon: Home },
-    { label: "Network", href: "/connections", icon: Users },
-    { label: "Map", href: "/explore", icon: Search },
+    { label: "Home Feed", href: "/home", icon: Home },
+    { label: "Network Hub", href: "/connections", icon: Users },
+    { label: "Discovery Map", href: "/explore", icon: Search },
     { label: "Chat", href: "/chat", icon: MessageSquare },
     { label: "Profile", href: "/profile", icon: User },
   ];
@@ -37,7 +37,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group"
         >
           <Home size={22} className={cn("transition-all", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[0].href ? 2.5 : 2} />
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Feed</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[0].href ? "text-[#E53935]" : "text-[#292828]")}>Home</span>
         </Link>
 
         <Link 
@@ -45,14 +45,16 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center w-14 h-14 group relative"
         >
           <div className="relative">
-            <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
-            {pendingRequestsCount > 0 && (
-              <div className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 bg-[#34C759] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
-                {pendingRequestsCount}
-              </div>
-            )}
+            <div className="relative">
+              <Users size={22} className={cn("transition-all", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")} strokeWidth={pathname === menu[1].href ? 2.5 : 2} />
+              {pendingRequestsCount > 0 && (
+                <div className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 bg-[#34C759] rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-black text-white">
+                  {pendingRequestsCount}
+                </div>
+              )}
+            </div>
           </div>
-          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Network</span>
+          <span className={cn("text-[9px] font-bold uppercase mt-1", pathname === menu[1].href ? "text-[#E53935]" : "text-[#292828]")}>Hub</span>
         </Link>
 
         {/* 2. CENTER ACTION (ADD) */}

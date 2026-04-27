@@ -129,7 +129,7 @@ function ListViewCard({ entity }: { entity: any }) {
     switch (entity.type) {
       case 'Profile': return 'bg-red-50 text-[#E53935]';
       case 'Community': return 'bg-slate-50 text-[#292828]';
-      case 'Requirement': return 'bg-blue-50 text-blue-600';
+      case 'Requirement': return 'bg-red-50 text-[#E53935]';
       default: return 'bg-slate-50 text-slate-400';
     }
   };

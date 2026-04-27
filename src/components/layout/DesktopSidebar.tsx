@@ -35,8 +35,8 @@ export default function DesktopSidebar() {
     {
       group: "Directory",
       items: [
-        { label: "Feed", icon: Home, href: "/home" },
-        { label: "Connections", icon: UserPlus, href: "/connections", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
+        { label: "Home Feed", icon: Home, href: "/home" },
+        { label: "Network Hub", icon: UserPlus, href: "/connections", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
         { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount.toString() : null },
         { label: "Communities", icon: Globe, href: "/communities" },
       ]
@@ -47,8 +47,8 @@ export default function DesktopSidebar() {
         { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
         { label: "Advisors", icon: Target, href: "/advisors" },
         { label: "Directory", icon: Building2, href: "/directory" },
-        { label: "Map", icon: Zap, href: "/explore" },
-        { label: "Events", icon: LayoutGrid, href: "/events" },
+        { label: "Discovery Map", icon: Zap, href: "/explore" },
+        { label: "Meetups", icon: LayoutGrid, href: "/events" },
       ]
     }
   ];

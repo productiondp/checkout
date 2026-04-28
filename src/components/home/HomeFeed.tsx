@@ -550,9 +550,9 @@ export default function HomeFeed({
 
                               <div className="space-y-4">
                                  {[
-                                   { name: "Rahul S.", role: "Tech Lead", score: 98, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul" },
-                                   { name: "Anita K.", role: "Product Expert", score: 94, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anita" },
-                                   { name: "Vikram R.", role: "Strategic Partner", score: 89, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram" }
+                                   { id: "rahul", name: "Rahul S.", role: "Tech Lead", score: 98, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul" },
+                                   { id: "anita", name: "Anita K.", role: "Product Expert", score: 94, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anita" },
+                                   { id: "vikram", name: "Vikram R.", role: "Strategic Partner", score: 89, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram" }
                                  ].map((profile, i) => (
                                    <motion.div 
                                      key={profile.name}
@@ -561,7 +561,10 @@ export default function HomeFeed({
                                      transition={{ delay: 0.5 + (i * 0.15) }}
                                      className="group/item flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-[24px] hover:bg-white/[0.08] transition-all hover:border-white/10 backdrop-blur-md"
                                    >
-                                     <div className="flex items-center gap-5 min-w-0">
+                                     <div 
+                                       className="flex items-center gap-5 min-w-0 cursor-pointer"
+                                       onClick={() => router.push(`/profile/${profile.id}`)}
+                                     >
                                        <div className="h-16 w-16 rounded-[18px] bg-white/5 border border-white/10 overflow-hidden shrink-0 p-1.5 shadow-xl">
                                           <img src={profile.avatar} className="w-full h-full object-cover rounded-[12px] grayscale group-hover/item:grayscale-0 transition-all duration-500" alt="" />
                                        </div>
@@ -585,18 +588,31 @@ export default function HomeFeed({
                                             : "bg-white text-black border-white hover:bg-black hover:text-white hover:border-black"
                                        )}
                                      >
-                                        {connectedIds.includes(profile.name) ? "Request Sent" : "Connect"}
+                                        {connectedIds.includes(profile.name) ? "Linked" : "Link Partner"}
                                      </button>
                                    </motion.div>
                                  ))}
                               </div>
 
-                              <button 
-                                onClick={() => router.push('/matches')}
-                                className="w-full h-18 bg-white/5 border border-white/10 rounded-[24px] text-[11px] font-black uppercase text-white/50 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-4 mt-6 group/btn"
-                              >
-                                View Neural Distribution <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
-                              </button>
+                              <div className="grid grid-cols-2 gap-4 mt-6">
+                                <button 
+                                  onClick={() => router.push('/matches')}
+                                  className="h-18 bg-white/5 border border-white/10 rounded-[24px] text-[11px] font-black uppercase text-white/50 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-4 group/btn"
+                                >
+                                  Neural Map <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const post = posts.find(p => p.id === newlyCreatedPostId);
+                                    const url = `${window.location.origin}/post/${newlyCreatedPostId}`;
+                                    navigator.clipboard.writeText(`Check out my post on Checkout: ${url}`);
+                                    alert("Link copied to clipboard!");
+                                  }}
+                                  className="h-18 bg-[#E53935]/10 border border-[#E53935]/20 rounded-[24px] text-[11px] font-black uppercase text-[#E53935] hover:bg-[#E53935]/20 transition-all flex items-center justify-center gap-4 group/share"
+                                >
+                                  Share Link <Sparkles size={18} className="group-hover/share:scale-125 transition-transform" />
+                                </button>
+                              </div>
                            </div>
 
                         </div>

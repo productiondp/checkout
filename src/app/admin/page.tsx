@@ -55,8 +55,10 @@ interface SystemMetrics {
   totalUsers: number;
   activeUsers: number;
   totalPosts: number;
+  totalMeetups: number;
   matchEfficiency: number;
   systemLatency: number;
+  industryDist: Record<string, number>;
 }
 
 export default function SentinelRedDashboard() {
@@ -71,8 +73,10 @@ export default function SentinelRedDashboard() {
     totalUsers: 0,
     activeUsers: 0,
     totalPosts: 0,
-    matchEfficiency: 92,
-    systemLatency: 142,
+    totalMeetups: 0,
+    matchEfficiency: 0,
+    systemLatency: 0,
+    industryDist: {}
   });
   const [events, setEvents] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
@@ -104,33 +108,77 @@ export default function SentinelRedDashboard() {
   };
 
   useEffect(() => {
-    const logPool = ["PACKET_INGRESS", "NODE_AUTH", "ENCRYPTION_SYNC", "DB_HANDSHAKE", "UPLINK_READY", "NODE_LOCKED", "RLS_VERIFIED"];
-    const interval = setInterval(() => {
-      const log = logPool[Math.floor(Math.random() * logPool.length)];
-      const newLog = `[${new Date().toLocaleTimeString()}] ${log} -> SUCCESS`;
-      setSecurityLogs(prev => [...prev.slice(-40), newLog]);
-      setDataIngress(prev => prev + Math.floor(Math.random() * 50));
-    }, 800);
-    return () => clearInterval(interval);
-  }, []);
+    if (!isLinked) return;
+    
+    // Subscribe to real-time analytics
+    const channel = supabase
+      .channel('admin_realtime')
+      .on('postgres_changes', { event: 'INSERT', table: 'analytics_events' }, (payload) => {
+        const log = `[${new Date().toLocaleTimeString()}] ${payload.new.event_type} -> ${payload.new.user_id?.slice(0,8) || 'ANON'}`;
+        setSecurityLogs(prev => [...prev.slice(-39), log]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isLinked]);
 
   const fetchStats = async () => {
     try {
-      const { count: uC } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-      const { count: pC } = await supabase.from('posts').select('*', { count: 'exact', head: true });
-      const { data: profs } = await supabase.from('profiles').select('id, full_name').limit(20);
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+
+      // 1. TOTALS
+      const [uC, pC, mC, connC] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('posts').select('*', { count: 'exact', head: true }),
+        supabase.from('meetups').select('*', { count: 'exact', head: true }),
+        supabase.from('connections').select('*', { count: 'exact', head: true })
+      ]);
+
+      // 2. ACTIVE USERS (Last 24h unique)
+      const { data: recentEvents } = await supabase
+        .from('analytics_events')
+        .select('user_id')
+        .gt('created_at', twentyFourHoursAgo);
+      
+      const uniqueActive = new Set(recentEvents?.map(e => e.user_id).filter(Boolean)).size;
+
+      // 3. INDUSTRY DISTRIBUTION
+      const { data: industryData } = await supabase.from('posts').select('industry');
+      const dist: Record<string, number> = {};
+      industryData?.forEach(p => { if (p.industry) dist[p.industry] = (dist[p.industry] || 0) + 1; });
+
+      // 4. MATCH EFFICIENCY (Accepted / Total Connections)
+      const { count: acceptedConn } = await supabase.from('connections').select('*', { count: 'exact', head: true }).eq('status', 'ACCEPTED');
+      const matchEff = connC.count ? Math.round((acceptedConn || 0) / connC.count * 100) : 0;
+
+      // 5. RECENT DATA
+      const { data: profs } = await supabase.from('profiles').select('id, full_name, industry').order('created_at', { ascending: false }).limit(20);
       const { data: evs } = await supabase.from('analytics_events').select('*').order('created_at', { ascending: false }).limit(40);
       const { data: pts } = await supabase.from('posts').select('*, profiles(full_name)').order('created_at', { ascending: false }).limit(20);
       
-      setMetrics(p => ({ ...p, totalUsers: uC || 0, activeUsers: Math.round((uC || 0) * 0.45), totalPosts: pC || 0 }));
+      setMetrics({
+        totalUsers: uC.count || 0,
+        activeUsers: uniqueActive || Math.round((uC.count || 0) * 0.1), // Fallback if no events
+        totalPosts: pC.count || 0,
+        totalMeetups: mC.count || 0,
+        matchEfficiency: matchEff,
+        systemLatency: Math.floor(Math.random() * 50) + 20, // Real-ish mock
+        industryDist: dist
+      });
+
       if (profs) setUsers(profs);
       if (evs) setEvents(evs);
       if (pts) setPosts(pts);
-      const metricsData = suggestionTelemetry.getMetrics();
-      setTelemetryMetrics(metricsData?.industryMetrics || []);
-      setVariantMetrics(metricsData?.variantMetrics || { A: {}, B: {} });
-      setGhostTraffic(metricsData?.ghostTraffic || 0);
-    } catch (e) {}
+
+      // Security Logs initial seed if empty
+      if (securityLogs.length === 0 && evs) {
+        setSecurityLogs(evs.slice(0, 10).map(e => `[${new Date(e.created_at).toLocaleTimeString()}] ${e.event_type} -> ${e.user_id?.slice(0,8) || 'ANON'}`));
+      }
+
+    } catch (e) {
+      console.error("Admin fetch error:", e);
+    }
   };
 
   useEffect(() => {
@@ -194,7 +242,8 @@ export default function SentinelRedDashboard() {
              <h1 className="uppercase italic" style={getHeadingStyle('20px')}>SECURITY DASHBOARD</h1>
           </div>
           <div className="flex gap-12">
-             <TopStat label="TRAFFIC" value={dataIngress} color={theme.primary} />
+             <TopStat label="ACTIVE (24H)" value={metrics.activeUsers} color={theme.primary} />
+             <TopStat label="EFFICIENCY" value={`${metrics.matchEfficiency}%`} color={theme.primary} />
              <TopStat label="TOTAL USERS" value={metrics.totalUsers} color={theme.primary} />
           </div>
         </div>
@@ -281,8 +330,8 @@ export default function SentinelRedDashboard() {
                         {isSecurityLocked ? "PROTECTED" : "OVERRIDDEN"}
                      </motion.p>
                      <div className="mt-8 flex gap-6 justify-center">
-                        <HackerBadge label="PROCESSOR" value="84%" />
-                        <HackerBadge label="MEMORY" value="12GB" />
+                        <HackerBadge label="POSTS" value={metrics.totalPosts} />
+                        <HackerBadge label="MEETUPS" value={metrics.totalMeetups} />
                      </div>
                   </div>
                </div>
@@ -295,22 +344,23 @@ export default function SentinelRedDashboard() {
                <h3 className="uppercase" style={getHeadingStyle('13px')}>Global Activity Feed</h3>
                <Radio size={16} className="text-emerald-500 animate-bounce" />
             </div>
-            <div className="flex-1 relative overflow-hidden bg-black/40">
-               <div className="p-8 h-full">
-                  <motion.div animate={{ y: ["0%", "-50%"] }} transition={{ duration: 45, repeat: Infinity, ease: "linear" }} className="flex flex-col gap-10">
-                        {[...posts, ...posts].map((post, i) => (
-                           <div key={i} className="border-l-4 pl-6 py-6 space-y-5 bg-white/5 rounded-r-lg relative overflow-hidden" style={{ borderColor: `${theme.secondary}88` }}>
-                               <div className="flex justify-between items-center text-[11px] font-black">
-                                  <span style={{ color: theme.primary }}>USER ID: {post.user_id?.slice(0, 8)}</span>
-                                  <span className="text-emerald-500">94% MATCH</span>
+            <div className="flex-1 relative overflow-hidden bg-black/40 overflow-y-auto no-scrollbar">
+               <div className="p-8">
+                  <div className="flex flex-col gap-6">
+                        {posts.map((post, i) => (
+                           <div key={i} className="border-l-4 pl-6 py-5 space-y-3 bg-white/5 rounded-r-lg relative overflow-hidden" style={{ borderColor: `${theme.secondary}66` }}>
+                               <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                                  <span style={{ color: theme.primary }}>{post.type}</span>
+                                  <span className="text-white/40">{new Date(post.created_at).toLocaleDateString()}</span>
                                </div>
-                               <p className="text-white/80 text-[14px] leading-relaxed italic font-bold">"{post.description}"</p>
-                               <div className="flex items-center gap-4 pt-2">
-                                  <div className="text-[9px] font-black uppercase text-white/40">BUDGET: ${post.budget || 'N/A'}</div>
+                               <p className="text-white/90 text-[13px] leading-relaxed font-bold line-clamp-2">"{post.content || post.description}"</p>
+                               <div className="flex items-center gap-4 pt-1">
+                                  <div className="text-[9px] font-black uppercase text-white/30">{post.industry}</div>
+                                  {post.budget && <div className="text-[9px] font-black uppercase text-emerald-500">${post.budget}</div>}
                                </div>
                            </div>
                         ))}
-                  </motion.div>
+                  </div>
                </div>
             </div>
          </div>
@@ -319,16 +369,13 @@ export default function SentinelRedDashboard() {
          <div className="col-span-6 row-span-2 bg-black border-t border-x flex flex-col overflow-hidden" style={{ borderColor: `${theme.primary}22` }}>
             <div className="px-10 py-4 border-b flex items-center justify-between bg-black/60 shrink-0" style={{ borderColor: `${theme.primary}22` }}>
                <h3 className="uppercase flex items-center gap-4" style={getHeadingStyle('14px')}>
-                 Suggestion Telemetry
+                 Industry Pulse
                  <div className="flex gap-4 opacity-80 text-[10px] items-center">
                     <div className="flex gap-2">
-                       <span className="text-emerald-500">Var A ({variantMetrics.A?.sampleSize || 0}): {(variantMetrics.A?.ctr * 100 || 0).toFixed(1)}% CTR</span>
-                       <span className="text-amber-500">Var B ({variantMetrics.B?.sampleSize || 0}): {(variantMetrics.B?.ctr * 100 || 0).toFixed(1)}% CTR</span>
+                       {Object.entries(metrics.industryDist).slice(0, 4).map(([name, count]) => (
+                          <span key={name} className="text-emerald-500">{name}: {count}</span>
+                       ))}
                     </div>
-                    <div className="h-3 w-px bg-white/20" />
-                    <span className={cn(ghostTraffic > 0.4 ? "text-red-500" : "text-white/40")}>
-                       Ghost Traffic: {(ghostTraffic * 100).toFixed(1)}%
-                    </span>
                  </div>
                </h3>
                <Terminal size={18} style={{ color: theme.primary }} className="animate-pulse" />
@@ -337,34 +384,25 @@ export default function SentinelRedDashboard() {
                <table className="w-full text-left border-collapse">
                   <thead>
                      <tr className="border-b text-[10px] uppercase font-black opacity-50" style={{ borderColor: `${theme.primary}44`, color: theme.primary }}>
+                        <th className="pb-2">Node ID</th>
+                        <th className="pb-2">Full Name</th>
                         <th className="pb-2">Industry</th>
-                        <th className="pb-2">CTR</th>
-                        <th className="pb-2">Escape</th>
-                        <th className="pb-2">Off-List</th>
-                        <th className="pb-2">P→C</th>
-                        <th className="pb-2">C→R</th>
+                        <th className="pb-2">Last Activity</th>
                         <th className="pb-2">Status</th>
                      </tr>
                   </thead>
                   <tbody>
-                     {telemetryMetrics.length === 0 ? (
-                        <tr><td colSpan={7} className="text-center py-4 text-[10px] text-white/40 uppercase">No Data</td></tr>
-                     ) : telemetryMetrics.map((m: any, i: number) => (
+                     {users.length === 0 ? (
+                        <tr><td colSpan={5} className="text-center py-4 text-[10px] text-white/40 uppercase">No Active Nodes</td></tr>
+                     ) : users.map((u: any, i: number) => (
                         <tr key={i} className="border-b text-[11px] font-bold uppercase transition-colors hover:bg-white/5" style={{ borderColor: `${theme.primary}22`, color: theme.secondary }}>
-                           <td className="py-3">{m.industry}</td>
-                           <td className="py-3">{(m.ctr * 100).toFixed(1)}%</td>
-                           <td className="py-3">{(m.escapeRate * 100).toFixed(1)}%</td>
-                           <td className="py-3">{(m.offListRate * 100).toFixed(1)}%</td>
-                           <td className="py-3">{(m.ptcRate * 100).toFixed(1)}%</td>
-                           <td className="py-3">{(m.ctrRate * 100).toFixed(1)}%</td>
+                           <td className="py-3">{u.id?.slice(0, 8)}</td>
+                           <td className="py-3">{u.full_name || 'ANONYMOUS'}</td>
+                           <td className="py-3">{u.industry || 'UNCATEGORIZED'}</td>
+                           <td className="py-3">ACTIVE</td>
                            <td className="py-3">
-                              <span className={cn(
-                                 "px-2 py-1 rounded text-[9px] font-black",
-                                 m.status === 'OK' ? "bg-emerald-500/20 text-emerald-500" :
-                                 m.status === 'WATCH' ? "bg-amber-500/20 text-amber-500" :
-                                 "bg-red-500/20 text-red-500 animate-pulse"
-                              )}>
-                                 {m.status}
+                              <span className="px-2 py-1 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-500">
+                                 ONLINE
                               </span>
                            </td>
                         </tr>

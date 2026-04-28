@@ -76,21 +76,16 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }: Rev
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="w-full max-w-lg bg-white rounded-lg p-12 shadow-4xl animate-in zoom-in-95 duration-500 overflow-hidden relative">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="w-full max-w-lg bg-white rounded-[2rem] p-10 md:p-12 shadow-4xl animate-in zoom-in-95 duration-500 overflow-hidden relative z-10">
         
-        {/* Backdrop Accent */}
-        <div className="absolute top-0 right-0 p-8 opacity-[0.05] pointer-events-none">
-           <Award size={200} strokeWidth={1} />
-        </div>
-
-        <div className="flex items-center justify-between mb-10 relative z-10">
-          <h2 className="text-2xl font-black text-[#292828] uppercase">
-            Performance <span className="text-[#E53935]">Review</span>
-          </h2>
-          <button onClick={onClose} className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
-            <X size={20} />
-          </button>
-        </div>
+        {/* FIXED CLOSE BUTTON */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-6 right-6 h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-black hover:bg-slate-100 transition-all z-50 shadow-sm"
+        >
+          <X size={24} />
+        </button>
 
         <div className="text-center mb-10 relative z-10">
           <p className="text-[10px] font-black uppercase text-[#292828]/40  mb-4">Reviewing Session With</p>

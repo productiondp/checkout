@@ -304,10 +304,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
         initial={{ opacity: 0, y: 100, scale: 1 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         exit={{ opacity: 0, y: 100 }}
-        className="relative w-full sm:w-[90%] sm:max-w-xl bg-white rounded-t-[2rem] sm:rounded-[3rem] p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden flex flex-col gap-5 h-[92vh] sm:h-auto max-h-[92vh] sm:max-h-[95vh] overflow-y-auto no-scrollbar"
+        className="relative w-full sm:w-[90%] sm:max-w-xl bg-white rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-[92vh] sm:h-auto max-h-[92vh] sm:max-h-[95vh]"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center justify-between shrink-0 p-6 md:p-8 lg:p-10 pb-4 border-b border-black/[0.03]">
            <div className="flex items-center gap-3">
               <div className={cn("h-10 w-10 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all", config.color, config.shadow)}>
                  <config.icon size={20} />
@@ -338,7 +338,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
            </div>
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8 lg:p-10 pt-4">
           <AnimatePresence mode="wait">
              <motion.div
                key={`${type}-${currentStep}`}

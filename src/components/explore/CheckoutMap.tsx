@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   TrendingUp,
   X,
-  Compass
+  Compass,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -32,6 +33,8 @@ const FOCUS_CHIPS: { label: string; value: FocusType; color: string }[] = [
   { label: "Experts", value: "Experts", color: "bg-[#2196F3]" },
 ];
 
+import { useRouter } from "next/navigation";
+
 export default function CheckoutMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -41,6 +44,8 @@ export default function CheckoutMap() {
   const [entities, setEntities] = useState<any[]>([]);
   const markersRef = useRef<{ [key: string]: maplibregl.Marker }>({});
 
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   // 1. INITIALIZE MAP
@@ -108,7 +113,7 @@ export default function CheckoutMap() {
             lng: bounds.getWest() + (Math.random() * (bounds.getEast() - bounds.getWest())),
             lat: bounds.getSouth() + (Math.random() * (bounds.getNorth() - bounds.getSouth())),
             avatar: p.avatar_url,
-            cta: "Connect"
+            cta: "Start Conversation"
           });
         });
       }
@@ -126,7 +131,7 @@ export default function CheckoutMap() {
           } else if (p.type === 'PARTNER') {
             type = "Partners";
             color = "#9C27B0";
-            cta = "Start building";
+            cta = "Start Building";
           }
 
           unified.push({
@@ -138,7 +143,8 @@ export default function CheckoutMap() {
             trustScore: p.match_score || 92,
             lng: bounds.getWest() + (Math.random() * (bounds.getEast() - bounds.getWest())),
             lat: bounds.getSouth() + (Math.random() * (bounds.getNorth() - bounds.getSouth())),
-            cta
+            cta,
+            author_id: p.author_id
           });
         });
       }
@@ -208,7 +214,7 @@ export default function CheckoutMap() {
   }, [entities, activeFocus]);
 
   return (
-    <div className="relative w-full h-screen bg-[#111111] overflow-hidden">
+    <div className="relative w-full h-screen-safe bg-[#111111] overflow-hidden">
       {/* 1. FULL SCREEN MAP ENGINE */}
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
@@ -266,54 +272,128 @@ export default function CheckoutMap() {
       <AnimatePresence>
         {selectedEntity && (
           <motion.div 
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="absolute inset-x-8 bottom-8 flex justify-center z-50 pointer-events-none"
+            initial={{ y: 50, opacity: 0, scale: 0.98 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 50, opacity: 0, scale: 0.98 }}
+            className="absolute inset-x-4 sm:inset-x-8 bottom-6 sm:bottom-10 flex justify-center z-50 pointer-events-none"
           >
-            <div className="w-full max-w-2xl bg-white rounded-[2.5rem] p-8 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex items-center gap-8 pointer-events-auto relative overflow-hidden group">
-               {/* Background Glow */}
-               <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 blur-[40px] pointer-events-none" />
+            <div className="w-full max-w-4xl bg-white/95 backdrop-blur-2xl border border-black/[0.08] rounded-[2.5rem] sm:rounded-[4rem] p-5 sm:p-10 shadow-[0_80px_150px_-30px_rgba(0,0,0,0.3)] flex flex-col sm:flex-row items-stretch sm:items-center gap-6 sm:gap-12 pointer-events-auto relative overflow-hidden group selection:bg-[#E53935]/10">
                
-               <button 
-                 onClick={() => setSelectedEntity(null)}
-                 className="absolute top-6 right-6 text-black/10 hover:text-black transition-colors"
-               >
-                 <X size={20} />
-               </button>
-
-               <div className="h-24 w-24 rounded-2xl bg-[#F5F5F7] flex items-center justify-center overflow-hidden shrink-0 border border-black/[0.03]">
-                  {selectedEntity.avatar ? (
-                    <img src={selectedEntity.avatar} className="w-full h-full object-cover" alt="" />
-                  ) : (
-                    <div className={cn("h-full w-full flex items-center justify-center text-white", selectedEntity.type === 'Meetups' ? 'bg-[#E53935]' : 'bg-black')}>
-                       {selectedEntity.type === 'Meetups' ? <Zap size={32} /> : <Users size={32} />}
-                    </div>
-                  )}
+               {/* 🧬 NEURAL DECORATION */}
+               <div className="absolute top-0 right-0 w-1/3 h-full overflow-hidden opacity-20 pointer-events-none">
+                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                     <path d="M0,0 L100,100 M100,0 L0,100" stroke="currentColor" strokeWidth="0.1" className="text-black/10" />
+                     <circle cx="20" cy="30" r="1" className="fill-[#E53935]" />
+                     <circle cx="80" cy="70" r="1" className="fill-[#E53935]" />
+                  </svg>
                </div>
 
-               <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
+               <button 
+                 onClick={() => setSelectedEntity(null)}
+                 className="absolute top-6 right-6 sm:top-10 sm:right-10 h-10 w-10 bg-black/[0.03] hover:bg-black text-black/20 hover:text-white rounded-full flex items-center justify-center transition-all z-20"
+               >
+                 <X size={18} />
+               </button>
+
+               {/* LEFT: IDENTITY / ICON */}
+               <div className="relative shrink-0 flex items-center justify-center">
+                  <div className="h-20 w-20 sm:h-32 sm:w-32 rounded-[2rem] sm:rounded-[3rem] bg-[#0A0A0A] flex items-center justify-center overflow-hidden border border-black/[0.03] shadow-3xl transition-transform group-hover:scale-105 duration-700">
+                     {selectedEntity.avatar ? (
+                       <img src={selectedEntity.avatar} className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-700" alt="" />
+                     ) : (
+                       <div className={cn("h-full w-full flex items-center justify-center text-white", selectedEntity.type === 'Meetups' ? 'bg-[#E53935]' : 'bg-black')}>
+                          {selectedEntity.type === 'Meetups' ? <Zap size={40} strokeWidth={2.5} /> : <Users size={40} strokeWidth={2.5} />}
+                       </div>
+                     )}
+                  </div>
+                  {/* Status Indicator */}
+                  <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-white rounded-2xl border-4 border-[#FDFDFF] flex items-center justify-center shadow-lg">
+                     <div className="h-2 w-2 bg-[#34C759] rounded-full animate-pulse" />
+                  </div>
+               </div>
+
+               {/* CENTER: INTELLIGENCE BRIEF */}
+               <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center flex-wrap gap-3 mb-3">
                      <span className={cn(
-                       "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                       selectedEntity.type === 'Meetups' ? 'bg-[#E53935]/5 text-[#E53935]' : 'bg-black/5 text-black'
+                       "px-4 py-1 rounded-xl text-[9px] font-black uppercase tracking-[0.25em]",
+                       selectedEntity.type === 'Meetups' ? 'bg-[#E53935] text-white' : 'bg-black text-white'
                      )}>
                         {selectedEntity.type}
                      </span>
-                     <div className="flex items-center gap-1.5 text-emerald-600">
-                        <TrendingUp size={12} />
-                        <span className="text-[10px] font-black uppercase">{selectedEntity.trustScore}% Match</span>
+                     <div className="flex items-center gap-2 text-[#34C759] font-black uppercase text-[10px] tracking-tighter">
+                        <Activity size={14} />
+                        <span>{selectedEntity.trustScore}% Neural Match</span>
                      </div>
+                     <div className="h-1 w-1 rounded-full bg-black/10 hidden sm:block" />
+                     <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest hidden sm:inline flex items-center gap-1.5">
+                        <MapPin size={12} className="text-[#E53935]" /> 2.4km Away
+                     </span>
                   </div>
                   
-                  <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 line-clamp-1">{selectedEntity.name}</h3>
-                  <p className="text-[13px] font-bold text-black/40 line-clamp-1 italic">"{selectedEntity.description}"</p>
+                  <h3 className="text-2xl sm:text-4xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 sm:mb-4 leading-[0.9] tracking-tight line-clamp-2">
+                    {selectedEntity.name}
+                  </h3>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                     <p className="text-[14px] sm:text-[16px] font-medium text-black/50 leading-relaxed line-clamp-1 italic max-w-md">
+                        "{selectedEntity.description}"
+                     </p>
+                     
+                     {/* Social Proof Avatars */}
+                     <div className="flex items-center -space-x-3 opacity-60">
+                        {[1,2,3].map(i => (
+                           <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden shrink-0 shadow-sm">
+                              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} alt="" />
+                           </div>
+                        ))}
+                        <div className="h-8 w-8 rounded-full border-2 border-white bg-black flex items-center justify-center text-[8px] font-black text-white z-10 shadow-sm">
+                           +12
+                        </div>
+                     </div>
+                  </div>
                </div>
 
-               <div className="shrink-0">
-                  <button className="h-16 px-10 bg-black text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] shadow-2xl transition-all flex items-center gap-3 active:scale-95">
-                     {selectedEntity.cta}
-                     <ArrowRight size={16} strokeWidth={3} />
+               {/* RIGHT: CONNECTIVITY */}
+               <div className="shrink-0 flex items-center">
+                  <button 
+                    onClick={async () => {
+                      if (!selectedEntity.id) return;
+                      
+                      if (selectedEntity.type === 'Meetups') {
+                        // 1. Join Meetup Flow
+                        try {
+                           const { MeetupService } = await import("@/services/meetup-service");
+                           const { user: authUser } = await supabase.auth.getUser();
+                           if (!authUser.user) {
+                              router.push('/auth');
+                              return;
+                           }
+                           
+                           const { roomId } = await MeetupService.joinMeetup(selectedEntity.id, authUser.user.id);
+                           if (roomId) {
+                              router.push(`/chat?room=${roomId}`);
+                           } else {
+                              // If room not found, try to get it from the post
+                              const { data: meetup } = await supabase.from('posts').select('room_id').eq('id', selectedEntity.id).single();
+                              if (meetup?.room_id) router.push(`/chat?room=${meetup.room_id}`);
+                              else alert("This meetup's chat is being prepared. Check back in a moment!");
+                           }
+                        } catch (err: any) {
+                           console.error("Map Join Error:", err);
+                           if (err.message === "MEETUP_FULL") alert("This meetup is full!");
+                           else alert("Failed to join meetup. Please try again.");
+                        }
+                      } else {
+                         // 2. Standard Chat / Connect Flow
+                         router.push(`/chat?user=${selectedEntity.author_id || selectedEntity.id}`);
+                      }
+                    }}
+                    className="h-16 sm:h-24 w-full sm:w-auto px-10 sm:px-16 bg-[#0A0A0A] text-white rounded-[1.5rem] sm:rounded-[2.5rem] font-black text-[12px] sm:text-[15px] uppercase tracking-[0.25em] hover:bg-[#E53935] shadow-[0_30px_60px_rgba(0,0,0,0.3)] hover:shadow-[#E53935]/40 transition-all flex items-center justify-center gap-6 active:scale-95 group/btn overflow-hidden relative"
+                  >
+                     <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                     <span className="relative z-10">{selectedEntity.cta}</span>
+                     <ArrowRight size={20} strokeWidth={4} className="relative z-10 transition-transform group-hover/btn:translate-x-2" />
                   </button>
                </div>
             </div>
@@ -340,5 +420,3 @@ export default function CheckoutMap() {
   );
 }
 
-// STYLES FOR MARKER
-const isLoading = false; // dummy for build

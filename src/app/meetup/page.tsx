@@ -24,9 +24,114 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/ai";
+import Link from "next/link";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { AnimatePresence, motion } from "framer-motion";
 
 
 const TOPICS = ["All", "Networking", "Investment", "Community", "Strategy", "Tech", "Logistics"];
+
+const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoined: boolean; onJoin: () => void; viewMode: string }) => {
+  return (
+    <div className="group relative">
+      <div className={cn(
+          "bg-white rounded-[2rem] border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] hover:border-[#E53935]/20 hover:-translate-y-2",
+          isJoined && "border-emerald-500/30 ring-4 ring-emerald-500/5 shadow-2xl shadow-emerald-500/10"
+      )}>
+          {/* AI Alignment Indicator */}
+          <div className="absolute top-6 right-6 z-10">
+            <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-lg border border-[#292828]/10 flex items-center gap-2 shadow-lg">
+                <Sparkles size={14} className="text-[#E53935] animate-pulse" />
+                <span className="text-[10px] font-black text-[#292828] uppercase">{meetup.matchPotential}% Score</span>
+            </div>
+          </div>
+
+          {/* Card Content */}
+          <div className="p-8 lg:p-10 space-y-8">
+            <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
+                  <img src={meetup.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                  <div className="absolute inset-0 bg-[#E53935]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <Link href={`/advisor/${meetup.author_id}`} className="hover:opacity-80 transition-opacity">
+                  <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 ">{meetup.authorName}</h4>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{meetup.category} • {meetup.timeAgo}</p>
+                    <div className="h-1 w-1 bg-black/10 rounded-full" />
+                    <div className="flex items-center gap-1">
+                      <Target size={10} className="text-emerald-500" />
+                      <span className="text-[9px] font-bold text-emerald-600 uppercase">{meetup.trustScore}% Trust</span>
+                    </div>
+                  </div>
+                </Link>
+            </div>
+
+            <div className="space-y-3">
+                <h3 className="text-xl font-black uppercase group-hover:text-[#E53935] transition-colors">{meetup.title}</h3>
+                <p className="text-[14px] font-medium text-[#292828]/60 leading-relaxed italic line-clamp-2">"{meetup.content}"</p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+                <div 
+                  onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meetup.location || "Trivandrum")}`, '_blank'); }}
+                  className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all cursor-pointer"
+                >
+                  <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
+                      <MapPin size={18} />
+                  </div>
+                  <div className="min-w-0">
+                      <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Venue</p>
+                      <p className="text-[12px] font-bold text-[#292828] uppercase truncate">{meetup.location || "Online"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
+                  <div className="h-10 w-10 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
+                      <Clock size={18} />
+                  </div>
+                  <div>
+                      <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Time</p>
+                      <p className="text-[12px] font-bold text-[#292828] uppercase">{meetup.dateTime || "TODAY, 18:30"}</p>
+                  </div>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-8 border-t border-[#292828]/5 mt-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2.5">
+                      {[1,2,3].map(i => (
+                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200">
+                          <img src={`https://i.pravatar.cc/150?u=${meetup.id + i}`} alt="" className="grayscale" />
+                        </div>
+                      ))}
+                  </div>
+                  <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{meetup.attendees}/{meetup.maxAttendees} Occupied</span>
+                </div>
+
+                <button 
+                  onClick={onJoin}
+                  disabled={!isJoined && meetup.attendees >= meetup.maxAttendees}
+                  className={cn(
+                    "h-14 px-8 rounded-xl font-black text-[11px] uppercase transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
+                    isJoined 
+                    ? "bg-emerald-500 text-white shadow-emerald-500/20" 
+                    : meetup.attendees >= meetup.maxAttendees ? "bg-black/10 text-black/20 cursor-not-allowed" : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
+                  )}
+                >
+                  {isJoined ? (
+                    <><CheckCircle2 size={18} strokeWidth={3} /> You're In • Chat Open</>
+                  ) : meetup.attendees >= meetup.maxAttendees ? (
+                    "Full"
+                  ) : (
+                    <><Plus size={18} strokeWidth={3} /> Join Meetup</>
+                  )}
+                </button>
+            </div>
+          </div>
+      </div>
+    </div>
+  );
+};
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -45,74 +150,159 @@ export default function MeetupPage() {
   const [selectedAdvisor, setSelectedAdvisor] = useState<any | null>(null);
   const [suggestedAdvisors, setSuggestedAdvisors] = useState<any[]>([]);
 
+  const [sortMode, setSortMode] = useState<"NEARBY" | "RELEVANT" | "UPCOMING">("RELEVANT");
+  const [userParticipants, setUserParticipants] = useState<string[]>([]);
+
   const supabase = createClient();
 
-  React.useEffect(() => {
-    async function initMeetup() {
-      setIsLoading(true);
+  const initMeetup = async () => {
+    if (!authUser) return;
+    setIsLoading(true);
 
-      const { data } = await supabase
+    try {
+      // 1. Fetch Meetups
+      const { data: meetupData, error: meetupError } = await supabase
         .from('posts')
-        .select('*, author:profiles(full_name, avatar_url)')
+        .select(`
+          *,
+          author:profiles(id, full_name, avatar_url, match_score)
+        `)
         .eq('type', 'MEETUP')
+        .neq('status', 'completed')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
-        const mapped = data.map(m => ({
-          ...m,
-          author: m.author?.full_name || "Community Member",
-          avatar: m.author?.avatar_url || `https://i.pravatar.cc/150?u=${m.id}`,
-          timeAgo: "Live in 2h",
-          matchPotential: m.match_score || 95,
-          attendees: m.participant_count || Math.floor(Math.random() * 5) + 1,
-          maxAttendees: 8,
-          category: m.domain || "Tech",
-          typeLabel: m.metadata?.is_advisor_led ? "Advisor-Led" : "Open Meetup",
-          isPremium: m.metadata?.is_advisor_led || false,
-          x: Math.random() * 80 + 10,
-          y: Math.random() * 80 + 10
-        }));
-        setMeetups(mapped);
-      } else {
-        setMeetups([]);
-      }
+      if (meetupError) throw meetupError;
+
+      // 2. Fetch User Joins
+      const { data: participantData } = await supabase
+        .from('meetup_participants')
+        .select('meetup_id')
+        .eq('user_id', authUser.id);
       
-      // Load advisors for suggestion
-      const { data: advisors } = await supabase.from('profiles').select('*').limit(5);
-      setSuggestedAdvisors(advisors || []);
+      setUserParticipants(participantData?.map(p => p.meetup_id) || []);
+
+      // 3. Map Data
+      const mapped = (meetupData || []).map(m => {
+        const isAdvisorMeetup = m.metadata?.is_advisor_led || false;
+        const advisorAccepted = m.metadata?.advisor_accepted !== false; // Default to true if not explicitly false
+        const visibility = m.metadata?.visibility || 'open';
+        const invitedUsers = m.metadata?.invited_users || [];
+        
+        // Visibility Logic
+        let isVisible = true;
+        if (isAdvisorMeetup && !advisorAccepted) isVisible = false;
+        if (visibility === 'closed' && !invitedUsers.includes(authUser.id) && m.author_id !== authUser.id) isVisible = false;
+
+        return {
+          ...m,
+          isVisible,
+          authorName: m.author?.full_name || "Community Member",
+          avatar: m.author?.avatar_url || `https://i.pravatar.cc/150?u=${m.id}`,
+          timeAgo: m.dateTime || "Upcoming",
+          matchPotential: m.match_score || 0,
+          attendees: m.participant_count || 0,
+          maxAttendees: m.max_slots || 8,
+          category: m.domain || "Networking",
+          isPremium: isAdvisorMeetup,
+          advisor: m.author, // Assuming author is advisor for advisor-led
+          trustScore: m.author?.match_score || 85
+        };
+      }).filter(m => m.isVisible);
+
+      setMeetups(mapped);
+    } catch (err) {
+      console.error("Meetup Load Error:", err);
+      // Fallback: show empty list but ensure loading finishes
+      setMeetups([]); 
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  React.useEffect(() => {
     initMeetup();
-  }, []);
+  }, [authUser]);
 
   const filteredMeetups = useMemo(() => {
-    const list = meetups.filter(m => activeTopic === "All" || m.category === activeTopic);
-    if (!authUser) return list;
-
-    const userContext = {
-      role: authUser.role || "Professional",
-      bio: authUser.bio || "",
-      domains: authUser.skills || []
-    };
+    let list = meetups.filter(m => activeTopic === "All" || m.category === activeTopic);
     
-    // AI Intelligence: Dynamically calculate match and sort by relevance + proximity
-    return list.map(m => ({
-      ...m,
-      matchPotential: calculateMatchScore(userContext, { ...m, type: "Meetup", domain: m.category })
-    })).sort((a, b) => b.matchPotential - a.matchPotential || a.id.localeCompare(b.id));
-  }, [meetups, activeTopic, authUser]);
+    // Sort logic
+    if (sortMode === "NEARBY") {
+      // Proximity sorting (simulated for now, would use lat/lng in production)
+      list = [...list].sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    } else if (sortMode === "RELEVANT") {
+      list = [...list].sort((a, b) => b.matchPotential - a.matchPotential);
+    } else if (sortMode === "UPCOMING") {
+      list = [...list].sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+    }
+
+    return list;
+  }, [meetups, activeTopic, sortMode]);
+
+  const topMeetups = useMemo(() => {
+    return filteredMeetups
+      .filter(m => m.isPremium || m.matchPotential > 90)
+      .slice(0, 2);
+  }, [filteredMeetups]);
+
+  const allMeetups = useMemo(() => {
+    return filteredMeetups.slice(topMeetups.length);
+  }, [filteredMeetups, topMeetups]);
+
+  const handleJoin = async (id: string) => {
+    if (!authUser) {
+      router.push('/auth');
+      return;
+    }
+    
+    const isJoined = userParticipants.includes(id);
+    
+    if (isJoined) {
+      // If already joined, just navigate to the chat room
+      const { data: meetup } = await supabase.from('posts').select('room_id').eq('id', id).single();
+      if (meetup?.room_id) {
+        router.push(`/chat?room=${meetup.room_id}`);
+      } else {
+        alert("Preparing group chat. Check back in a moment.");
+      }
+    } else {
+      // Join using the service to handle room syncing
+      try {
+        const { MeetupService } = await import("@/services/meetup-service");
+        const { roomId } = await MeetupService.joinMeetup(id, authUser.id);
+        
+        setUserParticipants(prev => [...prev, id]);
+        setMeetups(prev => prev.map(m => m.id === id ? { ...m, attendees: m.attendees + 1 } : m));
+        
+        if (roomId) {
+          router.push(`/chat?room=${roomId}`);
+        }
+      } catch (err: any) {
+        console.error("Join Error:", err);
+        if (err.message === "MEETUP_FULL") {
+          alert("This meetup is full!");
+        } else {
+          alert("Failed to join meetup. Please try again.");
+        }
+      }
+    }
+  };
 
   const strategicRecommendations = useMemo(() => {
+    if (topMeetups.length > 0) {
+      return topMeetups.map(m => ({
+        title: m.title,
+        time: m.timeAgo,
+        type: m.mode || "Offline",
+        score: m.matchPotential
+      }));
+    }
     const role = authUser?.role || "Business";
     return [
       { title: `${role} Growth Sync`, time: "Tomorrow, 10:00", type: "Virtual", score: 99 },
       { title: "Supply Chain Sync", time: "Friday, 14:30", type: "Technopark", score: 92 }
     ];
-  }, [authUser]);
-
-  const handleJoin = (id: string) => {
-    setMeetups(meetups.map(m => m.id === id ? { ...m, status: m.status === "none" ? "joined" : "none" } : m));
-  };
+  }, [authUser, topMeetups]);
 
   return (
     <ProtectedRoute>
@@ -165,6 +355,23 @@ export default function MeetupPage() {
                        </button>
                      ))}
                   </div>
+
+                  <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-xl border border-black/[0.05]">
+                    {(['NEARBY', 'RELEVANT', 'UPCOMING'] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => setSortMode(mode)}
+                        className={cn(
+                          "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                          sortMode === mode 
+                            ? "bg-white text-black shadow-sm" 
+                            : "text-slate-400 hover:text-slate-600"
+                        )}
+                      >
+                        {mode.charAt(0) + mode.slice(1).toLowerCase()}
+                      </button>
+                    ))}
+                  </div>
                   
                   <div className="flex items-center gap-4 shrink-0">
                      <button 
@@ -173,7 +380,7 @@ export default function MeetupPage() {
                      >
                         <Plus size={14} /> Host Meetup
                      </button>
-  
+   
                      <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
                         <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
                            <LayoutGrid size={14} />
@@ -187,96 +394,85 @@ export default function MeetupPage() {
             </div>
   
            {/* CONTENT GRID */}
-           <div className="p-8 lg:p-12">
-              <div className={cn(
-                 "grid gap-10",
-                 viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
-              )}>
-                 {filteredMeetups.map(m => (
-                   <div key={m.id} className="group relative">
-                      <div className={cn(
-                         "bg-white rounded-lg border border-[#292828]/10 overflow-hidden transition-all duration-500 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] hover:border-[#E53935]/20 hover:-translate-y-2",
-                         m.status === "joined" && "border-emerald-500/30 ring-4 ring-emerald-500/5 shadow-2xl shadow-emerald-500/10"
-                      )}>
-                         {/* AI Alignment Indicator */}
-                         <div className="absolute top-6 right-6 z-10">
-                            <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-lg border border-[#292828]/10 flex items-center gap-2 shadow-lg">
-                               <Sparkles size={14} className="text-[#E53935] animate-pulse" />
-                               <span className="text-[10px] font-black text-[#292828] uppercase">{m.matchPotential}% Score</span>
-                            </div>
-                         </div>
-  
-                         {/* Card Content */}
-                         <div className="p-8 lg:p-10 space-y-8">
-                            <div className="flex items-center gap-4">
-                               <div className="h-14 w-14 rounded-lg overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
-                                  <img src={m.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                                  <div className="absolute inset-0 bg-[#E53935]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                               </div>
-                               <div>
-                                  <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 ">{m.author}</h4>
-                                  <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{m.category} • {m.timeAgo}</p>
-                               </div>
-                            </div>
-  
-                            <div className="space-y-3">
-                               <h3 className="group-hover:text-[#E53935] transition-colors">{m.title}</h3>
-                               <p className="text-[14px] font-medium text-[#292828]/60 leading-relaxed italic line-clamp-2">"{m.content}"</p>
-                            </div>
-  
-                            <div className="flex flex-col gap-3">
-                               <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-lg border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
-                                  <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
-                                     <MapPin size={18} />
-                                  </div>
-                                  <div className="min-w-0">
-                                     <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Venue</p>
-                                     <p className="text-[12px] font-bold text-[#292828] uppercase truncate">{m.location}</p>
-                                  </div>
-                               </div>
-  
-                               <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-lg border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
-                                  <div className="h-10 w-10 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
-                                     <Clock size={18} />
-                                  </div>
-                                  <div>
-                                     <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Time</p>
-                                     <p className="text-[12px] font-bold text-[#292828] uppercase">TODAY, 18:30</p>
-                                  </div>
-                               </div>
-                            </div>
-  
-                            <div className="flex items-center justify-between pt-8 border-t border-[#292828]/5 mt-4">
-                               <div className="flex items-center gap-3">
-                                  <div className="flex -space-x-2.5">
-                                     {[1,2,3].map(i => (
-                                       <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200">
-                                          <img src={`https://i.pravatar.cc/150?u=${i+10}`} alt="" className="grayscale" />
-                                       </div>
-                                     ))}
-                                  </div>
-                                  <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{m.attendees}/8 Occupied</span>
-                               </div>
-  
-                               <button 
-                                 onClick={() => handleJoin(m.id)}
-                                 disabled={m.attendees >= 8}
-                                 className={cn(
-                                   "h-14 px-8 rounded-lg font-bold text-[11px] uppercase  transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
-                                   m.status === "joined" 
-                                    ? "bg-emerald-500 text-white shadow-emerald-500/20" 
-                                    : m.attendees >= 8 ? "bg-black/10 text-black/20 cursor-not-allowed" : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
-                                 )}
-                               >
-                                  {m.status === "joined" ? <><CheckCircle2 size={18} strokeWidth={3} /> You're In</> : m.attendees >= 8 ? "Full" : <><Plus size={18} strokeWidth={3} /> Join Meetup</>}
-                               </button>
-                            </div>
-                         </div>
-                      </div>
+           <div className="p-8 lg:p-12 space-y-16">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                  <div className="h-12 w-12 border-4 border-[#E53935] border-t-transparent rounded-full animate-spin" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/20">Syncing Meetups...</p>
+                </div>
+              ) : meetups.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-32 text-center space-y-8 bg-slate-50/50 rounded-[2rem] border border-dashed border-black/10">
+                   <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-xl border border-black/5">
+                      <Calendar size={40} className="text-black/10" />
                    </div>
-                 ))}
-              </div>
+                   <div className="space-y-2">
+                      <h3 className="text-2xl font-black uppercase">No meetups found nearby</h3>
+                      <p className="text-slate-400 max-w-sm mx-auto text-sm">Expand your search or be the first to host a session in your current industry node.</p>
+                   </div>
+                   <button 
+                    onClick={() => { setShowHostModal(true); setHostStep(1); }}
+                    className="h-14 px-10 bg-black text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all shadow-2xl"
+                   >
+                     Create Meetup
+                   </button>
+                </div>
+              ) : (
+                <>
+                  {/* SECTION 1: TOP MEETUPS */}
+                  {topMeetups.length > 0 && (
+                    <div className="space-y-8">
+                       <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 bg-[#E53935]/5 text-[#E53935] rounded-xl flex items-center justify-center">
+                             <Sparkles size={20} />
+                          </div>
+                          <h2 className="text-xl font-black uppercase tracking-tight">Top <span className="text-[#E53935]">Meetups</span></h2>
+                       </div>
+                       <div className={cn(
+                          "grid gap-10",
+                          viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
+                       )}>
+                          {topMeetups.map(m => (
+                            <MeetupCard 
+                              key={m.id} 
+                              meetup={m} 
+                              isJoined={userParticipants.includes(m.id)} 
+                              onJoin={() => handleJoin(m.id)} 
+                              viewMode={viewMode}
+                            />
+                          ))}
+                       </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 2: ALL MEETUPS */}
+                  {allMeetups.length > 0 && (
+                    <div className="space-y-8">
+                       <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 bg-black/5 text-black rounded-xl flex items-center justify-center">
+                             <List size={20} />
+                          </div>
+                          <h2 className="text-xl font-black uppercase tracking-tight">All <span className="text-slate-300">Meetups</span></h2>
+                       </div>
+                       <div className={cn(
+                          "grid gap-10",
+                          viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
+                       )}>
+                          {allMeetups.map(m => (
+                            <MeetupCard 
+                              key={m.id} 
+                              meetup={m} 
+                              isJoined={userParticipants.includes(m.id)} 
+                              onJoin={() => handleJoin(m.id)} 
+                              viewMode={viewMode}
+                            />
+                          ))}
+                       </div>
+                    </div>
+                  )}
+                </>
+              )}
            </div>
+
         </main>
   
         {/* 2. ANALYTICS SIDEBAR (RIGHT) */}

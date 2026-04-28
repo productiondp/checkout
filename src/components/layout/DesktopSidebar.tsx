@@ -33,7 +33,7 @@ export default function DesktopSidebar() {
 
   const navGroups = [
     {
-      group: "Directory",
+      group: "Network",
       items: [
         { label: "Home Feed", icon: Home, href: "/home" },
         { label: "Network Hub", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
@@ -42,13 +42,18 @@ export default function DesktopSidebar() {
       ]
     },
     {
-      group: "Explore",
+      group: "Opportunities",
       items: [
         { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
         { label: "Advisors", icon: Target, href: "/advisors" },
+        { label: "Meetups", icon: LayoutGrid, href: "/events" },
+      ]
+    },
+    {
+      group: "Intelligence",
+      items: [
         { label: "Directory", icon: Building2, href: "/directory" },
         { label: "Discovery Map", icon: Search, href: "/discover" },
-        { label: "Meetups", icon: LayoutGrid, href: "/events" },
       ]
     }
   ];

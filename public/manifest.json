@@ -1,17 +1,27 @@
 {
-  "name": "Checkout OS",
+  "name": "Checkout Business OS",
   "short_name": "Checkout",
   "description": "The premium Business OS for local commerce.",
-  "start_url": "/",
+  "start_url": "/home",
   "display": "standalone",
-  "background_color": "#292828",
-  "theme_color": "#292828",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
+  "screenshots": [
     {
       "src": "/logo.png",
       "sizes": "512x512",

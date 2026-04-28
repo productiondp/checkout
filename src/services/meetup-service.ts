@@ -10,7 +10,7 @@ export class MeetupService {
     // 1. Get meetup details
     const { data: meetup, error: fetchError } = await supabase
       .from('posts')
-      .select('room_id, max_slots, author_id, title, status')
+      .select('room_id, max_slots, author_id, title, status, metadata')
       .eq('id', meetupId)
       .single();
 
@@ -24,14 +24,35 @@ export class MeetupService {
       .eq('meetup_id', meetupId);
 
     if (countError) throw countError;
-    if (count !== null && count >= (meetup.max_slots || 1)) {
+    
+    // If max_slots is null or 0, assume unlimited or use a safe high default
+    const limit = meetup.max_slots || 999;
+    if (count !== null && count >= limit) {
       throw new Error("MEETUP_FULL");
+    }
+
+    // 2c. Check Access Type
+    if (meetup.metadata?.access === 'CLOSED') {
+       // Check if already approved
+       const { data: participation } = await supabase
+         .from('meetup_participants')
+         .select('status')
+         .eq('meetup_id', meetupId)
+         .eq('user_id', userId)
+         .maybeSingle();
+
+       if (!participation || participation.status !== 'JOINED') {
+         throw new Error("APPROVAL_REQUIRED");
+       }
     }
 
     // 3. Create participant record
     const { error: joinError } = await supabase
       .from('meetup_participants')
-      .insert({ meetup_id: meetupId, user_id: userId, status: 'JOINED' });
+      .upsert(
+        { meetup_id: meetupId, user_id: userId, status: 'JOINED' },
+        { onConflict: 'meetup_id,user_id' }
+      );
 
     if (joinError) throw joinError;
 
@@ -39,19 +60,80 @@ export class MeetupService {
     if (meetup.room_id) {
       await supabase
         .from('participants')
-        .upsert({ room_id: meetup.room_id, user_id: userId });
+        .upsert(
+          { room_id: meetup.room_id, user_id: userId },
+          { onConflict: 'room_id,user_id' }
+        );
 
       // Send System Message
       const { data: userProfile } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
       await supabase.from('messages').insert({
         room_id: meetup.room_id,
-        sender_id: userId,
         content: `${userProfile?.full_name || 'A new partner'} has joined the meetup.`,
         type: 'SYSTEM'
       });
     }
 
     return { roomId: meetup.room_id };
+  }
+
+  /**
+   * Requests to join a closed meetup
+   */
+  static async requestToJoin(meetupId: string, userId: string) {
+    const supabase = createClient();
+    
+    // Check if already requested
+    const { data: existing } = await supabase
+      .from('meetup_participants')
+      .select('status')
+      .eq('meetup_id', meetupId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existing) return { status: existing.status };
+
+    const { error } = await supabase
+      .from('meetup_participants')
+      .upsert(
+        { meetup_id: meetupId, user_id: userId, status: 'REQUESTED' },
+        { onConflict: 'meetup_id,user_id' }
+      );
+
+    if (error) throw error;
+    return { status: 'REQUESTED' };
+  }
+
+  /**
+   * Approves a join request (Host only)
+   */
+  static async approveRequest(meetupId: string, userId: string, hostId: string) {
+    const supabase = createClient();
+
+    // 1. Verify host
+    const { data: meetup } = await supabase.from('posts').select('author_id, room_id').eq('id', meetupId).single();
+    if (meetup?.author_id !== hostId) throw new Error("UNAUTHORIZED");
+
+    // 2. Update status to JOINED
+    const { error } = await supabase
+      .from('meetup_participants')
+      .update({ status: 'JOINED' })
+      .eq('meetup_id', meetupId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    // 3. Add to chat room if exists
+    if (meetup.room_id) {
+      await supabase.from('participants').upsert({ room_id: meetup.room_id, user_id: userId });
+      
+      const { data: userProfile } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
+      await supabase.from('messages').insert({
+        room_id: meetup.room_id,
+        content: `${userProfile?.full_name || 'A partner'} was approved to join.`,
+        type: 'SYSTEM'
+      });
+    }
   }
 
   /**
@@ -184,15 +266,15 @@ export class MeetupService {
       .select('*', { count: 'exact', head: true })
       .eq('meetup_id', meetupId);
 
-    const isJoined = !!participation;
     const isFull = count !== null && count >= (meetup?.max_slots || 1);
 
     return {
-      isJoined,
+      isJoined: !!participation && participation.status === 'JOINED',
+      isRequested: !!participation && participation.status === 'REQUESTED',
       isFull,
       count: count || 0,
       maxSlots: meetup?.max_slots || 0,
-      status: isJoined ? 'JOINED' : (isFull ? 'FULL' : 'IDLE')
+      status: participation?.status || (isFull ? 'FULL' : 'IDLE')
     };
   }
 

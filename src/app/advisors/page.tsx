@@ -150,7 +150,7 @@ export default function AdvisorsPage() {
                     <h3 className="text-2xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
                     <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role} • {advisor.industry}</p>
                     <div className="p-6 bg-[#F5F5F7] rounded-[10px] border border-black/[0.02] mb-8"><p className="text-xs font-bold text-black/60 leading-relaxed italic uppercase">"{advisor.bestFor}"</p></div>
-                    <div className="mt-auto pt-6 border-t border-black/[0.03] flex items-center justify-between"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" /></div>
+                    <div className="mt-auto pt-6 border-t border-black/[0.03] flex items-center justify-between"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" /></div>
                   </div>
                 ))}
               </div>
@@ -206,7 +206,7 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
           </div>
         </div>
         <div className="shrink-0">
-          <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" />
+          <ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" />
         </div>
       </div>
     );
@@ -239,7 +239,7 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
       </div>
 
       <div className="pt-6 border-t border-black/[0.03]">
-         <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" className="w-full" />
+         <ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" className="w-full" />
       </div>
     </div>
   );

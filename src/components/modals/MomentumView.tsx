@@ -72,9 +72,9 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
       
       <button 
         onClick={onClose}
-        className="absolute top-5 right-5 md:top-6 md:right-6 h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 hover:text-[#292828] transition-all z-50 group"
+        className="absolute top-6 right-6 h-12 w-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-black hover:bg-white transition-all z-[60] group shadow-lg border border-black/[0.03]"
       >
-        <X size={22} className="group-hover:rotate-90 transition-transform" />
+        <X size={24} className="group-hover:rotate-90 transition-transform" />
       </button>
 
       <div className="flex flex-col gap-8 lg:gap-10 relative z-10">

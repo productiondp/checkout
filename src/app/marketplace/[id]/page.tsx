@@ -20,7 +20,7 @@ import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MOCK_LISTINGS } from "@/data/marketplace";
 import TerminalLayout from "@/components/layout/TerminalLayout";
-import ConnectButton from "@/components/ui/ConnectButton";
+import { ConnectButton } from "@/components/connection/ConnectButton";
 
 export default function ListingDetailPage() {
   const params = useParams();
@@ -62,7 +62,12 @@ export default function ListingDetailPage() {
                  </div>
               </div>
               <div className="flex flex-col gap-3 min-w-[240px]">
-                 <ConnectButton targetId={listing.provider.id} className="!h-20 !rounded-[10px] !bg-white !text-black !font-black !text-xs !uppercase !tracking-widest !shadow-xl hover:!bg-[#E53935] hover:!text-white transition-all" />
+                 <ConnectButton 
+                    userId={listing.provider.id} 
+                    userName={listing.provider.name}
+                    label="Start Building"
+                    className="!h-20 !rounded-[10px] !bg-white !text-black !font-black !text-xs !uppercase !tracking-widest !shadow-xl hover:!bg-[#E53935] hover:!text-white transition-all" 
+                 />
                  <p className="text-center text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">High Authority Connection Required</p>
               </div>
            </div>

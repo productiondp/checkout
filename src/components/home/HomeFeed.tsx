@@ -65,7 +65,7 @@ export default function HomeFeed({
     setSessionActions(prev => prev.includes(id) ? prev : [...prev, id]);
   };
 
-  const [intentMode, setIntentMode] = useState<IntentMode>('BALANCED');
+  const [intentMode, setIntentMode] = useState<IntentMode>('SMART');
   const [sortMode, setSortMode] = useState<'NEARBY' | 'RELEVANT' | 'LATEST'>('NEARBY');
   const [selectedPost, setSelectedPost] = useState<any>(null);
 
@@ -313,42 +313,22 @@ export default function HomeFeed({
         </div>
 
 
-            {/* --- STEP 1: INTENT MODES & INSIGHTS --- */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3 bg-[#F5F5F7] p-1.5 rounded-2xl w-fit border border-black/[0.03]">
-                {(['SMART', 'REQUIREMENT', 'PARTNER', 'MEETUP'] as IntentMode[]).map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setIntentMode(mode)}
-                      className={cn(
-                          "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                          intentMode === mode 
-                            ? "bg-[#0A0A0A] text-white shadow-xl shadow-black/10" 
-                            : "text-[#0A0A0A]/40 hover:text-[#0A0A0A]/80"
-                      )}
-                    >
-                      {mode === 'SMART' ? 'Smart' : mode.charAt(0) + mode.slice(1).toLowerCase() + 's'}
-                    </button>
-                ))}
-              </div>
-
-              {/* SORT MODES */}
-              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.03]">
-                 {(['NEARBY', 'RELEVANT', 'LATEST'] as const).map((mode) => (
-                    <button
-                       key={mode}
-                       onClick={() => setSortMode(mode)}
-                       className={cn(
-                          "px-4 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
-                          sortMode === mode 
-                             ? "bg-white text-black shadow-sm" 
-                             : "text-slate-400 hover:text-slate-600"
-                       )}
-                    >
-                       {mode.charAt(0) + mode.slice(1).toLowerCase()}
-                    </button>
-                 ))}
-              </div>
+            {/* SORT MODES */}
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.03] ml-auto">
+               {(['NEARBY', 'RELEVANT', 'LATEST'] as const).map((mode) => (
+                  <button
+                     key={mode}
+                     onClick={() => setSortMode(mode)}
+                     className={cn(
+                        "px-4 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
+                        sortMode === mode 
+                           ? "bg-white text-black shadow-sm" 
+                           : "text-slate-400 hover:text-slate-600"
+                     )}
+                  >
+                     {mode.charAt(0) + mode.slice(1).toLowerCase()}
+                  </button>
+               ))}
             </div>
 
             {/* ── STEP 4: DAILY PRIORITY LIST ── */}

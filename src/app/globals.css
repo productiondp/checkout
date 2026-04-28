@@ -7,6 +7,13 @@
   --background-rgb: 255, 255, 255;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 @layer base {
   body {
     @apply bg-[#FFFFFF] text-[#1A1A1A] selection:bg-[#FF3B30]/10;
@@ -14,6 +21,8 @@
     letter-spacing: 0px !important;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+    height: 100%;
+    min-height: 100dvh;
   }
 
   * {

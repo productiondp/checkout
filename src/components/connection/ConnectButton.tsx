@@ -19,16 +19,27 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
   const { getConnectionState, sendRequest } = useConnections();
   const [showModal, setShowModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const state = getConnectionState(userId);
-  const router = useRouter();
+  const [intent, setIntent] = useState<'IDEA' | 'DETAILS' | 'HELP' | null>(null);
+  const [message, setMessage] = useState("");
+
+  const INTENTS = [
+    { id: 'IDEA', label: 'Share Idea', icon: Sparkles, defaultMsg: "Hi, I’m interested in your idea. I’d like to contribute and build this together." },
+    { id: 'DETAILS', label: 'Ask Details', icon: MessageSquare, defaultMsg: "Hi, can you share more details about this?" },
+    { id: 'HELP', label: 'Offer Help', icon: Send, defaultMsg: "Hi, I have experience in this area and can help with your project." },
+  ];
+
+  const handleIntentSelect = (id: any) => {
+    const selected = INTENTS.find(i => i.id === id);
+    setIntent(id);
+    setMessage(selected?.defaultMsg || "");
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (state === "CONNECT") {
+    if (state === "NONE" || state === "ACCEPT_IGNORE") {
       setShowModal(true);
-    } else if (state === "CONNECTED" || state === "MESSAGE") {
-      // Logic for messaging would go here
-      router.push(`/chat/${userId}`);
+    } else {
+      router.push(`/chat?user=${userId}`);
     }
   };
 
@@ -37,32 +48,38 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
       case "PENDING":
         return {
           icon: Clock,
-          text: "Pending Approval",
+          text: "Waiting for Reply",
           class: "bg-slate-100 text-slate-400 cursor-default",
-          disabled: true
+          disabled: false // Allow clicking to go to chat and see "Waiting"
         };
       case "CONNECTED":
       case "MESSAGE":
         return {
           icon: MessageSquare,
-          text: "Message",
+          text: "Chat",
           class: "bg-[#292828] text-white hover:bg-[#E53935]",
-          disabled: false
-        };
-      case "ACCEPT_IGNORE":
-        return {
-          icon: UserPlus,
-          text: "Accept",
-          class: "bg-[#E53935] text-white",
           disabled: false
         };
       default:
         return {
           icon: UserPlus,
-          text: label || "Connect",
+          text: label || "Start Conversation",
           class: "bg-[#292828] text-white hover:bg-[#E53935]",
           disabled: false
         };
+    }
+  };
+
+  const handleStart = async () => {
+    if (!message.trim() || !intent) return;
+    setIsSuccess(true);
+    try {
+      // 1. Create connection and send first message
+      await sendRequest(userId, { intent, message });
+      analytics.track('CONVERSATION_STARTED', { targetId: userId, intent });
+    } catch (err) {
+      console.error(err);
+      setIsSuccess(false);
     }
   };
 
@@ -72,9 +89,8 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
     <>
       <button 
         onClick={handleClick}
-        disabled={config.disabled}
         className={cn(
-          "h-12 px-8 rounded-lg font-black text-[10px] uppercase  flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl",
+          "h-12 px-8 rounded-lg font-black text-[10px] uppercase flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl",
           config.class,
           className
         )}
@@ -87,71 +103,67 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
         <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-[#292828]/60 backdrop-blur-md animate-in fade-in duration-300">
            <div className="bg-white w-full max-w-lg rounded-lg p-10 shadow-4xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-8">
-                 <h2 className="text-xl font-black uppercase text-[#292828]">Connect</h2>
+                 <h2 className="text-xl font-black uppercase text-[#292828]">Start Conversation</h2>
                  <button onClick={() => setShowModal(false)} className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center"><X size={20} /></button>
               </div>
               
-              <div className="p-6 bg-slate-50 rounded-lg mb-8 flex items-center gap-4 border border-slate-100">
-                 <Sparkles className="text-[#E53935]" size={20} />
-                 <div>
-                    <p className="text-[11px] font-black text-[#292828] uppercase ">Message Required</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-relaxed mt-1">
-                       Connecting with <span className="text-[#292828]">{userName}</span> establishes a secure connection.
-                    </p>
-                 </div>
-              </div>
-
               {!isSuccess ? (
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                       <label className="text-[9px] font-black uppercase text-slate-300">Message (Optional)</label>
-                       <span className="text-[8px] font-bold text-slate-300 uppercase italic">Increase acceptance by 40%</span>
-                    </div>
-                    <textarea 
-                      rows={4}
-                      placeholder="Write a brief message to connect..."
-                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none italic"
-                    />
-                    <p className="text-[8px] font-bold text-slate-300 uppercase text-center">You’ll be able to message once accepted</p>
-                 </div>
-               ) : (
-                 <div className="py-10 text-center animate-in zoom-in-95 duration-500">
-                    <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-lg mx-auto mb-6 flex items-center justify-center">
-                       <Check size={40} strokeWidth={3} />
-                    </div>
-                    <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Request sent</h3>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed max-w-[240px] mx-auto">Most connections respond within a few hours. While you wait, explore more matches.</p>
-                 </div>
-               )}
-
-              <div className="mt-10 flex gap-4">
-                  {!isSuccess ? (
-                    <>
-                      <button onClick={() => setShowModal(false)} className="flex-1 h-16 rounded-lg bg-slate-50 text-slate-400 font-black text-[10px] uppercase  hover:text-[#292828] transition-all">Cancel</button>
+                <>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">What do you want to do?</p>
+                  <div className="grid grid-cols-1 gap-3 mb-8">
+                    {INTENTS.map((i) => (
                       <button 
-                        onClick={() => {
-                          sendRequest(userId);
-                          setIsSuccess(true);
-                          analytics.track('CONNECTION_SENT', undefined, { targetUserId: userId });
-                        }}
-                        className="flex-2 h-16 px-12 bg-[#E53935] text-white rounded-lg font-black text-[10px] uppercase  shadow-2xl hover:bg-[#292828] transition-all flex items-center justify-center gap-3"
+                        key={i.id}
+                        onClick={() => handleIntentSelect(i.id)}
+                        className={cn(
+                          "flex items-center gap-4 p-5 rounded-lg border-2 transition-all text-left group",
+                          intent === i.id ? "border-[#E53935] bg-red-50/10" : "border-slate-50 hover:border-slate-200 bg-slate-50"
+                        )}
                       >
-                         Send Request <Send size={16} />
+                        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-all", intent === i.id ? "bg-[#E53935] text-white" : "bg-white text-slate-300")}>
+                          <i.icon size={18} />
+                        </div>
+                        <div>
+                          <p className="text-[12px] font-black uppercase text-[#292828]">{i.label}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Connect via {i.label.split(' ')[1]}</p>
+                        </div>
                       </button>
-                    </>
-                  ) : (
-                    <button 
-                      onClick={() => {
-                         setShowModal(false);
-                         setIsSuccess(false);
-                         router.push('/matches');
-                      }}
-                      className="w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  hover:bg-[#E53935] transition-all shadow-4xl flex items-center justify-center gap-3"
-                    >
-                       Discover More <ArrowRight size={18} />
-                    </button>
+                    ))}
+                  </div>
+
+                  {intent && (
+                    <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                      <label className="text-[9px] font-black uppercase text-slate-300 ml-1">Structured Message</label>
+                      <textarea 
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="w-full p-6 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-[#292828] outline-none focus:border-[#E53935] focus:bg-white transition-all resize-none italic"
+                        rows={3}
+                      />
+                      <button 
+                        onClick={handleStart}
+                        className="w-full h-16 bg-[#E53935] text-white rounded-lg font-black text-[10px] uppercase shadow-2xl hover:bg-[#292828] transition-all flex items-center justify-center gap-3"
+                      >
+                        Send Intent <Send size={16} />
+                      </button>
+                    </div>
                   )}
-               </div>
+                </>
+              ) : (
+                <div className="py-10 text-center animate-in zoom-in-95 duration-500">
+                  <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-lg mx-auto mb-6 flex items-center justify-center">
+                    <Check size={40} strokeWidth={3} />
+                  </div>
+                  <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Intent Sent</h3>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed max-w-[240px] mx-auto">Conversation initiated. You’ll be notified when they reply.</p>
+                  <button 
+                    onClick={() => setShowModal(false)}
+                    className="mt-10 w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[10px] uppercase hover:bg-[#E53935] transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              )}
            </div>
         </div>
       )}

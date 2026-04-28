@@ -92,7 +92,22 @@ export default function EventsPage() {
                      <div className="flex items-center gap-3 text-black/20 font-black uppercase text-[10px] tracking-widest"><Calendar size={16} />{event.date}</div>
                      <div className="flex items-center gap-3 text-black/20 font-black uppercase text-[10px] tracking-widest"><MapPin size={16} />{event.location}</div>
                   </div>
-                  <div className="flex items-center justify-between mt-10 pt-8 border-t border-black/[0.03]"><div className="flex items-center gap-2"><Users size={16} className="text-black/10" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{event.attendeeCount.toLocaleString()} People</span></div><button className="h-12 px-8 bg-black text-white rounded-[10px] text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all">Join Meetup</button></div>
+                  <div className="flex items-center justify-between mt-10 pt-8 border-t border-black/[0.03]">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} className="text-black/10" />
+                      <span className="text-[10px] font-black text-black uppercase tracking-widest">{event.attendeeCount.toLocaleString()} People</span>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        alert(`Joining ${event.name}...`);
+                        router.push('/chat');
+                      }}
+                      className="h-12 px-8 bg-black text-white rounded-[10px] text-[10px] font-black uppercase tracking-widest group-hover:bg-[#E53935] transition-all"
+                    >
+                      Join Meetup
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -122,6 +137,32 @@ export default function EventsPage() {
 
 function EventCard({ event }: { event: Event }) {
   const router = useRouter();
+  const supabase = createClient();
+  const [isJoining, setIsJoining] = useState(false);
+
+  const handleJoin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsJoining(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+
+      // Since these are MOCK events, we simulate a join
+      // In a real scenario, we would use event.id to join via MeetupService
+      alert(`Joining ${event.name}...`);
+      setTimeout(() => {
+        router.push('/chat');
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   return (
     <div onClick={() => router.push(`/events/${event.id}`)} className="bg-white rounded-[10px] overflow-hidden border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full">
       <div className="h-48 relative overflow-hidden">
@@ -135,7 +176,7 @@ function EventCard({ event }: { event: Event }) {
            <div className="flex items-center gap-3 text-black/20 font-black uppercase text-[10px] tracking-widest"><Calendar size={14} />{event.date}</div>
            <div className="flex items-center gap-3 text-black/20 font-black uppercase text-[10px] tracking-widest"><MapPin size={14} />{event.location}</div>
         </div>
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-black/[0.03]"><div className="flex items-center gap-2"><Users size={14} className="text-black/10" /><span className="text-[10px] font-black text-[#1D1D1F] uppercase">{event.attendeeCount.toLocaleString()}</span></div><button className="h-10 px-6 bg-white border border-black/[0.08] text-black rounded-[10px] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">Join</button></div>
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-black/[0.03]"><div className="flex items-center gap-2"><Users size={14} className="text-black/10" /><span className="text-[10px] font-black text-[#1D1D1F] uppercase">{event.attendeeCount.toLocaleString()}</span></div><button onClick={handleJoin} disabled={isJoining} className="h-10 px-6 bg-white border border-black/[0.08] text-black rounded-[10px] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">{isJoining ? 'Joining...' : 'Join'}</button></div>
       </div>
     </div>
   );

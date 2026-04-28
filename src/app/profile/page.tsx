@@ -47,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { detectBaseTag } from "@/utils/match-engine";
+import { INDUSTRY_DATA } from "@/utils/industry-data";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function PremiumProfilePage() {
@@ -372,19 +373,25 @@ export default function PremiumProfilePage() {
                      <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 ">
                         <BrainCircuit size={16} className="text-[#E53935]" /> Your Skills
                      </h3>
-                     <button 
-                        onClick={() => {
-                           const s = prompt("Add skill:");
-                           if (s) {
-                              const newExpertise = [...userData.expertise, s];
-                              setUserData({...userData, expertise: newExpertise});
-                              handleSaveProfile({...userData, expertise: newExpertise});
-                           }
-                        }}
-                        className="h-6 w-6 bg-[#0A0A0A] text-white rounded-md flex items-center justify-center hover:bg-[#E53935] transition-all"
+                  </div>
+                   
+                  <div className="mb-6">
+                     <select 
+                       onChange={(e) => {
+                         const s = e.target.value;
+                         if (s && s !== "Add expertise...") {
+                           const newExpertise = Array.from(new Set([...userData.expertise, s]));
+                           setUserData(prev => ({...prev, expertise: newExpertise}));
+                           handleSaveProfile({...userData, expertise: newExpertise});
+                         }
+                       }}
+                       className="w-full h-10 bg-slate-50 border border-black/5 rounded-xl px-4 text-[10px] font-black uppercase outline-none focus:border-[#E53935] transition-all cursor-pointer hover:bg-white"
                      >
-                        <Plus size={12} />
-                     </button>
+                       <option>Add expertise...</option>
+                       {INDUSTRY_DATA.flatMap(i => i.focusAreas).sort().map(area => (
+                         <option key={area} value={area}>{area}</option>
+                       ))}
+                     </select>
                   </div>
                   <div className="flex flex-wrap gap-2.5">
                       {userData.expertise && userData.expertise.length > 0 ? userData.expertise.map(skill => (
@@ -671,6 +678,62 @@ export default function PremiumProfilePage() {
                   >
                      {isSaving ? "Saving..." : <span className="flex items-center justify-center gap-2">Save Changes <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>}
                   </button>
+               </div>
+            </motion.div>
+         </div>
+      )}
+      {/* SETTINGS MODAL: PREMIUM REDESIGN */}
+      {showSettingsModal && (
+         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/80 animate-in fade-in duration-500">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex flex-col border border-[#0A0A0A]/5"
+            >
+               <div className="p-10 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                     <h2 className="text-2xl font-black text-[#0A0A0A] uppercase italic leading-none mb-2">Settings</h2>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Management Hub</p>
+                  </div>
+                  <button onClick={() => setShowSettingsModal(false)} className="h-10 w-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-300 hover:bg-[#E53935] hover:text-white transition-all"><X size={16} /></button>
+               </div>
+
+               <div className="p-8 space-y-4">
+                  <div className="p-6 bg-slate-50 rounded-2xl border border-black/5 flex items-center justify-between group hover:border-[#E53935]/20 transition-all cursor-pointer">
+                     <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                           <ShieldCheck size={18} className="text-[#E53935]" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-widest">Privacy & Security</span>
+                     </div>
+                     <ChevronRight size={16} className="text-black/10 group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <div className="p-6 bg-slate-50 rounded-2xl border border-black/5 flex items-center justify-between group hover:border-[#E53935]/20 transition-all cursor-pointer">
+                     <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                           <Bell size={18} className="text-[#E53935]" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-widest">Notification Preferences</span>
+                     </div>
+                     <ChevronRight size={16} className="text-black/10 group-hover:translate-x-1 transition-all" />
+                  </div>
+                  
+                  <div className="h-px bg-black/5 my-4" />
+
+                  <button 
+                    onClick={() => logout()}
+                    className="w-full h-16 bg-red-50 text-[#E53935] rounded-2xl border border-red-100 flex items-center justify-between px-8 hover:bg-[#E53935] hover:text-white transition-all group active:scale-95 shadow-xl shadow-red-500/5"
+                  >
+                     <div className="flex items-center gap-4">
+                        <LogOut size={20} className="group-hover:translate-x-[-4px] transition-transform" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em]">Sign Out / Disconnect</span>
+                     </div>
+                     <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                  </button>
+               </div>
+
+               <div className="p-8 bg-slate-50/50 text-center">
+                  <p className="text-[8px] font-black text-black/10 uppercase tracking-[0.4em]">Checkpoint OS V.5.2 • 2026</p>
                </div>
             </motion.div>
          </div>

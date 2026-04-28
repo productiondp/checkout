@@ -35,6 +35,7 @@ import { TrustBadge } from "@/components/trust/TrustBadge";
 import { TrustInsights } from "@/components/trust/TrustInsights";
 import { OutcomeSelector } from "@/components/trust/OutcomeSelector";
 import { MeetupFeedback } from "@/components/trust/MeetupFeedback";
+import MeetupPreviewModal from "@/components/modals/MeetupPreviewModal";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -69,7 +70,7 @@ const TYPE_CONFIG: Record<string, {
     bgColor: "bg-amber-50/50",
     chipBg: "bg-[#F5F5F7]",
     chipText: "text-amber-600",
-    ctaLabel: "Reply",
+    ctaLabel: "Respond",
     ctaBg: "bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20",
     glowColor: "rgba(245, 158, 11, 0.1)",
   },
@@ -81,7 +82,7 @@ const TYPE_CONFIG: Record<string, {
     bgColor: "bg-indigo-50/50",
     chipBg: "bg-[#F5F5F7]",
     chipText: "text-indigo-600",
-    ctaLabel: "Connect",
+    ctaLabel: "Start Building",
     ctaBg: "bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20",
     glowColor: "rgba(79, 70, 229, 0.1)",
   },
@@ -202,9 +203,11 @@ export default function UniversalFeedCard({
   const { user: authUser } = useAuth();
    const [participantCount, setParticipantCount] = React.useState(0);
    const [maxSlots, setMaxSlots] = React.useState(post.max_slots || 0);
-   const [joinStatus, setJoinStatus] = React.useState<'IDLE' | 'JOINED' | 'FULL'>('IDLE');
+   const [joinStatus, setJoinStatus] = React.useState<'IDLE' | 'JOINED' | 'FULL' | 'REQUESTED'>('IDLE');
    const [isJoining, setIsJoining] = React.useState(false);
    const [activeSignals, setActiveSignals] = React.useState<any[]>([]);
+   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+   const [countdown, setCountdown] = React.useState<string | null>(null);
  
    React.useEffect(() => {
      if (nType === 'MEETUP' && post.id && authUser) {
@@ -217,7 +220,17 @@ export default function UniversalFeedCard({
          setMaxSlots(status.maxSlots);
          setJoinStatus(status.status as any);
 
-         // 🧠 V1.12 ADAPTIVE SIGNAL SELECTION
+         if (post.dateTime) {
+           const meetupTime = new Date(post.dateTime).getTime();
+           const now = new Date().getTime();
+           const diff = meetupTime - now;
+           if (diff > 0 && diff < 86400000) {
+              const hours = Math.floor(diff / 3600000);
+              const minutes = Math.floor((diff % 3600000) / 60000);
+              setCountdown(`${hours}:${minutes.toString().padStart(2, '0')}:00`);
+           }
+         }
+
          const available = [
            { type: 'SEAT_URGENCY', active: status.maxSlots > 0 && (status.count / status.maxSlots) >= 0.6 },
            { type: 'SOCIAL_PROOF', active: status.count >= 3 },
@@ -227,7 +240,6 @@ export default function UniversalFeedCard({
          const selected = conversionLearning.selectSignals(available as any);
          setActiveSignals(selected);
          
-         // TRACK IMPRESSION
          conversionLearning.trackImpression(post.id, selected);
        };
        fetchMeetupData();
@@ -236,30 +248,19 @@ export default function UniversalFeedCard({
   
   const handleJoin = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!authUser || isJoining || joinStatus === 'JOINED' || joinStatus === 'FULL') return;
+    if (!authUser || isJoining || joinStatus === 'FULL') return;
 
-    setIsJoining(true);
-    try {
-      const { MeetupService } = await import("@/services/meetup-service");
-      const { conversionLearning } = await import("@/utils/conversion-learning");
-      
-      const { roomId } = await MeetupService.joinMeetup(post.id, authUser.id);
-      setJoinStatus('JOINED');
-      setParticipantCount(prev => prev + 1);
-      
-      // 🧠 V1.12 TRACK CONVERSION
-      conversionLearning.trackConversion(post.id);
-
-      // Open the group chat
-      if (roomId) {
-        router.push(`/chat?room=${roomId}`);
+    if (joinStatus === 'JOINED') {
+      const { data: meetup } = await supabase.from('posts').select('room_id').eq('id', post.id).single();
+      if (meetup?.room_id) {
+        router.push(`/chat?room=${meetup.room_id}`);
+      } else {
+        alert("Group chat is being prepared. Check back in a moment.");
       }
-    } catch (err: any) {
-      if (err.message === "MEETUP_FULL") setJoinStatus('FULL');
-      console.error("Join failed:", err);
-    } finally {
-      setIsJoining(false);
+      return;
     }
+
+    setIsPreviewOpen(true);
   };
 
   const handleInteraction = (e: React.MouseEvent) => {
@@ -276,9 +277,13 @@ export default function UniversalFeedCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, shadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)" }}
-      onClick={handleInteraction}
+      onClick={(e) => {
+        handleInteraction(e);
+        if (nType === 'MEETUP') setIsPreviewOpen(true);
+        else onExpand?.();
+      }}
       className={cn(
-        "group relative rounded-[2rem] border overflow-hidden transition-all duration-700 bg-white",
+        "group relative rounded-[2rem] border overflow-hidden transition-all duration-700 bg-white cursor-pointer",
         isOwner 
           ? "border-[#E53935]/10" 
           : isTopPriority
@@ -287,21 +292,17 @@ export default function UniversalFeedCard({
         isExpanded && "ring-8 ring-[#E53935]/5"
       )}
     >
-      {/* ── STEP 1: STATUS OVERLAY ── */}
       {isOwner && (
         <div className="absolute top-0 right-0 px-5 py-2 bg-[#F5F5F7] text-[#86868B] text-[9px] font-black uppercase tracking-[0.2em] z-20 rounded-bl-2xl border-l border-b border-black/[0.03]">
            {post.hasNewActivity ? "Activity Detected" : "My Broadcast"}
         </div>
       )}
 
-      {/* ── STEP 2: LEFT ACCENT ── */}
       {!isOwner && (
         <div className={cn("absolute left-0 top-0 bottom-0 w-1.5 opacity-40 transition-all duration-500 group-hover:opacity-100", cfg.gradient.includes('amber') ? "bg-amber-500" : "bg-[#E53935]")} />
       )}
 
       <div className="p-4 sm:p-6 lg:p-8">
-        
-        {/* ── HEADER: BRAND & METADATA ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
            <div className="flex items-center gap-4">
               <div className="relative">
@@ -341,7 +342,6 @@ export default function UniversalFeedCard({
               </div>
            </div>
 
-           {/* MATCH SCORE PILL (NEURAL) */}
            {!isOwner && (
               <div className="flex flex-col items-end">
                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-black/[0.02] rounded-full">
@@ -359,7 +359,6 @@ export default function UniversalFeedCard({
            )}
         </div>
 
-        {/* ── BODY: TITLE & INTENT ── */}
         <div className="space-y-4 mb-6">
            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
@@ -384,7 +383,6 @@ export default function UniversalFeedCard({
            )}
         </div>
 
-        {/* ── METADATA CHIPS: MINIMAL ── */}
         <div className="flex flex-wrap gap-2.5 mb-6 pb-6 border-b border-black/[0.03]">
            {nType === "REQUIREMENT" && (
               <>
@@ -395,9 +393,10 @@ export default function UniversalFeedCard({
            )}
            {nType === "MEETUP" && (
               <>
-                 <MetaChip icon={Calendar} label={post.dateTime || "Strategic Timing"} isPrimary />
-                 <MetaChip icon={Users} label={`${participantCount}/${maxSlots} Active Slots`} />
-                 <MetaChip icon={Zap} label={post.mode || "Neural Interaction"} />
+                 <MetaChip icon={Calendar} label={post.dateTime ? `Today • ${post.dateTime.split(' ')[1]}` : "Strategic Timing"} isPrimary />
+                 <MetaChip icon={Users} label={`${maxSlots - participantCount} spots left`} />
+                 {post.metadata?.meetup_type === 'ADVISOR' && <MetaChip icon={ShieldCheck} label="Advisor-led" className="bg-[#E53935]/5 text-[#E53935] border-[#E53935]/10" />}
+                 {countdown && <MetaChip icon={Clock} label={`Starts in ${countdown}`} className="bg-amber-50 text-amber-600 border-amber-100" />}
               </>
            )}
            {nType === "PARTNER" && (
@@ -408,9 +407,7 @@ export default function UniversalFeedCard({
            )}
         </div>
 
-        {/* ── FOOTER: ACTIONS ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-           {/* LEFT: STATUS BADGE */}
            {!isOwner ? (
               <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl self-start sm:self-auto">
                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -418,7 +415,6 @@ export default function UniversalFeedCard({
               </div>
            ) : <div />}
 
-           {/* RIGHT: ACTIONS */}
            <div className="flex items-center gap-2.5 w-full sm:w-auto">
               {!isOwner ? (
                  <>
@@ -435,8 +431,9 @@ export default function UniversalFeedCard({
                        </motion.button>
                        {nType !== 'MEETUP' && (
                           <ConnectButton 
-                             userId={currentUserId} 
-                             targetId={author?.id || post.author_id}
+                             userId={author?.id || post.author_id} 
+                             userName={authorName}
+                             label={cfg.ctaLabel}
                           />
                        )}
                     </div>
@@ -444,7 +441,7 @@ export default function UniversalFeedCard({
                     <motion.button
                        whileHover={{ scale: 1.02 }}
                        whileTap={{ scale: 0.98 }}
-                       onClick={nType === 'MEETUP' ? handleJoin : (e) => { e.stopPropagation(); onAction?.(post); }}
+                       onClick={handleJoin}
                        className={cn(
                           "flex-1 sm:flex-none h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg",
                           nType === 'MEETUP' 
@@ -454,7 +451,13 @@ export default function UniversalFeedCard({
                     >
                        <div className="flex items-center justify-center gap-2.5">
                           {nType === 'MEETUP' ? <Users size={14} /> : <MessageSquare size={14} />}
-                          <span className="whitespace-nowrap">{nType === 'MEETUP' ? (joinStatus === 'JOINED' ? "Confirmed" : "Secure Spot") : cfg.ctaLabel}</span>
+                          <span className="whitespace-nowrap">
+                             {nType === 'MEETUP' ? (
+                                joinStatus === 'JOINED' ? "You're in • Chat is open" : 
+                                joinStatus === 'REQUESTED' ? "Awaiting Approval" : 
+                                joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
+                             ) : cfg.ctaLabel}
+                          </span>
                        </div>
                     </motion.button>
                  </>
@@ -493,17 +496,29 @@ export default function UniversalFeedCard({
             </motion.div>
          )}
       </AnimatePresence>
+      {/* MEETUP PREVIEW MODAL */}
+      <MeetupPreviewModal 
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        meetup={post}
+        currentUserId={authUser?.id}
+        onJoinSuccess={(newStatus, roomId) => {
+          setJoinStatus(newStatus as any);
+          if (newStatus === 'JOINED') setParticipantCount(prev => prev + 1);
+        }}
+      />
     </motion.div>
   );
 }
 
-function MetaChip({ icon: Icon, label, isPrimary }: { icon: any; label: string; isPrimary?: boolean }) {
+function MetaChip({ icon: Icon, label, isPrimary, className }: { icon: any; label: string; isPrimary?: boolean; className?: string }) {
   return (
     <div className={cn(
        "inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border",
        isPrimary 
          ? "bg-slate-50 border-black/[0.03] text-[#1D1D1F]" 
-         : "bg-white border-black/[0.02] text-[#86868B]"
+         : "bg-white border-black/[0.02] text-[#86868B]",
+       className
     )}>
        <Icon size={13} className={isPrimary ? "text-[#E53935]" : "text-slate-300"} />
        {label}

@@ -8,7 +8,9 @@ import {
   ChevronDown,
   Search,
   Zap,
-  MapPin
+  MapPin,
+  Settings,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,17 +25,19 @@ interface UnifiedTopbarProps {
 }
 
 export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   const router = useRouter();
   const supabase = createClient();
 
   const [isLocationOpen, setIsLocationOpen] = React.useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const [notifications, setNotifications] = React.useState<any[]>([]);
 
   const locationRef = React.useRef<HTMLDivElement>(null);
   const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
 
   // Notifications Logic
   React.useEffect(() => {
@@ -80,13 +84,16 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <header className="h-16 lg:h-20 bg-white border-b border-black/[0.05] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-[100] backdrop-blur-xl bg-white/80">
+    <header className="h-16 lg:h-20 bg-white border-b border-black/[0.05] flex items-center justify-between px-4 lg:px-8 px-safe sticky top-0 z-[100] backdrop-blur-xl bg-white/80">
       {/* LEFT SIDE: SEARCH + LOCATION + CONTEXTUAL */}
       <div className="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
         <Link href="/home" className="shrink-0 lg:hidden">
@@ -102,15 +109,19 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
             className="w-full h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[13px] font-bold text-black focus:bg-white focus:border-[#E53935]/20 transition-all outline-none"
           />
         </div>
+        {/* CONTEXTUAL FILTERS (Passed from Page) */}
+        <div className="flex items-center gap-2 lg:gap-3 min-w-0 ml-auto">
+          {children}
+        </div>
 
         {/* LOCATION SELECTOR */}
-        <div className="relative hidden md:block" ref={locationRef}>
+        <div className="relative block" ref={locationRef}>
           <button 
             onClick={() => setIsLocationOpen(!isLocationOpen)}
-            className="flex items-center gap-2.5 px-4 h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group"
+            className="flex items-center gap-2.5 px-3 lg:px-4 h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group"
           >
             <MapPin size={14} className="text-[#E53935]" />
-            <span className="text-[10px] font-black text-black uppercase tracking-widest">{authUser?.location || "Trivandrum"}</span>
+            <span className="text-[10px] font-black text-black uppercase tracking-widest hidden md:inline">{authUser?.location || "Trivandrum"}</span>
             <ChevronDown size={14} className={cn("text-black/20 transition-transform duration-300", isLocationOpen && "rotate-180")} />
           </button>
 
@@ -130,18 +141,18 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
             </div>
           )}
         </div>
-
-        {children && <div className="h-8 w-px bg-black/[0.05] hidden lg:block" />}
-        <div className="flex items-center gap-4 lg:gap-6 min-w-0">
-          {children}
-        </div>
       </div>
 
       {/* RIGHT SIDE: ICONS + PROFILE PILL */}
       <div className="flex items-center gap-2 lg:gap-6 shrink-0">
         <div className="flex items-center gap-1 lg:gap-2">
-          <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all hidden sm:flex">
+          <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex">
             <MessageSquare size={20} strokeWidth={1.5} />
+            {unreadMessagesCount > 0 && (
+               <div className="absolute top-2 right-2 h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full flex items-center justify-center text-[8px] font-black text-white ring-2 ring-white">
+                 {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+               </div>
+            )}
           </Link>
           <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex">
             <Users size={20} strokeWidth={1.5} />
@@ -193,23 +204,63 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
         <div className="h-8 w-px bg-black/[0.1] hidden sm:block" />
 
         {/* PROFILE PILL */}
-        <button 
-           onClick={() => router.push(`/profile/${authUser?.id}`)}
-           className="flex items-center gap-3 lg:gap-4 h-10 lg:h-14 pl-1 lg:pl-1.5 pr-1 lg:pr-6 bg-[#F5F5F7] lg:bg-[#F5F5F7] border border-black/[0.03] rounded-full hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group shrink-0"
-        >
-           <div className="h-8 w-8 lg:h-11 lg:w-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-black/5">
-              <img src={authUser?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser?.full_name}`} className="w-full h-full object-cover" alt="" />
-           </div>
-           <div className="text-left flex flex-col justify-center hidden lg:flex">
-              <p className="text-[14px] font-black uppercase text-black leading-none mb-1 tracking-tight font-outfit">
-                {authUser?.full_name?.split(' ')[0] || "USER"}
-              </p>
-              <p className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none">
-                {authUser?.role || "PROFESSIONAL"}
-              </p>
-           </div>
-           <ChevronDown size={16} className="text-black/20 group-hover:text-black transition-colors ml-1 hidden lg:block" />
-        </button>
+        <div className="relative" ref={profileRef}>
+           <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className={cn(
+                "flex items-center gap-3 lg:gap-4 h-10 lg:h-14 pl-1 lg:pl-1.5 pr-1 lg:pr-6 bg-[#F5F5F7] lg:bg-[#F5F5F7] border border-black/[0.03] rounded-full hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group shrink-0",
+                isProfileOpen && "bg-white border-black/[0.08] shadow-xl"
+              )}
+           >
+              <div className="h-8 w-8 lg:h-11 lg:w-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-black/5">
+                 <img src={authUser?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser?.full_name}`} className="w-full h-full object-cover" alt="" />
+              </div>
+              <div className="text-left flex flex-col justify-center hidden lg:flex">
+                 <p className="text-[14px] font-black uppercase text-black leading-none mb-1 tracking-tight font-outfit">
+                   {authUser?.full_name?.split(' ')[0] || "USER"}
+                 </p>
+                 <p className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none">
+                   {authUser?.role || "PROFESSIONAL"}
+                 </p>
+              </div>
+              <ChevronDown size={16} className={cn("text-black/20 group-hover:text-black transition-all duration-300 ml-1 hidden lg:block", isProfileOpen && "rotate-180")} />
+           </button>
+
+           {isProfileOpen && (
+              <div className="absolute top-[120%] right-0 w-64 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-2 animate-in fade-in slide-in-from-top-2 z-[200]">
+                 <div className="px-4 py-3 border-b border-black/[0.03] mb-2">
+                    <p className="text-[10px] font-black text-black uppercase tracking-widest">{authUser?.full_name}</p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{authUser?.email}</p>
+                 </div>
+                 
+                 <button 
+                    onClick={() => { router.push(`/profile/${authUser?.id}`); setIsProfileOpen(false); }}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
+                 >
+                    <Users size={16} className="text-[#E53935]" />
+                    View Profile
+                 </button>
+                 
+                 <button 
+                    onClick={() => { router.push('/profile'); setIsProfileOpen(false); }} // Assuming /profile leads to settings/own profile
+                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
+                 >
+                    <Settings size={16} className="text-[#E53935]" />
+                    Settings
+                 </button>
+
+                 <div className="h-px bg-black/[0.03] my-2" />
+                 
+                 <button 
+                    onClick={() => { logout(); setIsProfileOpen(false); }}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-red-500 hover:bg-red-50 flex items-center gap-3 group transition-all"
+                 >
+                    <LogOut size={16} />
+                    Sign Out
+                 </button>
+              </div>
+           )}
+        </div>
       </div>
     </header>
   );

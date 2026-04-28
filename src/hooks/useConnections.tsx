@@ -10,7 +10,7 @@ interface ConnectionContextType {
   connectionMap: Record<string, ConnectionState>;
   refreshConnections: () => Promise<void>;
   getConnectionState: (userId: string) => ConnectionState;
-  sendRequest: (targetId: string) => Promise<void>;
+  sendRequest: (targetId: string, metadata?: { intent: string; message: string }) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -53,18 +53,49 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     }
   }, [user?.id, supabase]);
 
-  const sendRequest = useCallback(async (targetId: string) => {
+  const sendRequest = useCallback(async (targetId: string, metadata?: { intent: string; message: string }) => {
     if (!user?.id) return;
+    
     try {
-      const { error } = await supabase.from('connections').insert({
+      // 1. SPAM CONTROL: Check daily limit
+      const today = new Date().toISOString().split('T')[0];
+      const { count } = await supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', user.id)
+        .gte('created_at', today);
+
+      if (count && count >= 5) {
+        alert("Daily limit reached. You can start 5 new conversations per day to maintain quality.");
+        return;
+      }
+
+      // 2. CREATE CONNECTION
+      const { data: conn, error: connError } = await supabase.from('connections').insert({
         sender_id: user.id,
         receiver_id: targetId,
         status: 'PENDING'
-      });
-      if (error) throw error;
+      }).select().single();
+
+      if (connError) throw connError;
+
+      // 3. SEND FIRST MESSAGE (INTENT)
+      if (metadata) {
+        const { error: msgError } = await supabase.from('messages').insert({
+          connection_id: conn.id,
+          sender_id: user.id,
+          receiver_id: targetId,
+          content: metadata.message,
+          type: 'INTENT',
+          metadata: { intent: metadata.intent }
+        });
+        if (msgError) console.error("First message failed:", msgError);
+      }
+
       fetchConnections();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Send request failed:", err);
+      if (err.code === '23505') alert("You already have an active interaction with this user.");
     }
   }, [user?.id, fetchConnections, supabase]);
 

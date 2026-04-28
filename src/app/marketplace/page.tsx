@@ -28,8 +28,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import TerminalLayout from "@/components/layout/TerminalLayout";
+import MeetupPreviewModal from "@/components/modals/MeetupPreviewModal";
 
-type MarketplaceType = "All" | "REQUIREMENT" | "PARTNERSHIP" | "MEETUP";
+type MarketplaceType = "All" | "REQUIREMENT" | "PARTNERSHIP" | "MEETUP" | "PARTNER";
 
 interface MarketplaceItem {
   id: string;
@@ -224,7 +225,7 @@ export default function MarketplacePage() {
     >
       <div className="bg-[#FDFDFF] min-h-screen">
         {/* SECOND ROW: SMART FILTERS & VIEW SWITCHER */}
-        <div className="bg-white border-b border-black/[0.03] px-8 py-3 sticky top-0 z-40">
+        <div className="bg-white border-b border-black/[0.03] px-8 py-3 sticky top-[64px] lg:top-[80px] z-40">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
              <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
                 <SmartFilter 
@@ -390,12 +391,27 @@ function SmartFilter({ icon: Icon, label, value, options, onChange, active, onTo
 
 function OpportunityCard({ item, isPinned, index, viewMode }: { item: MarketplaceItem; isPinned?: boolean; index?: number; viewMode?: "list" | "grid" }) {
   const router = useRouter();
+  const { user: authUser } = useAuth();
+  const [joinStatus, setJoinStatus] = useState<any>('IDLE');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (item.type === 'MEETUP' && authUser) {
+      const fetchStatus = async () => {
+        const { MeetupService } = await import("@/services/meetup-service");
+        const status = await MeetupService.getMeetupStatus(item.id, authUser.id);
+        setJoinStatus(status.status);
+      };
+      fetchStatus();
+    }
+  }, [item.id, authUser?.id, item.type]);
 
   const getCTA = () => {
     switch(item.type) {
       case 'REQUIREMENT': return { label: 'Respond', color: 'bg-black text-white hover:bg-[#E53935]' };
-      case 'PARTNER': return { label: 'Build', color: 'bg-[#E53935] text-white hover:bg-black' };
-      case 'MEETUP': return { label: 'Join', color: 'bg-indigo-600 text-white hover:bg-black' };
+      case 'PARTNER': 
+      case 'PARTNERSHIP': return { label: 'Start Building', color: 'bg-[#E53935] text-white hover:bg-black' };
+      case 'MEETUP': return { label: 'Join Meetup', color: 'bg-indigo-600 text-white hover:bg-black' };
       default: return { label: 'View', color: 'bg-black text-white' };
     }
   };
@@ -457,15 +473,46 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
 
         <div className="shrink-0">
            <motion.button 
-             whileHover={{ scale: 1.05 }}
-             whileTap={{ scale: 0.95 }}
-             onClick={(e) => { e.stopPropagation(); router.push(`/chat?user=${item.author.id}`); }}
-             className={cn("h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] shadow-xl transition-all flex items-center justify-center gap-3", cta.color)}
+             whileHover={{ scale: 1.02 }}
+             whileTap={{ scale: 0.98 }}
+             onClick={(e) => { 
+               e.stopPropagation(); 
+               if (item.type === 'MEETUP') {
+                 if (joinStatus === 'JOINED') {
+                   // Navigate to chat
+                   const supabase = createClient();
+                   supabase.from('posts').select('room_id').eq('id', item.id).single().then(({ data }) => {
+                     if (data?.room_id) router.push(`/chat?room=${data.room_id}`);
+                     else alert("Preparing group chat...");
+                   });
+                 } else {
+                   setIsPreviewOpen(true);
+                 }
+               } else {
+                 router.push(`/chat?user=${item.author.id}`); 
+               }
+             }}
+             className={cn(
+               "h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] shadow-xl transition-all flex items-center justify-center gap-3", 
+               item.type === 'MEETUP' && joinStatus === 'JOINED' ? "bg-emerald-600 text-white shadow-emerald-600/20" : cta.color
+             )}
            >
-              {cta.label}
+              {item.type === 'MEETUP' ? (
+                joinStatus === 'JOINED' ? "You're in • Chat open" :
+                joinStatus === 'REQUESTED' ? "Awaiting Approval" :
+                joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
+              ) : cta.label}
               <ArrowRight size={16} strokeWidth={3} />
            </motion.button>
         </div>
+
+        <MeetupPreviewModal 
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          meetup={item}
+          currentUserId={authUser?.id}
+          onJoinSuccess={(status) => setJoinStatus(status)}
+        />
       </motion.div>
     );
   }
@@ -505,10 +552,32 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
          <motion.button 
            whileHover={{ scale: 1.02 }}
            whileTap={{ scale: 0.98 }}
-           onClick={(e) => { e.stopPropagation(); router.push(`/chat?user=${item.author.id}`); }}
-           className={cn("h-12 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2", cta.color)}
+           onClick={(e) => { 
+             e.stopPropagation(); 
+             if (item.type === 'MEETUP') {
+                if (joinStatus === 'JOINED') {
+                   const supabase = createClient();
+                   supabase.from('posts').select('room_id').eq('id', item.id).single().then(({ data }) => {
+                     if (data?.room_id) router.push(`/chat?room=${data.room_id}`);
+                     else alert("Preparing group chat...");
+                   });
+                } else {
+                  setIsPreviewOpen(true);
+               }
+             } else {
+               router.push(`/chat?user=${item.author?.id}`); 
+             }
+           }}
+           className={cn(
+              "h-12 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2", 
+              item.type === 'MEETUP' && joinStatus === 'JOINED' ? "bg-emerald-600 text-white" : cta.color
+           )}
          >
-            {cta.label}
+            {item.type === 'MEETUP' ? (
+               joinStatus === 'JOINED' ? "You're in • Chat open" :
+               joinStatus === 'REQUESTED' ? "Awaiting Approval" :
+               joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
+            ) : cta.label}
             <ArrowRight size={14} strokeWidth={3} />
          </motion.button>
          <div className="flex items-center justify-between">
@@ -520,6 +589,13 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
             </span>
          </div>
       </div>
+      <MeetupPreviewModal 
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        meetup={item}
+        currentUserId={authUser?.id}
+        onJoinSuccess={(status) => setJoinStatus(status)}
+      />
     </motion.div>
   );
 }

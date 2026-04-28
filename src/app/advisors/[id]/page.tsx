@@ -93,8 +93,21 @@ export default function AdvisorProfilePage() {
             </div>
             <p className="text-2xl font-black text-black uppercase font-outfit leading-tight italic mb-10">"{advisor.bio}"</p>
             <div className="flex gap-4">
-               <button className="h-14 px-10 bg-black text-white rounded-[10px] font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#E53935] transition-all flex items-center gap-2"><Zap size={16} fill="currentColor" /> Join Meetup</button>
-               <button className="h-14 px-10 bg-[#F5F5F7] text-black rounded-[10px] font-black text-[10px] uppercase tracking-widest transition-all">Message</button>
+               <button 
+                onClick={() => {
+                  const el = document.getElementById('sessions-list');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="h-14 px-10 bg-black text-white rounded-[10px] font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#E53935] transition-all flex items-center gap-2"
+               >
+                 <Zap size={16} fill="currentColor" /> Join Meetup
+               </button>
+               <button 
+                  onClick={() => router.push(`/chat?user=${advisor.id}`)}
+                  className="h-14 px-10 bg-[#F5F5F7] text-black rounded-[10px] font-black text-[10px] uppercase tracking-widest transition-all"
+               >
+                  Start Conversation
+               </button>
             </div>
          </div>
 
@@ -114,13 +127,40 @@ export default function AdvisorProfilePage() {
          </section>
 
          {/* MEETUPS */}
-         <section>
+         <section id="sessions-list">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 mb-8">Available Sessions</h3>
             <div className="space-y-4">
                {meetups.length === 0 ? <div className="p-20 text-center bg-[#F5F5F7] rounded-[10px] text-black/10 text-[10px] font-black uppercase tracking-widest">No upcoming sessions</div> : meetups.map(m => (
                   <div key={m.id} className="p-8 bg-white border border-black/[0.03] rounded-[10px] hover:border-[#E53935]/20 hover:shadow-xl transition-all flex items-center justify-between">
-                     <div><h4 className="text-[16px] font-black text-black uppercase font-outfit mb-2">{m.title}</h4><div className="flex items-center gap-3"><span className="text-[9px] font-black text-black/20 uppercase tracking-widest"><Clock size={12} className="inline mr-1" /> {m.metadata?.timeline || 'Upcoming'}</span><span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[8px] font-black uppercase">{m.max_slots - (m.participant_count || 0)} seats left</span></div></div>
-                     <button onClick={() => router.push(`/meetups/${m.id}`)} className="h-12 px-8 bg-black text-white rounded-[10px] text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg transition-all">Join</button>
+                     <div>
+                        <h4 className="text-[16px] font-black text-black uppercase font-outfit mb-2">{m.title}</h4>
+                        <div className="flex items-center gap-3">
+                           <span className="text-[9px] font-black text-black/20 uppercase tracking-widest"><Clock size={12} className="inline mr-1" /> {m.metadata?.timeline || 'Upcoming'}</span>
+                           <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[8px] font-black uppercase">{m.max_slots - (m.participant_count || 0)} seats left</span>
+                        </div>
+                     </div>
+                     <button 
+                        onClick={async () => {
+                           try {
+                              const { MeetupService } = await import("@/services/meetup-service");
+                              const { data: { user } } = await (await import("@/utils/supabase/client")).createClient().auth.getUser();
+                              if (!user) { router.push('/auth'); return; }
+                              const { roomId } = await MeetupService.joinMeetup(m.id, user.id);
+                              if (roomId) router.push(`/chat?room=${roomId}`);
+                              else {
+                                 // Fallback to post metadata if room_id not returned
+                                 if (m.room_id) router.push(`/chat?room=${m.room_id}`);
+                                 else alert("Preparing group chat...");
+                              }
+                           } catch (err) {
+                              console.error(err);
+                              alert("Failed to join session.");
+                           }
+                        }} 
+                        className="h-12 px-8 bg-black text-white rounded-[10px] text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg transition-all"
+                     >
+                        Join Session
+                     </button>
                   </div>
                ))}
             </div>

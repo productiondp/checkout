@@ -60,6 +60,17 @@ export default function ClientLayout({
       (window as any).resetToBaseline = () => {
         optimization.resetToBaseline();
       };
+
+      // Register Service Worker for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
     }
   }, []);
 
@@ -95,7 +106,7 @@ export default function ClientLayout({
 
   if (!mounted) {
     return (
-      <div className="h-screen-safe w-screen flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20">
+      <div className="h-screen-safe w-full max-w-[1920px] mx-auto flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20 shadow-2xl">
          <div className="h-12 w-32 relative animate-pulse mb-4">
             <img 
               src="/images/logo.png" 
@@ -113,11 +124,11 @@ export default function ClientLayout({
   return (
     <ConnectionProvider>
       {isAuthPage ? (
-        <div className="min-h-screen-safe w-screen selection:bg-[#E53935] selection:text-white">
+        <div className="min-h-screen-safe w-full max-w-[1920px] mx-auto selection:bg-[#E53935] selection:text-white shadow-2xl">
           {children}
         </div>
       ) : (
-        <div className="h-screen-safe w-screen flex flex-col bg-white lg:bg-[#F2F5F7] selection:bg-[#E53935] selection:text-white font-sans antialiased">
+        <div className="h-screen-safe w-full max-w-[1920px] mx-auto flex flex-col bg-white lg:bg-[#F2F5F7] selection:bg-[#E53935] selection:text-white font-sans antialiased shadow-2xl">
           <GlobalHeader />
           
           <div className="flex flex-1 overflow-hidden relative">

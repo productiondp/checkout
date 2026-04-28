@@ -319,9 +319,11 @@ export default function UniversalFeedCard({
               </div>
               <div>
                  <div className="flex items-center gap-2.5 mb-0.5">
-                    <h4 className="text-[16px] font-black uppercase tracking-tight text-[#1D1D1F]">{authorName || "Member"}</h4>
+                    <h4 className="text-[16px] font-black uppercase tracking-tight text-[#1D1D1F]">
+                       {post.author_profile?.username || post.author_profile?.full_name || authorName || "Member"}
+                    </h4>
                     <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[7px] font-black uppercase tracking-widest rounded-md">
-                       {rank || "Member"}
+                       {rank || post.author_profile?.role || "Member"}
                     </span>
                  </div>
                  <div className="flex items-center gap-3.5 text-[10px] font-bold text-[#86868B] uppercase tracking-wider">

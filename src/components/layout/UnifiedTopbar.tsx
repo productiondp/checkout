@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface UnifiedTopbarProps {
   title?: string;
@@ -22,15 +24,60 @@ interface UnifiedTopbarProps {
 
 export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
   const { user: authUser } = useAuth();
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   const router = useRouter();
-  const [isLocationOpen, setIsLocationOpen] = React.useState(false);
-  const locationRef = React.useRef<HTMLDivElement>(null);
+  const supabase = createClient();
 
-  // Click outside for location
+  const [isLocationOpen, setIsLocationOpen] = React.useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+
+  const locationRef = React.useRef<HTMLDivElement>(null);
+  const notificationsRef = React.useRef<HTMLDivElement>(null);
+
+  // Notifications Logic
+  React.useEffect(() => {
+    async function fetchNotifications() {
+      if (!authUser) return;
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (data) setNotifications(data);
+    }
+    fetchNotifications();
+
+    const channel = supabase
+      .channel(`topbar_notes_${authUser?.id}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${authUser?.id}`
+      }, (payload) => {
+        setNotifications(prev => [payload.new, ...prev]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [authUser]);
+
+  const markAllAsRead = async () => {
+    if (!authUser) return;
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', authUser.id);
+  };
+
+  // Click outside handlers
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
         setIsLocationOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -95,13 +142,51 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
           <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all">
             <MessageSquare size={22} strokeWidth={1.5} />
           </Link>
-          <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all">
+          <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative">
             <Users size={22} strokeWidth={1.5} />
+            {pendingRequestsCount > 0 && (
+               <div className="absolute top-2 right-2 h-2 w-2 bg-emerald-500 rounded-full ring-2 ring-white" />
+            )}
           </Link>
-          <button className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-[#E53935] transition-all relative">
-            <Bell size={22} strokeWidth={1.5} />
-            <div className="absolute top-2 right-2 h-2 w-2 bg-[#E53935] rounded-full ring-2 ring-white" />
-          </button>
+          <div className="relative" ref={notificationsRef}>
+            <button 
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className={cn(
+                "h-10 w-10 flex items-center justify-center transition-all relative",
+                isNotificationsOpen ? "text-[#E53935]" : "text-black/40 hover:text-[#E53935]"
+              )}
+            >
+              <Bell size={22} strokeWidth={1.5} />
+              {notifications.filter(n => !n.is_read).length > 0 && (
+                <div className="absolute top-2 right-2 h-2 w-2 bg-[#E53935] rounded-full ring-2 ring-white" />
+              )}
+            </button>
+
+            {isNotificationsOpen && (
+               <div className="absolute top-[120%] right-0 w-80 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-4 animate-in fade-in slide-in-from-top-2 z-[200]">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.03]">
+                     <h3 className="text-[11px] font-black uppercase tracking-widest text-black">Notifications</h3>
+                     <button onClick={markAllAsRead} className="text-[9px] font-bold text-[#E53935] uppercase">Clear</button>
+                  </div>
+                  <div className="space-y-3 max-h-[320px] overflow-y-auto no-scrollbar">
+                     {notifications.map((n, i) => (
+                        <div key={i} className="flex gap-3 p-2 rounded-xl hover:bg-[#F5F5F7] transition-all cursor-pointer group">
+                           <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0", n.is_read ? "bg-black/[0.03] text-black/20" : "bg-red-50 text-[#E53935]")}>
+                              <Zap size={18} />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-bold text-black leading-tight mb-1">{n.message || "New activity in network"}</p>
+                              <p className="text-[9px] font-black text-black/20 uppercase tracking-tight">{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                           </div>
+                        </div>
+                     ))}
+                     {notifications.length === 0 && (
+                        <div className="py-8 text-center text-[10px] font-black uppercase text-black/10 italic">No new alerts</div>
+                     )}
+                  </div>
+               </div>
+            )}
+          </div>
         </div>
 
         <div className="h-8 w-px bg-black/[0.1]" />

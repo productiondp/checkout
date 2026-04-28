@@ -40,89 +40,86 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.98, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-      transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
-      className="relative mb-12 overflow-hidden"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative mb-10"
     >
-      <div className="bg-white rounded-[2.5rem] p-10 lg:p-14 text-[#1D1D1F] shadow-2xl shadow-black/[0.03] border border-black/[0.05] relative group">
+      <div className="bg-[#0A0A0A] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden group border border-white/5">
         
-        {/* Subtle Decorative Elements */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#E53935]/5 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+        {/* Dynamic Background Accents */}
+        <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-50">
+           <div className="absolute top-[-40%] right-[-10%] w-[500px] h-[500px] bg-[#E53935]/10 blur-[100px] rounded-full" />
+           <div className="absolute bottom-[-20%] left-[-10%] w-[300px] h-[300px] bg-indigo-500/5 blur-[80px] rounded-full" />
+        </div>
         
         <button 
           onClick={dismiss}
-          className="absolute top-8 right-8 h-10 w-10 bg-[#F5F5F7] rounded-full flex items-center justify-center hover:bg-[#E8E8ED] transition-all text-[#86868B] z-50"
+          className="absolute top-6 right-6 h-8 w-8 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center transition-all group z-20"
         >
-          <X size={18} />
+          <X size={14} className="text-white/40 group-hover:text-white" />
         </button>
 
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-           <div className="space-y-6 max-w-xl text-center lg:text-left">
-              <motion.div 
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#F5F5F7] border border-black/[0.03] rounded-full"
-              >
-                 <Sparkles size={14} className="text-[#E53935]" />
-                 <span className="text-[10px] font-bold text-[#86868B]">Setup Complete</span>
-              </motion.div>
-              
+        <div className="relative z-10">
+           <div className="flex flex-col gap-8">
               <div className="space-y-4">
-                 <h2 className="text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-                    Find the right <br/>
-                    <span className="text-indigo-600">partners to build with.</span>
-                 </h2>
-                 <p className="text-lg font-medium text-[#86868B] max-w-md mx-auto lg:mx-0">
-                    Your account is ready. Post what you're looking for or explore current projects.
-                 </p>
+                 {/* STATUS BADGE */}
+                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#E53935]/10 border border-[#E53935]/20 rounded-lg">
+                    <div className="h-1 w-1 bg-[#E53935] rounded-full animate-pulse" />
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#E53935]">System Active</span>
+                 </div>
+                 
+                 <div className="space-y-3">
+                    <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white uppercase">
+                       Find the right partners to build.
+                    </h2>
+                    <p className="text-[15px] font-bold text-white/40 leading-relaxed max-w-2xl">
+                       Your business node is verified. Broadcast requirements to the network or discover active nodes to accelerate your scale.
+                    </p>
+                 </div>
+              </div>
+
+              {/* ENHANCED ACTION BUTTONS */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+                 <motion.button 
+                   whileHover={{ scale: 1.02, y: -2 }}
+                   whileTap={{ scale: 0.98 }}
+                   onClick={onAction}
+                   className="h-14 px-8 bg-gradient-to-br from-[#E53935] to-[#D32F2F] text-white rounded-xl text-[12px] font-black uppercase tracking-widest shadow-[0_10px_30px_rgba(229,57,51,0.3)] hover:shadow-[0_20px_40px_rgba(229,57,51,0.4)] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
+                 >
+                    <Plus size={18} strokeWidth={3} />
+                    <span>Post Requirement</span>
+                 </motion.button>
+                 
+                 <motion.button 
+                   whileHover={{ scale: 1.02, y: -2 }}
+                   whileTap={{ scale: 0.98 }}
+                   onClick={onExplore}
+                   className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-black uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
+                 >
+                    <span>Discover Nodes</span>
+                    <ArrowRight size={18} strokeWidth={3} />
+                 </motion.button>
               </div>
            </div>
 
-           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onAction}
-                className="h-16 px-10 bg-[#1D1D1F] text-white rounded-2xl text-[14px] font-bold hover:bg-black transition-all shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto"
-              >
-                 <Plus size={20} strokeWidth={2.5} />
-                 <span>Post Requirement</span>
-              </motion.button>
-              
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onExplore}
-                className="h-16 px-10 bg-white border border-black/[0.1] text-[#1D1D1F] rounded-2xl text-[14px] font-bold hover:bg-[#F5F5F7] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-              >
-                 <span>Find Partner</span>
-                 <ArrowRight size={20} />
-              </motion.button>
+           {/* CONDENSED FOOTER */}
+           <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-x-12 gap-y-6">
+              {[
+                 { icon: Globe, label: "Scope", val: "8,400 Nodes", color: "text-[#E53935]" },
+                 { icon: Zap, label: "Efficiency", val: "98.4%", color: "text-amber-400" },
+                 { icon: Rocket, label: "Velocity", val: "2.4x Speed", color: "text-emerald-400" }
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-4">
+                   <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                      <item.icon size={18} className={item.color} />
+                   </div>
+                   <div>
+                      <p className="text-[12px] font-black text-white uppercase italic leading-none mb-1">{item.val}</p>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
+                   </div>
+                </div>
+              ))}
            </div>
-        </div>
-
-        <div className="mt-14 pt-10 border-t border-black/[0.05] flex flex-wrap gap-10 justify-center lg:justify-start relative z-10">
-           {[
-              { icon: Globe, label: "Global Scope", desc: "Access 8K+ Nodes", color: "text-red-500" },
-              { icon: Zap, label: "Smart Match", desc: "Contextual Synergy", color: "text-amber-500" },
-              { icon: Rocket, label: "Fast Track", desc: "Start in 60s", color: "text-emerald-500" }
-           ].map((item, i) => (
-             <div 
-               key={item.label}
-               className="flex items-center gap-4"
-             >
-                <div className="h-12 w-12 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-[#86868B] border border-black/[0.03]">
-                   <item.icon size={20} className={item.color} />
-                </div>
-                <div>
-                   <p className="text-[11px] font-bold text-[#1D1D1F] leading-tight mb-0.5">{item.label}</p>
-                   <p className="text-[10px] font-medium text-[#86868B]">{item.desc}</p>
-                </div>
-             </div>
-           ))}
         </div>
       </div>
     </motion.div>

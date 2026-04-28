@@ -37,8 +37,9 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
 
   // Notifications Logic
   React.useEffect(() => {
+    if (!authUser) return;
+
     async function fetchNotifications() {
-      if (!authUser) return;
       const { data } = await supabase
         .from('notifications')
         .select('*')
@@ -50,12 +51,12 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
     fetchNotifications();
 
     const channel = supabase
-      .channel(`topbar_notes_${authUser?.id}`)
+      .channel(`topbar_notes_${authUser.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'notifications',
-        filter: `user_id=eq.${authUser?.id}`
+        filter: `user_id=eq.${authUser.id}`
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev]);
       })

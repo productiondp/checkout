@@ -69,9 +69,9 @@ export default function FullyActiveGlobalHeader() {
 
   // 1. NOTIFICATIONS INITIAL FETCH
   React.useEffect(() => {
+    if (!authUser) return;
+
     async function fetchNotifications() {
-      if (!authUser) return;
-      
       const { data: notes } = await supabase
         .from('notifications')
         .select('*')

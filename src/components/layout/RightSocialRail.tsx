@@ -185,7 +185,7 @@ export default function RightSocialRail() {
          </div>
 
          <button 
-           onClick={() => router.push('/connections')}
+           onClick={() => router.push('/matches')}
            className="w-full py-4 bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#292828]/40 hover:text-[#292828] rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2"
          >
             See all matches <ChevronRight size={14} />

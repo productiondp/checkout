@@ -147,6 +147,10 @@ export default function HomeFeed({
       .filter((post: any) => {
         const authorId = post.author_id || post.author?.id;
         if (authorId === user.id) return true;
+        
+        // STRICT FILTERING FOR NON-SMART MODES
+        if (intentMode !== 'SMART' && post.type !== intentMode) return false;
+        
         return post.relevanceScore > 0;
       })
       .sort((a: any, b: any) => {
@@ -278,7 +282,7 @@ export default function HomeFeed({
 
             {/* --- STEP 1: INTENT MODES & INSIGHTS --- */}
             <div className="flex items-center gap-3 bg-[#F5F5F7] p-1.5 rounded-2xl w-fit border border-black/[0.03]">
-               {(['BALANCED', 'URGENT', 'LONG_TERM', 'PARTNER'] as IntentMode[]).map((mode) => (
+               {(['SMART', 'REQUIREMENT', 'PARTNER', 'MEETUP'] as IntentMode[]).map((mode) => (
                   <button
                      key={mode}
                      onClick={() => setIntentMode(mode)}
@@ -289,7 +293,7 @@ export default function HomeFeed({
                            : "text-[#0A0A0A]/40 hover:text-[#0A0A0A]/80"
                      )}
                   >
-                     {mode === 'BALANCED' ? 'Smart' : mode.replace('_', ' ')}
+                     {mode === 'SMART' ? 'Smart' : mode.charAt(0) + mode.slice(1).toLowerCase() + 's'}
                   </button>
                ))}
             </div>

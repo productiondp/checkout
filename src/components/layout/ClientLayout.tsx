@@ -75,9 +75,23 @@ export default function ClientLayout({
                     pathname === "/admin" ||
                     pathname === "/discover" || 
                     pathname === "/network" || 
+                    pathname === "/matches" || 
+                    pathname === "/chat" || 
+                    pathname === "/home" || 
+                    pathname === "/communities" || 
+                    pathname === "/marketplace" || 
+                    pathname === "/advisors" || 
+                    pathname === "/directory" || 
+                    pathname === "/events" || 
                     pathname === "/insights" || 
                     pathname === "/opportunities" || 
-                    pathname === "/what-is-checkout";
+                    pathname === "/what-is-checkout" ||
+                    pathname?.startsWith("/profile") ||
+                    pathname?.startsWith("/communities/") ||
+                    pathname?.startsWith("/marketplace/") ||
+                    pathname?.startsWith("/advisors/") ||
+                    pathname?.startsWith("/directory/") ||
+                    pathname?.startsWith("/events/");
 
   if (!mounted) {
     return (

@@ -99,12 +99,7 @@ const TYPE_CONFIG: Record<string, {
   },
 };
 
-const CONTEXT_ICONS: Record<string, any> = {
-  BUSINESS: Briefcase,
-  PROFESSIONAL: User,
-  STUDENT: GraduationCap,
-  ADVISOR: ShieldCheck,
-};
+
 
 function normalizeType(type: string): keyof typeof TYPE_CONFIG {
   const map: Record<string, string> = {
@@ -196,7 +191,6 @@ export default function UniversalFeedCard({
   const nType = normalizeType(type);
   const isOwner = currentUserId === (author?.id || post.author_id);
   const cfg = TYPE_CONFIG[nType];
-  const ContextIcon = CONTEXT_ICONS[context?.toUpperCase()] || User;
   
   const relevanceColor = 
     relevanceLabel === "Best opportunity" ? "emerald" :
@@ -273,13 +267,6 @@ export default function UniversalFeedCard({
     if (authUser?.base_tag && post.base_tag) {
       analytics.trackInteraction(authUser.base_tag, post.base_tag, 'CLICK');
     }
-    
-    if (nType === 'MEETUP') {
-      // For meetups, we might want a different primary action or just the Join button
-      onAction?.(post);
-    } else {
-      onAction?.(post);
-    }
   };
 
   const isTopPriority = post.tier === 1 && post.actionScore > 0.8;
@@ -312,10 +299,10 @@ export default function UniversalFeedCard({
         <div className={cn("absolute left-0 top-0 bottom-0 w-1.5 opacity-40 transition-all duration-500 group-hover:opacity-100", cfg.gradient.includes('amber') ? "bg-amber-500" : "bg-[#E53935]")} />
       )}
 
-      <div className="p-7 lg:p-9">
+      <div className="p-6 lg:p-8">
         
         {/* ── HEADER: BRAND & METADATA ── */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
            <div className="flex items-center gap-4">
               <div className="relative">
                  <div className="h-14 w-14 rounded-2xl overflow-hidden bg-slate-50 border border-black/[0.03] shadow-inner transition-transform duration-500 group-hover:scale-105">
@@ -334,7 +321,7 @@ export default function UniversalFeedCard({
                  <div className="flex items-center gap-2.5 mb-0.5">
                     <h4 className="text-[16px] font-black uppercase tracking-tight text-[#1D1D1F]">{authorName || "Member"}</h4>
                     <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[7px] font-black uppercase tracking-widest rounded-md">
-                       {context || "Member"}
+                       {rank || "Member"}
                     </span>
                  </div>
                  <div className="flex items-center gap-3.5 text-[10px] font-bold text-[#86868B] uppercase tracking-wider">
@@ -368,7 +355,7 @@ export default function UniversalFeedCard({
         </div>
 
         {/* ── BODY: TITLE & INTENT ── */}
-        <div className="space-y-5 mb-8">
+        <div className="space-y-4 mb-6">
            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
                  <div className={cn("px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest border", cfg.chipBg, cfg.chipText, "border-black/[0.03]")}>
@@ -385,7 +372,7 @@ export default function UniversalFeedCard({
               </h3>
            </div>
            
-           {post.content && (
+           {post.content && post.content.trim() !== title.trim() && (
               <p className="text-[14px] font-medium text-[#86868B] leading-relaxed max-w-2xl line-clamp-2">
                  {post.content}
               </p>
@@ -393,7 +380,7 @@ export default function UniversalFeedCard({
         </div>
 
         {/* ── METADATA CHIPS: MINIMAL ── */}
-        <div className="flex flex-wrap gap-2.5 mb-8 pb-8 border-b border-black/[0.03]">
+        <div className="flex flex-wrap gap-2.5 mb-6 pb-6 border-b border-black/[0.03]">
            {nType === "REQUIREMENT" && (
               <>
                  {post.budget && <MetaChip icon={IndianRupee} label={post.budget} isPrimary />}

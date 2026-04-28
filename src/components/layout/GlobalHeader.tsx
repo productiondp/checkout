@@ -218,7 +218,7 @@ export default function FullyActiveGlobalHeader() {
 
             {/* CONNECTIONS HUB */}
             <Link 
-              href="/connections"
+              href="/matches"
               className={cn(
                 "h-9 w-9 flex items-center justify-center rounded-lg transition-all relative font-medium text-[#292828] hover:bg-[#292828]/5"
               )}
@@ -261,7 +261,7 @@ export default function FullyActiveGlobalHeader() {
                       <div 
                         key={n.id || i} 
                         onClick={() => {
-                          if (n.type?.startsWith('connection')) router.push('/connections');
+                          if (n.type?.startsWith('connection')) router.push('/matches');
                           else if (n.link) router.push(n.link);
                           setIsNotificationsOpen(false);
                         }}

@@ -1,19 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   Search, 
   Filter, 
-  Star, 
   Zap, 
   ChevronRight,
-  TrendingUp,
   Sparkles,
-  ShieldCheck,
   Award,
-  Plus,
-  MessageSquare,
-  ArrowRight,
   Target
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -24,6 +18,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ConnectButton } from "@/components/connection/ConnectButton";
 import { analytics } from "@/utils/analytics";
 import { useAuth } from "@/hooks/useAuth";
+import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function AdvisorsPage() {
   const { user: authUser } = useAuth();
@@ -38,60 +33,28 @@ export default function AdvisorsPage() {
       if (!authUser) return;
       const supabase = createClient();
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, headline, city, experience_years, skills, expertise, avatar_url, matchScore, bio')
-          .eq('role', 'ADVISOR')
-          .neq('id', authUser.id)
-          .limit(20);
-
-        if (error) throw error;
-
-        // 🛡️ FETCH CONNECTIONS FOR BLOCK FILTERING
-        const { data: connections } = await supabase
-          .from('connections')
-          .select('sender_id, receiver_id, status')
-          .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
-
+        const { data } = await supabase.from('profiles').select('*').eq('role', 'ADVISOR').neq('id', authUser.id).limit(20);
+        const { data: connections } = await supabase.from('connections').select('sender_id, receiver_id, status').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
         if (data) {
-          const mapped: Advisor[] = data
-            .filter(p => {
-              const conn = (connections || []).find(c => 
-                (c.sender_id === authUser.id && c.receiver_id === p.id) ||
-                (c.receiver_id === authUser.id && c.sender_id === p.id)
-              );
-              return conn?.status !== 'BLOCKED';
-            })
-            .map(p => {
-              const conn = (connections || []).find(c => 
-                (c.sender_id === authUser.id && c.receiver_id === p.id) ||
-                (c.receiver_id === authUser.id && c.sender_id === p.id)
-              );
-
-              return {
-                id: p.id,
-                name: p.full_name || "Elite Advisor",
-                role: p.headline || "Professional Advisor",
-                industry: p.city || "National Network",
-                experience: p.experience_years ? `${p.experience_years}+ Years` : "10+ Years",
-                expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
-                avatar: p.avatar_url || DEFAULT_AVATAR,
-                matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
-                bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
-                bio: p.bio || "",
-                highlights: [],
-                focus: [],
-                availability: "On Demand",
-                connectionStatus: conn ? conn.status.toLowerCase() : 'none'
-              };
-            });
+          const mapped = data.filter(p => {
+            const conn = (connections || []).find(c => (c.sender_id === authUser.id && c.receiver_id === p.id) || (c.receiver_id === authUser.id && c.sender_id === p.id));
+            return conn?.status !== 'BLOCKED';
+          }).map(p => ({
+            id: p.id,
+            name: p.full_name || "Elite Advisor",
+            role: p.headline || "Professional Advisor",
+            industry: p.city || "National Network",
+            experience: p.experience_years ? `${p.experience_years}+ Years` : "10+ Years",
+            expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
+            avatar: p.avatar_url || DEFAULT_AVATAR,
+            matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
+            bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
+            bio: p.bio || "",
+            connectionStatus: 'none'
+          }));
           setAdvisors(mapped);
         }
-      } catch (err) {
-        console.error("Advisor Fetch Failure:", err);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error(err); } finally { setLoading(false); }
     }
     loadAdvisors();
     analytics.trackScreen('ADVISORS');
@@ -102,182 +65,99 @@ export default function AdvisorsPage() {
     advisor.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FDFDFF] flex flex-col items-center justify-center gap-6">
-        <div className="h-12 w-12 border-4 border-[#292828]/5 border-t-[#E53935] rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase  text-[#292828]/20">Loading Advisors...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#FDFDFF] pb-24">
-      {/* HEADER */}
-      <header className="bg-white border-b border-slate-100 pt-12 pb-10 px-6 lg:px-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#292828]  mb-3 uppercase">Advisors</h1>
-            <p className="text-slate-200 font-bold text-base sm:text-lg uppercase ">Access the network of experts.</p>
-          </div>
-          <div className="flex bg-slate-50 p-1 rounded-lg overflow-x-auto no-scrollbar w-full md:w-auto">
-            {["Best Match", "Most Experienced", "Recently Active"].map(sort => (
-              <button 
-                key={sort}
-                onClick={() => setActiveSort(sort)}
-                className={cn(
-                  "px-6 h-12 rounded-lg text-[10px] font-black uppercase  transition-all",
-                  activeSort === sort ? "bg-white text-[#292828] shadow-sm" : "text-slate-200 hover:text-[#292828]"
-                )}
-              >
-                {sort}
-              </button>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      {/* CONTROLS */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-10">
-        <div className="flex flex-col lg:flex-row items-center gap-4">
-          <div className="relative w-full">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-            <input 
-              type="text" 
-              placeholder="Filter by industry or name..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-16 bg-white border border-slate-100 rounded-lg pl-16 pr-6 text-sm font-bold text-[#292828] focus:border-[#E53935] outline-none transition-all shadow-sm"
-            />
-          </div>
-          <button className="h-16 px-6 bg-white border border-slate-100 text-[#292828] rounded-lg flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm shrink-0">
-            <Filter size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* EMPTY STATE */}
-      {filteredAdvisors.length === 0 && !loading && (
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-20 text-center py-24 bg-white rounded-lg border border-dashed border-slate-200">
-           <Zap size={64} className="mx-auto text-slate-100 mb-8" />
-           <h3 className="text-2xl font-black text-[#292828] uppercase mb-4 ">No advisors available</h3>
-           <p className="text-[12px] font-black text-slate-300 uppercase  mb-12">Try a different search or category.</p>
-           <button 
-             onClick={() => setSearchQuery("")}
-             className="h-16 px-12 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  hover:bg-[#E53935] transition-all shadow-4xl"
-           >
-             Expand your search
-           </button>
-        </div>
-      )}
-
-      {/* FEATURED ADVISORS */}
-      {filteredAdvisors.some(a => a.matchScore > 90) && (
-        <section className="mt-16 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 lg:px-10 mb-8">
-            <div className="flex items-center gap-3 text-[#E53935]">
-              <Sparkles size={20} fill="currentColor" />
-              <h2 className="text-xs font-black uppercase ">Top Matches</h2>
+    <TerminalLayout
+      topbarChildren={
+         <div className="flex items-center gap-6">
+            <div className="flex p-1 bg-[#F5F5F7] rounded-[10px] border border-black/[0.03]">
+               {["Best Match", "Most Experienced", "Recently Active"].map(sort => (
+                 <button 
+                   key={sort}
+                   onClick={() => setActiveSort(sort)}
+                   className={cn(
+                     "px-6 h-9 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-all relative",
+                     activeSort === sort ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
+                   )}
+                 >
+                   {sort}
+                 </button>
+               ))}
             </div>
+         </div>
+      }
+    >
+      <div className="p-8 max-w-7xl mx-auto space-y-12">
+        {/* SEARCH SECTION */}
+        <div className="relative group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={20} />
+          <input 
+            type="text" 
+            placeholder="Search experts, mentors, or advisors..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-16 bg-white border border-black/[0.03] rounded-[10px] pl-16 pr-6 text-sm font-bold text-[#1D1D1F] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all shadow-sm" 
+          />
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2, 4].map(i => <div key={i} className="h-64 bg-[#F5F5F7] rounded-[10px] animate-pulse" />)}
           </div>
-          
-          <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 lg:px-10 pb-10 max-w-7xl mx-auto">
-            {filteredAdvisors.filter(a => a.matchScore > 90).map((advisor) => (
-              <div 
-                key={advisor.id}
-                onClick={() => router.push(`/advisors/${advisor.id}`)}
-                className="min-w-[320px] sm:min-w-[400px] bg-white rounded-[1.25rem] sm:rounded-[1.5rem] p-8 sm:p-10 border border-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                
-                <div className="flex items-start justify-between mb-8">
-                    <div className="h-24 w-24 rounded-lg overflow-hidden border-4 border-slate-50 shadow-lg">
-                        <img src={advisor.avatar || DEFAULT_AVATAR} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                    </div>
-                    <div className="relative h-16 w-16 flex items-center justify-center">
-                      <svg className="w-full h-full" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#F1F5F9" strokeWidth="8" />
-                        <circle 
-                          cx="50" cy="50" r="45" fill="none" stroke="#E53935" strokeWidth="8" 
-                          strokeDasharray={2 * Math.PI * 45} 
-                          strokeDashoffset={(2 * Math.PI * 45) * (1 - advisor.matchScore / 100)}
-                          strokeLinecap="round"
-                          className="transition-all duration-1000"
-                        />
-                      </svg>
-                      <span className="absolute text-[12px] font-black text-[#292828]">{advisor.matchScore}%</span>
-                    </div>
-                </div>
-
-                <h3 className="text-3xl font-black text-[#292828] uppercase  mb-2 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-                <p className="text-[12px] font-bold text-slate-200 uppercase  mb-6">{advisor.role} @ {advisor.industry}</p>
-                
-                <div className="space-y-6 flex-1">
-                    <div className="p-5 bg-slate-50 rounded-lg border border-slate-100">
-                      <p className="text-[9px] font-black text-slate-200 uppercase  mb-2">Best For</p>
-                      <p className="text-xs font-bold text-[#292828] leading-relaxed italic line-clamp-2">"{advisor.bestFor}"</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {advisor.expertise.slice(0, 3).map(tag => (
-                        <span key={tag} className="px-4 py-2 bg-white border border-slate-100 rounded-lg text-[10px] font-black uppercase text-[#292828]/40">{tag}</span>
-                      ))}
-                    </div>
-                </div>
-
-                <div className="mt-10 flex items-center justify-between pt-6 border-t border-slate-50">
-                    <div className="flex items-center gap-2">
-                      <Award size={16} className="text-emerald-500" />
-                      <span className="text-[10px] font-black text-[#292828] uppercase">{advisor.experience} Exp</span>
-                    </div>
-                    <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" />
-                </div>
+        ) : filteredAdvisors.length > 0 ? (
+          <>
+            {/* TOP MATCHES */}
+            <section>
+              <div className="flex items-center gap-3 text-[#E53935] mb-8">
+                <Sparkles size={20} fill="currentColor" />
+                <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Elite Advisors</h2>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <div className="flex overflow-x-auto no-scrollbar gap-6 pb-6">
+                {filteredAdvisors.filter(a => a.matchScore > 90).map((advisor) => (
+                  <div key={advisor.id} onClick={() => router.push(`/advisors/${advisor.id}`)} className="min-w-[400px] bg-white rounded-[10px] p-10 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full">
+                    <div className="flex items-start justify-between mb-8">
+                      <div className="h-24 w-24 rounded-[10px] overflow-hidden border-4 border-[#F5F5F7] shadow-lg"><img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" /></div>
+                      <div className="relative h-16 w-16 flex items-center justify-center"><svg className="w-full h-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F5F5F7" strokeWidth="8" /><circle cx="50" cy="50" r="45" fill="none" stroke="#E53935" strokeWidth="8" strokeDasharray={2 * Math.PI * 45} strokeDashoffset={(2 * Math.PI * 45) * (1 - advisor.matchScore / 100)} strokeLinecap="round" /></svg><span className="absolute text-[12px] font-black text-black font-outfit">{advisor.matchScore}%</span></div>
+                    </div>
+                    <h3 className="text-2xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
+                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role} • {advisor.industry}</p>
+                    <div className="p-6 bg-[#F5F5F7] rounded-[10px] border border-black/[0.02] mb-8"><p className="text-xs font-bold text-black/60 leading-relaxed italic uppercase">"{advisor.bestFor}"</p></div>
+                    <div className="mt-auto pt-6 border-t border-black/[0.03] flex items-center justify-between"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" /></div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-      {/* ADVISOR LIST */}
-      <main className="max-w-7xl mx-auto px-6 lg:px-10 mt-12 grid grid-cols-1 md:grid-cols-2 gap-10">
-        {filteredAdvisors.map((advisor) => (
-          <AdvisorCard key={advisor.id} advisor={advisor} />
-        ))}
-      </main>
-    </div>
+            {/* FULL LIST */}
+            <main className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {filteredAdvisors.map((advisor) => (
+                <AdvisorCard key={advisor.id} advisor={advisor} />
+              ))}
+            </main>
+          </>
+        ) : (
+          <div className="py-40 text-center space-y-6">
+            <div className="h-20 w-20 bg-[#F5F5F7] rounded-[10px] mx-auto flex items-center justify-center text-black/10"><Zap size={32} /></div>
+            <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit">No experts found</h3>
+            <p className="text-black/20 text-[11px] font-black uppercase tracking-widest">Try adjusting your search criteria.</p>
+          </div>
+        )}
+      </div>
+    </TerminalLayout>
   );
 }
 
 function AdvisorCard({ advisor }: { advisor: Advisor }) {
   const router = useRouter();
   return (
-    <div 
-      onClick={() => router.push(`/advisors/${advisor.id}`)}
-      className="bg-white rounded-[1.25rem] sm:rounded-[1.5rem] p-6 sm:p-10 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col md:flex-row items-center gap-6 sm:gap-10"
-    >
-      <div className="h-28 w-28 sm:h-32 sm:w-32 shrink-0 rounded-lg sm:rounded-lg overflow-hidden border-4 border-slate-50 shadow-md group-hover:rotate-3 transition-all duration-500">
-        <img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+    <div onClick={() => router.push(`/advisors/${advisor.id}`)} className="bg-white rounded-[10px] p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex items-center gap-8">
+      <div className="h-28 w-28 shrink-0 rounded-[10px] overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:rotate-3 transition-all duration-500"><img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" /></div>
+      <div className="flex-1">
+        <div className="flex items-center gap-3 mb-3"><div className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[9px] font-black uppercase tracking-widest"><Target size={12} className="inline mr-1" /> {advisor.matchScore}% Match</div></div>
+        <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
+        <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{advisor.role} @ {advisor.industry}</p>
+        <div className="flex flex-wrap gap-2">{advisor.expertise.slice(0, 3).map(tag => <span key={tag} className="px-3 py-1 bg-[#F5F5F7] text-black/20 rounded-[8px] text-[8px] font-black uppercase tracking-widest">{tag}</span>)}</div>
       </div>
-
-      <div className="flex-1 text-center md:text-left">
-        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-3">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-lg text-[9px] font-black uppercase">
-             <Target size={12} /> {advisor.matchScore}% Match
-          </div>
-          <span className="text-[10px] font-bold text-slate-300 uppercase">{advisor.experience} Experience</span>
-        </div>
-        <h3 className="text-3xl font-black text-[#292828] uppercase  mb-1 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-        <p className="text-sm font-bold text-slate-200 uppercase  mb-6">{advisor.role} @ {advisor.industry}</p>
-        
-        <div className="flex flex-wrap justify-center md:justify-start gap-2">
-           {advisor.expertise.slice(0, 3).map(tag => (
-             <span key={tag} className="px-4 py-2 bg-slate-50 text-slate-200 rounded-lg text-[9px] font-black uppercase">{tag}</span>
-           ))}
-        </div>
-      </div>
-
-      <div className="shrink-0">
-        <ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" />
-      </div>
+      <div className="shrink-0"><ConnectButton userId={advisor.id} userName={advisor.name} label="Connect" /></div>
     </div>
   );
 }

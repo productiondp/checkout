@@ -36,7 +36,7 @@ export default function DesktopSidebar() {
       group: "Directory",
       items: [
         { label: "Home Feed", icon: Home, href: "/home" },
-        { label: "Network Hub", icon: UserPlus, href: "/connections", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
+        { label: "Network Hub", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
         { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount.toString() : null },
         { label: "Communities", icon: Globe, href: "/communities" },
       ]
@@ -56,6 +56,17 @@ export default function DesktopSidebar() {
   return (
     <aside className="w-[260px] hidden lg:flex flex-col bg-white border-r border-[#292828]/5 h-full sticky top-0 py-10 px-6 overflow-y-auto no-scrollbar selection:bg-[#E53935]/10 z-50">
       
+      {/* 0. BRAND LOGO (LEFT CORNER) */}
+      <div className="px-4 mb-12">
+        <Link href="/home" className="shrink-0">
+          <img 
+            src="/images/logo.png" 
+            alt="Checkout" 
+            className="h-10 lg:h-11 w-auto object-contain" 
+          />
+        </Link>
+      </div>
+
       {/* 1. NAVIGATION GROUPS */}
       <div className="flex-1 space-y-12">
         {navGroups.map((group, idx) => (

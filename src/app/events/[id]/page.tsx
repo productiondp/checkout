@@ -11,15 +11,12 @@ import {
   Plus, 
   Search, 
   Zap, 
-  MessageSquare,
   TrendingUp,
   Briefcase,
-  ChevronRight,
   ShieldCheck,
   Clock,
   UserPlus,
   Info,
-  ArrowUpRight,
   CheckCircle2,
   Ticket,
   Sparkles
@@ -27,8 +24,7 @@ import {
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MOCK_EVENTS } from "@/data/events";
-const MOCK_POSTS: any[] = [];
-const MOCK_MEMBERS: any[] = [];
+import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -40,300 +36,118 @@ export default function EventDetailPage() {
   const event = MOCK_EVENTS.find(e => e.id === eventId) || MOCK_EVENTS[0];
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] pb-24">
-      {/* TOP BANNER */}
-      <div className="bg-white border-b border-slate-100 relative overflow-hidden">
-        <div className="h-[400px] w-full relative">
-           <img src={event.banner} className="w-full h-full object-cover" alt="" />
-           <div className="absolute inset-0 bg-gradient-to-t from-[#292828] via-[#292828]/60 to-transparent" />
-           <button 
-             onClick={() => router.push('/events')}
-             className="absolute top-10 left-10 h-12 w-12 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center text-white border border-white/20 hover:bg-white/40 transition-all"
-           >
-             <ArrowLeft size={20} />
-           </button>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 -mt-32 relative z-10 pb-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="px-4 py-1.5 bg-[#E53935] text-white text-[10px] font-black uppercase rounded-lg shadow-2xl ">Live Meetup</div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 text-[10px] font-bold uppercase">
-                   <TrendingUp size={14} className="text-emerald-400" />
-                   {event.matchScore}% Match
-                </div>
-              </div>
-              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black text-white  leading-[0.9] uppercase mb-8">{event.name}</h1>
-              
-              <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-white/80">
-                 <div className="flex items-center gap-3">
-                    <Calendar size={20} className="text-[#E53935]" />
-                    <span className="text-sm font-black uppercase ">{event.date}</span>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <Clock size={20} className="text-[#E53935]" />
-                    <span className="text-sm font-black uppercase ">{event.time}</span>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <MapPin size={20} className="text-[#E53935]" />
-                    <span className="text-sm font-black uppercase ">{event.location}</span>
-                 </div>
-              </div>
+    <TerminalLayout
+      topbarChildren={
+         <div className="flex items-center gap-6">
+            <button 
+               onClick={() => router.push('/events')}
+               className="h-10 px-4 bg-[#F5F5F7] text-black/40 rounded-[10px] flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-black transition-all"
+            >
+               <ArrowLeft size={14} /> Back
+            </button>
+            <div className="flex p-1 bg-[#F5F5F7] rounded-[10px] border border-black/[0.03]">
+               {(["Opportunities", "Attendees", "About"] as const).map(tab => (
+                 <button 
+                   key={tab}
+                   onClick={() => setActiveTab(tab)}
+                   className={cn(
+                     "px-6 h-9 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-all relative",
+                     activeTab === tab ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
+                   )}
+                 >
+                   {tab}
+                 </button>
+               ))}
             </div>
-
-            <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => setIsJoined(!isJoined)}
-                className={cn(
-                  "h-16 sm:h-20 px-8 sm:px-12 rounded-lg flex items-center justify-center gap-4 text-[10px] sm:text-xs font-black uppercase  transition-all shadow-4xl active:scale-95 overflow-hidden relative",
-                  isJoined ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-white text-[#292828] hover:bg-[#E53935] hover:text-white"
-                )}
-              >
-                {isJoined ? (
-                  <><CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> RSVP Confirmed</>
-                ) : (
-                  <><Ticket className="w-5 h-5 sm:w-6 sm:h-6" /> Join Meetup</>
-                )}
-              </button>
-              <div className="flex items-center justify-center gap-3 text-white/40">
-                 <Users size={16} />
-                 <span className="text-[10px] font-black uppercase ">{event.attendeeCount.toLocaleString()} People Attending</span>
+         </div>
+      }
+    >
+      <div className="p-8 max-w-7xl mx-auto space-y-12">
+        {/* HERO AREA */}
+        <div className="bg-white rounded-[20px] overflow-hidden border border-black/[0.03] shadow-sm relative">
+           <div className="h-[300px] w-full relative">
+              <img src={event.banner} className="w-full h-full object-cover grayscale" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute bottom-10 left-10 right-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                 <div>
+                    <div className="flex items-center gap-3 mb-4">
+                       <div className="px-3 py-1 bg-[#E53935] text-white text-[8px] font-black uppercase tracking-widest rounded-full">Live Meetup</div>
+                       <div className="flex items-center gap-2 text-emerald-400 text-[9px] font-black uppercase tracking-widest">
+                          <TrendingUp size={14} /> {event.matchScore}% Match
+                       </div>
+                    </div>
+                    <h1 className="text-4xl lg:text-6xl font-black text-white uppercase font-outfit leading-none mb-6">{event.name}</h1>
+                    <div className="flex flex-wrap items-center gap-8 text-white/60">
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"><Calendar size={16} />{event.date}</div>
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"><Clock size={16} />{event.time}</div>
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"><MapPin size={16} />{event.location}</div>
+                    </div>
+                 </div>
+                 <div className="flex flex-col gap-3 min-w-[200px]">
+                    <button 
+                      onClick={() => setIsJoined(!isJoined)}
+                      className={cn(
+                        "h-16 px-10 rounded-[10px] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all shadow-2xl active:scale-95",
+                        isJoined ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-[#E53935] hover:text-white"
+                      )}
+                    >
+                      {isJoined ? <><CheckCircle2 size={20} /> RSVP'd</> : <><Ticket size={20} /> Join</>}
+                    </button>
+                    <p className="text-[8px] font-black text-white/20 text-center uppercase tracking-widest">{event.attendeeCount.toLocaleString()} Attending</p>
+                 </div>
               </div>
-            </div>
-          </div>
+           </div>
         </div>
 
-        {/* TABS NAVIGATION */}
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-8 lg:gap-12 w-max sm:w-auto">
-            {(["Opportunities", "Attendees", "About"] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "h-16 relative text-xs font-black uppercase  transition-all",
-                  activeTab === tab ? "text-[#E53935]" : "text-slate-200 hover:text-[#292828]"
-                )}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E53935] rounded-t-full" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CONTENT AREA */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* MAIN COLUMN */}
-          <div className="lg:col-span-2">
-            {activeTab === "Opportunities" && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
-                  <div>
-                    <h2 className="text-xl font-black text-[#292828] uppercase ">Live Post Feed</h2>
-                    <p className="text-[10px] font-bold text-slate-200 uppercase  mt-1">Real-time posts from attendees</p>
+           <div className="lg:col-span-2 space-y-12">
+              {activeTab === "Opportunities" && (
+                <>
+                  <div className="flex items-center justify-between">
+                     <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Live Board</h2>
+                     <button className="h-10 px-6 bg-black text-white rounded-[10px] flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all"><Plus size={14} /> Add Post</button>
                   </div>
-                  <button className="h-12 px-8 bg-[#292828] text-white rounded-lg flex items-center gap-3 text-[10px] font-black uppercase  hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
-                    <Plus size={16} /> Add Post
-                  </button>
-                </div>
-                
-                {MOCK_POSTS.map(post => (
-                  <OpportunityCard key={post.id} post={post} />
-                ))}
-              </div>
-            )}
-
-            {activeTab === "Attendees" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="bg-white p-6 rounded-lg border border-slate-100 mb-10 flex items-center gap-4 shadow-sm">
-                  <Search size={20} className="text-slate-300" />
-                  <input 
-                    type="text" 
-                    placeholder="Search attendees..." 
-                    className="flex-1 bg-transparent outline-none text-sm font-bold text-[#292828]"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {MOCK_MEMBERS.map(member => (
-                    <AttendeeCard key={member.id} member={member} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "About" && (
-              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white p-12 rounded-lg border border-slate-100 shadow-sm">
-                <div>
-                  <h3 className="text-xs font-black uppercase  text-[#E53935] mb-6">Meetup Overview</h3>
-                  <p className="text-2xl font-bold text-[#292828] leading-relaxed italic">
-                    "{event.description}"
-                  </p>
-                </div>
-
-                {event.agenda && (
-                  <div>
-                    <h3 className="text-xs font-black uppercase  text-[#E53935] mb-6">Agenda</h3>
-                    <div className="space-y-6">
-                      {event.agenda.map((item, i) => (
-                        <div key={i} className="flex items-start gap-6 group">
-                          <div className="h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center text-[10px] font-black text-[#292828] group-hover:bg-[#E53935] group-hover:text-white transition-all shrink-0">
-                             {i+1}
-                          </div>
-                          <div className="pt-2">
-                             <p className="text-sm font-black text-[#292828] uppercase  mb-1">{item}</p>
-                             <p className="text-xs font-bold text-slate-200 uppercase ">Main Hall • 10:00 AM</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="py-20 text-center bg-[#F5F5F7] rounded-[10px] border border-black/[0.02]">
+                     <Zap size={40} className="mx-auto text-black/5 mb-4" />
+                     <p className="text-black/20 text-[10px] font-black uppercase tracking-widest">No live posts found.</p>
                   </div>
-                )}
+                </>
+              )}
 
-                <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-slate-50 rounded-lg flex items-center justify-center text-[#292828]">
-                      <ShieldCheck size={24} />
-                    </div>
+              {activeTab === "About" && (
+                <div className="space-y-12 bg-white p-12 rounded-[10px] border border-black/[0.03]">
+                  <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-[#E53935] mb-6">Overview</h3>
+                    <p className="text-2xl font-black text-black uppercase font-outfit leading-relaxed italic">"{event.description}"</p>
+                  </div>
+                  {event.agenda && (
                     <div>
-                      <p className="text-[10px] font-black text-slate-200 uppercase  leading-none mb-2">Host</p>
-                      <h4 className="text-sm font-black text-[#292828] uppercase ">{event.organizer}</h4>
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-[#E53935] mb-6">Agenda</h3>
+                      <div className="space-y-6">
+                        {event.agenda.map((item, i) => (
+                          <div key={i} className="flex items-start gap-6 group">
+                            <div className="h-10 w-10 bg-[#F5F5F7] rounded-[8px] flex items-center justify-center text-[10px] font-black text-black shrink-0">{i+1}</div>
+                            <div className="pt-2"><p className="text-[14px] font-black text-black uppercase mb-1">{item}</p><p className="text-[9px] font-black text-black/20 uppercase tracking-widest">Primary Node • Live</p></div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <button className="h-12 px-6 bg-[#292828]/5 text-[#292828] rounded-lg text-[10px] font-black uppercase  hover:bg-[#292828] hover:text-white transition-all">Download Info Kit</button>
+                  )}
                 </div>
+              )}
+           </div>
+           <aside className="space-y-10">
+              <div className="bg-black p-10 rounded-[20px] text-white relative overflow-hidden group shadow-2xl">
+                 <Zap size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
+                 <div className="relative z-10">
+                    <h3 className="text-[9px] font-black uppercase text-[#E53935] mb-6 tracking-widest">Network Optimization</h3>
+                    <p className="text-[11px] font-bold text-white/40 uppercase leading-relaxed mb-10">We've identified 12 high-authority nodes attending this meetup that match your current business requirements.</p>
+                    <button className="w-full h-12 bg-[#E53935] rounded-[10px] text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all shadow-xl">Get Itinerary</button>
+                 </div>
               </div>
-            )}
-          </div>
-
-          {/* SIDEBAR */}
-          <aside className="space-y-10">
-            {/* SMART MATCHES */}
-            <div className="bg-[#292828] p-10 rounded-lg text-white relative overflow-hidden group shadow-2xl">
-              <Zap size={180} className="absolute -right-16 -bottom-16 text-white/[0.03] group-hover:-rotate-12 transition-transform duration-[5s]" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                   <Sparkles size={18} className="text-[#E53935]" />
-                   <h3 className="text-[11px] font-black uppercase ">Pre-Meetup Matching</h3>
-                </div>
-                <p className="text-[11px] font-medium text-white/50 uppercase leading-relaxed mb-10">
-                  Based on your business goals, we've identified 12 people you must connect with at this meetup.
-                </p>
-                <div className="space-y-4 mb-10">
-                   {MOCK_MEMBERS.slice(0, 2).map(m => (
-                     <div key={m.id} className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-lg">
-                        <img src={m.avatar} className="h-10 w-10 rounded-lg" alt="" />
-                        <div>
-                           <p className="text-[11px] font-black text-white uppercase leading-none mb-1">{m.name}</p>
-                           <p className="text-[9px] font-bold text-emerald-400 uppercase">{m.matchScore}% Match</p>
-                        </div>
-                     </div>
-                   ))}
-                </div>
-                <button className="w-full h-12 bg-[#E53935] rounded-lg text-[10px] font-black uppercase  hover:bg-white hover:text-[#292828] transition-all">Optimize Itinerary</button>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <h3 className="text-xs font-black uppercase  text-[#292828]">Trending Posts</h3>
-              <div className="space-y-4">
-                {MOCK_POSTS.slice(0, 3).map(post => (
-                  <div key={post.id} className="p-6 bg-white border border-slate-100 rounded-lg group cursor-pointer hover:border-[#E53935]/20 transition-all shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[9px] font-black uppercase  px-3 py-1 bg-red-50 text-[#E53935] rounded-lg">{post.type}</span>
-                      <span className="text-[10px] font-bold text-slate-300">{post.timestamp}</span>
-                    </div>
-                    <p className="text-sm font-bold text-[#292828] leading-snug line-clamp-2 mb-4">"{post.description}"</p>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#E53935] group-hover:translate-x-2 transition-transform">
-                      View Post <ArrowRight size={14} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
+           </aside>
         </div>
       </div>
-    </div>
-  );
-}
-
-function OpportunityCard({ post }: { post: any }) {
-  return (
-    <div className="bg-white p-6 sm:p-8 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-6 sm:p-8 text-right">
-        <p className="text-[8px] sm:text-[9px] font-black text-slate-300 uppercase  leading-none mb-1 sm:mb-2">Match Score</p>
-        <p className="text-xl sm:text-3xl font-black text-[#292828]  tabular-nums group-hover:text-[#E53935] transition-colors">{post.matchScore}%</p>
-      </div>
-
-      <div className="flex items-center gap-4 mb-8">
-        <span className={cn(
-          "px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ",
-          post.type === "Hiring" ? "bg-blue-50 text-blue-600" :
-          post.type === "Leads" ? "bg-emerald-50 text-emerald-600" :
-          post.type === "Partnership" ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
-        )}>
-          {post.type}
-        </span>
-        <span className="text-xs font-bold text-slate-300 uppercase ">{post.timestamp}</span>
-      </div>
-
-      <h3 className="text-2xl font-bold text-[#292828] leading-relaxed mb-10 pr-24 line-clamp-3">
-        "{post.description}"
-      </h3>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-8 border-t border-slate-50">
-        <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden">
-             <img src={`https://i.pravatar.cc/150?u=${post.author}`} alt="" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-200 uppercase  leading-none mb-1">Author</p>
-            <h4 className="text-sm font-black text-[#292828] uppercase ">{post.author}</h4>
-          </div>
-        </div>
-
-        <button className="h-12 px-8 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase  hover:bg-[#E53935] transition-all shadow-lg active:scale-95">
-           Connect
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AttendeeCard({ member }: { member: any }) {
-  return (
-    <div className="bg-white p-6 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex items-center justify-between">
-      <div className="flex items-center gap-5">
-        <div className="h-16 w-16 rounded-lg overflow-hidden shadow-md border-2 border-white relative shrink-0">
-          <img src={member.avatar} className="w-full h-full object-cover" alt="" />
-          <div className="absolute bottom-0 right-0 h-4 w-4 bg-emerald-500 border-2 border-white rounded-full" />
-        </div>
-        <div>
-          <h4 className="text-lg font-black text-[#292828] group-hover:text-[#E53935] transition-colors uppercase  leading-tight mb-1">{member.name}</h4>
-          <p className="text-xs font-bold text-slate-200 uppercase flex items-center gap-2">
-            <Briefcase size={12} /> {member.role} @ {member.company}
-          </p>
-          <div className="flex items-center gap-2 mt-3">
-             <TrendingUp size={12} className="text-emerald-500" />
-             <span className="text-[10px] font-black text-emerald-600 uppercase ">{member.matchScore}% Match Score</span>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#292828] hover:text-white transition-all shadow-sm">
-          <UserPlus size={18} />
-        </button>
-        <button className="h-10 w-10 bg-slate-50 text-[#292828] rounded-lg flex items-center justify-center hover:bg-[#E53935] hover:text-white transition-all shadow-sm">
-          <ChevronRight size={18} />
-        </button>
-      </div>
-    </div>
+    </TerminalLayout>
   );
 }

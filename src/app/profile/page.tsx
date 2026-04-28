@@ -47,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { detectBaseTag } from "@/utils/match-engine";
+import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function PremiumProfilePage() {
   const [userData, setUserData] = useState({
@@ -254,7 +255,8 @@ export default function PremiumProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10">
+    <TerminalLayout>
+      <div className="min-h-screen bg-[#FDFDFF] font-sans selection:bg-[#E53935]/10">
       {/* HEADER AREA: PREMIUM GLASSMORPHISM REDESIGN */}
       <div className="bg-[#0A0A0A] h-[320px] relative overflow-hidden flex items-center">
          {/* Animated Background Engine */}
@@ -674,5 +676,6 @@ export default function PremiumProfilePage() {
          </div>
       )}
     </div>
+    </TerminalLayout>
   );
 }

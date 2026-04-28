@@ -39,7 +39,7 @@ export default function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProp
   
   const menuItems = [
     { label: "Home Feed", href: "/home", icon: Home },
-    { label: "Network Hub", href: "/connections", icon: Users },
+    { label: "Network Hub", href: "/matches", icon: Users },
     { label: "Chat", href: "/chat", icon: MessageSquare },
   ];
 

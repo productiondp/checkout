@@ -83,7 +83,7 @@ export const config = {
     '/marketplace',
     '/advisors',
     '/discover',
-    '/connections',
+    '/matches',
     '/profile',
     '/settings'
   ]

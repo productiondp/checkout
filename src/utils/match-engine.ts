@@ -4,7 +4,7 @@ import { SignalGuard } from "./signal-guard";
  * MATCH ENGINE V1.90 (SUCCESS PROBABILITY)
  */
 
-export type IntentMode = 'BALANCED' | 'URGENT' | 'LONG_TERM' | 'PARTNER';
+export type IntentMode = 'SMART' | 'REQUIREMENT' | 'PARTNER' | 'MEETUP';
 
 export interface MatchProfile {
   id: string;
@@ -97,40 +97,40 @@ export const calculateMatchScore = (user: any, post: any, index: number = 0, mod
   const successLabel = successProbability > 0.85 ? "High chance of success" : 
                        successProbability > 0.75 ? "Strong match for this project" : null;
 
-  // 🏛️ STRUCTURED TAXONOMY BOOST (V1.80)
+  // 🏛️ STRUCTURED TAXONOMY BOOST (V2.0 - KERALA OPTIMIZED)
   let taxonomyBoost = 0;
   if (user.industry && post.industry === user.industry) {
-    taxonomyBoost += 0.4;
+    taxonomyBoost += 0.40; // Same Industry
     signals.push("Same Industry");
     
     const userFocus = user.metadata?.focus_areas || [];
     const postFocus = post.metadata?.focus_areas || [];
     const focusOverlap = userFocus.filter((f: string) => postFocus.includes(f));
     if (focusOverlap.length > 0) {
-      taxonomyBoost += 0.3;
+      taxonomyBoost += 0.30; // Same Focus
       signals.push(`${focusOverlap.length} Focus Match`);
     }
+  }
 
-    if (user.metadata?.experience_level && post.metadata?.experience_level === user.metadata?.experience_level) {
-      taxonomyBoost += 0.2;
-      signals.push("Perfect Experience Match");
-    }
+  // 📍 LOCAL RELEVANCE BOOST (+15%)
+  if (user.location && post.location && user.location.toLowerCase() === post.location.toLowerCase()) {
+    taxonomyBoost += 0.15;
+    signals.push("Local Relevance");
+  }
 
-    const userSpecs = user.metadata?.specializations || [];
-    const postSpecs = post.metadata?.specializations || [];
-    const specOverlap = userSpecs.filter((s: string) => postSpecs.includes(s));
-    if (specOverlap.length > 0) {
-      taxonomyBoost += 0.25;
-      signals.push(`${specOverlap.length} Specialization Match`);
-    }
+  if (user.metadata?.experience_level && post.metadata?.experience_level === user.metadata?.experience_level) {
+    taxonomyBoost += 0.15;
+    signals.push("Experience Match");
   }
 
   // Final Score Logic
   let actionScore = (taxonomyBoost * 0.45) + (trustBoost * 0.25) + (performanceScore * 0.15) + (successProbability * 0.15);
   
-  // Apply Mode Multipliers
-  if (mode === 'URGENT' && hasUrgency) actionScore *= 1.2;
-  if (mode === 'PARTNER' && post.type === 'PARTNER') actionScore *= 1.2;
+  // Apply Mode Multipliers (V2.0)
+  if (mode === 'REQUIREMENT' && post.type === 'REQUIREMENT') actionScore *= 1.3;
+  if (mode === 'PARTNER' && post.type === 'PARTNER') actionScore *= 1.3;
+  if (mode === 'MEETUP' && post.type === 'MEETUP') actionScore *= 1.3;
+  if (mode === 'SMART') actionScore *= 1.1; 
 
   if (successLabel) signals.push(successLabel);
 

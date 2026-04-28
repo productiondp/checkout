@@ -303,7 +303,7 @@ export default function FullyActiveGlobalHeader() {
           <div className="relative" ref={profileRef}>
             {!authUser ? (
                <Link 
-                 href="/login"
+                 href="/"
                  className="h-10 px-6 bg-[#292828] text-white rounded-[8px] text-[11px] font-black uppercase  flex items-center justify-center hover:bg-[#E53935] transition-all active:scale-95 shadow-xl shadow-black/5"
                >
                  Sign In
@@ -392,7 +392,7 @@ export default function FullyActiveGlobalHeader() {
                       <button 
                         onClick={async (e) => {
                           e.preventDefault();
-                          await logout();
+                          logout();
                           setIsProfileOpen(false);
                         }}
                         className="w-full flex items-center gap-3.5 p-4 rounded-[10px] text-[12px] font-black uppercase  text-red-500 hover:bg-red-50 transition-all text-left"

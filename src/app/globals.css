@@ -39,6 +39,23 @@
   }
 }
 
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .h-screen-safe {
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
 /* Animations */
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }

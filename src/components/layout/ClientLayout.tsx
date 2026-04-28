@@ -69,11 +69,19 @@ export default function ClientLayout({
     }
   }, [pathname, mounted]);
 
-  const isAuthPage = pathname === "/" || pathname === "/auth" || pathname === "/login" || pathname === "/signup" || pathname === "/onboarding" || pathname === "/admin";
+  const isAuthPage = pathname === "/" || 
+                    pathname === "/auth" || 
+                    pathname === "/onboarding" || 
+                    pathname === "/admin" ||
+                    pathname === "/discover" || 
+                    pathname === "/network" || 
+                    pathname === "/insights" || 
+                    pathname === "/opportunities" || 
+                    pathname === "/what-is-checkout";
 
   if (!mounted) {
     return (
-      <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20">
+      <div className="h-screen-safe w-screen flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20">
          <div className="h-12 w-32 relative animate-pulse mb-4">
             <img 
               src="/images/logo.png" 
@@ -91,11 +99,11 @@ export default function ClientLayout({
   return (
     <ConnectionProvider>
       {isAuthPage ? (
-        <div className="h-[100dvh] w-screen overflow-hidden selection:bg-[#E53935] selection:text-white">
+        <div className="min-h-screen-safe w-screen selection:bg-[#E53935] selection:text-white">
           {children}
         </div>
       ) : (
-        <div className="h-[100dvh] w-screen flex flex-col bg-white lg:bg-[#F2F5F7] overflow-hidden selection:bg-[#E53935] selection:text-white font-sans antialiased overscroll-none">
+        <div className="h-screen-safe w-screen flex flex-col bg-white lg:bg-[#F2F5F7] selection:bg-[#E53935] selection:text-white font-sans antialiased">
           <GlobalHeader />
           
           <div className="flex flex-1 overflow-hidden relative">
@@ -104,7 +112,7 @@ export default function ClientLayout({
             </div>
             
             <main className="flex-1 flex overflow-hidden bg-white">
-              <div className="flex-1 overflow-y-auto scroll-smooth pb-32 lg:pb-0">
+              <div className="flex-1 h-full overflow-y-auto scroll-smooth pb-32 lg:pb-0">
                  {children}
               </div>
 

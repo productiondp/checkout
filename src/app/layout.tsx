@@ -43,8 +43,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} h-full overflow-hidden`}>
-      <body className="font-sans bg-white h-full overscroll-none">
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <body className="font-sans bg-white min-h-screen selection:bg-red-50">
         <AuthProvider>
           <NotificationProvider>
             <ErrorBoundary>

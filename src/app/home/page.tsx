@@ -399,7 +399,7 @@ function HomeContent() {
           <motion.button 
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            onClick={handleOpenPosting}
+            onClick={() => handleOpenPosting()}
             className="h-14 px-8 bg-[#1D1D1F] text-white rounded-full flex items-center gap-4 shadow-2xl hover:bg-black transition-all ring-1 ring-white/10 backdrop-blur-xl group"
           >
              <div className="h-6 w-6 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-[#E53935] group-hover:text-white transition-all">

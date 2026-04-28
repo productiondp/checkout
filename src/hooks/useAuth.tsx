@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [initAuth, syncProfile, supabase]);
 
   // 🛡️ ROUTE GROUPS
-  const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+  const PUBLIC_ROUTES = ["/"];
 
   // 🛡️ AUTH READY GATE
   const isAuthReady = useMemo(() => {
@@ -302,7 +302,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 1. GUEST FLOW (No Session)
         if (!session) {
           if (!PUBLIC_ROUTES.includes(path)) {
-            if (path !== '/' && !path.startsWith('/login') && !path.startsWith('/signup')) {
+            if (path !== '/') {
               sessionStorage.setItem('return_to', path);
             }
             target = "/";
@@ -355,13 +355,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      log("LOGOUT_INITIATED");
+      
+      // 1. Snappy UI Feedback & Lock
       setUiStatus('logout');
       setAuthState("loading");
-      if (routingTimeoutRef.current) clearTimeout(routingTimeoutRef.current);
-      lastProcessedState.current = "";
+      
+      // 2. Immediate local cleanup
+      setSession(null);
+      setUser(null);
+      profileFetchId.current = "LOGGED_OUT"; // Block any pending profile syncs
+      
+      // 3. Clear session storage
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear();
+      }
+
+      // 4. Trigger signout and await completion
       await supabase.auth.signOut();
+      
+      // 5. Force immediate hard redirect to clean everything
+      window.location.replace('/');
     } catch (err) {
-      window.location.href = '/';
+      log("LOGOUT_ERROR", err);
+      window.location.replace('/');
     }
   };
 

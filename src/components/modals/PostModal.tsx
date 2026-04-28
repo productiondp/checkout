@@ -66,7 +66,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   const [meetupFormat, setMeetupFormat] = useState<string>("In-person");
   const [meetupTime, setMeetupTime] = useState<string>("1 hour");
   const [suggestion, setSuggestion] = useState<{ industry: string, focus: string } | null>(null);
-  const [type, setType] = useState<'REQUIREMENT' | 'PARTNER' | 'MEETUP'>(initialFormType);
+  const [type, setType] = useState<'REQUIREMENT' | 'PARTNER' | 'MEETUP'>(
+    typeof initialFormType === 'string' && ['REQUIREMENT', 'PARTNER', 'MEETUP'].includes(initialFormType) 
+      ? initialFormType 
+      : 'REQUIREMENT'
+  );
   
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +113,11 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
         setLocation(editPost.location || "Remote");
       } else {
         setContent("");
-        setType(initialFormType);
+        setType(
+          typeof initialFormType === 'string' && ['REQUIREMENT', 'PARTNER', 'MEETUP'].includes(initialFormType) 
+            ? initialFormType 
+            : 'REQUIREMENT'
+        );
         setIndustry("");
         setFocusAreas([]);
         setSelectedTags([]);

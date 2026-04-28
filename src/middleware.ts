@@ -61,28 +61,28 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 🧠 KEEP PUBLIC ROUTE LOGIC (SAFE GUARD)
-  const publicRoutes = ['/', '/login', '/onboarding', '/admin']
+  // 🧠 PROTECTED & PUBLIC ROUTE MAPPING
+  const publicRoutes = ['/', '/what-is-checkout', '/discover', '/network', '/insights', '/opportunities']
   const isPublic = publicRoutes.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   )
 
   if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/?mode=signin', request.url))
   }
 
   return response
 }
 
 // 🧠 MIDDLEWARE MATCHER (STRICT)
-// Middleware MUST NOT run on: '/', '/login', '/onboarding'
+// Middleware MUST NOT run on: '/', '/onboarding'
 export const config = {
   matcher: [
     '/home',
     '/chat',
     '/marketplace',
     '/advisors',
-    '/directory',
+    '/discover',
     '/connections',
     '/profile',
     '/settings'

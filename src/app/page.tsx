@@ -2,7 +2,8 @@
 
 import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import LandingHeader from "@/components/layout/LandingHeader";
 import {
   Mail,
   Lock,
@@ -16,11 +17,12 @@ import {
   CheckCircle2,
   Sparkles,
   Loader2,
-  Activity,
-  Zap,
-  Globe,
-  Shield,
-  Terminal
+  Terminal,
+  Search,
+  Users,
+  PlayCircle,
+  BookOpen,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -31,27 +33,37 @@ type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student" | "Advisor";
 
 const ROLES: { value: Role; icon: any; desc: string }[] = [
-  { value: "Business", icon: Briefcase, desc: "Hire & Scale" },
-  { value: "Professional", icon: User, desc: "Work & Solve" },
-  { value: "Advisor", icon: ShieldCheck, desc: "Guide & Consult" },
-  { value: "Student", icon: Award, desc: "Learn & Grow" },
+  { value: "Business", icon: Briefcase, desc: "Hire and grow" },
+  { value: "Professional", icon: User, desc: "Work and help" },
+  { value: "Advisor", icon: ShieldCheck, desc: "Give advice" },
+  { value: "Student", icon: Award, desc: "Learn and grow" },
 ];
 
 function AuthContent() {
   const router = useRouter();
   const { authState, loading: authLoading, initAuth } = useAuth();
-  const [mode, setMode] = useState<AuthMode>("signup");
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState<AuthMode>((searchParams.get("mode") as AuthMode) || "signup");
   const [role, setRole] = useState<Role>("Business");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "", fullName: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isRoleOpen, setIsRoleOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-
   const supabase = createClient();
 
   useEffect(() => { setMounted(true); }, []);
+
+  // ── ROLE DROP-DOWN FLASH ANIMATION ──
+  useEffect(() => {
+    if (mode === "signup" && mounted) {
+      setIsRoleOpen(true);
+      const timer = setTimeout(() => setIsRoleOpen(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [mode, mounted]);
 
   if (authLoading || !mounted) return null;
 
@@ -71,19 +83,21 @@ function AuthContent() {
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          options: { data: { full_name: formData.fullName || "New Partner", role: role.toUpperCase() } },
+          options: { data: { full_name: formData.fullName || "New Member", role: role.toUpperCase() } },
         });
         if (signUpError) throw signUpError;
         if (authData.user) {
           await supabase.from("profiles").upsert({
             id: authData.user.id,
-            full_name: formData.fullName || "New Partner",
+            full_name: formData.fullName || "New Member",
             role: role.toUpperCase(),
             location: "Trivandrum",
           });
         }
         setIsSuccess(true);
         await initAuth();
+        // Force immediate navigation for better UX - 2s delay
+        setTimeout(() => router.push("/home"), 2000);
       } else {
         const { data: { session: currentSession }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -93,245 +107,247 @@ function AuthContent() {
         setIsSuccess(true);
         if (currentSession) {
           await initAuth();
+          // Force immediate navigation for better UX - 2s delay
+          setTimeout(() => router.push("/home"), 2000);
         }
       }
     } catch (err: any) {
-      setError(err.message || "Operation failed");
+      setError(err.message || "Something went wrong. Please try again.");
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] font-sans selection:bg-[#FF3B30]/10 relative overflow-x-hidden">
-      {/* ── BACKGROUND ── */}
-      <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
+    <div className="min-h-screen bg-white text-[#000000E6] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
+      {/* Background is pure white */}
+      
+      <LandingHeader 
+         onJoinClick={() => setMode("signup")} 
+         onSigninClick={() => setMode("signin")} 
+      />
 
-      {/* ── NAVIGATION ── */}
-      <nav className="fixed top-0 inset-x-0 h-16 z-50 px-6 lg:px-12 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md">
-         <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-[#FF3B30] rounded-lg flex items-center justify-center shadow-lg shadow-[#FF3B30]/20">
-               <Terminal size={22} className="text-white" />
-            </div>
-            <span className="text-2xl font-black font-outfit uppercase tracking-tighter text-[#1A1A1A]">Check<span className="text-[#FF3B30]">Out</span></span>
-         </div>
-         <div className="flex items-center gap-6">
-            <button 
-              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
-              className="text-[11px] font-black uppercase text-slate-500 hover:text-[#1A1A1A] transition-colors"
-            >
-              {mode === "signin" ? "Join Network" : "Login"}
-            </button>
-         </div>
-      </nav>
-
-      {/* ── MAIN CONTENT ── */}
-      <main className="relative z-10 pt-16 min-h-screen flex items-center justify-center">
-         <div className="max-w-7xl w-full px-6 lg:px-12 py-10 lg:grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+      {/* ── HERO ── */}
+      <main className="pt-[100px] lg:pt-[140px] pb-20 overflow-x-hidden">
+         <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24">
             
-            {/* ── LEFT SIDE ── */}
-            <div className="space-y-8 text-center lg:text-left">
-               <motion.div
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 className="space-y-4"
-               >
-                  <div className="inline-flex items-center gap-3 px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-[#FF3B30] text-[10px] font-black uppercase mx-auto lg:mx-0">
-                     <Sparkles size={12} />
-                     Unified Business Network
-                  </div>
-                  
-                  <h1 className="text-6xl sm:text-7xl lg:text-[100px] font-black uppercase leading-[0.8] font-outfit text-[#1A1A1A] tracking-tighter">
-                     Connect. <br />
-                     <span className="text-[#FF3B30]">Grow.</span> <br />
+            <div className="w-full lg:w-1/2 space-y-8">
+               <h1 className="text-4xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
+                  <span className="font-extralight text-[0.8em] opacity-80">Connect.</span> Grow. <br />
+                  <span className="text-[#E53935] relative">
                      Succeed.
-                  </h1>
-                  
-                  <p className="text-slate-500 font-bold text-xl lg:text-2xl leading-tight max-w-md mx-auto lg:mx-0">
-                     The simple way to find people and grow your business together.
-                  </p>
-               </motion.div>
+                     <span className="absolute -bottom-2 left-0 w-24 h-1 bg-[#E53935] rounded-full opacity-20 blur-[2px]" />
+                  </span>
+               </h1>
 
-               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100">
-                  {[
-                    { icon: Globe, label: "Network", desc: "Local reach" },
-                    { icon: Zap, label: "Match", desc: "Fast sync" },
-                    { icon: Shield, label: "Secure", desc: "Verified" },
-                    { icon: Activity, label: "Live", desc: "Real-time" }
-                  ].map((f, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all text-left group">
-                       <div className="h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-[#FF3B30]/10 group-hover:text-[#FF3B30] transition-colors">
-                          <f.icon size={20} />
-                       </div>
-                       <div>
-                          <p className="text-[11px] font-black uppercase text-[#1A1A1A]">{f.label}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">{f.desc}</p>
-                       </div>
+               <AnimatePresence mode="wait">
+                  {!isSuccess ? (
+                    <motion.div 
+                      key="form"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-6 max-w-[400px]"
+                    >
+                       <form onSubmit={handleSubmit} className="space-y-4">
+                          {mode === "signup" && (
+                             <>
+                                <div className="space-y-1 relative">
+                                   <label className="text-sm font-semibold text-gray-600">I am a...</label>
+                                   <div className="relative">
+                                      <button 
+                                        type="button"
+                                        onClick={() => setIsRoleOpen(!isRoleOpen)}
+                                        className="w-full h-12 px-10 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all bg-white font-bold text-[13px] flex items-center justify-between group"
+                                      >
+                                         <div className="flex items-center gap-3">
+                                            <div className="text-[#E53935]">
+                                               {(() => {
+                                                  const activeRole = ROLES.find(r => r.value === role);
+                                                  const Icon = activeRole?.icon || User;
+                                                  return <Icon size={18} />;
+                                               })()}
+                                            </div>
+                                            <span>{role}</span>
+                                         </div>
+                                         <ChevronRight size={16} className={cn("transition-transform", isRoleOpen ? "-rotate-90" : "rotate-90")} />
+                                      </button>
+
+                                      <AnimatePresence>
+                                         {isRoleOpen && (
+                                            <motion.div 
+                                               initial={{ opacity: 0, y: -10 }}
+                                               animate={{ opacity: 1, y: 0 }}
+                                               exit={{ opacity: 0, y: -10 }}
+                                               className="absolute top-[110%] inset-x-0 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] py-2 overflow-hidden"
+                                            >
+                                               {ROLES.map(r => (
+                                                  <button
+                                                     key={r.value}
+                                                     type="button"
+                                                     onClick={() => { setRole(r.value); setIsRoleOpen(false); }}
+                                                     className={cn(
+                                                        "w-full px-4 py-3 flex items-center gap-3 hover:bg-red-50 transition-colors text-left",
+                                                        role === r.value ? "bg-red-50 text-[#E53935]" : "text-gray-700"
+                                                     )}
+                                                  >
+                                                     <r.icon size={18} className={role === r.value ? "text-[#E53935]" : "text-gray-400"} />
+                                                     <div className="flex flex-col">
+                                                        <span className="text-[13px] font-bold">{r.value}</span>
+                                                        <span className="text-[10px] opacity-60 font-medium">{r.desc}</span>
+                                                     </div>
+                                                  </button>
+                                               ))}
+                                            </motion.div>
+                                         )}
+                                      </AnimatePresence>
+                                   </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                   <label className="text-sm font-semibold text-gray-600">Full name</label>
+                                   <input
+                                      type="text"
+                                      name="fullName"
+                                      value={formData.fullName}
+                                      onChange={handleInput}
+                                      className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all"
+                                      required
+                                   />
+                                </div>
+                             </>
+                          )}
+
+                          <div className="space-y-1">
+                             <label className="text-sm font-semibold text-gray-600">Email</label>
+                             <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInput}
+                                className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all"
+                                required
+                             />
+                          </div>
+
+                          <div className="space-y-1">
+                              <label className="text-sm font-semibold text-gray-600">Password</label>
+                              <div className="relative group">
+                                 <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInput}
+                                    className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all pr-12"
+                                    required
+                                 />
+                                 <button 
+                                   type="button" 
+                                   onClick={() => setShowPassword(!showPassword)}
+                                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E53935] transition-all p-1"
+                                 >
+                                    {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                                 </button>
+                              </div>
+                           </div>
+
+                          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+                          <button
+                             type="submit"
+                             disabled={isLoading}
+                             className="w-full h-12 bg-[#E53935] hover:bg-[#B71C1C] text-white font-bold rounded-full transition-all flex items-center justify-center"
+                          >
+                             {isLoading ? <Loader2 className="animate-spin" size={20} /> : (mode === "signup" ? "Agree & join" : "Sign in")}
+                          </button>
+                       </form>
+
+                    </motion.div>
+                  ) : (
+                    <div className="py-10 space-y-4">
+                       <CheckCircle2 size={48} className="text-[#E53935]" />
+                       <h2 className="text-2xl font-bold">Welcome!</h2>
+                       <p className="text-gray-500">Going to your dashboard...</p>
                     </div>
-                  ))}
-               </div>
+                  )}
+               </AnimatePresence>
             </div>
 
-            {/* ── RIGHT SIDE ── */}
-            <div className="w-full flex justify-center lg:justify-end">
-               <motion.div
-                 initial={{ opacity: 0, scale: 0.98 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 className="w-full max-w-[550px] bg-white border border-slate-100 rounded-lg p-8 lg:p-14 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden"
-               >
-                  <AnimatePresence mode="wait">
-                     {isSuccess ? (
-                        <motion.div 
-                          key="success"
-                          initial={{ opacity: 0, scale: 0.98 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="text-center py-12 space-y-8"
-                        >
-                           <div className="h-20 w-20 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto border border-emerald-100 shadow-xl shadow-emerald-500/10">
-                              <CheckCircle2 size={40} className="text-emerald-500" />
-                           </div>
-                           <div className="space-y-2">
-                              <h2 className="text-3xl font-black text-[#1A1A1A] uppercase font-outfit">Ready</h2>
-                              <p className="text-slate-400 text-[11px] font-black uppercase animate-pulse">Entering System...</p>
-                           </div>
-                        </motion.div>
-                     ) : (
-                        <motion.div 
-                          key="form"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="space-y-8"
-                        >
-                           <header className="space-y-2 text-center lg:text-left">
-                              <h2 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] uppercase font-outfit tracking-tighter leading-none">
-                                 {mode === "signup" ? "Join" : "Login"}
-                              </h2>
-                              <p className="text-slate-500 text-[11px] font-black uppercase tracking-wider">
-                                 {mode === "signup" ? "Create your professional account" : "Welcome back to the grid"}
-                              </p>
-                           </header>
-
-                           {error && (
-                              <div className="p-4 bg-red-50 border border-red-100 text-[#FF3B30] text-[10px] font-black uppercase rounded-lg">
-                                 {error}
-                              </div>
-                           )}
-
-                           <form onSubmit={handleSubmit} className="space-y-6">
-                              {mode === "signup" && (
-                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Select Role</label>
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                                       {ROLES.map((r) => (
-                                          <button
-                                             key={r.value}
-                                             type="button"
-                                             onClick={() => setRole(r.value)}
-                                             className={cn(
-                                                "flex flex-col gap-2 p-3 rounded-lg border transition-all text-left relative overflow-hidden h-24 justify-center group",
-                                                role === r.value
-                                                   ? "border-[#FF3B30] bg-[#FF3B30]/5 text-[#FF3B30]"
-                                                   : "border-slate-100 bg-slate-50 text-slate-400 hover:bg-white hover:border-slate-200"
-                                             )}
-                                          >
-                                             <r.icon size={18} className={cn("transition-colors", role === r.value ? "text-[#FF3B30]" : "text-slate-300 group-hover:text-slate-500")} />
-                                             <p className="text-[12px] font-black uppercase leading-none">{r.value}</p>
-                                             {role === r.value && <div className="absolute top-0 right-0 h-1 w-full bg-[#FF3B30]" />}
-                                          </button>
-                                       ))}
-                                    </div>
-                                 </div>
-                              )}
-
-                              <div className="space-y-4">
-                                 {mode === "signup" && (
-                                    <div className="relative group">
-                                       <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
-                                       <input
-                                          type="text"
-                                          name="fullName"
-                                          value={formData.fullName}
-                                          onChange={handleInput}
-                                          placeholder="Full Name"
-                                          className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
-                                          required
-                                       />
-                                    </div>
-                                 )}
-
-                                 <div className="relative group">
-                                    <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
-                                    <input
-                                       autoFocus={mode === "signin"}
-                                       type="email"
-                                       name="email"
-                                       value={formData.email}
-                                       onChange={handleInput}
-                                       placeholder="Email Address"
-                                       className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
-                                       required
-                                    />
-                                 </div>
-
-                                 <div className="relative group">
-                                    <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#FF3B30] transition-colors" />
-                                    <input
-                                       type={showPassword ? "text" : "password"}
-                                       name="password"
-                                       value={formData.password}
-                                       onChange={handleInput}
-                                       placeholder="Password"
-                                       className="w-full h-14 pl-14 pr-16 bg-slate-50 border border-slate-100 rounded-lg text-[14px] font-bold text-[#1A1A1A] placeholder:text-slate-300 outline-none focus:border-[#FF3B30]/20 focus:bg-white transition-all shadow-sm"
-                                       required
-                                    />
-                                    <button
-                                       type="button"
-                                       onClick={() => setShowPassword(!showPassword)}
-                                       className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#1A1A1A] transition-colors p-2"
-                                    >
-                                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                 </div>
-                              </div>
-
-                              <button
-                                 type="submit"
-                                 disabled={isLoading}
-                                 className="w-full h-16 bg-[#FF3B30] hover:bg-[#D32F2F] text-white font-black text-[15px] uppercase rounded-lg flex items-center justify-center gap-4 transition-all shadow-xl shadow-[#FF3B30]/20 disabled:opacity-50 mt-4 active:scale-95"
-                              >
-                                 {isLoading ? (
-                                   <Loader2 className="animate-spin" size={24} />
-                                 ) : (
-                                   <>
-                                     <span>{mode === "signup" ? "Join Network" : "Login"}</span>
-                                     <ArrowRight size={22} />
-                                   </>
-                                 )}
-                              </button>
-                           </form>
-                           
-                           <footer className="text-center pt-8 border-t border-slate-100">
-                              <button 
-                                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
-                                className="text-[11px] font-black uppercase text-slate-400 hover:text-[#1A1A1A] transition-colors"
-                              >
-                                {mode === "signin" ? "New to the platform? Join now" : "Already have an account? Login"}
-                              </button>
-                           </footer>
-                        </motion.div>
-                     )}
-                  </AnimatePresence>
-               </motion.div>
+            <div className="hidden lg:block w-1/2">
+               <img 
+                 src="/antigravity-hero.png" 
+                 alt="Professional Networking" 
+                 className="w-full h-auto"
+               />
             </div>
          </div>
       </main>
 
-      {/* ── FOOTER STATUS ── */}
-      <div className="fixed bottom-0 inset-x-0 h-12 px-8 flex items-center justify-between z-50 text-[10px] font-black uppercase text-slate-300 pointer-events-none border-t border-slate-100 bg-white/60 backdrop-blur-md">
-         <div className="flex items-center gap-8">
-            <span className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Platform Active</span>
+      {/* ── TOPICS ── */}
+      <section className="bg-gray-100 py-16">
+         <div className="max-w-[1128px] mx-auto px-6">
+            <h2 className="text-3xl font-light mb-8">Find the right people, Business and Opportunities</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+               {[
+                 "Engineering", "Business Development", "Finance", "Sales",
+                 "Marketing", "Design", "Human Resources", "Operations"
+               ].map((topic) => (
+                  <button key={topic} className="p-4 bg-white border border-gray-200 rounded font-bold hover:shadow-md transition-all text-left">
+                     {topic}
+                  </button>
+               ))}
+            </div>
          </div>
-         <div className="tracking-widest">CHECKOUT_OS_V8.0 // KERALA</div>
-      </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="bg-white py-12">
+         <div className="max-w-[1128px] mx-auto px-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+               <div className="space-y-4">
+                  <h4 className="font-bold text-sm">General</h4>
+                  <ul className="space-y-2 text-xs text-gray-500 font-bold">
+                     <li><Link href="/what-is-checkout">What is Checkout</Link></li>
+                     <li>Help Center</li>
+                     <li>Press</li>
+                     <li>Blog</li>
+                  </ul>
+               </div>
+               <div className="space-y-4">
+                  <h4 className="font-bold text-sm">Browse</h4>
+                  <ul className="space-y-2 text-xs text-gray-500 font-bold">
+                     <li>Learning</li>
+                     <li>Jobs</li>
+                     <li>Salary</li>
+                     <li>Mobile</li>
+                  </ul>
+               </div>
+               <div className="space-y-4">
+                  <h4 className="font-bold text-sm">Business</h4>
+                  <ul className="space-y-2 text-xs text-gray-500 font-bold">
+                     <li>Talent</li>
+                     <li>Marketing</li>
+                     <li>Sales</li>
+                     <li>Learning</li>
+                  </ul>
+               </div>
+               <div className="space-y-4">
+                  <h4 className="font-bold text-sm">Support</h4>
+                  <ul className="space-y-2 text-xs text-gray-500 font-bold">
+                     <li>Privacy Policy</li>
+                     <li>User Agreement</li>
+                     <li>Cookie Policy</li>
+                     <li>Copyright Policy</li>
+                  </ul>
+               </div>
+            </div>
+            <div className="pt-8 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400 font-bold">
+               <span>CheckOut © 2026</span>
+               <div className="flex gap-4">
+                  <span>Accessibility</span>
+                  <span>Community Guidelines</span>
+               </div>
+            </div>
+         </div>
+      </footer>
     </div>
   );
 }

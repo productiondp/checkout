@@ -90,7 +90,7 @@ export default function RightSocialRail() {
          </div>
 
          <div 
-           onClick={() => router.push("/explore")}
+           onClick={() => router.push("/discover")}
            className="relative h-56 w-full bg-white rounded-lg border border-[#292828]/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] overflow-hidden group cursor-pointer hover:border-[#E53935]/20 transition-all duration-700"
          >
             {/* Dynamic Background */}

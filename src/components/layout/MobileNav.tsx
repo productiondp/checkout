@@ -23,14 +23,14 @@ export default function MobileNav() {
   const menu = [
     { label: "Home Feed", href: "/home", icon: Home },
     { label: "Network Hub", href: "/connections", icon: Users },
-    { label: "Discovery Map", href: "/explore", icon: Search },
+    { label: "Discovery Map", href: "/discover", icon: Search },
     { label: "Chat", href: "/chat", icon: MessageSquare },
     { label: "Profile", href: "/profile", icon: User },
   ];
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-3xl border-t border-[#292828]/10 flex items-center justify-around lg:hidden z-[999] px-2 pb-safe shadow-[0_-8px_40px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-0 left-0 right-0 h-[calc(70px+env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-3xl border-t border-[#292828]/10 flex items-start justify-around lg:hidden z-[999] px-2 pt-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_40px_rgba(0,0,0,0.04)]">
         {/* 1. LEFT ITEMS */}
         <Link 
           href={menu[0].href}

@@ -44,7 +44,8 @@ function scanDir(dir) {
       
       // 1. Pattern Check
       FORBIDDEN_PATTERNS.forEach(({ regex, message, exceptions }) => {
-        if (exceptions.some(ex => fullPath.includes(ex))) return;
+        const normalizedPath = fullPath.replace(/\\/g, '/');
+        if (exceptions.some(ex => normalizedPath.includes(ex))) return;
         
         if (regex.test(content)) {
           console.error(`\x1b[31m[AUTH VIOLATION]\x1b[0m ${fullPath}: ${message}`);

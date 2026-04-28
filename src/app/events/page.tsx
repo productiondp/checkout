@@ -14,6 +14,7 @@ import {
   Globe
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { MOCK_EVENTS } from "@/data/events";
 import { Event, EventTab } from "@/types/events";
@@ -23,6 +24,7 @@ export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<EventTab>("Upcoming");
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { user } = useAuth();
 
   const filteredEvents = MOCK_EVENTS.filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -137,14 +139,12 @@ export default function EventsPage() {
 
 function EventCard({ event }: { event: Event }) {
   const router = useRouter();
-  const supabase = createClient();
   const [isJoining, setIsJoining] = useState(false);
 
   const handleJoin = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsJoining(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/auth');
         return;

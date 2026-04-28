@@ -34,6 +34,7 @@ const FOCUS_CHIPS: { label: string; value: FocusType; color: string }[] = [
 ];
 
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CheckoutMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -46,6 +47,7 @@ export default function CheckoutMap() {
 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
   const supabase = createClient();
 
   // 1. INITIALIZE MAP
@@ -364,13 +366,12 @@ export default function CheckoutMap() {
                         // 1. Join Meetup Flow
                         try {
                            const { MeetupService } = await import("@/services/meetup-service");
-                           const { user: authUser } = await supabase.auth.getUser();
-                           if (!authUser.user) {
+                           if (!user) {
                               router.push('/auth');
                               return;
                            }
                            
-                           const { roomId } = await MeetupService.joinMeetup(selectedEntity.id, authUser.user.id);
+                           const { roomId } = await MeetupService.joinMeetup(selectedEntity.id, user.id);
                            if (roomId) {
                               router.push(`/chat?room=${roomId}`);
                            } else {

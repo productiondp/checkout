@@ -4,12 +4,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type ConnectionStatus = "PENDING" | "ACCEPTED" | "NONE";
+export type ConnectionState = "PENDING" | "CONNECTED" | "NONE" | "ACCEPT_IGNORE" | "MESSAGE";
 
 interface ConnectionContextType {
-  connectionMap: Record<string, ConnectionStatus>;
+  connectionMap: Record<string, ConnectionState>;
   refreshConnections: () => Promise<void>;
-  getConnectionStatus: (userId: string) => ConnectionStatus;
+  getConnectionState: (userId: string) => ConnectionState;
+  sendRequest: (targetId: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -36,10 +37,12 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
 
       if (error) throw error;
 
-      const map: Record<string, ConnectionStatus> = {};
+      const map: Record<string, ConnectionState> = {};
       data?.forEach(conn => {
         const otherId = conn.sender_id === user.id ? conn.receiver_id : conn.sender_id;
-        map[otherId] = conn.status as ConnectionStatus;
+        if (conn.status === 'ACCEPTED') map[otherId] = "CONNECTED";
+        else if (conn.status === 'PENDING') map[otherId] = "PENDING";
+        else map[otherId] = "NONE";
       });
 
       setConnectionMap(map);
@@ -49,6 +52,21 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
       setIsLoading(false);
     }
   }, [user?.id, supabase]);
+
+  const sendRequest = useCallback(async (targetId: string) => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase.from('connections').insert({
+        sender_id: user.id,
+        receiver_id: targetId,
+        status: 'PENDING'
+      });
+      if (error) throw error;
+      fetchConnections();
+    } catch (err) {
+      console.error("Send request failed:", err);
+    }
+  }, [user?.id, fetchConnections, supabase]);
 
   useEffect(() => {
     fetchConnections();
@@ -70,16 +88,17 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, fetchConnections, supabase]);
 
-  const getConnectionStatus = useCallback((targetId: string): ConnectionStatus => {
+  const getConnectionState = useCallback((targetId: string): ConnectionState => {
     return connectionMap[targetId] || "NONE";
   }, [connectionMap]);
 
   const value = useMemo(() => ({
     connectionMap,
     refreshConnections: fetchConnections,
-    getConnectionStatus,
+    getConnectionState,
+    sendRequest,
     isLoading
-  }), [connectionMap, fetchConnections, getConnectionStatus, isLoading]);
+  }), [connectionMap, fetchConnections, getConnectionState, sendRequest, isLoading]);
 
   return (
     <ConnectionContext.Provider value={value}>

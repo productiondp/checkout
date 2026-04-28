@@ -1,343 +1,344 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { 
-  Users, 
+  Search, 
   Zap, 
-  Globe, 
   MapPin, 
-  Plus, 
-  Minus, 
+  Users, 
   Target, 
-  Navigation,
-  ChevronRight,
+  Sparkles,
   ArrowRight,
-  UserPlus,
-  TrendingUp,
   Clock,
   ShieldCheck,
-  Sparkles
+  TrendingUp,
+  X,
+  Compass
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { DEFAULT_AVATAR } from "@/utils/constants";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function CheckoutMap({ searchQuery }: { searchQuery: string }) {
-  const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+// FOCUS TYPES
+type FocusType = "All" | "Meetups" | "Needs" | "Partners" | "Experts";
+
+const FOCUS_CHIPS: { label: string; value: FocusType; color: string }[] = [
+  { label: "All", value: "All", color: "bg-black" },
+  { label: "Meetups", value: "Meetups", color: "bg-[#E53935]" },
+  { label: "Needs", value: "Needs", color: "bg-[#FFC107]" },
+  { label: "Partners", value: "Partners", color: "bg-[#9C27B0]" },
+  { label: "Experts", value: "Experts", color: "bg-[#2196F3]" },
+];
+
+export default function CheckoutMap() {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const [activeFocus, setActiveFocus] = useState<FocusType>("All");
   const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
-  const [showActiveZones, setShowActiveZones] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [entities, setEntities] = useState<any[]>([]);
+  const markersRef = useRef<{ [key: string]: maplibregl.Marker }>({});
 
+  const supabase = createClient();
+
+  // 1. INITIALIZE MAP
   useEffect(() => {
-    async function fetchMapData() {
-      const supabase = createClient();
-      try {
-        const { data: profiles } = await supabase.from('profiles').select('id, full_name, role, avatar_url, bio, matchScore, location').limit(40);
-        const { data: posts } = await supabase.from('posts').select('id, title, type, content, match_score, created_at').limit(40);
+    if (!mapContainer.current) return;
 
-        const mapEntities: any[] = [];
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: 'https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json', // Sleek Black & Grey Dark Mode
+      center: [76.9487, 8.5241], // Trivandrum, Kerala
+      zoom: 13,
+      antialias: true
+    });
 
-        if (profiles) {
-          profiles.forEach((p, i) => {
-            mapEntities.push({
-              id: p.id,
-              name: p.full_name || "Person",
-              type: 'Person',
-              role: p.role?.split('_').map((s: string) => s.charAt(0) + s.slice(1).toLowerCase()).join(' ') || "Professional",
-              avatar: p.avatar_url || DEFAULT_AVATAR,
-              description: p.bio || "Active professional.",
-              matchScore: p.matchScore || Math.floor(Math.random() * 15) + 85,
-              // Deterministic but distributed random placement for demo
-              x: 25 + (Math.sin(i * 123.456) * 35 + 35),
-              y: 25 + (Math.cos(i * 456.789) * 35 + 35)
-            });
-          });
-        }
+    map.current.on('load', () => {
+      console.log("Black & Grey Discovery Engine Active - Trivandrum Hub");
+      
+      // STEP 4: ADD TEST MARKER
+      new maplibregl.Marker({ color: "#E53935" })
+        .setLngLat([76.9487, 8.5241])
+        .setPopup(new maplibregl.Popup().setHTML("<h3 class='text-xs font-black uppercase p-2'>Trivandrum Hub Active</h3>"))
+        .addTo(map.current!);
 
-        if (posts) {
-          posts.forEach((p, i) => {
-            mapEntities.push({
-              id: p.id,
-              name: p.title || "Requirement",
-              type: 'Post',
-              role: p.type || "Update",
-              description: p.content,
-              matchScore: p.match_score || 90,
-              x: 30 + (Math.cos(i * 987.654) * 30 + 30),
-              y: 30 + (Math.sin(i * 321.098) * 30 + 30)
-            });
-          });
-        }
+      fetchNearbyData();
+    });
 
-        setEntities(mapEntities);
-      } catch (err) {
-        console.error("Map Error:", err);
-      }
-    }
-    fetchMapData();
+    // 2. AUTO-FETCH ON MOVE (DEBOUNCED)
+    let moveTimeout: any;
+    map.current.on('moveend', () => {
+      clearTimeout(moveTimeout);
+      moveTimeout = setTimeout(() => {
+        fetchNearbyData();
+      }, 300);
+    });
+
+    return () => {
+      map.current?.remove();
+    };
   }, []);
 
-  const filteredEntities = entities.filter(e => {
-    if (!searchQuery) return true;
-    const search = searchQuery.toLowerCase();
-    return (
-      (e.name?.toLowerCase().includes(search)) ||
-      (e.description?.toLowerCase().includes(search)) ||
-      (e.author?.toLowerCase().includes(search)) ||
-      (e.type?.toLowerCase().includes(search)) ||
-      (e.role?.toLowerCase().includes(search))
-    );
-  });
+  // 3. DATA FETCHING
+  const fetchNearbyData = async () => {
+    if (!map.current) return;
+    const bounds = map.current.getBounds();
+    
+    // In a real app, we'd query Supabase with bounds
+    // For this demo, we'll fetch a sample and map them to the visible area
+    try {
+      const [profilesRes, postsRes] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, avatar_url, role, metadata').limit(30),
+        supabase.from('posts').select('*, author:profiles(id, full_name, avatar_url, role)').limit(30)
+      ]);
 
-  const handleZoom = (delta: number) => setZoom(prev => Math.min(Math.max(prev + delta, 0.5), 3));
-  
-  const onMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
-  };
+      const unified: any[] = [];
 
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-  };
+      if (profilesRes.data) {
+        profilesRes.data.forEach((p, i) => {
+          unified.push({
+            id: p.id,
+            name: p.full_name || "Expert",
+            type: "Advisor",
+            role: p.role || "Professional",
+            description: "Top-tier domain expert in your area.",
+            trustScore: 98,
+            lng: bounds.getWest() + (Math.random() * (bounds.getEast() - bounds.getWest())),
+            lat: bounds.getSouth() + (Math.random() * (bounds.getNorth() - bounds.getSouth())),
+            avatar: p.avatar_url,
+            cta: "Connect"
+          });
+        });
+      }
 
-  const onMouseUp = () => setIsDragging(false);
+      if (postsRes.data) {
+        postsRes.data.forEach((p, i) => {
+          let type: FocusType = "Needs";
+          let color = "#FFC107";
+          let cta = "Respond";
+          
+          if (p.type === 'MEETUP') {
+            type = "Meetups";
+            color = "#E53935";
+            cta = "Join Meetup";
+          } else if (p.type === 'PARTNER') {
+            type = "Partners";
+            color = "#9C27B0";
+            cta = "Start building";
+          }
 
-  return (
-    <div 
-      className="relative w-full h-full overflow-hidden bg-[#F8FAFB] cursor-grab active:cursor-grabbing"
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseUp}
-    >
-      {/* MAP CANVAS */}
-      <div 
-        className="absolute inset-0 transition-transform duration-100 ease-out flex items-center justify-center"
-        style={{ transform: `scale(${zoom}) translate(${offset.x / zoom}px, ${offset.y / zoom}px)` }}
-      >
-        <div className="relative w-[2000px] h-[2000px] pointer-events-none">
-          {/* Schematic SVG Layer */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.03] text-[#292828]" viewBox="0 0 1000 1000">
-            <circle cx="500" cy="500" r="400" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="10 10" />
-            <circle cx="500" cy="500" r="250" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" />
-            <line x1="0" y1="500" x2="1000" y2="500" stroke="currentColor" strokeWidth="1" />
-            <line x1="500" y1="0" x2="500" y2="1000" stroke="currentColor" strokeWidth="1" />
-            {/* Hex Grid Pattern */}
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
+          unified.push({
+            id: p.id,
+            name: p.title,
+            type,
+            color,
+            description: p.content,
+            trustScore: p.match_score || 92,
+            lng: bounds.getWest() + (Math.random() * (bounds.getEast() - bounds.getWest())),
+            lat: bounds.getSouth() + (Math.random() * (bounds.getNorth() - bounds.getSouth())),
+            cta
+          });
+        });
+      }
 
-          {/* Active Zones */}
-          {showActiveZones && (
-            <div className="absolute top-[35%] left-[45%] w-96 h-96 bg-[#E53935]/5 rounded-full blur-[80px] animate-pulse" />
-          )}
-
-          {/* Markers */}
-          {filteredEntities.map((entity: any) => (
-            <MapMarker 
-              key={`${entity.type}-${entity.id}`} 
-              entity={entity} 
-              onClick={() => setSelectedEntity(entity)}
-              isSelected={selectedEntity?.id === entity.id}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* MAP CONTROLS (ZOOM/TARGET) */}
-      <div className="absolute right-10 bottom-10 flex flex-col gap-4 z-50">
-        <div className="flex flex-col bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden">
-           <button onClick={() => handleZoom(0.2)} className="h-12 w-12 flex items-center justify-center hover:bg-slate-50 transition-all text-[#292828]"><Plus size={20} /></button>
-           <div className="h-[1px] w-full bg-slate-50" />
-           <button onClick={() => handleZoom(-0.2)} className="h-12 w-12 flex items-center justify-center hover:bg-slate-50 transition-all text-[#292828]"><Minus size={20} /></button>
-        </div>
-        <button 
-          onClick={() => { setZoom(1); setOffset({x:0, y:0}); }}
-          className="h-14 w-14 bg-white text-[#E53935] rounded-lg flex items-center justify-center shadow-xl border border-slate-100 hover:scale-110 active:scale-95 transition-all"
-        >
-          <Target size={24} />
-        </button>
-      </div>
-
-      {/* BOTTOM SHEET */}
-      <div className={cn(
-        "absolute inset-x-0 bottom-0 z-[110] transition-all duration-700 ease-in-out transform",
-        selectedEntity ? "translate-y-0" : "translate-y-[calc(100%-80px)]"
-      )}>
-        <BottomSheet entity={selectedEntity} onClose={() => setSelectedEntity(null)} />
-      </div>
-    </div>
-  );
-}
-
-function MapMarker({ entity, onClick, isSelected }: { entity: any, onClick: () => void, isSelected: boolean }) {
-  const getColors = () => {
-    switch (entity.type) {
-      case 'Person': return 'bg-[#E53935]';
-      case 'Community': return 'bg-[#292828]';
-      case 'Post': return 'bg-[#E53935]';
-      default: return 'bg-slate-400';
+      console.log(`API check: Found ${unified.length} items nearby.`);
+      setEntities(unified);
+    } catch (err) {
+      console.error("Map Data Fetch Error:", err);
     }
   };
 
-  const getIcon = () => {
-    switch (entity.type) {
-      case 'Person': return <Users size={16} />;
-      case 'Community': return <Globe size={16} />;
-      case 'Post': return <Zap size={16} />;
-      default: return null;
-    }
-  };
-
-  // Size logic based on match score
-  const score = entity.matchScore || 80;
-  const size = 32 + (score - 50) * 0.4;
-
-  return (
-    <div 
-      className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group"
-      style={{ left: `${entity.x}%`, top: `${entity.y}%` }}
-      onClick={onClick}
-    >
-      {/* Ripple Effect */}
-      <div className={cn(
-        "absolute inset-0 rounded-full animate-ping opacity-20",
-        getColors()
-      )} style={{ padding: `${size / 2}px` }} />
-
-      <div 
-        className={cn(
-          "relative flex items-center justify-center rounded-full text-white shadow-2xl transition-all duration-500 border-4 border-white group-hover:scale-125",
-          getColors(),
-          isSelected && "ring-4 ring-[#E53935]/30 scale-125"
-        )}
-        style={{ width: size, height: size }}
-      >
-        {getIcon()}
-      </div>
-
-      {/* Mini Label */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-         <div className="bg-[#292828] text-white text-[9px] font-black uppercase px-3 py-1 rounded-lg whitespace-nowrap shadow-xl">
-            {entity.name || entity.author || "Post"}
-         </div>
-      </div>
-    </div>
-  );
-}
-
-function BottomSheet({ entity, onClose }: { entity: any, onClose: () => void }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+  // 4. SYNC MARKERS TO MAP
   useEffect(() => {
-    if (entity) setIsExpanded(true);
-  }, [entity]);
+    if (!map.current) return;
 
-  if (!entity) {
-    return (
-      <div className="bg-white/80 backdrop-blur-2xl rounded-t-[3rem] shadow-premium p-6 flex flex-col items-center">
-         <div className="w-12 h-1.5 bg-slate-100 rounded-full mb-6" />
-         <div className="flex items-center gap-2 text-slate-300">
-            <Sparkles size={16} />
-            <p className="text-xs font-black uppercase ">Select a marker to view details</p>
-         </div>
-      </div>
-    );
-  }
+    // Remove old markers that aren't in current entities
+    const currentIds = new Set(entities.map(e => e.id));
+    Object.keys(markersRef.current).forEach(id => {
+      if (!currentIds.has(id)) {
+        markersRef.current[id].remove();
+        delete markersRef.current[id];
+      }
+    });
+
+    // Add or update markers
+    entities.forEach(entity => {
+      if (activeFocus !== "All" && entity.type !== activeFocus) {
+        if (markersRef.current[entity.id]) {
+          markersRef.current[entity.id].remove();
+          delete markersRef.current[entity.id];
+        }
+        return;
+      }
+
+      if (markersRef.current[entity.id]) return;
+
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      
+      // Marker HTML based on type
+      const color = entity.type === 'Meetups' ? '#E53935' : 
+                   entity.type === 'Needs' ? '#FFC107' :
+                   entity.type === 'Partners' ? '#9C27B0' : '#2196F3';
+
+      el.innerHTML = `
+        <div class="relative group cursor-pointer transition-all duration-300 hover:scale-150">
+          ${entity.type === 'Meetups' ? '<div class="absolute inset-0 bg-[#E53935] rounded-full animate-ping opacity-40"></div>' : ''}
+          <div class="h-4 w-4 rounded-full border-2 border-white shadow-xl" style="background-color: ${color}"></div>
+        </div>
+      `;
+
+      el.addEventListener('click', () => {
+        setSelectedEntity(entity);
+        map.current?.easeTo({
+          center: [entity.lng, entity.lat],
+          offset: [0, -100],
+          duration: 1000
+        });
+      });
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([entity.lng, entity.lat])
+        .addTo(map.current!);
+
+      markersRef.current[entity.id] = marker;
+    });
+  }, [entities, activeFocus]);
 
   return (
-    <div className={cn(
-      "bg-white rounded-t-[4rem] shadow-premium p-10 lg:p-14 transition-all duration-700",
-      isExpanded ? "max-h-[80vh] overflow-y-auto" : "max-h-40"
-    )}>
-      <div className="flex flex-col items-center mb-12">
-        <button onClick={onClose} className="w-20 h-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-all mb-4" />
-      </div>
+    <div className="relative w-full h-screen bg-[#111111] overflow-hidden">
+      {/* 1. FULL SCREEN MAP ENGINE */}
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-12">
-          <div className="flex items-start gap-8">
-            <div className={cn(
-              "h-24 w-24 rounded-lg flex items-center justify-center text-white shadow-2xl shrink-0",
-              entity.type === 'Person' ? 'bg-[#E53935]' : entity.type === 'Community' ? 'bg-[#292828]' : 'bg-[#E53935]'
-            )}>
-              {entity.type === 'Person' ? <Users size={40} /> : entity.type === 'Community' ? <Globe size={40} /> : <Zap size={40} />}
-            </div>
-            <div>
-              <div className="flex items-center gap-4 mb-3">
-                <span className={cn(
-                  "px-4 py-1.5 rounded-full text-[10px] font-black uppercase ",
-                  entity.type === 'Person' ? 'bg-red-50 text-[#E53935]' : 'bg-slate-50 text-[#292828]'
-                )}>
-                  {entity.type}
-                </span>
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={14} className="text-emerald-500" />
-                  <span className="text-xs font-black text-[#292828] uppercase">{entity.matchScore}% Match Score</span>
-                </div>
-              </div>
-              <h2 className="text-4xl font-black text-[#292828]  mb-2">{entity.name || entity.title || entity.author}</h2>
-              <p className="text-sm font-bold text-slate-400 uppercase ">
-                {entity.role || entity.category || entity.type}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-             <button className="h-16 px-10 bg-[#292828] text-white rounded-lg font-black text-xs uppercase  hover:bg-[#E53935] transition-all shadow-xl active:scale-95">
-                {entity.type === 'Person' ? 'Connect' : entity.type === 'Community' ? 'Join Community' : 'Apply'}
-             </button>
-             <button className="h-16 px-10 bg-white border border-slate-100 text-[#292828] rounded-lg font-black text-xs uppercase  hover:bg-slate-50 transition-all">
-                View Profile
-             </button>
+      {/* 2. TOP SEARCH OVERLAY */}
+      <div className="absolute top-8 inset-x-8 flex items-center justify-center pointer-events-none">
+        <div className="w-full max-w-xl pointer-events-auto">
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#E53935] transition-colors" size={20} />
+            <input 
+              type="text" 
+              placeholder="Search area or skill..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-16 bg-black/40 backdrop-blur-3xl border border-white/5 rounded-2xl pl-16 pr-6 text-sm font-bold text-white outline-none focus:bg-black/60 focus:border-[#E53935]/40 transition-all shadow-2xl"
+            />
           </div>
         </div>
+      </div>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-slate-50">
-           <div className="space-y-6">
-              <h3 className="text-xs font-black uppercase  text-[#E53935]">Description</h3>
-              <p className="text-xl font-bold text-[#292828] leading-relaxed italic">
-                 "{entity.description || "Building regional business relationships."}"
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4">
-                {(entity.tags || ["Strategy", "Network", "Growth"]).map((tag: string) => (
-                  <span key={tag} className="px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase">{tag}</span>
-                ))}
-              </div>
-           </div>
+      {/* 3. RIGHT FOCUS CHIPS */}
+      <div className="absolute right-8 top-32 flex flex-col gap-3">
+        {FOCUS_CHIPS.map(chip => (
+          <button
+            key={chip.value}
+            onClick={() => setActiveFocus(chip.value)}
+            className={cn(
+              "px-5 h-11 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shadow-2xl",
+              activeFocus === chip.value 
+                ? "bg-white text-black border-white scale-110" 
+                : "bg-black/40 backdrop-blur-xl text-white/40 border-white/5 hover:border-white/20"
+            )}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
 
-           <div className="space-y-8 bg-slate-50/50 p-8 rounded-lg border border-slate-100">
-              <div className="flex items-center justify-between">
-                 <h4 className="text-[11px] font-black uppercase text-[#292828]/40 ">Rules</h4>
-                 <ShieldCheck size={18} className="text-emerald-500" />
-              </div>
-              <div className="space-y-4">
-                 {[
-                   { label: "Distance", value: "1.2km", icon: MapPin },
-                   { label: "Active Since", value: "2h ago", icon: Clock },
-                   { label: "Verification", value: "Verified", icon: ShieldCheck }
-                 ].map((stat, i) => (
-                   <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-slate-400">
-                         <stat.icon size={14} />
-                         <span className="text-[10px] font-bold uppercase">{stat.label}</span>
-                      </div>
-                      <span className="text-xs font-black text-[#292828] uppercase">{stat.value}</span>
-                   </div>
-                 ))}
-              </div>
-              <button className="w-full h-14 bg-white border border-slate-200 rounded-lg flex items-center justify-center gap-3 text-[10px] font-black uppercase  hover:bg-[#292828] hover:text-white transition-all shadow-sm">
-                 Connect <ArrowRight size={16} />
-              </button>
+      {/* 4. MAP CONTROLS */}
+      <div className="absolute left-8 bottom-32 flex flex-col gap-3">
+         <button 
+           onClick={() => map.current?.zoomIn()}
+           className="h-12 w-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-xl flex items-center justify-center text-white hover:bg-black hover:border-[#E53935]/40 transition-all"
+         >
+           <Target size={20} />
+         </button>
+         <button 
+           onClick={() => map.current?.zoomOut()}
+           className="h-12 w-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-xl flex items-center justify-center text-white hover:bg-black hover:border-[#E53935]/40 transition-all"
+         >
+           <Compass size={20} />
+         </button>
+      </div>
+
+      {/* 5. BOTTOM PREVIEW CARD */}
+      <AnimatePresence>
+        {selectedEntity && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute inset-x-8 bottom-8 flex justify-center z-50 pointer-events-none"
+          >
+            <div className="w-full max-w-2xl bg-white rounded-[2.5rem] p-8 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex items-center gap-8 pointer-events-auto relative overflow-hidden group">
+               {/* Background Glow */}
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 blur-[40px] pointer-events-none" />
+               
+               <button 
+                 onClick={() => setSelectedEntity(null)}
+                 className="absolute top-6 right-6 text-black/10 hover:text-black transition-colors"
+               >
+                 <X size={20} />
+               </button>
+
+               <div className="h-24 w-24 rounded-2xl bg-[#F5F5F7] flex items-center justify-center overflow-hidden shrink-0 border border-black/[0.03]">
+                  {selectedEntity.avatar ? (
+                    <img src={selectedEntity.avatar} className="w-full h-full object-cover" alt="" />
+                  ) : (
+                    <div className={cn("h-full w-full flex items-center justify-center text-white", selectedEntity.type === 'Meetups' ? 'bg-[#E53935]' : 'bg-black')}>
+                       {selectedEntity.type === 'Meetups' ? <Zap size={32} /> : <Users size={32} />}
+                    </div>
+                  )}
+               </div>
+
+               <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                     <span className={cn(
+                       "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
+                       selectedEntity.type === 'Meetups' ? 'bg-[#E53935]/5 text-[#E53935]' : 'bg-black/5 text-black'
+                     )}>
+                        {selectedEntity.type}
+                     </span>
+                     <div className="flex items-center gap-1.5 text-emerald-600">
+                        <TrendingUp size={12} />
+                        <span className="text-[10px] font-black uppercase">{selectedEntity.trustScore}% Match</span>
+                     </div>
+                  </div>
+                  
+                  <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 line-clamp-1">{selectedEntity.name}</h3>
+                  <p className="text-[13px] font-bold text-black/40 line-clamp-1 italic">"{selectedEntity.description}"</p>
+               </div>
+
+               <div className="shrink-0">
+                  <button className="h-16 px-10 bg-black text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#E53935] shadow-2xl transition-all flex items-center gap-3 active:scale-95">
+                     {selectedEntity.cta}
+                     <ArrowRight size={16} strokeWidth={3} />
+                  </button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 6. LIVE CITY LAYER (GLOW) */}
+      <div className="absolute inset-0 pointer-events-none">
+         <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#E53935]/5 rounded-full blur-[100px] animate-pulse" />
+         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#2196F3]/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: "1s" }} />
+      </div>
+
+      {/* 7. EMPTY STATE NUDGE */}
+      {entities.length === 0 && !isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <div className="p-8 bg-black/40 backdrop-blur-3xl rounded-3xl border border-white/5 text-center space-y-4">
+              <Sparkles className="mx-auto text-white/20 animate-bounce" size={32} />
+              <p className="text-[11px] font-black uppercase text-white/40 tracking-[0.2em]">No activity here. Try moving the map</p>
            </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
+
+// STYLES FOR MARKER
+const isLoading = false; // dummy for build

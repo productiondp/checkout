@@ -65,15 +65,15 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                  {/* STATUS BADGE */}
                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#E53935]/10 border border-[#E53935]/20 rounded-lg">
                     <div className="h-1 w-1 bg-[#E53935] rounded-full animate-pulse" />
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#E53935]">System Active</span>
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#E53935]">Account Ready</span>
                  </div>
                  
                  <div className="space-y-3">
                     <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white uppercase">
-                       Find the right partners to build.
+                       Build with the right partners.
                     </h2>
                     <p className="text-[15px] font-bold text-white/40 leading-relaxed max-w-2xl">
-                       Your business node is verified. Broadcast requirements to the network or discover active nodes to accelerate your scale.
+                       Your profile is verified. Post what you are looking for or find people to grow your business faster.
                     </p>
                  </div>
               </div>
@@ -87,7 +87,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                    className="h-14 px-8 bg-gradient-to-br from-[#E53935] to-[#D32F2F] text-white rounded-xl text-[12px] font-black uppercase tracking-widest shadow-[0_10px_30px_rgba(229,57,51,0.3)] hover:shadow-[0_20px_40px_rgba(229,57,51,0.4)] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
                  >
                     <Plus size={18} strokeWidth={3} />
-                    <span>Post Requirement</span>
+                    <span>Post Now</span>
                  </motion.button>
                  
                  <motion.button 
@@ -96,7 +96,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                    onClick={onExplore}
                    className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-black uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
                  >
-                    <span>Discover Nodes</span>
+                    <span>Find Partners</span>
                     <ArrowRight size={18} strokeWidth={3} />
                  </motion.button>
               </div>
@@ -105,9 +105,9 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
            {/* CONDENSED FOOTER */}
            <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-x-12 gap-y-6">
               {[
-                 { icon: Globe, label: "Scope", val: "8,400 Nodes", color: "text-[#E53935]" },
-                 { icon: Zap, label: "Efficiency", val: "98.4%", color: "text-amber-400" },
-                 { icon: Rocket, label: "Velocity", val: "2.4x Speed", color: "text-emerald-400" }
+                 { icon: Globe, label: "Network", val: "8,400+ People", color: "text-[#E53935]" },
+                 { icon: Zap, label: "Success", val: "98% Match", color: "text-amber-400" },
+                 { icon: Rocket, label: "Speed", val: "2x Faster", color: "text-emerald-400" }
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-4">
                    <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">

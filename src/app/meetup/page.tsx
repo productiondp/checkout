@@ -18,7 +18,8 @@ import {
   Maximize2,
   Filter,
   Check,
-  ChevronRight
+  ChevronRight,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -32,11 +33,17 @@ import { useAuth } from "@/hooks/useAuth";
 export default function MeetupPage() {
   const { user: authUser } = useAuth();
   const [meetups, setMeetups] = useState<any[]>([]);
-  const [showHostModal, setShowHostModal] = useState(false);
-  const [activeTopic, setActiveTopic] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showAiArchitect, setShowAiArchitect] = useState(false);
+  const [hostStep, setHostStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTopic, setActiveTopic] = useState("All");
+  const [showHostModal, setShowHostModal] = useState(false);
+  
+  // NEW SYSTEM STATE
+  const [meetupType, setMeetupType] = useState<"Open" | "Advisor">("Open");
+  const [selectedAdvisor, setSelectedAdvisor] = useState<any | null>(null);
+  const [suggestedAdvisors, setSuggestedAdvisors] = useState<any[]>([]);
 
   const supabase = createClient();
 
@@ -57,8 +64,11 @@ export default function MeetupPage() {
           avatar: m.author?.avatar_url || `https://i.pravatar.cc/150?u=${m.id}`,
           timeAgo: "Live in 2h",
           matchPotential: m.match_score || 95,
-          attendees: 12,
+          attendees: m.participant_count || Math.floor(Math.random() * 5) + 1,
+          maxAttendees: 8,
           category: m.domain || "Tech",
+          typeLabel: m.metadata?.is_advisor_led ? "Advisor-Led" : "Open Meetup",
+          isPremium: m.metadata?.is_advisor_led || false,
           x: Math.random() * 80 + 10,
           y: Math.random() * 80 + 10
         }));
@@ -66,6 +76,10 @@ export default function MeetupPage() {
       } else {
         setMeetups([]);
       }
+      
+      // Load advisors for suggestion
+      const { data: advisors } = await supabase.from('profiles').select('*').limit(5);
+      setSuggestedAdvisors(advisors || []);
       setIsLoading(false);
     }
     initMeetup();
@@ -120,54 +134,56 @@ export default function MeetupPage() {
                </div>
                
                <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => setShowAiArchitect(true)}
-                    className="h-16 px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
-                  >
-                     <div className="h-10 w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
-                        <BrainCircuit size={20} />
-                     </div>
-                     <div className="text-left">
-                        <p className="text-[9px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
-                        <p className="text-[11px] font-bold uppercase">Plan Meeting</p>
-                     </div>
-                  </button>
-                  
-                  <button 
-                    onClick={() => setShowHostModal(true)}
-                    className="h-16 w-16 lg:w-auto lg:px-8 rounded-lg bg-white border-2 border-[#292828] text-[#292828] flex items-center justify-center gap-4 hover:bg-[#292828] hover:text-white transition-all group"
-                  >
-                     <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
-                     <span className="hidden lg:block font-bold text-[11px] uppercase">Host Meetup</span>
-                  </button>
-               </div>
+                   <button 
+                     onClick={() => setShowAiArchitect(true)}
+                     className="h-16 px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
+                   >
+                      <div className="h-10 w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
+                         <BrainCircuit size={20} />
+                      </div>
+                      <div className="text-left">
+                         <p className="text-[9px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
+                         <p className="text-[11px] font-bold uppercase">Plan Meeting</p>
+                      </div>
+                   </button>
+                </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto">
-                  {TOPICS.map(t => (
-                    <button 
-                      key={t}
-                      onClick={() => setActiveTopic(t)}
-                      className={cn(
-                        "px-6 h-11 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
-                        activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
-                      )}
-                    >
-                       {t}
-                    </button>
-                  ))}
-               </div>
-               <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
-                  <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                     <LayoutGrid size={14} /> Grid
-                  </button>
-                  <button onClick={() => setViewMode("list")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                     <List size={14} /> List
-                  </button>
-               </div>
-            </div>
-         </div>
+             <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto">
+                   {TOPICS.map(t => (
+                     <button 
+                       key={t}
+                       onClick={() => setActiveTopic(t)}
+                       className={cn(
+                         "px-6 h-11 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
+                         activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
+                       )}
+                     >
+                        {t}
+                     </button>
+                   ))}
+                </div>
+                
+                <div className="flex items-center gap-4 shrink-0">
+                   <button 
+                     onClick={() => { setShowHostModal(true); setHostStep(1); }}
+                     className="h-11 px-6 bg-black text-white rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg active:scale-95 transition-all"
+                   >
+                      <Plus size={14} /> Host Meetup
+                   </button>
+
+                   <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
+                      <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                         <LayoutGrid size={14} />
+                      </button>
+                      <button onClick={() => setViewMode("list")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                         <List size={14} />
+                      </button>
+                   </div>
+                </div>
+             </div>
+          </div>
 
          {/* CONTENT GRID */}
          <div className="p-8 lg:p-12">
@@ -238,28 +254,29 @@ export default function MeetupPage() {
                                      </div>
                                    ))}
                                 </div>
-                                <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{m.attendees} Attending</span>
+                                <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{m.attendees}/8 Occupied</span>
                              </div>
 
                              <button 
                                onClick={() => handleJoin(m.id)}
+                               disabled={m.attendees >= 8}
                                className={cn(
                                  "h-14 px-8 rounded-lg font-bold text-[11px] uppercase  transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
                                  m.status === "joined" 
                                   ? "bg-emerald-500 text-white shadow-emerald-500/20" 
-                                  : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
+                                  : m.attendees >= 8 ? "bg-black/10 text-black/20 cursor-not-allowed" : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
                                )}
                              >
-                                {m.status === "joined" ? <><CheckCircle2 size={18} strokeWidth={3} /> RSVP'ed</> : <><Plus size={18} strokeWidth={3} /> Grab Slot</>}
+                                {m.status === "joined" ? <><CheckCircle2 size={18} strokeWidth={3} /> You're In</> : m.attendees >= 8 ? "Full" : <><Plus size={18} strokeWidth={3} /> Join Meetup</>}
                              </button>
                           </div>
                        </div>
                     </div>
                  </div>
                ))}
-            </div>
-         </div>
-      </main>
+             </div>
+          </div>
+       </main>
 
       {/* 2. ANALYTICS SIDEBAR (RIGHT) */}
       <aside className="hidden xl:flex flex-col w-[420px] bg-[#FDFDFF] border-l border-[#292828]/10 p-10 gap-10 overflow-y-auto no-scrollbar">
@@ -408,47 +425,145 @@ export default function MeetupPage() {
                  </section>
               </div>
            </aside>
-        </div>
-      )}
+        </div>      {/* HOST WIZARD */}
+      <AnimatePresence>
+        {showHostModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="absolute inset-0 bg-[#292828]/80 backdrop-blur-2xl" 
+               onClick={() => setShowHostModal(false)} 
+             />
+             
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.9, y: 20 }}
+               className="relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden shadow-4xl"
+             >
+                {/* PROGRESS BAR */}
+                <div className="absolute top-0 left-0 w-full h-2 bg-[#F5F5F7]">
+                   <motion.div 
+                     initial={{ width: "33%" }}
+                     animate={{ width: `${(hostStep / 3) * 100}%` }}
+                     className="h-full bg-[#E53935]"
+                   />
+                              <div className="p-12 md:p-16">
+                   <div className="flex items-center justify-between mb-12">
+                      <div className="flex items-center gap-3">
+                         <div className="h-10 w-10 bg-[#E53935]/5 text-[#E53935] rounded-xl flex items-center justify-center font-black text-sm">
+                            0{hostStep}
+                         </div>
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">Step {hostStep} of 4</p>
+                      </div>
+                      <button onClick={() => setShowHostModal(false)} className="text-black/20 hover:text-black transition-colors">
+                         <X size={24} />
+                      </button>
+                   </div>
 
-      {/* HOST MODAL (CLEANER) */}
-      {showHostModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
-           <div className="absolute inset-0 bg-[#292828]/60 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowHostModal(false)} />
-           <div className="relative w-full max-w-lg bg-white rounded-lg p-12 shadow-4xl animate-in zoom-in-95 duration-500">
-              <div className="text-center mb-10">
-                 <h2>Host <span className="text-[#E53935] italic">Meetup</span></h2>
-                 <p className="subheading-editorial mt-2 px-10">Show your meetup post to the local business network.</p>
-              </div>
+                   <AnimatePresence mode="wait">
+                      {hostStep === 1 && (
+                        <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                           <div className="space-y-4">
+                              <h2 className="text-4xl font-black uppercase font-outfit">Select <span className="text-[#E53935] italic">System</span></h2>
+                              <p className="text-[13px] font-bold text-black/30 uppercase tracking-widest">Choose how your meetup is organized.</p>
+                           </div>
+                           <div className="grid grid-cols-1 gap-4">
+                              <button onClick={() => setMeetupType("Open")} className={cn("p-8 rounded-2xl border-2 text-left transition-all", meetupType === "Open" ? "border-[#E53935] bg-[#E53935]/5 shadow-xl" : "border-[#F5F5F7] hover:border-[#E53935]/20")}>
+                                 <h4 className="text-xl font-black uppercase mb-1">Open Meetup</h4>
+                                 <p className="text-[11px] font-bold text-black/40 uppercase">Visible to all relevant industry nodes.</p>
+                              </button>
+                              <button onClick={() => setMeetupType("Advisor")} className={cn("p-8 rounded-2xl border-2 text-left transition-all", meetupType === "Advisor" ? "border-[#E53935] bg-[#E53935]/5 shadow-xl" : "border-[#F5F5F7] hover:border-[#E53935]/20")}>
+                                 <h4 className="text-xl font-black uppercase mb-1">Advisor Meetup <span className="ml-2 text-[10px] bg-[#E53935] text-white px-2 py-0.5 rounded">PREMIUM</span></h4>
+                                 <p className="text-[11px] font-bold text-black/40 uppercase">Requires domain expert approval. High Signal.</p>
+                              </button>
+                           </div>
+                        </motion.div>
+                      )}
 
-              <div className="space-y-6">
-                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Meeting Title</label>
-                    <input type="text" placeholder="e.g. Series A Strategy Circle" className="w-full h-16 bg-[#292828]/5 rounded-lg px-8 text-[15px] font-bold outline-none border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner" />
-                 </div>
-                 
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                       <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Format</label>
-                       <select className="w-full h-16 bg-[#292828]/5 rounded-lg px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
-                          <option>In-Person</option>
-                          <option>Virtual Hub</option>
-                       </select>
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[9px] font-black text-[#292828]/30 uppercase  ml-4">Category</label>
-                       <select className="w-full h-16 bg-[#292828]/5 rounded-lg px-6 text-[12px] font-bold uppercase outline-none cursor-pointer border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner appearance-none">
-                          {TOPICS.map(t => t !== "All" && <option key={t}>{t}</option>)}
-                       </select>
-                    </div>
-                 </div>
+                      {hostStep === 2 && (
+                        <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                           <div className="space-y-4">
+                              <h2 className="text-4xl font-black uppercase font-outfit">The <span className="text-[#E53935] italic">Agenda</span></h2>
+                              <p className="text-[13px] font-bold text-black/30 uppercase tracking-widest">What are we building/solving?</p>
+                           </div>
+                           <div className="space-y-6">
+                              <div className="space-y-2">
+                                 <label className="text-[9px] font-black text-black/20 uppercase ml-4">Title</label>
+                                 <input type="text" placeholder="e.g. Series A Logistics Sync" className="w-full h-18 bg-[#F5F5F7] rounded-2xl px-8 text-lg font-bold outline-none border-2 border-transparent focus:border-[#E53935]/20 focus:bg-white transition-all shadow-inner" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 {TOPICS.filter(t => t !== "All").map(t => (
+                                   <button key={t} className="h-16 bg-[#F5F5F7] rounded-2xl border-2 border-transparent hover:border-[#E53935]/40 hover:bg-white transition-all flex items-center justify-center text-[10px] font-black uppercase">{t}</button>
+                                 ))}
+                              </div>
+                           </div>
+                        </motion.div>
+                      )}
 
-                 <button className="w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[11px] uppercase  shadow-2xl hover:bg-[#E53935] transition-all flex items-center justify-center gap-4 group">
-                    Invite Others <Zap size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
-                 </button>
-              </div>
-           </div>
-        </div>
+                      {hostStep === 3 && meetupType === "Advisor" && (
+                        <motion.div key="step3-advisor" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                           <div className="space-y-4">
+                              <h2 className="text-4xl font-black uppercase font-outfit">Match <span className="text-[#E53935] italic">Expert</span></h2>
+                              <p className="text-[13px] font-bold text-black/30 uppercase tracking-widest">Select an advisor to lead this session.</p>
+                           </div>
+                           <div className="space-y-4">
+                              {suggestedAdvisors.map(adv => (
+                                <button key={adv.id} onClick={() => setSelectedAdvisor(adv)} className={cn("w-full p-6 rounded-2xl border-2 flex items-center gap-6 transition-all", selectedAdvisor?.id === adv.id ? "border-[#E53935] bg-[#E53935]/5 shadow-xl" : "border-[#F5F5F7] hover:border-[#E53935]/20")}>
+                                   <div className="h-16 w-16 bg-slate-200 rounded-xl overflow-hidden shrink-0"><img src={adv.avatar_url || `https://i.pravatar.cc/150?u=${adv.id}`} className="w-full h-full object-cover" alt="" /></div>
+                                   <div className="text-left">
+                                      <h4 className="text-lg font-black uppercase leading-none mb-1">{adv.full_name}</h4>
+                                      <p className="text-[10px] font-bold text-black/30 uppercase">{adv.role} • 98% Match</p>
+                                   </div>
+                                </button>
+                              ))}
+                           </div>
+                        </motion.div>
+                      )}
+
+                      {(hostStep === 3 && meetupType === "Open" || hostStep === 4) && (
+                        <motion.div key="step-logistics" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                           <div className="space-y-4">
+                              <h2 className="text-4xl font-black uppercase font-outfit">Final <span className="text-[#E53935] italic">Step</span></h2>
+                              <p className="text-[13px] font-bold text-black/30 uppercase tracking-widest">Location, Time & Capacity (Max 8).</p>
+                           </div>
+                           <div className="space-y-6">
+                              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4">
+                                 <Users size={24} className="text-emerald-500" />
+                                 <p className="text-[11px] font-bold text-emerald-700 uppercase">Limit: <span className="font-black">8 Participants</span> for high-quality sync.</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="p-6 bg-[#F5F5F7] rounded-2xl flex items-center justify-between"><p className="text-[11px] font-black uppercase">Today</p><Calendar size={18} className="text-black/20" /></div>
+                                 <div className="p-6 bg-[#F5F5F7] rounded-2xl flex items-center justify-between"><p className="text-[11px] font-black uppercase">18:30</p><Clock size={18} className="text-black/20" /></div>
+                              </div>
+                           </div>
+                        </motion.div>
+                      )}
+                   </AnimatePresence>
+
+                   <div className="mt-16 flex items-center gap-4">
+                      {hostStep > 1 && (
+                        <button onClick={() => setHostStep(hostStep - 1)} className="h-18 px-8 rounded-2xl bg-[#F5F5F7] text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all">Back</button>
+                      )}
+                      <button 
+                        onClick={() => {
+                          const totalSteps = meetupType === "Advisor" ? 4 : 3;
+                          if (hostStep < totalSteps) setHostStep(hostStep + 1);
+                          else setShowHostModal(false);
+                        }}
+                        className="flex-1 h-18 bg-[#292828] text-white rounded-2xl font-black text-[12px] uppercase tracking-widest shadow-2xl hover:bg-[#E53935] transition-all flex items-center justify-center gap-4"
+                      >
+                         {hostStep === (meetupType === "Advisor" ? 4 : 3) ? "Launch Meetup" : "Continue"}
+                         <ChevronRight size={18} />
+                      </button>
+                   </div>
+                </div>     </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>v>
       )}
 
     </div>

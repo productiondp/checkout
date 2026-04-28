@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
   Plus, 
@@ -75,7 +76,6 @@ export default function DirectoryPage() {
                  <button key={cat} onClick={() => setActiveCategory(cat)} className={cn("px-6 h-9 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-all", activeCategory === cat ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black")}>{cat}</button>
                ))}
             </div>
-            <button onClick={() => setIsCreateModalOpen(true)} className="h-10 px-6 bg-black text-white rounded-[10px] flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg active:scale-95"><Plus size={14} /> Add Listing</button>
          </div>
       }
     >
@@ -114,7 +114,20 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
     <div onClick={() => router.push(`/directory/${business.id}`)} className="bg-white rounded-[20px] p-10 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group cursor-pointer flex flex-col h-full">
        <div className="flex items-start justify-between mb-8">
           <div className="h-20 w-20 rounded-[10px] bg-black flex items-center justify-center shadow-lg relative overflow-hidden shrink-0"><img src={business.logo} className="w-full h-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" alt="" /></div>
-          <div className="relative h-16 w-16 flex items-center justify-center"><svg className="absolute inset-0 h-full w-full -rotate-90"><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-[#F5F5F7]" /><circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={175.9} strokeDashoffset={175.9 - (175.9 * business.matchScore) / 100} className="text-[#E53935]" /></svg><span className="text-[11px] font-black font-outfit">{business.matchScore}%</span></div>
+          <div className="flex flex-col items-end gap-1.5">
+             <span className="text-[8px] font-black uppercase text-black/20 tracking-widest">Match Accuracy</span>
+             <div className="flex items-center gap-2">
+                <div className="h-6 w-32 bg-[#F5F5F7] rounded-full border border-black/[0.03] overflow-hidden relative">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${business.matchScore}%` }}
+                     transition={{ duration: 1, ease: "easeOut" }}
+                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#E53935]/80 to-[#E53935] shadow-[0_0_15px_rgba(229,57,53,0.3)]"
+                   />
+                </div>
+                <span className="text-[14px] font-black font-outfit text-[#E53935]">{business.matchScore}%</span>
+             </div>
+          </div>
        </div>
        <div className="flex-1 space-y-6">
           <div>

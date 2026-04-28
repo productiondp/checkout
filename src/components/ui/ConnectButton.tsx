@@ -16,11 +16,11 @@ interface ConnectButtonProps {
 export default function ConnectButton({ targetId, className, size = 'md' }: ConnectButtonProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const { user } = useAuth();
-  const { getConnectionStatus, refreshConnections } = useConnections();
+  const { getConnectionState, sendRequest } = useConnections();
   
   if (!user || !targetId || user.id === targetId) return null;
 
-  const status = getConnectionStatus(targetId);
+  const status = getConnectionState(targetId);
 
   const handleConnect = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,11 +28,7 @@ export default function ConnectButton({ targetId, className, size = 'md' }: Conn
 
     setIsConnecting(true);
     try {
-      const { ConnectionService } = await import("@/services/connection-service");
-      const result = await ConnectionService.connect(user.id, targetId);
-      if (result.success) {
-        await refreshConnections();
-      }
+      await sendRequest(targetId);
     } catch (err) {
       console.error("Connect failed:", err);
     } finally {
@@ -46,7 +42,7 @@ export default function ConnectButton({ targetId, className, size = 'md' }: Conn
     lg: "h-16 px-10 text-[14px]"
   };
 
-  if (status === 'ACCEPTED') return (
+  if (status === 'CONNECTED') return (
     <div className={cn(
       sizeClasses[size],
       "rounded-2xl bg-emerald-50 text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2",

@@ -1,15 +1,14 @@
 "use client";
 
 import React from "react";
-import SectionTerminal from "@/components/shared/SectionTerminal";
-import { DISCOVER_CONTENT } from "@/data/mock-content";
 import TerminalLayout from "@/components/layout/TerminalLayout";
+import CheckoutMap from "@/components/explore/CheckoutMap";
 
 export default function DiscoverPage() {
   return (
-    <TerminalLayout>
-      <div className="p-8">
-        <SectionTerminal content={DISCOVER_CONTENT} />
+    <TerminalLayout hideSidebar={true}>
+      <div className="w-full h-screen overflow-hidden">
+        <CheckoutMap />
       </div>
     </TerminalLayout>
   );

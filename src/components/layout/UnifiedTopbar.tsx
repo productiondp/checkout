@@ -89,7 +89,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
       {/* LEFT SIDE: SEARCH + LOCATION + CONTEXTUAL */}
       <div className="flex items-center gap-8 flex-1">
         <Link href="/home" className="shrink-0 lg:hidden">
-           <Zap size={24} className="text-[#E53935]" fill="currentColor" />
+           <Zap size={32} className="text-[#E53935]" fill="currentColor" />
         </Link>
 
         {/* GLOBAL SEARCH */}

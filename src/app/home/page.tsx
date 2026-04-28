@@ -123,7 +123,7 @@ export default function CheckoutHomeFeed() {
       base = posts.filter(p => {
         const type = p.type?.toUpperCase();
         if (activeFilter === 'REQUIREMENT') return type === 'REQUIREMENT' || type === 'LEAD' || type === 'HIRING';
-        if (activeFilter === 'PARTNER') return type === 'PARTNER' || type === 'PARTNERSHIP';
+        if (activeFilter === 'PARTNERSHIP') return type === 'PARTNERSHIP';
         return type === activeFilter;
       });
     }

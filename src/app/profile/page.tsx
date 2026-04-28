@@ -138,7 +138,7 @@ export default function PremiumProfilePage() {
             setDependencyList(userPosts.map(p => ({
               id: p.id,
               title: p.title,
-              type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNER" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
+              type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNERSHIP" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
               priority: "High",
               status: "General"
             })));
@@ -211,7 +211,7 @@ export default function PremiumProfilePage() {
       .insert([{
         author_id: authUser.id,
         title: newDep.title,
-        type: newDep.type === "Hiring" ? "LEAD" : newDep.type === "Partnership" ? "PARTNER" : "GENERAL",
+        type: newDep.type === "Hiring" ? "LEAD" : newDep.type === "Partnership" ? "PARTNERSHIP" : "GENERAL",
         content: `Looking for ${newDep.title}`,
         status: "ACTIVE"
       }])

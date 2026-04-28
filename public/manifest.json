@@ -1,20 +1,19 @@
 {
-  "name": "Checkout Terminal",
+  "name": "Checkout OS",
   "short_name": "Checkout",
-  "description": "The premium network for local businesses.",
-  "start_url": "/home",
+  "description": "The premium Business OS for local commerce.",
+  "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#292828",
   "theme_color": "#292828",
   "icons": [
     {
-      "src": "/images/logo.png",
+      "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/images/logo.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }

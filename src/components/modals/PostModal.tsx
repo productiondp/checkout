@@ -293,7 +293,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-safe">
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
@@ -301,10 +301,10 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
       />
 
       <motion.div 
-        initial={{ opacity: 0, y: 50, scale: 0.95 }} 
+        initial={{ opacity: 0, y: 100, scale: 1 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         exit={{ opacity: 0, y: 100 }}
-        className="relative w-[90%] mx-[5%] sm:mx-auto max-w-xl bg-white rounded-t-[2.5rem] sm:rounded-[3rem] p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden flex flex-col gap-5 max-h-[95vh] overflow-y-auto no-scrollbar"
+        className="relative w-full sm:w-[90%] sm:max-w-xl bg-white rounded-t-[2rem] sm:rounded-[3rem] p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden flex flex-col gap-5 h-[92vh] sm:h-auto max-h-[92vh] sm:max-h-[95vh] overflow-y-auto no-scrollbar"
       >
         {/* HEADER */}
         <div className="flex items-center justify-between shrink-0">

@@ -117,7 +117,8 @@ export default function HomeFeed({
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
 
-        setTimeout(() => setNewlyCreatedPostId(null), 5000);
+        // Snappy transition
+        setTimeout(() => setNewlyCreatedPostId(null), 15000); // 15 seconds as requested
       }
     }
   }, [posts, currentUserId, newlyCreatedPostId]);
@@ -490,76 +491,86 @@ export default function HomeFeed({
 
                   {isNew && (
                     <motion.div 
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="relative"
+                      initial={{ opacity: 0, scale: 0.98, y: 30 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      className="relative px-[5%] mb-12"
                     >
-                      <div className="bg-[#1D1D1F] rounded-[24px] p-10 lg:p-14 overflow-hidden shadow-3xl shadow-black/20 group/success border border-white/5">
+                      <div className="bg-[#1D1D1F] rounded-[32px] p-10 lg:p-16 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] group/success border border-white/10 relative">
                         
-                        {/* THE NEURAL SYNC BACKGROUND */}
+                        {/* THE NEURAL SYNC BACKGROUND — ENHANCED */}
                         <div className="absolute inset-0 pointer-events-none">
-                           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#E53935]/10 rounded-full blur-[120px] -mr-64 -mt-64" />
-                           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#34C759]/5 rounded-full blur-[100px] -ml-48 -mb-48" />
+                           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E53935]/15 rounded-full blur-[140px] -mr-64 -mt-64 animate-pulse" />
+                           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#34C759]/10 rounded-full blur-[120px] -ml-48 -mb-48 opacity-50" />
+                           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
                         </div>
                         
-                        <div className="relative z-10 flex flex-col xl:flex-row gap-12 xl:items-center">
+                        <div className="relative z-10 flex flex-col xl:flex-row gap-16 xl:items-center">
                            
                            {/* LEFT: STATUS HERO */}
-                           <div className="flex-1 space-y-10">
-                              <div className="space-y-6">
-                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#34C759]/10 border border-[#34C759]/20 rounded-full text-[#34C759] text-[10px] font-black uppercase tracking-widest">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-[#34C759] animate-pulse" />
-                                    Post Live & Indexed
+                           <div className="flex-1 space-y-12">
+                              <div className="space-y-8">
+                                 <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#34C759]/10 border border-[#34C759]/20 rounded-full text-[#34C759] text-[11px] font-black uppercase tracking-[0.2em]">
+                                    <div className="h-2 w-2 rounded-full bg-[#34C759] shadow-[0_0_15px_#34C759] animate-pulse" />
+                                    Post Live & Neural-Indexed
                                  </div>
-                                 <h1 className="text-5xl lg:text-7xl font-black text-white leading-[0.85] uppercase tracking-tighter italic">
+                                 <h1 className="text-6xl lg:text-8xl font-black text-white leading-[0.8] uppercase tracking-tighter italic">
                                     Network <br /> 
-                                    <span className="text-[#E53935]">Activated</span>
+                                    <span className="text-[#E53935] drop-shadow-[0_0_30px_rgba(229,57,53,0.3)]">Activated</span>
                                  </h1>
-                                 <p className="text-white/40 font-bold text-lg lg:text-xl max-w-md leading-tight">
-                                    Your requirement is now visible across the network. Matches identified via Neural Distribution.
+                                 <p className="text-white/50 font-bold text-xl lg:text-2xl max-w-lg leading-tight font-outfit">
+                                    Your requirement is now propagating through the neural mesh. Visibility maximized for optimal conversion.
                                  </p>
                               </div>
 
-                              <div className="flex items-center gap-8 pt-6 border-t border-white/5">
+                              <div className="flex items-center gap-12 pt-10 border-t border-white/10">
                                  <div>
-                                    <p className="text-[10px] font-black uppercase text-white/30 tracking-widest mb-2">Sync Status</p>
-                                    <p className="text-xl font-bold text-white uppercase tracking-tight">100% Verified</p>
+                                    <p className="text-[11px] font-black uppercase text-white/20 tracking-[0.3em] mb-3">Sync Status</p>
+                                    <div className="flex items-center gap-2">
+                                       <div className="h-1.5 w-8 bg-[#34C759] rounded-full" />
+                                       <p className="text-2xl font-black text-white uppercase tracking-tight font-outfit">Verified</p>
+                                    </div>
                                  </div>
-                                 <div className="h-10 w-[1px] bg-white/5" />
+                                 <div className="h-14 w-[1px] bg-white/10" />
                                  <div>
-                                    <p className="text-[10px] font-black uppercase text-white/30 tracking-widest mb-2">Visibility</p>
-                                    <p className="text-xl font-bold text-white uppercase tracking-tight italic text-[#34C759]">Priority</p>
+                                    <p className="text-[11px] font-black uppercase text-white/20 tracking-[0.3em] mb-3">Network Tier</p>
+                                    <p className="text-2xl font-black text-[#E53935] uppercase tracking-tight italic font-outfit">Priority One</p>
                                  </div>
                               </div>
                            </div>
 
                            {/* RIGHT: INTELLIGENT MATCHES */}
-                           <div className="w-full xl:w-[480px] space-y-6">
+                           <div className="w-full xl:w-[520px] space-y-8">
                               <div className="flex items-center justify-between">
-                                 <h3 className="text-[11px] font-black uppercase text-white/40 tracking-[0.2em]">Neural Intelligence Matches</h3>
-                                 <div className="h-2 w-2 rounded-full bg-[#34C759]" />
+                                 <h3 className="text-[11px] font-black uppercase text-white/30 tracking-[0.4em]">Neural Proximity Detection</h3>
+                                 <div className="flex gap-1">
+                                    <div className="h-1 w-4 bg-[#34C759] rounded-full" />
+                                    <div className="h-1 w-1 bg-white/20 rounded-full" />
+                                 </div>
                               </div>
 
-                              <div className="space-y-3">
+                              <div className="space-y-4">
                                  {[
-                                   { name: "Rahul S.", role: "Tech Lead", score: 93, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul" },
+                                   { name: "Rahul S.", role: "Tech Lead", score: 98, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul" },
                                    { name: "Anita K.", role: "Product Expert", score: 94, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anita" },
                                    { name: "Vikram R.", role: "Strategic Partner", score: 89, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram" }
                                  ].map((profile, i) => (
                                    <motion.div 
                                      key={profile.name}
-                                     initial={{ opacity: 0, x: 20 }}
+                                     initial={{ opacity: 0, x: 30 }}
                                      animate={{ opacity: 1, x: 0 }}
-                                     transition={{ delay: 0.4 + (i * 0.1) }}
-                                     className="group/item flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-[20px] hover:bg-white/10 transition-all hover:border-white/10"
+                                     transition={{ delay: 0.5 + (i * 0.15) }}
+                                     className="group/item flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-[24px] hover:bg-white/[0.08] transition-all hover:border-white/10 backdrop-blur-md"
                                    >
-                                     <div className="flex items-center gap-4 min-w-0">
-                                       <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 overflow-hidden shrink-0 p-1">
-                                          <img src={profile.avatar} className="w-full h-full object-cover rounded-xl grayscale group-hover/item:grayscale-0 transition-all" alt="" />
+                                     <div className="flex items-center gap-5 min-w-0">
+                                       <div className="h-16 w-16 rounded-[18px] bg-white/5 border border-white/10 overflow-hidden shrink-0 p-1.5 shadow-xl">
+                                          <img src={profile.avatar} className="w-full h-full object-cover rounded-[12px] grayscale group-hover/item:grayscale-0 transition-all duration-500" alt="" />
                                        </div>
                                        <div className="min-w-0">
-                                          <p className="text-[15px] font-black text-white uppercase truncate mb-0.5">{profile.name}</p>
-                                          <p className="text-[10px] font-bold text-[#E53935] uppercase tracking-widest">{profile.score}% Neural Synergy</p>
+                                          <p className="text-[17px] font-black text-white uppercase truncate mb-0.5 font-outfit">{profile.name}</p>
+                                          <div className="flex items-center gap-2">
+                                             <div className="h-1 w-1 rounded-full bg-[#E53935] animate-pulse" />
+                                             <p className="text-[11px] font-black text-[#E53935] uppercase tracking-widest">{profile.score}% Neural Score</p>
+                                          </div>
                                        </div>
                                      </div>
                                      <button 
@@ -568,13 +579,13 @@ export default function HomeFeed({
                                          registerAction('connect_sent');
                                        }}
                                        className={cn(
-                                          "h-11 px-5 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 border",
+                                          "h-12 px-6 rounded-xl text-[11px] font-black uppercase transition-all shrink-0 border-2 font-outfit",
                                           connectedIds.includes(profile.name)
                                             ? "bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]"
-                                            : "bg-white text-black hover:bg-amber-500 hover:text-white hover:border-amber-500"
+                                            : "bg-white text-black border-white hover:bg-black hover:text-white hover:border-black"
                                        )}
                                      >
-                                        {connectedIds.includes(profile.name) ? "Request Sent" : "Link Partner"}
+                                        {connectedIds.includes(profile.name) ? "Request Sent" : "Connect"}
                                      </button>
                                    </motion.div>
                                  ))}
@@ -582,9 +593,9 @@ export default function HomeFeed({
 
                               <button 
                                 onClick={() => router.push('/matches')}
-                                className="w-full h-16 bg-white/5 border border-white/5 rounded-[20px] text-[11px] font-black uppercase text-white/60 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3 mt-4"
+                                className="w-full h-18 bg-white/5 border border-white/10 rounded-[24px] text-[11px] font-black uppercase text-white/50 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-4 mt-6 group/btn"
                               >
-                                Access Full Talent Intelligence <ArrowRight size={16} />
+                                View Neural Distribution <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
                               </button>
                            </div>
 
@@ -593,9 +604,9 @@ export default function HomeFeed({
                         {/* CLOSE TRIGGER */}
                         <button 
                           onClick={() => setNewlyCreatedPostId(null)}
-                          className="absolute top-10 right-10 h-12 w-12 bg-white/5 text-white/40 rounded-full flex items-center justify-center hover:bg-white/10 hover:text-white transition-all border border-white/5"
+                          className="absolute top-8 right-8 h-14 w-14 bg-white/5 text-white/20 rounded-full flex items-center justify-center hover:bg-white/10 hover:text-white transition-all border border-white/10 group-hover/success:text-white/50"
                         >
-                          <X size={20} />
+                          <X size={24} />
                         </button>
                       </div>
                     </motion.div>

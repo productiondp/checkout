@@ -85,15 +85,15 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
   }, []);
 
   return (
-    <header className="h-20 bg-white border-b border-black/[0.05] flex items-center justify-between px-8 sticky top-0 z-[100] backdrop-blur-xl bg-white/80">
+    <header className="h-16 lg:h-20 bg-white border-b border-black/[0.05] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-[100] backdrop-blur-xl bg-white/80">
       {/* LEFT SIDE: SEARCH + LOCATION + CONTEXTUAL */}
-      <div className="flex items-center gap-8 flex-1">
+      <div className="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
         <Link href="/home" className="shrink-0 lg:hidden">
-           <Zap size={32} className="text-[#E53935]" fill="currentColor" />
+           <Zap size={28} className="text-[#E53935]" fill="currentColor" />
         </Link>
 
         {/* GLOBAL SEARCH */}
-        <div className="hidden md:flex max-w-sm w-full relative group">
+        <div className="hidden lg:flex max-w-sm w-full relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={16} />
           <input 
             type="text" 
@@ -103,7 +103,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
         </div>
 
         {/* LOCATION SELECTOR */}
-        <div className="relative hidden sm:block" ref={locationRef}>
+        <div className="relative hidden md:block" ref={locationRef}>
           <button 
             onClick={() => setIsLocationOpen(!isLocationOpen)}
             className="flex items-center gap-2.5 px-4 h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group"
@@ -131,19 +131,19 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
         </div>
 
         {children && <div className="h-8 w-px bg-black/[0.05] hidden lg:block" />}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 lg:gap-6 min-w-0">
           {children}
         </div>
       </div>
 
       {/* RIGHT SIDE: ICONS + PROFILE PILL */}
-      <div className="flex items-center gap-6 shrink-0">
-        <div className="flex items-center gap-2">
-          <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all">
-            <MessageSquare size={22} strokeWidth={1.5} />
+      <div className="flex items-center gap-2 lg:gap-6 shrink-0">
+        <div className="flex items-center gap-1 lg:gap-2">
+          <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all hidden sm:flex">
+            <MessageSquare size={20} strokeWidth={1.5} />
           </Link>
-          <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative">
-            <Users size={22} strokeWidth={1.5} />
+          <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex">
+            <Users size={20} strokeWidth={1.5} />
             {pendingRequestsCount > 0 && (
                <div className="absolute top-2 right-2 h-2 w-2 bg-emerald-500 rounded-full ring-2 ring-white" />
             )}
@@ -156,14 +156,14 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                 isNotificationsOpen ? "text-[#E53935]" : "text-black/40 hover:text-[#E53935]"
               )}
             >
-              <Bell size={22} strokeWidth={1.5} />
+              <Bell size={20} strokeWidth={1.5} />
               {notifications.filter(n => !n.is_read).length > 0 && (
                 <div className="absolute top-2 right-2 h-2 w-2 bg-[#E53935] rounded-full ring-2 ring-white" />
               )}
             </button>
 
             {isNotificationsOpen && (
-               <div className="absolute top-[120%] right-0 w-80 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-4 animate-in fade-in slide-in-from-top-2 z-[200]">
+               <div className="absolute top-[120%] right-[-10px] lg:right-0 w-[calc(100vw-32px)] lg:w-80 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-4 animate-in fade-in slide-in-from-top-2 z-[200]">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.03]">
                      <h3 className="text-[11px] font-black uppercase tracking-widest text-black">Notifications</h3>
                      <button onClick={markAllAsRead} className="text-[9px] font-bold text-[#E53935] uppercase">Clear</button>
@@ -189,17 +189,17 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
           </div>
         </div>
 
-        <div className="h-8 w-px bg-black/[0.1]" />
+        <div className="h-8 w-px bg-black/[0.1] hidden sm:block" />
 
         {/* PROFILE PILL */}
         <button 
            onClick={() => router.push(`/profile/${authUser?.id}`)}
-           className="flex items-center gap-4 h-14 pl-1.5 pr-6 bg-[#F5F5F7] border border-black/[0.03] rounded-full hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group"
+           className="flex items-center gap-3 lg:gap-4 h-10 lg:h-14 pl-1 lg:pl-1.5 pr-1 lg:pr-6 bg-[#F5F5F7] lg:bg-[#F5F5F7] border border-black/[0.03] rounded-full hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group shrink-0"
         >
-           <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-black/5">
+           <div className="h-8 w-8 lg:h-11 lg:w-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-black/5">
               <img src={authUser?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser?.full_name}`} className="w-full h-full object-cover" alt="" />
            </div>
-           <div className="text-left flex flex-col justify-center hidden sm:flex">
+           <div className="text-left flex flex-col justify-center hidden lg:flex">
               <p className="text-[14px] font-black uppercase text-black leading-none mb-1 tracking-tight font-outfit">
                 {authUser?.full_name?.split(' ')[0] || "USER"}
               </p>
@@ -207,7 +207,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                 {authUser?.role || "PROFESSIONAL"}
               </p>
            </div>
-           <ChevronDown size={18} className="text-black/20 group-hover:text-black transition-colors ml-2 hidden sm:block" />
+           <ChevronDown size={16} className="text-black/20 group-hover:text-black transition-colors ml-1 hidden lg:block" />
         </button>
       </div>
     </header>

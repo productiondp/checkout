@@ -12,10 +12,17 @@
     @apply bg-[#FFFFFF] text-[#1A1A1A] selection:bg-[#FF3B30]/10;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
     letter-spacing: 0px !important;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   * {
     letter-spacing: 0px !important;
+  }
+
+  /* Prevent zooming on input focus in iOS */
+  input, textarea, select {
+    font-size: 16px !important;
   }
 }
 
@@ -46,6 +53,10 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
   .min-h-screen-safe {
     min-height: 100vh;
     min-height: 100dvh;
@@ -53,6 +64,14 @@
   .h-screen-safe {
     height: 100vh;
     height: 100dvh;
+  }
+  /* Force app-like feeling */
+  .app-container {
+    height: 100dvh;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 }
 

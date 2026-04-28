@@ -299,13 +299,13 @@ export default function UniversalFeedCard({
         <div className={cn("absolute left-0 top-0 bottom-0 w-1.5 opacity-40 transition-all duration-500 group-hover:opacity-100", cfg.gradient.includes('amber') ? "bg-amber-500" : "bg-[#E53935]")} />
       )}
 
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         
         {/* ── HEADER: BRAND & METADATA ── */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
            <div className="flex items-center gap-4">
               <div className="relative">
-                 <div className="h-14 w-14 rounded-2xl overflow-hidden bg-slate-50 border border-black/[0.03] shadow-inner transition-transform duration-500 group-hover:scale-105">
+                 <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl overflow-hidden bg-slate-50 border border-black/[0.03] shadow-inner transition-transform duration-500 group-hover:scale-105">
                     {avatar 
                       ? <img src={avatar} className="h-full w-full object-cover" alt="" />
                       : <div className="h-full w-full flex items-center justify-center bg-slate-100"><User size={24} className="text-slate-300" /></div>
@@ -409,18 +409,17 @@ export default function UniversalFeedCard({
         </div>
 
         {/* ── FOOTER: ACTIONS ── */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
            {/* LEFT: STATUS BADGE */}
-           {!isOwner && (
-              <div className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+           {!isOwner ? (
+              <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl self-start sm:self-auto">
                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                  <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Active Partner</span>
               </div>
-           )}
-           {isOwner && <div />}
+           ) : <div />}
 
            {/* RIGHT: ACTIONS */}
-           <div className="flex items-center gap-2.5">
+           <div className="flex items-center gap-2.5 w-full sm:w-auto">
               {!isOwner ? (
                  <>
                     <div className="flex items-center gap-2">
@@ -428,7 +427,7 @@ export default function UniversalFeedCard({
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
                           className={cn(
-                             "h-12 w-12 rounded-xl border flex items-center justify-center transition-all",
+                             "h-12 w-12 rounded-xl border flex items-center justify-center transition-all shrink-0",
                              bookmarked ? "bg-amber-500 border-amber-500 text-white" : "border-black/[0.05] text-[#86868B] hover:bg-slate-50"
                           )}
                        >
@@ -447,29 +446,29 @@ export default function UniversalFeedCard({
                        whileTap={{ scale: 0.98 }}
                        onClick={nType === 'MEETUP' ? handleJoin : (e) => { e.stopPropagation(); onAction?.(post); }}
                        className={cn(
-                          "h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg",
+                          "flex-1 sm:flex-none h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg",
                           nType === 'MEETUP' 
                             ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
                             : "bg-[#E53935] shadow-red-500/20"
                        )}
                     >
-                       <div className="flex items-center gap-2.5">
+                       <div className="flex items-center justify-center gap-2.5">
                           {nType === 'MEETUP' ? <Users size={14} /> : <MessageSquare size={14} />}
-                          {nType === 'MEETUP' ? (joinStatus === 'JOINED' ? "Confirmed" : "Secure Spot") : cfg.ctaLabel}
+                          <span className="whitespace-nowrap">{nType === 'MEETUP' ? (joinStatus === 'JOINED' ? "Confirmed" : "Secure Spot") : cfg.ctaLabel}</span>
                        </div>
                     </motion.button>
                  </>
               ) : (
-                 <div className="flex items-center gap-2.5">
+                 <div className="flex items-center gap-2.5 w-full">
                     <button 
                        onClick={(e) => { e.stopPropagation(); onEdit?.(post); }}
-                       className="h-10 px-5 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
+                       className="flex-1 h-10 px-4 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
                     >
-                       Modify Broadcast
+                       Modify
                     </button>
                     <button 
                        onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); }}
-                       className="h-10 px-5 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+                       className="flex-1 h-10 px-4 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
                     >
                        Remove
                     </button>

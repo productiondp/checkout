@@ -96,8 +96,6 @@ function AuthContent() {
         }
         setIsSuccess(true);
         await initAuth();
-        // Force immediate navigation for better UX - 2s delay
-        setTimeout(() => router.push("/home"), 2000);
       } else {
         const { data: { session: currentSession }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -107,8 +105,6 @@ function AuthContent() {
         setIsSuccess(true);
         if (currentSession) {
           await initAuth();
-          // Force immediate navigation for better UX - 2s delay
-          setTimeout(() => router.push("/home"), 2000);
         }
       }
     } catch (err: any) {

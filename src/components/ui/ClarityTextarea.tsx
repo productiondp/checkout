@@ -119,8 +119,8 @@ export const ClarityTextarea = React.forwardRef<HTMLTextAreaElement, ClarityText
                 {issues.some(i => i.type === 'INTENT') ? "Intent Detected" : `${issues.length} Issue${issues.length > 1 ? 's' : ''} Detected`}
               </button>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-emerald-500 opacity-60">
+          ) : text.length > 0 && (
+            <div className="flex items-center gap-2 text-emerald-500 opacity-80">
               <Check size={12} strokeWidth={3} />
               <span className="text-[10px] font-black uppercase tracking-widest">Clarity Optimal</span>
             </div>
@@ -130,15 +130,11 @@ export const ClarityTextarea = React.forwardRef<HTMLTextAreaElement, ClarityText
               Add more detail for better matches
             </span>
           )}
-          {issues.some(i => i.type === 'CLARITY') && !issues.some(i => i.type === 'INTENT') && (
-            <span className="text-[9px] font-bold text-amber-600 animate-pulse uppercase ml-2">
-              Improve clarity for better matches
-            </span>
-          )}
           {isAnalyzing && <div className="h-1 w-8 bg-slate-100 rounded-full overflow-hidden relative"><div className="absolute inset-0 bg-[#E53935] animate-progress-fast" /></div>}
         </div>
 
-        {showRefineButton && text.length > 10 && (
+        {/* ONLY SHOW REFINE IF ISSUES EXIST */}
+        {showRefineButton && issues.length > 0 && text.length > 10 && (
           <button 
             onClick={handleRefine}
             className="flex items-center gap-2 px-4 py-1.5 bg-[#292828] text-white rounded-lg text-[10px] font-black uppercase hover:bg-indigo-600 transition-all shadow-lg active:scale-95 group"

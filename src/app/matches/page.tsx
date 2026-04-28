@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useConnections } from "@/hooks/useConnections";
 import ConnectButton from "@/components/ui/ConnectButton";
 import TerminalLayout from "@/components/layout/TerminalLayout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // --- TYPES ---
 type MatchProfile = {
@@ -185,134 +186,136 @@ export default function MatchesPage() {
   }, [authUser?.id, connectionMap]);
 
   return (
-    <TerminalLayout
-      topbarChildren={
-         <div className="flex items-center gap-6">
-            <div className="flex p-1 bg-[#F5F5F7] rounded-[10px] border border-black/[0.03]">
-               {[
-                 { id: 'DISCOVER', label: 'Explore', count: discoverList.length },
-                 { id: 'REQUESTS', label: 'Requests', count: requests.filter(r => r.receiver_id === authUser?.id).length },
-                 { id: 'CONNECTED', label: 'Partners', count: connectedList.length }
-               ].map(tab => (
-                 <button 
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id as any)}
-                   className={cn(
-                     "px-6 h-9 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-all relative",
-                     activeTab === tab.id ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
-                   )}
-                 >
-                   {tab.label}
-                   {tab.id === 'REQUESTS' && tab.count > 0 && (
-                     <span className="ml-2 px-1.5 py-0.5 bg-[#E53935] text-white text-[8px] rounded-full">
-                       {tab.count}
-                     </span>
-                   )}
-                 </button>
-               ))}
-            </div>
-         </div>
-      }
-    >
-      <div className="p-8 max-w-7xl mx-auto">
-         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-            {[
-               { label: "Active Now", value: stats.activeCount, icon: Activity, color: "text-blue-500" },
-               { label: "Your Score", value: stats.yourScore, icon: Zap, color: "text-amber-500" },
-               { label: "Daily Goal", value: `${stats.dailyGoal}%`, icon: Target, color: "text-[#E53935]" },
-               { label: "Partners", value: stats.partnersCount, icon: ShieldCheck, color: "text-emerald-500" },
-            ].map((stat, i) => (
-               <div key={i} className="bg-white border border-black/[0.03] p-5 rounded-[10px] flex items-center justify-between">
-                  <div>
-                     <p className="text-[9px] font-black uppercase tracking-widest text-black/30 mb-1">{stat.label}</p>
-                     <p className="text-4xl font-black font-outfit">{stat.value}</p>
-                  </div>
-                  <stat.icon size={24} className={stat.color} />
-               </div>
-            ))}
-         </div>
-
-         {isLoading ? (
-            <div className="py-40 flex flex-col items-center gap-8">
-               <div className="relative">
-                  <Loader2 className="animate-spin text-[#E53935]" size={48} />
-               </div>
-               <p className="text-[11px] font-black uppercase tracking-[0.3em] text-black/20">Loading people...</p>
-            </div>
-         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               <AnimatePresence mode="popLayout">
-               {activeTab === 'DISCOVER' && (
-                  discoverList.length > 0 ? (
-                     discoverList.map((p, i) => (
-                     <PartnerCard key={p.id} partner={p} index={i} setConfirmAction={setConfirmAction} />
-                     ))
-                  ) : <EmptyState title="All caught up" description="You've seen everyone for now." icon={Sparkles} />
-               )}
-
-               {activeTab === 'REQUESTS' && (
-                  <>
-                     {requests.filter(r => r.receiver_id === authUser?.id).length > 0 && (
-                     <div className="col-span-full space-y-6 mb-12">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">New Requests</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                           {requests.filter(r => r.receiver_id === authUser?.id).map((req, i) => (
-                              <PartnerCard key={req.id} partner={req.sender} index={i} onAction={() => handleAccept(req.id)} actionLabel="Connect" setConfirmAction={setConfirmAction} />
-                           ))}
-                        </div>
-                     </div>
+    <ProtectedRoute>
+      <TerminalLayout
+        topbarChildren={
+           <div className="flex items-center gap-6">
+              <div className="flex p-1 bg-[#F5F5F7] rounded-[10px] border border-black/[0.03]">
+                 {[
+                   { id: 'DISCOVER', label: 'Explore', count: discoverList.length },
+                   { id: 'REQUESTS', label: 'Requests', count: requests.filter(r => r.receiver_id === authUser?.id).length },
+                   { id: 'CONNECTED', label: 'Partners', count: connectedList.length }
+                 ].map(tab => (
+                   <button 
+                     key={tab.id}
+                     onClick={() => setActiveTab(tab.id as any)}
+                     className={cn(
+                       "px-6 h-9 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-all relative",
+                       activeTab === tab.id ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
                      )}
-                     {requests.filter(r => r.sender_id === authUser?.id).length > 0 && (
-                     <div className="col-span-full space-y-6">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">Waiting for response</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
-                           {requests.filter(r => r.sender_id === authUser?.id).map((req, i) => (
-                              <PartnerCard key={req.id} partner={req.receiver} index={i} disabled actionLabel="Waiting" setConfirmAction={setConfirmAction} />
-                           ))}
-                        </div>
-                     </div>
+                   >
+                     {tab.label}
+                     {tab.id === 'REQUESTS' && tab.count > 0 && (
+                       <span className="ml-2 px-1.5 py-0.5 bg-[#E53935] text-white text-[8px] rounded-full">
+                         {tab.count}
+                       </span>
                      )}
-                     {requests.length === 0 && (
-                     <EmptyState title="No requests" description="Incoming and outgoing requests will appear here." icon={Clock} />
-                     )}
-                  </>
-               )}
-
-               {activeTab === 'CONNECTED' && (
-                  connectedList.length > 0 ? (
-                     connectedList.map((p, i) => (
-                     <PartnerCard key={p.id} partner={p} index={i} onAction={() => router.push(`/chat?user=${p.id}`)} actionLabel="Chat" variant="connected" setConfirmAction={setConfirmAction} />
-                     ))
-                  ) : <EmptyState title="No partners yet" description="Start by connecting with people in Explore." icon={Users} />
-               )}
-               </AnimatePresence>
-            </div>
-         )}
-      </div>
-
-      <AnimatePresence>
-        {confirmAction && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="w-full max-w-md bg-white rounded-[10px] p-10 shadow-4xl text-center border border-black/[0.05]">
-              <div className={cn("h-20 w-20 rounded-[10px] flex items-center justify-center mx-auto mb-6", confirmAction.type === 'BLOCK' ? "bg-black text-white" : "bg-red-50 text-[#E53935]")}>
-                {confirmAction.type === 'BLOCK' ? <ShieldAlert size={32} /> : <Trash2 size={32} />}
+                   </button>
+                 ))}
               </div>
-              <h3 className="text-2xl font-black text-[#1D1D1F] uppercase leading-none mb-3 font-outfit">{confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Partner?"}</h3>
-              <p className="text-black/40 font-bold uppercase text-[10px] tracking-widest mb-8 leading-relaxed">Confirm action for <strong>{confirmAction.partnerName}</strong>.</p>
-              <div className="flex gap-3">
-                <button onClick={() => setConfirmAction(null)} className="flex-1 h-14 bg-[#F5F5F7] rounded-[10px] font-black uppercase text-[10px]">Cancel</button>
-                <button onClick={async () => {
-                  if (confirmAction.type === 'BLOCK') await ConnectionService.blockUser(confirmAction.connectionId);
-                  else await ConnectionService.removeConnection(confirmAction.connectionId);
-                  setConfirmAction(null);
-                  window.location.reload();
-                }} className={cn("flex-1 h-14 rounded-[10px] font-black uppercase text-[10px] text-white transition-all", confirmAction.type === 'BLOCK' ? "bg-black" : "bg-[#E53935] shadow-red-500/20")}>Confirm</button>
+           </div>
+        }
+      >
+        <div className="p-8 max-w-7xl mx-auto">
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+              {[
+                 { label: "Active Now", value: stats.activeCount, icon: Activity, color: "text-blue-500" },
+                 { label: "Your Score", value: stats.yourScore, icon: Zap, color: "text-amber-500" },
+                 { label: "Daily Goal", value: `${stats.dailyGoal}%`, icon: Target, color: "text-[#E53935]" },
+                 { label: "Partners", value: stats.partnersCount, icon: ShieldCheck, color: "text-emerald-500" },
+              ].map((stat, i) => (
+                 <div key={i} className="bg-white border border-black/[0.03] p-5 rounded-[10px] flex items-center justify-between">
+                    <div>
+                       <p className="text-[9px] font-black uppercase tracking-widest text-black/30 mb-1">{stat.label}</p>
+                       <p className="text-4xl font-black font-outfit">{stat.value}</p>
+                    </div>
+                    <stat.icon size={24} className={stat.color} />
+                 </div>
+              ))}
+           </div>
+  
+           {isLoading ? (
+              <div className="py-40 flex flex-col items-center gap-8">
+                 <div className="relative">
+                    <Loader2 className="animate-spin text-[#E53935]" size={48} />
+                 </div>
+                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-black/20">Loading people...</p>
               </div>
+           ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <AnimatePresence mode="popLayout">
+                 {activeTab === 'DISCOVER' && (
+                    discoverList.length > 0 ? (
+                       discoverList.map((p, i) => (
+                       <PartnerCard key={p.id} partner={p} index={i} setConfirmAction={setConfirmAction} />
+                       ))
+                    ) : <EmptyState title="All caught up" description="You've seen everyone for now." icon={Sparkles} />
+                 )}
+  
+                 {activeTab === 'REQUESTS' && (
+                    <>
+                       {requests.filter(r => r.receiver_id === authUser?.id).length > 0 && (
+                       <div className="col-span-full space-y-6 mb-12">
+                          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">New Requests</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                             {requests.filter(r => r.receiver_id === authUser?.id).map((req, i) => (
+                                <PartnerCard key={req.id} partner={req.sender} index={i} onAction={() => handleAccept(req.id)} actionLabel="Connect" setConfirmAction={setConfirmAction} />
+                             ))}
+                          </div>
+                       </div>
+                       )}
+                       {requests.filter(r => r.sender_id === authUser?.id).length > 0 && (
+                       <div className="col-span-full space-y-6">
+                          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">Waiting for response</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
+                             {requests.filter(r => r.sender_id === authUser?.id).map((req, i) => (
+                                <PartnerCard key={req.id} partner={req.receiver} index={i} disabled actionLabel="Waiting" setConfirmAction={setConfirmAction} />
+                             ))}
+                          </div>
+                       </div>
+                       )}
+                       {requests.length === 0 && (
+                       <EmptyState title="No requests" description="Incoming and outgoing requests will appear here." icon={Clock} />
+                       )}
+                    </>
+                 )}
+  
+                 {activeTab === 'CONNECTED' && (
+                    connectedList.length > 0 ? (
+                       connectedList.map((p, i) => (
+                       <PartnerCard key={p.id} partner={p} index={i} onAction={() => router.push(`/chat?user=${p.id}`)} actionLabel="Chat" variant="connected" setConfirmAction={setConfirmAction} />
+                       ))
+                    ) : <EmptyState title="No partners yet" description="Start by connecting with people in Explore." icon={Users} />
+                 )}
+                 </AnimatePresence>
+              </div>
+           )}
+        </div>
+  
+        <AnimatePresence>
+          {confirmAction && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+              <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="w-full max-w-md bg-white rounded-[10px] p-10 shadow-4xl text-center border border-black/[0.05]">
+                <div className={cn("h-20 w-20 rounded-[10px] flex items-center justify-center mx-auto mb-6", confirmAction.type === 'BLOCK' ? "bg-black text-white" : "bg-red-50 text-[#E53935]")}>
+                  {confirmAction.type === 'BLOCK' ? <ShieldAlert size={32} /> : <Trash2 size={32} />}
+                </div>
+                <h3 className="text-2xl font-black text-[#1D1D1F] uppercase leading-none mb-3 font-outfit">{confirmAction.type === 'BLOCK' ? "Block User?" : "Remove Partner?"}</h3>
+                <p className="text-black/40 font-bold uppercase text-[10px] tracking-widest mb-8 leading-relaxed">Confirm action for <strong>{confirmAction.partnerName}</strong>.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => setConfirmAction(null)} className="flex-1 h-14 bg-[#F5F5F7] rounded-[10px] font-black uppercase text-[10px]">Cancel</button>
+                  <button onClick={async () => {
+                    if (confirmAction.type === 'BLOCK') await ConnectionService.blockUser(confirmAction.connectionId);
+                    else await ConnectionService.removeConnection(confirmAction.connectionId);
+                    setConfirmAction(null);
+                    window.location.reload();
+                  }} className={cn("flex-1 h-14 rounded-[10px] font-black uppercase text-[10px] text-white transition-all", confirmAction.type === 'BLOCK' ? "bg-black" : "bg-[#E53935] shadow-red-500/20")}>Confirm</button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </TerminalLayout>
+          )}
+        </AnimatePresence>
+      </TerminalLayout>
+    </ProtectedRoute>
   );
 }
 

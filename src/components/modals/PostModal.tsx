@@ -208,17 +208,21 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   }, [currentStep, type, meetupFormat]);
 
   const improveMessage = () => {
-    setIsImproving(true);
-    setTimeout(() => {
-      // Basic expansion logic
-      let improved = content;
-      if (content.toLowerCase().includes("need dev")) improved = content.replace(/need dev/i, "Looking for a skilled developer to build an MVP");
-      else if (content.toLowerCase().includes("startup meetup")) improved = "Hosting a networking session for startup founders and early employees in Kochi";
-      else if (content.length < 30) improved = `I'm looking to connect with people about ${content}. Specifically interested in finding partners for collaboration.`;
-      
-      setContent(improved);
-      setIsImproving(false);
-    }, 600);
+    // Rely on Clarity Assistant for refinement
+    if (inputRef.current) {
+      // Trigger refinement via the ClarityTextarea internal logic if possible
+      // or just use the local simple expansion as a fallback
+      setIsImproving(true);
+      setTimeout(() => {
+        let improved = content;
+        if (content.toLowerCase().includes("need dev")) improved = content.replace(/need dev/i, "Looking for a skilled developer to build an MVP");
+        else if (content.toLowerCase().includes("startup meetup")) improved = "Hosting a networking session for startup founders and early employees in Kochi";
+        else if (content.length < 30) improved = `I'm looking to connect with people about ${content}. Specifically interested in finding partners for collaboration.`;
+        
+        setContent(improved);
+        setIsImproving(false);
+      }, 600);
+    }
   };
 
   const handlePost = async () => {
@@ -366,29 +370,43 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                           type={type}
                           className="min-h-[180px] text-lg p-6 bg-slate-50 border-none rounded-[1.5rem] focus:ring-2 focus:ring-black/5"
                         />
-                        
-                        {content.length > 15 && (
-                           <button 
-                             onClick={improveMessage}
-                             className="absolute bottom-4 left-4 h-10 px-4 bg-white border border-slate-100 rounded-xl shadow-sm flex items-center gap-2 text-[10px] font-black uppercase text-slate-500 hover:text-black transition-all"
-                           >
-                              {isImproving ? <Activity className="animate-spin" size={14} /> : <Wand2 size={14} className="text-[#E53935]" />}
-                              {isImproving ? "Thinking..." : "Improve Message"}
-                           </button>
-                        )}
                       </div>
 
-                      {suggestedIndustry && (
+                      {(suggestedIndustry || content.length > 20) && (
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                            <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-[#E53935]"><Sparkles size={16} /></div>
-                            <div className="flex-1">
-                               <p className="text-[9px] font-black uppercase text-slate-400">Auto-Detected</p>
-                               <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label} • {suggestedIndustry.focus}</p>
-                            </div>
-                            <button 
-                              onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
-                              className="h-8 px-3 bg-black text-white rounded-lg text-[9px] font-black uppercase"
-                            >Use This</button>
+                            {suggestedIndustry?.confidence >= 70 ? (
+                               <>
+                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-[#E53935]"><Sparkles size={16} /></div>
+                                  <div className="flex-1">
+                                     <p className="text-[9px] font-black uppercase text-slate-400">Suggested Category</p>
+                                     <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label} • {suggestedIndustry.focus}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
+                                    className="h-8 px-3 bg-black text-white rounded-lg text-[9px] font-black uppercase"
+                                  >Apply</button>
+                               </>
+                            ) : suggestedIndustry?.isPartial ? (
+                               <>
+                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-amber-500"><Info size={16} /></div>
+                                  <div className="flex-1">
+                                     <p className="text-[9px] font-black uppercase text-slate-400">Select category manually</p>
+                                     <p className="text-[11px] font-black uppercase text-slate-700">Closest match: {getIndustryById(suggestedIndustry.industry)?.label}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => { setIndustry(suggestedIndustry.industry); setSuggestedIndustry(null); }}
+                                    className="h-8 px-3 bg-white border border-slate-200 text-slate-400 rounded-lg text-[9px] font-black uppercase hover:text-black hover:border-black transition-all"
+                                  >Use Guess</button>
+                               </>
+                            ) : (
+                               <>
+                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-slate-400"><TagIcon size={16} /></div>
+                                  <div className="flex-1">
+                                     <p className="text-[9px] font-black uppercase text-slate-400">Manual Selection Required</p>
+                                     <p className="text-[11px] font-black uppercase text-slate-700">Topic not in taxonomy. Select manually.</p>
+                                  </div>
+                               </>
+                            )}
                          </motion.div>
                       )}
                    </div>

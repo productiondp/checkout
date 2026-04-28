@@ -138,54 +138,56 @@ export default function CheckoutHomeFeed() {
   if (!authUser) return null;
 
   return (
-    <TerminalLayout
-      topbarChildren={
-         <div className="hidden md:flex items-center gap-2">
-            {SMART_FILTERS.map(f => (
-               <button 
-                 key={f.id}
-                 onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
-                 className={cn(
-                   "px-4 h-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
-                   activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
-                 )}
-               >
-                 {f.label}
-               </button>
-            ))}
-         </div>
-      }
-      rightSidebar={<RightSocialRail />}
-    >
-      <div className="p-8 max-w-5xl mx-auto space-y-8">
-          <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
-          <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
-          <div className="flex items-center justify-between mb-2">
-             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Discovery Stream</h3>
-          </div>
-          <Feed posts={filteredPosts} isLoading={isLoading} currentUserId={authUser?.id} onAction={(p) => router.push(`/chat?user=${p.author_id}`)} onEdit={(p) => { setEditPost(p); setIsPosting(true); }} onCreate={handleOpenPosting} onDelete={async (p) => { const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); if (error) { alert(error.message); return; } setPosts(prev => prev.filter(post => post.id !== p.id)); }} />
-      </div>
+    <ProtectedRoute>
+      <TerminalLayout
+        topbarChildren={
+           <div className="hidden md:flex items-center gap-2">
+              {SMART_FILTERS.map(f => (
+                 <button 
+                   key={f.id}
+                   onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
+                   className={cn(
+                     "px-4 h-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
+                     activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
+                   )}
+                 >
+                   {f.label}
+                 </button>
+              ))}
+           </div>
+        }
+        rightSidebar={<RightSocialRail />}
+      >
+        <div className="p-8 max-w-5xl mx-auto space-y-8">
+            <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
+            <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
+            <div className="flex items-center justify-between mb-2">
+               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Discovery Stream</h3>
+            </div>
+            <Feed posts={filteredPosts} isLoading={isLoading} currentUserId={authUser?.id} onAction={(p) => router.push(`/chat?user=${p.author_id}`)} onEdit={(p) => { setEditPost(p); setIsPosting(true); }} onCreate={handleOpenPosting} onDelete={async (p) => { const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); if (error) { alert(error.message); return; } setPosts(prev => prev.filter(post => post.id !== p.id)); }} />
+        </div>
 
-      <div className="fixed bottom-10 right-10 z-[100]">
-        <motion.button 
-          whileHover={{ scale: 1.1, rotate: 5 }} 
-          whileTap={{ scale: 0.9 }} 
-          onClick={() => handleOpenPosting()} 
-          className="h-16 w-16 bg-[#1D1D1F] text-white rounded-full flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:bg-[#E53935] transition-all duration-500 ring-1 ring-white/10 group"
-        >
-           <motion.div 
-             animate={{ rotate: [0, 90, 0] }}
-             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-             className="h-7 w-7 flex items-center justify-center"
-           >
-             <Plus size={28} strokeWidth={3} />
-           </motion.div>
-        </motion.button>
-      </div>
+        <div className="fixed bottom-10 right-10 z-[100]">
+          <motion.button 
+            whileHover={{ scale: 1.1, rotate: 5 }} 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => handleOpenPosting()} 
+            className="h-16 w-16 bg-[#1D1D1F] text-white rounded-full flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:bg-[#E53935] transition-all duration-500 ring-1 ring-white/10 group"
+          >
+             <motion.div 
+               animate={{ rotate: [0, 90, 0] }}
+               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+               className="h-7 w-7 flex items-center justify-center"
+             >
+               <Plus size={28} strokeWidth={3} />
+             </motion.div>
+          </motion.button>
+        </div>
 
-      {isPosting && <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} initialFormType={postInitialType} onPostSuccess={(newPost) => { trackAction('POST', newPost.type); initHome(); setIsPosting(false); setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type }); }} editPost={editPost} />}
-      {isPostActionLoop.active && <MomentumView postId={isPostActionLoop.postId} type={isPostActionLoop.type} onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })} />}
-      {selectedDeal && <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />}
-    </TerminalLayout>
+        {isPosting && <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} initialFormType={postInitialType} onPostSuccess={(newPost) => { trackAction('POST', newPost.type); initHome(); setIsPosting(false); setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type }); }} editPost={editPost} />}
+        {isPostActionLoop.active && <MomentumView postId={isPostActionLoop.postId} type={isPostActionLoop.type} onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })} />}
+        {selectedDeal && <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />}
+      </TerminalLayout>
+    </ProtectedRoute>
   );
 }

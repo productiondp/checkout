@@ -66,7 +66,22 @@ export default function HomeFeed({
   };
 
   const [intentMode, setIntentMode] = useState<IntentMode>('BALANCED');
+  const [sortMode, setSortMode] = useState<'NEARBY' | 'RELEVANT' | 'LATEST'>('NEARBY');
   const [selectedPost, setSelectedPost] = useState<any>(null);
+
+  // ── HELPER: HAVERSINE DISTANCE ──
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   // ── STEP 3: PASSIVE MATCH EXPANSION ──
   useEffect(() => {
@@ -111,6 +126,9 @@ export default function HomeFeed({
   const processedPosts = React.useMemo(() => {
     if (!user) return posts;
 
+    const userLat = user.location?.lat || 9.9312; // Fallback to Kochi
+    const userLng = user.location?.lng || 76.2673;
+
     const userProfile = {
       id: user.id,
       role: user.role || 'PROFESSIONAL',
@@ -123,6 +141,10 @@ export default function HomeFeed({
     const processed = posts.map((post, i) => {
       const { score, label: customLabel, tier, signals, actionScore, ctaHint, nudge, successProbability } = calculateMatchScore(userProfile, post, i, intentMode);
       
+      const postLat = post.metadata?.geo?.lat;
+      const postLng = post.metadata?.geo?.lng;
+      const distance = calculateDistance(userLat, userLng, postLat, postLng);
+
       return {
         ...post,
         authorName: post.author?.full_name || "Member",
@@ -133,7 +155,8 @@ export default function HomeFeed({
         ctaHint,
         nudge,
         tier,
-        successProbability
+        successProbability,
+        distance
       };
     });
 
@@ -154,10 +177,19 @@ export default function HomeFeed({
         return post.relevanceScore > 0;
       })
       .sort((a: any, b: any) => {
+        if (sortMode === 'LATEST') {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        if (sortMode === 'NEARBY') {
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
+          return a.distance - b.distance;
+        }
+        // DEFAULT: RELEVANT
         if (a.tier !== b.tier) return a.tier - b.tier;
         return (b.actionScore || 0) - (a.actionScore || 0);
       });
-  }, [posts, user, intentMode]);
+  }, [posts, user, intentMode, sortMode]);
 
   const dailyPriorities = processedPosts
     .filter(p => p.tier === 1 && p.actionScore > 0.6 && p.author_id !== currentUserId)
@@ -281,21 +313,41 @@ export default function HomeFeed({
 
 
             {/* --- STEP 1: INTENT MODES & INSIGHTS --- */}
-            <div className="flex items-center gap-3 bg-[#F5F5F7] p-1.5 rounded-2xl w-fit border border-black/[0.03]">
-               {(['SMART', 'REQUIREMENT', 'PARTNER', 'MEETUP'] as IntentMode[]).map((mode) => (
-                  <button
-                     key={mode}
-                     onClick={() => setIntentMode(mode)}
-                     className={cn(
-                        "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                        intentMode === mode 
-                           ? "bg-[#0A0A0A] text-white shadow-xl shadow-black/10" 
-                           : "text-[#0A0A0A]/40 hover:text-[#0A0A0A]/80"
-                     )}
-                  >
-                     {mode === 'SMART' ? 'Smart' : mode.charAt(0) + mode.slice(1).toLowerCase() + 's'}
-                  </button>
-               ))}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 bg-[#F5F5F7] p-1.5 rounded-2xl w-fit border border-black/[0.03]">
+                {(['SMART', 'REQUIREMENT', 'PARTNER', 'MEETUP'] as IntentMode[]).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setIntentMode(mode)}
+                      className={cn(
+                          "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                          intentMode === mode 
+                            ? "bg-[#0A0A0A] text-white shadow-xl shadow-black/10" 
+                            : "text-[#0A0A0A]/40 hover:text-[#0A0A0A]/80"
+                      )}
+                    >
+                      {mode === 'SMART' ? 'Smart' : mode.charAt(0) + mode.slice(1).toLowerCase() + 's'}
+                    </button>
+                ))}
+              </div>
+
+              {/* SORT MODES */}
+              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.03]">
+                 {(['NEARBY', 'RELEVANT', 'LATEST'] as const).map((mode) => (
+                    <button
+                       key={mode}
+                       onClick={() => setSortMode(mode)}
+                       className={cn(
+                          "px-4 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
+                          sortMode === mode 
+                             ? "bg-white text-black shadow-sm" 
+                             : "text-slate-400 hover:text-slate-600"
+                       )}
+                    >
+                       {mode.charAt(0) + mode.slice(1).toLowerCase()}
+                    </button>
+                 ))}
+              </div>
             </div>
 
             {/* ── STEP 4: DAILY PRIORITY LIST ── */}

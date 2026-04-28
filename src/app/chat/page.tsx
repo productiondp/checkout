@@ -27,11 +27,13 @@ import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function ChatPage() {
   return (
-    <TerminalLayout>
-      <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 animate-pulse">Loading...</div>}>
-         <ChatContent />
-      </Suspense>
-    </TerminalLayout>
+    <ProtectedRoute>
+      <TerminalLayout>
+        <Suspense fallback={<div className="flex h-full items-center justify-center p-20 text-[10px] font-black uppercase text-[#292828]/20 animate-pulse">Loading...</div>}>
+           <ChatContent />
+        </Suspense>
+      </TerminalLayout>
+    </ProtectedRoute>
   );
 }
 

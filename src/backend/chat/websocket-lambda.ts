@@ -65,8 +65,48 @@ export const handler = async (event: any) => {
             return { statusCode: 200, body: 'Disconnected' };
         }
 
-        // 3. BROADCAST TRIGGER (Internal or via DynamoDB Stream)
-        // Note: In a real setup, this would be a separate Lambda triggered by DynamoDB Streams
+        // 3. MESSAGE ROUTING (FOR TYPING INDICATORS)
+        if (routeKey === 'message') {
+            const { type, conversationId, participants } = body;
+            
+            if (type === 'TYPING_START' || type === 'TYPING_STOP') {
+                const apigw = new ApiGatewayManagementApi({ endpoint: process.env.WS_ENDPOINT });
+                
+                for (const userId of participants) {
+                    // Don't send back to the sender
+                    const { Item: connection } = await docClient.get({
+                        TableName: TABLE_NAME,
+                        Key: { PK: `WS#CONNECTION#${connectionId}`, SK: 'META' }
+                    }).promise();
+                    if (connection?.userId === userId) continue;
+
+                    const connections = await docClient.query({
+                        TableName: TABLE_NAME,
+                        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+                        ExpressionAttributeValues: { ':pk': `USER#${userId}`, ':sk': 'WS#' }
+                    }).promise();
+
+                    if (connections.Items) {
+                        for (const conn of connections.Items) {
+                            const cid = conn.SK.split('#')[1];
+                            try {
+                                await apigw.postToConnection({
+                                    ConnectionId: cid,
+                                    Data: JSON.stringify({ type, conversationId, userId: connection?.userId })
+                                }).promise();
+                            } catch (err: any) {
+                                if (err.statusCode === 410) {
+                                    await docClient.delete({ TableName: TABLE_NAME, Key: { PK: `USER#${userId}`, SK: `WS#${cid}` } }).promise();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return { statusCode: 200, body: 'OK' };
+        }
+
+        // 4. BROADCAST TRIGGER (Existing)
         if (event.source === 'internal.broadcast') {
             const { conversationId, participants, message } = event.detail;
 

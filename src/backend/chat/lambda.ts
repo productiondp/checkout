@@ -144,6 +144,24 @@ export const handler = async (event: any) => {
             return { statusCode: 201, body: JSON.stringify({ conversationId }) };
         }
 
+        // 5. UPDATE SEEN STATUS (OPTIMIZED)
+        if (path === '/chat/updateSeen' && httpMethod === 'POST') {
+            const { conversationId } = data;
+            const timestamp = Date.now();
+
+            await docClient.update({
+                TableName: TABLE_NAME,
+                Key: { PK: `USER#${authenticatedUserId}`, SK: `CONVO#${conversationId}` },
+                UpdateExpression: 'SET lastSeenAt = :t, unreadCount = :z',
+                ExpressionAttributeValues: {
+                    ':t': timestamp,
+                    ':z': 0
+                }
+            }).promise();
+
+            return { statusCode: 200, body: JSON.stringify({ success: true, timestamp }) };
+        }
+
         return { statusCode: 404, body: JSON.stringify({ message: "Not Found" }) };
 
     } catch (error: any) {

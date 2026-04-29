@@ -98,7 +98,34 @@ export class AwsChatService {
       return await response.json();
     } catch (error) {
       console.error("[AWS CHAT] Create Conversation Failed:", error);
-      throw error;
     }
+  }
+
+  /**
+   * 👀 Update Seen Status
+   */
+  static async updateSeen(conversationId: string, userId: string) {
+    try {
+      await fetch(`${AWS_CHAT_API_URL}/chat/updateSeen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId, userId }),
+      });
+    } catch (error) {
+      console.error("[AWS CHAT] Update Seen Failed:", error);
+    }
+  }
+
+  /**
+   * 📡 Send WebSocket Message (Typing, etc.)
+   */
+  static sendWebSocketEvent(socket: WebSocket | null, type: string, conversationId: string, participants: string[]) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({
+      action: "message", // API Gateway route
+      type,
+      conversationId,
+      participants
+    }));
   }
 }

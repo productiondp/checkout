@@ -7,6 +7,8 @@ import {
   Send, 
   ChevronLeft, 
   CheckCheck,
+  Check,
+  Clock,
   MessageSquare,
   Settings,
   Zap,
@@ -33,6 +35,9 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
     isLoading, 
     loadMessages, 
     sendMessage,
+    handleTyping,
+    typingUsers,
+    isWsConnected,
     hasMore,
     loadMore
   } = useAwsChat(userId);
@@ -44,7 +49,7 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
   // Auto-scroll to bottom
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingUsers]);
 
   // Load messages when conversation changes
   useEffect(() => {
@@ -62,6 +67,8 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
     await sendMessage(text);
   };
 
+  const isTyping = Object.values(typingUsers).some(Boolean);
+
   return (
     <div className="flex h-full bg-white overflow-hidden">
       {/* 1. CONVERSATION LIST (SIDEBAR) */}
@@ -72,7 +79,10 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
         <div className="p-8 pb-4">
            <div className="flex items-center justify-between mb-6">
               <h1 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit">Neural Inbox</h1>
-              <div className="h-9 w-9 bg-emerald-50 text-emerald-500 rounded-[10px] flex items-center justify-center">
+              <div className={cn(
+                "h-9 w-9 rounded-[10px] flex items-center justify-center transition-all",
+                isWsConnected ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500 animate-pulse"
+              )}>
                 <Zap size={16} fill="currentColor" />
               </div>
            </div>
@@ -162,8 +172,10 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
                      <div>
                         <h2 className="text-[15px] font-black text-[#1D1D1F] leading-tight uppercase font-outfit">Thread #{activeConversation.conversationId.slice(-4)}</h2>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                           <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">AWS Secure Stream</span>
+                           <div className={cn("h-1.5 w-1.5 rounded-full", isWsConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500")} />
+                           <span className={cn("text-[9px] font-black uppercase tracking-widest", isWsConnected ? "text-emerald-500" : "text-red-500")}>
+                              {isWsConnected ? "AWS Neural Sync" : "Sync Lost - Polling Fallback"}
+                           </span>
                         </div>
                      </div>
                   </div>
@@ -176,22 +188,19 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
 
             {/* MESSAGES AREA */}
             <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar bg-white/50 relative">
-               {hasMore && (
-                 <button 
-                  onClick={loadMore}
-                  className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-[#E53935] hover:opacity-70"
-                 >
-                   Load older messages
-                 </button>
-               )}
-
+               <AnimatePresence>
                {messages.slice().reverse().map((msg) => {
                  const isMe = msg.senderId === userId;
                  
                  return (
-                   <div key={msg.messageId} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
+                   <motion.div 
+                    key={msg.messageId} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}
+                   >
                      <div className={cn(
-                       "p-5 rounded-[15px] max-w-[70%] text-[13px] font-bold shadow-sm", 
+                       "p-5 rounded-[15px] max-w-[70%] text-[13px] font-bold shadow-sm transition-all", 
                        isMe ? "bg-[#E53935] text-white rounded-tr-[2px]" : "bg-white border border-black/[0.03] text-black/60 rounded-tl-[2px]"
                      )}>
                        {msg.text}
@@ -200,11 +209,30 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
                         <span className="text-[9px] font-black uppercase text-black/10">
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
-                        {isMe && <CheckCheck size={12} className="text-[#E53935]" />}
+                        {isMe && (
+                          <div className="flex items-center">
+                            {msg.status === 'SENDING' && <Clock size={10} className="text-black/10 animate-spin" />}
+                            {msg.status === 'SENT' && <Check size={10} className="text-black/10" />}
+                            {msg.status === 'DELIVERED' && <CheckCheck size={10} className="text-black/20" />}
+                            {msg.status === 'SEEN' && <CheckCheck size={10} className="text-[#E53935]" />}
+                          </div>
+                        )}
                      </div>
-                   </div>
+                   </motion.div>
                  );
                })}
+               </AnimatePresence>
+               
+               {isTyping && (
+                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
+                   <div className="h-8 w-12 bg-white border border-black/[0.03] rounded-full flex items-center justify-center gap-1 shadow-sm">
+                      <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1 h-1 bg-[#E53935] rounded-full" />
+                      <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1 h-1 bg-[#E53935] rounded-full" />
+                      <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1 h-1 bg-[#E53935] rounded-full" />
+                   </div>
+                   <span className="text-[9px] font-black uppercase text-black/20 italic">Partner is typing...</span>
+                 </motion.div>
+               )}
                <div ref={messageEndRef} />
             </div>
 
@@ -213,7 +241,10 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
                <form onSubmit={handleSend} className="flex items-center gap-3 bg-[#F5F5F7] rounded-full p-1.5 pl-6 border border-black/[0.03] focus-within:bg-white focus-within:shadow-xl transition-all">
                   <ClarityInput 
                     value={inputText} 
-                    onChange={(e) => setInputText(e.target.value)} 
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      handleTyping();
+                    }} 
                     placeholder="AWS Stream Secured. Type a message..." 
                   />
                   <button 

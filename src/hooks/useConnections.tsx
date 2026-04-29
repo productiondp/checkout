@@ -18,7 +18,7 @@ const ConnectionContext = createContext<ConnectionContextType | undefined>(undef
 
 export function ConnectionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [connectionMap, setConnectionMap] = useState<Record<string, ConnectionStatus>>({});
+  const [connectionMap, setConnectionMap] = useState<Record<string, ConnectionState>>({});
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 

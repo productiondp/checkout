@@ -7,7 +7,7 @@
 
 import { analytics } from "@/utils/analytics";
 
-const AWS_CHAT_API_URL = process.env.NEXT_PUBLIC_AWS_CHAT_API_URL || "";
+const AWS_CHAT_API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export interface AwsMessage {
   messageId: string;

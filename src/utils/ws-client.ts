@@ -25,7 +25,7 @@ export class AwsWebSocketClient {
    * 🔌 Establish Connection
    */
   connect() {
-    if (this.socket || this.isConnecting || !WS_URL) return;
+    if (typeof WebSocket === 'undefined' || this.socket || this.isConnecting || !WS_URL) return;
     this.isConnecting = true;
 
     try {

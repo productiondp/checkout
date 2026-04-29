@@ -12,6 +12,11 @@ import { DynamoDBChatAdapter } from "./dynamodb";
 
 const DB_PROVIDER = process.env.NEXT_PUBLIC_DB_PROVIDER || "supabase";
 
+// 🛡️ SAFE INITIALIZATION
+if (DB_PROVIDER === "supabase" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  console.warn("⚠️ [DB_PROVIDER] Missing Supabase config. Running in Safe Mode.");
+}
+
 // Instantiate the singleton adapter instance
 const chatAdapter: ChatDBAdapter = 
   DB_PROVIDER === "dynamodb" 

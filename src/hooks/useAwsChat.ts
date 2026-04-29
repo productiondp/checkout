@@ -26,6 +26,7 @@ export function useAwsChat(userId: string | undefined) {
 
   // 🛡️ VISIBILITY WATCHDOG
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     const handleVisibility = () => setIsTabActive(document.visibilityState === 'visible');
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
@@ -33,7 +34,7 @@ export function useAwsChat(userId: string | undefined) {
 
   // 📡 WEBSOCKET INITIALIZATION (UX ENHANCED)
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || typeof window === 'undefined') return;
 
     if (!wsClientRef.current) wsClientRef.current = new AwsWebSocketClient(userId);
     const ws = wsClientRef.current;
@@ -127,7 +128,9 @@ export function useAwsChat(userId: string | undefined) {
 
     if (clear) {
       setMessages(enrichedMessages);
-      localStorage.setItem(`aws_cache_${conversationId}`, JSON.stringify(enrichedMessages.slice(0, 50)));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`aws_cache_${conversationId}`, JSON.stringify(enrichedMessages.slice(0, 50)));
+      }
     } else {
       setMessages(prev => {
         const combined = [...prev, ...enrichedMessages];

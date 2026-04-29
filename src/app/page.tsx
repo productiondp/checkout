@@ -123,8 +123,8 @@ function AuthContent() {
       />
 
       {/* ── HERO ── */}
-      <main className="pt-[100px] lg:pt-[140px] pb-20 overflow-x-hidden">
-         <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24">
+      <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
+         <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             
             <div className="w-full lg:w-1/2 space-y-8">
                <h1 className="text-4xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
@@ -278,7 +278,7 @@ function AuthContent() {
       </main>
 
       {/* ── TOPICS ── */}
-      <section className="bg-gray-100 py-16">
+      <section className="bg-gray-100 py-[63px]">
          <div className="max-w-[1128px] mx-auto px-6">
             <h2 className="text-3xl font-light mb-8">Find the right people, Business and Opportunities</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -295,7 +295,7 @@ function AuthContent() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white py-12">
+      <footer className="bg-white py-[47px]">
          <div className="max-w-[1128px] mx-auto px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                <div className="space-y-4">

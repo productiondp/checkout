@@ -29,14 +29,21 @@ export interface AwsConversation {
 
 export class AwsChatService {
   /**
-   * 📨 Send a new message
+   * 🛡️ DETERMINISTIC ID GENERATION
    */
-  static async sendMessage(conversationId: string, senderId: string, text: string, mediaUrl?: string) {
+  static getDeterministicId(participants: string[]): string {
+    return participants.sort().join("_");
+  }
+
+  /**
+   * 📨 Send a new message (Hardened)
+   */
+  static async sendMessage(conversationId: string, senderId: string, text: string, recipientId?: string, mediaUrl?: string) {
     try {
       const response = await fetch(`${AWS_CHAT_API_URL}/chat/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId, senderId, text, mediaUrl }),
+        body: JSON.stringify({ conversationId, senderId, text, recipientId, mediaUrl }),
       });
       
       const data = await response.json();

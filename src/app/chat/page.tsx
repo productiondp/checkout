@@ -29,6 +29,7 @@ import { ClarityInput } from "@/components/ui/ClarityInput";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import { formatRelativeTime } from "@/utils/date-utils";
 import { OutcomeSelector } from "@/components/trust/OutcomeSelector";
+import { AwsChatView } from "@/components/chat/AwsChatView";
 
 export default function ChatPage() {
   return (
@@ -63,6 +64,8 @@ function ChatContent() {
   const supabase = createClient();
   const { refreshCounts, setActiveChatId } = useNotifications();
   const [confirmAction, setConfirmAction] = useState<{ type: 'REMOVE' | 'BLOCK'; connectionId: string; partnerName: string } | null>(null);
+  const [chatSystem, setChatSystem] = useState<'SUPABASE' | 'AWS'>('SUPABASE');
+
 
   useEffect(() => {
     if (initialParam) setMessage(initialParam);
@@ -270,6 +273,8 @@ function ChatContent() {
   const isSender = selectedChat?.sender_id === user?.id;
   const isLocked = isPending && isSender;
 
+  if (chatSystem === 'AWS') return <AwsChatView userId={user.id} />;
+
   return (
     <div className="flex h-full bg-white overflow-hidden">
       <aside className={cn("w-full md:w-80 lg:w-[350px] border-r border-black/[0.03] flex flex-col transition-all shrink-0", selectedChat && "hidden md:flex")}>
@@ -282,6 +287,18 @@ function ChatContent() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={14} />
               <input type="text" placeholder="Search chats..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full h-10 bg-[#F5F5F7] border border-black/[0.03] rounded-[10px] pl-10 pr-4 text-[12px] font-bold text-[#1D1D1F] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all" />
            </div>
+           
+           {/* AWS TOGGLE */}
+           <button 
+             onClick={() => setChatSystem(chatSystem === 'SUPABASE' ? 'AWS' : 'SUPABASE')}
+             className={cn(
+               "mt-6 w-full h-11 rounded-[12px] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all border",
+               chatSystem === 'AWS' ? "bg-emerald-500 text-white border-emerald-500 shadow-xl shadow-emerald-500/20" : "bg-white text-black/40 border-black/[0.03] hover:bg-slate-50"
+             )}
+           >
+             <Zap size={14} fill={chatSystem === 'AWS' ? "currentColor" : "none"} />
+             {chatSystem === 'AWS' ? "AWS Neural Sync Active" : "Enable AWS Neural Stream"}
+           </button>
         </div>
         <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-1">
            {chats.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).map((chat) => {

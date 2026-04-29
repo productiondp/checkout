@@ -1,0 +1,97 @@
+/**
+ * AWS SERVERLESS CHAT SERVICE (ULTRA-EFFICIENT)
+ * 
+ * This service interacts with the AWS Lambda/API Gateway backend.
+ * Designed for low cost, high scalability, and zero regression.
+ */
+
+import { analytics } from "@/utils/analytics";
+
+const AWS_CHAT_API_URL = process.env.NEXT_PUBLIC_AWS_CHAT_API_URL || "";
+
+export interface AwsMessage {
+  messageId: string;
+  senderId: string;
+  text: string;
+  mediaUrl?: string;
+  createdAt: number;
+}
+
+export interface AwsConversation {
+  conversationId: string;
+  type: "direct" | "group";
+  participants: string[];
+  lastMessage: string;
+  lastMessageAt: number;
+  unreadCount?: number;
+  lastSeenAt?: number;
+}
+
+export class AwsChatService {
+  /**
+   * 📨 Send a new message
+   */
+  static async sendMessage(conversationId: string, senderId: string, text: string, mediaUrl?: string) {
+    try {
+      const response = await fetch(`${AWS_CHAT_API_URL}/chat/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId, senderId, text, mediaUrl }),
+      });
+      
+      const data = await response.json();
+      analytics.track('AWS_CHAT_MESSAGE_SENT', senderId);
+      return data;
+    } catch (error) {
+      console.error("[AWS CHAT] Send Message Failed:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📖 Fetch paginated messages
+   */
+  static async getMessages(conversationId: string, cursor?: string) {
+    try {
+      const url = new URL(`${AWS_CHAT_API_URL}/chat/messages`);
+      url.searchParams.append('conversationId', conversationId);
+      if (cursor) url.searchParams.append('cursor', cursor);
+
+      const response = await fetch(url.toString());
+      return await response.json();
+    } catch (error) {
+      console.error("[AWS CHAT] Get Messages Failed:", error);
+      return { messages: [], nextCursor: null };
+    }
+  }
+
+  /**
+   * 📬 Get all user conversations
+   */
+  static async getConversations(userId: string) {
+    try {
+      const response = await fetch(`${AWS_CHAT_API_URL}/chat/conversations?userId=${userId}`);
+      return await response.json();
+    } catch (error) {
+      console.error("[AWS CHAT] Get Conversations Failed:", error);
+      return [];
+    }
+  }
+
+  /**
+   * 🤝 Initialize or retrieve a conversation
+   */
+  static async createConversation(participants: string[], type: "direct" | "group" = "direct") {
+    try {
+      const response = await fetch(`${AWS_CHAT_API_URL}/chat/createConversation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants, type }),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("[AWS CHAT] Create Conversation Failed:", error);
+      throw error;
+    }
+  }
+}

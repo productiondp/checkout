@@ -192,5 +192,7 @@ export function useAwsChat(userId: string | undefined) {
     isWsConnected,
     hasMore: !!nextCursor,
     loadMore: () => activeConversation && nextCursor && loadMessages(activeConversation.conversationId, false),
+    // 📈 GROWTH ENGINE: CONVERSION TRACKING
+    messageCount: messages.filter(m => m.senderId !== userId).length,
   };
 }

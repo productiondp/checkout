@@ -65,11 +65,11 @@ export class MeetupService {
           { onConflict: 'room_id,user_id' }
         );
 
-      // Send System Message
+      // 📈 GROWTH: VIRAL ACTIVATION MESSAGE
       const { data: userProfile } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
       await supabase.from('messages').insert({
         room_id: meetup.room_id,
-        content: `${userProfile?.full_name || 'A new partner'} has joined the meetup.`,
+        content: `🔥 ${userProfile?.full_name || 'A new partner'} has joined the stream! Let's get the conversation started. 👋`,
         type: 'SYSTEM'
       });
     }

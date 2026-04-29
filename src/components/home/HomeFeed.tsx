@@ -25,6 +25,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { calculateMatchScore, getRelevanceLabel, IntentMode } from "@/utils/match-engine";
 import { useUserSuccess } from "@/hooks/useUserSuccess";
 import { SignalGuard } from "@/utils/signal-guard";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { MomentumBanner } from "@/components/growth/MomentumBanner";
 
 interface HomeFeedProps {
   posts: any[];
@@ -48,6 +50,7 @@ export default function HomeFeed({
   const router = useRouter();
   const { user } = useAuth();
   const insights = useUserSuccess(user?.id);
+  const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   
   // 🛡️ ACTION & CONTEXT TRACKING
   const [sessionActions, setSessionActions] = useState<string[]>([]);
@@ -218,6 +221,8 @@ export default function HomeFeed({
 
   return (
     <div className="space-y-8 pb-20">
+      {/* 📈 GROWTH: MOMENTUM TRIGGER */}
+      <MomentumBanner unreadCount={unreadMessagesCount} pendingRequests={pendingRequestsCount} />
       
       {/* --- STEP 6: LIGHT NOTIFICATION (High Value Only) --- */}
       <AnimatePresence>

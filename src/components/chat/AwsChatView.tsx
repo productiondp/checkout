@@ -39,12 +39,21 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
     typingUsers,
     isWsConnected,
     hasMore,
-    loadMore
+    loadMore,
+    messageCount
   } = useAwsChat(userId);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false);
   const messageEndRef = useRef<HTMLDivElement>(null);
+
+  // 📈 GROWTH: Trigger Connect Prompt after 3 messages
+  useEffect(() => {
+    if (messageCount >= 3 && !showConnectPrompt && activeConversation?.type === 'direct') {
+      setShowConnectPrompt(true);
+    }
+  }, [messageCount, activeConversation, showConnectPrompt]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -138,11 +147,14 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
                         )}>
                           {convo.lastMessage || "Start a secure conversation..."}
                         </p>
-                        {isUnread && (
-                          <div className="h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full flex items-center justify-center text-[8px] font-black text-white shrink-0">
-                            {convo.unreadCount}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {isWsConnected && !isSelected && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />}
+                          {isUnread && (
+                            <div className="h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full flex items-center justify-center text-[8px] font-black text-white shrink-0">
+                              {convo.unreadCount}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                  </button>
@@ -233,6 +245,37 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
                    <span className="text-[9px] font-black uppercase text-black/20 italic">Partner is typing...</span>
                  </motion.div>
                )}
+
+               {/* 📈 GROWTH: CONVERSION PROMPT */}
+               {showConnectPrompt && (
+                 <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }} 
+                  animate={{ opacity: 1, scale: 1 }} 
+                  className="bg-white border border-black/[0.03] rounded-[20px] p-6 text-center shadow-2xl relative overflow-hidden group"
+                 >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#E53935]/5 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
+                    <div className="h-12 w-12 bg-[#E53935]/10 text-[#E53935] rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                      <Zap size={20} fill="currentColor" />
+                    </div>
+                    <h4 className="text-[14px] font-black uppercase font-outfit mb-2 relative z-10">Momentum detected</h4>
+                    <p className="text-[10px] font-bold text-black/40 uppercase mb-6 relative z-10 leading-relaxed">You've exchanged several messages. Ready to add them to your neural network?</p>
+                    <div className="flex gap-2 relative z-10">
+                      <button onClick={() => setShowConnectPrompt(false)} className="flex-1 h-10 bg-[#F5F5F7] rounded-[10px] text-[9px] font-black uppercase">Later</button>
+                      <button 
+                        onClick={async () => {
+                          const { ConnectionService } = await import("@/services/connection-service");
+                          const recipientId = activeConversation?.participants.find(p => p !== userId);
+                          if (recipientId) await ConnectionService.requestConnection(userId, recipientId);
+                          setShowConnectPrompt(false);
+                        }}
+                        className="flex-1 h-10 bg-black text-white rounded-[10px] text-[9px] font-black uppercase shadow-lg shadow-black/20"
+                      >
+                        Request Connection
+                      </button>
+                    </div>
+                 </motion.div>
+               )}
+
                <div ref={messageEndRef} />
             </div>
 

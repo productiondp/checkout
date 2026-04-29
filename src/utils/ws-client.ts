@@ -27,44 +27,52 @@ export class AwsWebSocketClient {
   connect() {
     if (typeof WebSocket === 'undefined' || this.socket || this.isConnecting || !WS_URL) return;
     
-    // 🛡️ DEV STABILITY GUARD
-    if (process.env.NODE_ENV === "development" && WS_URL.includes("localhost")) {
-      console.log("WebSocket disabled in dev safe mode");
-      return;
-    }
-
     this.isConnecting = true;
 
     try {
       const url = `${WS_URL}?userId=${this.userId}`;
-      this.socket = new WebSocket(url);
+      const ws = new WebSocket(url);
+      this.socket = ws;
 
-      this.socket.onopen = () => {
+      // 🛡️ CONNECTION TIMEOUT GUARD
+      const timeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.warn("[WS] Connection timeout. Falling back to polling.");
+          ws.close();
+        }
+      }, 3000);
+
+      ws.onopen = () => {
+        clearTimeout(timeout);
         console.log("[WS] Connected to AWS Neural Stream");
         this.isConnecting = false;
         this.reconnectAttempts = 0;
       };
 
-      this.socket.onmessage = (event) => {
+      ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           this.listeners.forEach(cb => cb(data));
         } catch (err) {
-          console.error("[WS] Message Parse Error", err);
+          // Log but do not crash
+          console.warn("[WS] Message Parse Warning:", err);
         }
       };
 
-      this.socket.onclose = () => {
+      ws.onclose = () => {
+        clearTimeout(timeout);
         this.socket = null;
         this.isConnecting = false;
         this.attemptReconnect();
       };
 
-      this.socket.onerror = (err) => {
-        console.error("[WS] Connection Error", err);
-        this.socket?.close();
+      ws.onerror = (err) => {
+        // Silent failure: log but do not throw
+        console.warn("[WS] Connection Warning (Handled):", err);
+        ws.close();
       };
     } catch (err) {
+      console.warn("[WS] Initialization Failed (Safe Mode):", err);
       this.isConnecting = false;
       this.attemptReconnect();
     }

@@ -61,6 +61,12 @@ export default function ClientLayout({
         optimization.resetToBaseline();
       };
 
+      // 🛡️ GLOBAL ERROR CATCHER
+      window.onerror = (msg, url, line, col, error) => {
+        console.error("%c[GLOBAL ERROR]", "background: #E53935; color: white; font-weight: bold; padding: 2px 4px; border-radius: 2px;", { msg, url, line, col, error });
+        return false;
+      };
+
       // Register Service Worker for PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

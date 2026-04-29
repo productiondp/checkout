@@ -26,6 +26,13 @@ export class AwsWebSocketClient {
    */
   connect() {
     if (typeof WebSocket === 'undefined' || this.socket || this.isConnecting || !WS_URL) return;
+    
+    // 🛡️ DEV STABILITY GUARD
+    if (process.env.NODE_ENV === "development" && WS_URL.includes("localhost")) {
+      console.log("WebSocket disabled in dev safe mode");
+      return;
+    }
+
     this.isConnecting = true;
 
     try {

@@ -8,6 +8,11 @@
 import { db } from "@/lib/db/provider";
 import { analytics } from "@/utils/analytics";
 
+// --- AWS CHAT SAFE SWITCH ---
+const USE_AWS_CHAT = false;
+const AWS_API = "https://pzpl7spjjf.execute-api.ap-south-1.amazonaws.com";
+// ----------------------------
+
 export interface AwsMessage {
   messageId: string;
   senderId: string;
@@ -38,15 +43,38 @@ export class ChatService {
    * 📨 Send a new message
    */
   static async sendMessage(conversationId: string, senderId: string, text: string, recipientId?: string, mediaUrl?: string) {
-    analytics.track('CHAT_MESSAGE_SENT', senderId);
-    return await db.sendMessage(conversationId, senderId, text, recipientId, mediaUrl);
+    if (USE_AWS_CHAT) {
+      return fetch(`${AWS_API}/chat/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          conversationId,
+          senderId,
+          text,
+          recipientId,
+          mediaUrl
+        })
+      });
+    } else {
+      analytics.track('CHAT_MESSAGE_SENT', senderId);
+      return await db.sendMessage(conversationId, senderId, text, recipientId, mediaUrl);
+    }
   }
 
   /**
    * 📖 Fetch paginated messages
    */
   static async getMessages(conversationId: string, cursor?: string) {
-    return await db.getMessages(conversationId, cursor);
+    if (USE_AWS_CHAT) {
+      const res = await fetch(
+        `${AWS_API}/chat/messages?conversationId=${conversationId}${cursor ? `&cursor=${cursor}` : ''}`
+      );
+      return res.json();
+    } else {
+      return await db.getMessages(conversationId, cursor);
+    }
   }
 
   /**

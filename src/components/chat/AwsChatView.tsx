@@ -201,12 +201,12 @@ export function AwsChatView({ userId }: AwsChatViewProps) {
             {/* MESSAGES AREA */}
             <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar bg-white/50 relative">
                <AnimatePresence>
-               {messages.slice().reverse().map((msg) => {
+               {messages.map((msg) => {
                  const isMe = msg.senderId === userId;
                  
                  return (
                    <motion.div 
-                    key={msg.messageId} 
+                    key={msg.SK || msg.messageId} 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback } from "react";
 import { 
   Search, 
   MoreHorizontal, 
@@ -60,6 +60,17 @@ function ChatContent() {
   const userParam = searchParams.get('user');
   const initialParam = searchParams.get('initial');
 
+  // 🛡️ DEDUPLICATION HELPER
+  const dedupe = (msgs: any[]) => {
+    const seen = new Set();
+    return msgs.filter(m => {
+      const key = m.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const user = useRequiredUser();
   const supabase = createClient();
   const { refreshCounts, setActiveChatId } = useNotifications();
@@ -76,6 +87,48 @@ function ChatContent() {
     else setActiveChatId(null);
     return () => setActiveChatId(null);
   }, [selectedChat, setActiveChatId]);
+  
+  const load = useCallback(async () => {
+    if (!selectedChat || selectedChat.id === "temp") { setMessages([]); return; }
+    const q = supabase.from('messages').select('*');
+    if (selectedChat.isGroup) q.eq('room_id', selectedChat.id); else q.eq('connection_id', selectedChat.id);
+    const { data } = await q.order('created_at', { ascending: true });
+    if (data) { 
+      const unique = dedupe(data);
+      console.log("SUPABASE SET MESSAGES CALLED", { count: unique.length });
+      setMessages(unique); 
+      
+      const unreads = data.filter(m=>!m.is_read && m.sender_id !== user.id).map(m=>m.id); 
+      if (unreads.length>0) { 
+        await supabase.from('messages').update({is_read:true}).in('id', unreads); 
+        refreshCounts(); 
+      } 
+    }
+
+    // LOAD GROUP DETAILS
+    if (selectedChat.isGroup) {
+      const { data: post } = await supabase.from('posts').select('*, author:profiles(*)').eq('room_id', selectedChat.id).single();
+      if (post) {
+        setMeetupDetails(post);
+        setIsHost(post.author_id === user.id);
+        const { data: pts } = await supabase.from('participants').select('profiles(*)').eq('room_id', selectedChat.id);
+        setParticipants(pts?.map(p => p.profiles) || []);
+        
+        const { data: participant } = await supabase
+          .from('meetup_participants')
+          .select('outcome_data')
+          .eq('meetup_id', post.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setOutcomeSubmitted(!!participant?.outcome_data);
+      }
+    } else {
+      setMeetupDetails(null);
+      setParticipants([]);
+      setIsHost(false);
+      setOutcomeSubmitted(false);
+    }
+  }, [selectedChat, user?.id]);
 
   useEffect(() => {
     async function initChat() {
@@ -201,47 +254,17 @@ function ChatContent() {
   }, [user?.id, selectedChat?.id]);
 
   useEffect(() => {
-    if (!selectedChat || selectedChat.id === "temp") { setMessages([]); return; }
-    async function load() {
-      const q = supabase.from('messages').select('*');
-      if (selectedChat.isGroup) q.eq('room_id', selectedChat.id); else q.eq('connection_id', selectedChat.id);
-      const { data } = await q.order('created_at', { ascending: true });
-      if (data) { setMessages(data); const unreads = data.filter(m=>!m.is_read && m.sender_id !== user.id).map(m=>m.id); if (unreads.length>0) { await supabase.from('messages').update({is_read:true}).in('id', unreads); refreshCounts(); } }
-
-      // LOAD GROUP DETAILS
-      if (selectedChat.isGroup) {
-        const { data: post } = await supabase.from('posts').select('*, author:profiles(*)').eq('room_id', selectedChat.id).single();
-        if (post) {
-          setMeetupDetails(post);
-          setIsHost(post.author_id === user.id);
-          const { data: pts } = await supabase.from('participants').select('profiles(*)').eq('room_id', selectedChat.id);
-          setParticipants(pts?.map(p => p.profiles) || []);
-          
-          // Check if already submitted outcome
-          const { data: participant } = await supabase
-            .from('meetup_participants')
-            .select('outcome_data')
-            .eq('meetup_id', post.id)
-            .eq('user_id', user.id)
-            .maybeSingle();
-          setOutcomeSubmitted(!!participant?.outcome_data);
-        }
-      } else {
-        setMeetupDetails(null);
-        setParticipants([]);
-        setIsHost(false);
-        setOutcomeSubmitted(false);
-      }
-    }
     load();
-    const ch = supabase.channel(`chat_${selectedChat.id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'messages' }, (p:any)=>{
+    const ch = supabase.channel(`chat_${selectedChat?.id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'messages' }, (p:any)=>{
+      if (!selectedChat) return;
       if (selectedChat.isGroup ? p.new.room_id === selectedChat.id : p.new.connection_id === selectedChat.id) {
-        setMessages(prev => [...prev, p.new]);
+        // 🛡️ SINGLE WRITER RULE: ONLY load can update state
+        load();
         if (p.new.sender_id !== user.id) { supabase.from('messages').update({is_read:true}).eq('id', p.new.id).then(()=>refreshCounts()); }
       }
     }).subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [selectedChat?.id]);
+  }, [selectedChat?.id, load]);
 
   const handleSend = async (e: any) => {
     e.preventDefault();
@@ -265,8 +288,10 @@ function ChatContent() {
         setSelectedChat(prev => ({ ...prev, status: 'ACCEPTED' }));
       }
     }
-    setMessage(""); setMessages(prev=>[...prev, { ...newMessage, id: Math.random().toString(), created_at: new Date().toISOString() }]);
+    setMessage(""); 
     await supabase.from('messages').insert([newMessage]);
+    // 🛡️ SINGLE WRITER RULE: ONLY load can update state
+    await load();
   };
 
   const isPending = selectedChat?.status === 'PENDING';

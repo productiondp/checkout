@@ -9,6 +9,20 @@ export interface AwsMessage {
   mediaUrl?: string;
   createdAt: number;
   status?: 'SENDING' | 'SENT' | 'DELIVERED' | 'SEEN';
+  SK?: string;
+}
+
+// 🛡️ ABSOLUTE DEDUPLICATION + SORT (ASCENDING)
+function dedupeAndSort(messages: AwsMessage[]): AwsMessage[] {
+  const map = new Map();
+  messages.forEach(msg => {
+    const key = msg.SK || msg.messageId;
+    map.set(key, msg);
+  });
+  
+  const cleaned = Array.from(map.values()).sort((a, b) => a.createdAt - b.createdAt);
+  console.log("CHRONO_SYNC:", { raw: messages.length, clean: cleaned.length });
+  return cleaned;
 }
 
 export function useAwsChat(userId: string | undefined) {
@@ -23,6 +37,7 @@ export function useAwsChat(userId: string | undefined) {
   
   const wsClientRef = useRef<AwsWebSocketClient | null>(null);
   const typingTimeoutRef = useRef<any>(null);
+  const lastSentIdRef = useRef<string | null>(null);
 
   // 🛡️ VISIBILITY WATCHDOG
   useEffect(() => {
@@ -46,11 +61,8 @@ export function useAwsChat(userId: string | undefined) {
       // A. Real-time Messages
       if (type === 'NEW_MESSAGE') {
         if (activeConversation?.conversationId === conversationId) {
-          setMessages(prev => {
-            if (prev.some(m => m.messageId === message.messageId)) return prev;
-            return [{ ...message, status: 'DELIVERED' }, ...prev].sort((a,b) => b.createdAt - a.createdAt);
-          });
-          // Update seen on open conversation
+          // 🛡️ SINGLE WRITER RULE: ONLY loadMessages can update state
+          loadMessages(conversationId, false);
           AwsChatService.updateSeen(conversationId, userId);
         }
         setConversations(prev => prev.map(c => c.conversationId === conversationId ? { ...c, lastMessage: message.text, lastMessageAt: message.createdAt } : c));
@@ -108,6 +120,7 @@ export function useAwsChat(userId: string | undefined) {
   // Load Messages (with status calc)
   const loadMessages = useCallback(async (conversationId: string, clear = true) => {
     if (!isTabActive && !clear) return;
+    if (isLoading) return; // 🛡️ PREVENT OVERLAP
     setIsLoading(true);
     
     if (clear && typeof window !== 'undefined') {
@@ -126,17 +139,20 @@ export function useAwsChat(userId: string | undefined) {
       status: m.createdAt <= lastSeen ? 'SEEN' : 'DELIVERED'
     }));
 
+    const cleaned = dedupeAndSort(enrichedMessages);
+    
+    // 🛡️ DEBUG: MONITOR STATE WRITER
+    console.log("SET MESSAGES CALLED", { count: cleaned.length });
+
     if (clear) {
-      setMessages(enrichedMessages);
+      setMessages(cleaned);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(`aws_cache_${conversationId}`, JSON.stringify(enrichedMessages.slice(0, 50)));
+        localStorage.setItem(`aws_cache_${conversationId}`, JSON.stringify(cleaned.slice(-50)));
       }
     } else {
       setMessages(prev => {
-        const combined = [...prev, ...enrichedMessages];
-        const unique = Array.from(new Set(combined.map(m => m.messageId)))
-          .map(id => combined.find(m => m.messageId === id)!);
-        return unique.sort((a,b) => b.createdAt - a.createdAt);
+        const combined = [...prev, ...cleaned];
+        return dedupeAndSort(combined);
       });
     }
     
@@ -148,39 +164,29 @@ export function useAwsChat(userId: string | undefined) {
   useEffect(() => {
     if (!userId || !isTabActive) return;
     const interval = setInterval(() => {
-      if (!isWsConnected) {
-        loadConversations();
-        if (activeConversation) loadMessages(activeConversation.conversationId, true);
-      }
-    }, 25000);
+      loadConversations();
+      if (activeConversation) loadMessages(activeConversation.conversationId, true);
+    }, 2000);
     return () => clearInterval(interval);
   }, [userId, isTabActive, activeConversation, isWsConnected, loadConversations, loadMessages]);
 
-  // Send Message (Full Status Lifecycle)
+  // Send Message (Backend Single Source of Truth)
   const sendMessage = useCallback(async (text: string, mediaUrl?: string) => {
     if (!activeConversation || !userId) return;
 
     const recipientId = activeConversation.participants.find(p => p !== userId);
-    const tempId = `temp_${Date.now()}`;
-    const newMessage: AwsMessage = {
-      messageId: tempId,
-      senderId: userId,
-      text,
-      mediaUrl,
-      createdAt: Date.now(),
-      status: 'SENDING'
-    };
-
-    setMessages(prev => [newMessage, ...prev]);
 
     try {
-      const res = await AwsChatService.sendMessage(activeConversation.conversationId, userId, text, recipientId, mediaUrl);
-      setMessages(prev => prev.map(m => m.messageId === tempId ? { ...m, messageId: res.messageId, status: 'SENT' } : m));
+      // 🚀 ONLY SEND DATA - DO NOT UPDATE UI MANUALLY
+      await AwsChatService.sendMessage(activeConversation.conversationId, userId, text, recipientId, mediaUrl);
+      
+      // 🔄 SYNC IMMEDIATELY FROM BACKEND
+      await loadMessages(activeConversation.conversationId, true);
     } catch (error) {
-      setMessages(prev => prev.filter(m => m.messageId !== tempId));
+      console.error("Failed to send message:", error);
       throw error;
     }
-  }, [activeConversation, userId]);
+  }, [activeConversation, userId, loadMessages]);
 
   return {
     conversations,

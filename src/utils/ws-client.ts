@@ -5,7 +5,7 @@
  * and polling fallback orchestration.
  */
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "";
+const WS_URL = process.env.NEXT_PUBLIC_AWS_WS_URL || "";
 
 type WSCallback = (data: any) => void;
 

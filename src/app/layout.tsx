@@ -19,6 +19,8 @@ export const viewport = {
   themeColor: "#292828",
 };
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Checkout",
   description: "The premium Business OS for local commerce.",

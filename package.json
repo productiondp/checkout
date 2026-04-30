@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "auth-check": "node scripts/auth-check.js",
-    "build": "npm run auth-check && npm run build:cloudflare",
+    "build": "npm run auth-check && next build",
     "build:cloudflare": "next build && npx @cloudflare/next-on-pages",
     "pages:build": "npx @cloudflare/next-on-pages",
     "start": "next start",

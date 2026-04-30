@@ -20,7 +20,7 @@ export const viewport = {
 };
 
 export const dynamic = 'force-dynamic';
-
+export const runtime = 'edge';
 export const metadata = {
   title: "Checkout",
   description: "The premium Business OS for local commerce.",

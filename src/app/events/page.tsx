@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState } from "react";
 import { 
@@ -183,4 +184,3 @@ function EventCard({ event }: { event: Event }) {
 }
 
 
-export const runtime = "edge";

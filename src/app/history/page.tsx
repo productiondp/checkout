@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React from "react";
 import Link from "next/link";
@@ -53,4 +54,3 @@ export default function HistoryPage() {
 }
 
 
-export const runtime = "edge";

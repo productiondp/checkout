@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React from "react";
 import { motion } from "framer-motion";
@@ -133,4 +134,3 @@ export default function WhatIsCheckoutPage() {
 }
 
 
-export const runtime = "edge";

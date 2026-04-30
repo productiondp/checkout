@@ -1,7 +1,8 @@
+export const runtime = 'edge';
 import { NextResponse } from "next/server";
 import { invalidateServerCache } from "@/lib/server-cache";
 
-export const runtime = "edge";
+
 
 /**
  * CACHE PURGE API (V1.18)

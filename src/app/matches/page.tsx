@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, useEffect, useMemo } from "react";
 import { 
@@ -367,4 +368,3 @@ function EmptyState({ title, description, icon: Icon }: any) {
 }
 
 
-export const runtime = "edge";

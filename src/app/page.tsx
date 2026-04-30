@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
@@ -357,4 +358,3 @@ export default function AuthPage() {
 }
 
 
-export const runtime = "edge";

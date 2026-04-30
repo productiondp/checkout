@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React from "react";
 import SectionTerminal from "@/components/shared/SectionTerminal";
@@ -17,4 +18,3 @@ export default function NetworkPage() {
 }
 
 
-export const runtime = "edge";

@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
 "use client";
 
@@ -744,4 +745,3 @@ export default function PremiumProfilePage() {
 }
 
 
-export const runtime = "edge";

@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React from "react";
 import { 
@@ -171,4 +172,3 @@ export default function AdvisorProfilePage() {
 }
 
 
-export const runtime = "edge";

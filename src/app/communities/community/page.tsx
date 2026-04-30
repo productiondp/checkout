@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 import React, { useState, useRef } from "react";
 import { 
   Users, 
@@ -408,4 +409,3 @@ export default function CommunityPage() {
 }
 
 
-export const runtime = "edge";

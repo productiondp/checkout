@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -158,4 +159,3 @@ export default function SettingsHub() {
 }
 
 
-export const runtime = "edge";

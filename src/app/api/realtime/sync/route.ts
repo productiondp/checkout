@@ -1,7 +1,8 @@
+export const runtime = 'edge';
 import { NextResponse } from "next/server";
 import { broadcastCleanEvent, shouldBroadcast } from "@/lib/realtime-coordinator";
 
-export const runtime = "edge";
+
 
 /**
  * REAL-TIME SYNC API (V1.20)

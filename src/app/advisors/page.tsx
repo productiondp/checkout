@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, useEffect, useMemo } from "react";
 import { 
@@ -246,4 +247,3 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
 }
 
 
-export const runtime = "edge";

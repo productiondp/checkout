@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React from "react";
 import TerminalLayout from "@/components/layout/TerminalLayout";
@@ -15,4 +16,3 @@ export default function DiscoverPage() {
 }
 
 
-export const runtime = "edge";

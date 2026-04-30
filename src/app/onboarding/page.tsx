@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, useEffect, useRef } from "react";
 import { 
@@ -555,4 +556,3 @@ export default function OnboardingPage() {
 }
 
 
-export const runtime = "edge";

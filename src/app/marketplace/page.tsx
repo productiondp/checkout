@@ -1,4 +1,5 @@
 "use client";
+export const runtime = 'edge';
 
 import React, { useState, useEffect, useMemo } from "react";
 import { 
@@ -601,4 +602,3 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
 }
 
 
-export const runtime = "edge";

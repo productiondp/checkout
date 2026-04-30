@@ -6,7 +6,7 @@ import { useEffect } from "react";
 const PROTECTED_PATHS = ["/home", "/chat", "/communities", "/matches", "/profile", "/settings"];
 
 /**
- * 🕵️ PROTOCOL GUARD (DEV ONLY)
+ *  PROTOCOL GUARD (DEV ONLY)
  * 
  * In development mode, this component monitors navigation to protected terminals.
  * It enforces that every protected terminal is wrapped in a <ProtectedRoute>.

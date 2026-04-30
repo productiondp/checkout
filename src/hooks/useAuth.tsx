@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 🔒 AUTH SYSTEM — DO NOT MODIFY WITHOUT FULL AUDIT
+ *  AUTH SYSTEM  DO NOT MODIFY WITHOUT FULL AUDIT
  * 
  * This is a deterministic state machine designed for production stability.
  * Changes to the core logic can introduce race conditions, redirect loops,
@@ -32,7 +32,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 🛡️ INFRASTRUCTURE MODE: FALLBACK AGGRESSIVELY
+//  INFRASTRUCTURE MODE: FALLBACK AGGRESSIVELY
 const AUTH_SAFE_MODE = true;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<any>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  // 🛡️ STEP 3 — AUTH SAFE MODE
+  //  STEP 3  AUTH SAFE MODE
   const isSupabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   const initialized = useRef(false);
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      log("Core infrastructure active — monitoring state changes");
+      log("Core infrastructure active  monitoring state changes");
     }
   }, []);
 
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [session?.user?.id]);
 
-  // 🛡️ WATCHDOG — DO NOT ALTER
+  //  WATCHDOG  DO NOT ALTER
   useEffect(() => {
     timeoutRef.current = setTimeout(() => {
       if (authState === "loading") {
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, [authState, session, profileLoaded, user]);
 
-  // 🛡️ CORE LOGIC — DO NOT ALTER
+  //  CORE LOGIC  DO NOT ALTER
   const syncProfile = useCallback(async (currentSession: any) => {
     if (!currentSession?.user) {
       setSession(null);
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [supabase]);
 
-  // 🛡️ CORE LOGIC — DO NOT ALTER
+  //  CORE LOGIC  DO NOT ALTER
   const initAuth = useCallback(async () => {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [supabase, syncProfile]);
 
-  // 🛡️ CORE LISTENER — DO NOT ALTER
+  //  CORE LISTENER  DO NOT ALTER
   useEffect(() => {
     if (!isSupabaseConfigured) {
       console.warn("Supabase not configured. Auth bypassed.");
@@ -200,15 +200,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [initAuth, syncProfile, supabase]);
 
-  // 🛡️ ROUTE GROUPS
+  //  ROUTE GROUPS
   const PUBLIC_ROUTES = ["/"];
 
-  // 🛡️ AUTH READY GATE
+  //  AUTH READY GATE
   const isAuthReady = useMemo(() => {
     return authState !== "loading" && (session ? profileLoaded : true);
   }, [authState, session, profileLoaded]);
 
-  // 🛡️ LOADER TIMEOUT GUARD (Watchdog already exists, but reinforcing for UI)
+  //  LOADER TIMEOUT GUARD (Watchdog already exists, but reinforcing for UI)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (authState === "loading") {
@@ -223,7 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [authState, session, user]);
 
-  // 🛡️ DEBUG LOG
+  //  DEBUG LOG
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
       console.log("[AUTH_DEBUG]", {
@@ -236,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [authState, user, session, isAuthReady]);
 
-  // 🛡️ HUMAN-READABLE UI STATUS
+  //  HUMAN-READABLE UI STATUS
   const [uiStatus, setUiStatus] = useState<'loading' | 'timeout' | 'offline' | 'logout' | 'setup'>('loading');
   const [isOnline, setIsOnline] = useState(true);
 
@@ -254,7 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [uiStatus]);
 
-  // 🛡️ PERFORMANCE & HYDRATION LOCKS
+  //  PERFORMANCE & HYDRATION LOCKS
   const hasHydrated = useRef(false);
   const lastProcessedState = useRef<string>("");
   const routingTimeoutRef = useRef<any>(null);
@@ -277,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [authState, isAuthReady]);
 
-  // 🛡️ ROUTING SENTINEL (ONLY ONE)
+  //  ROUTING SENTINEL (ONLY ONE)
   useEffect(() => {
     if (!isAuthReady || !hasHydrated.current || !isOnline) return;
 
@@ -321,7 +321,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           sessionStorage.removeItem('return_to');
         }
 
-        // 🛡️ REDUNDANT NAVIGATION GUARD
+        //  REDUNDANT NAVIGATION GUARD
         if (target !== path) {
           log("SENTINEL_REDIRECT", { from: path, to: target });
           router.replace(target);
@@ -393,13 +393,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 🛡️ HYDRATION SAFE OVERLAY
+  //  HYDRATION SAFE OVERLAY
   const [showDebug, setShowDebug] = useState(false);
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') setShowDebug(true);
   }, []);
 
-  // 🛡️ ROOT LOADER GUARANTEE
+  //  ROOT LOADER GUARANTEE
   if (authState === "loading" || !isAuthReady || !isOnline || uiStatus !== 'loading') {
     const isSetupState = user && isAuthReady && (!user.full_name || !user.role);
     
@@ -446,7 +446,7 @@ export function useAuth() {
 }
 
 /**
- * 🔒 SAFE AUTH HOOK VARIANT
+ *  SAFE AUTH HOOK VARIANT
  * 
  * Returns the current user profile. 
  * Throws an error in development if the user is missing.

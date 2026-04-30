@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase-client";
+import { createClient } from "@/utils/supabase/client";
 import { 
   Briefcase, 
   User, 
@@ -28,7 +28,7 @@ const ROLES: { value: Role; icon: any; desc: string }[] = [
 
 export default function SignupPage() {
   const router = useRouter();
-  const supabase = getSupabaseClient();
+  const supabase = createClient();
   
   const [role, setRole] = useState<Role>("Business");
   const [formData, setFormData] = useState({ email: "", password: "", fullName: "" });
@@ -63,8 +63,7 @@ export default function SignupPage() {
 
       if (signUpError) throw signUpError;
       setIsSuccess(true);
-      // Brief delay to show success then redirect to onboarding
-      setTimeout(() => router.push("/onboarding"), 1500);
+      // useAuth will handle the redirect to onboarding automatically once session is confirmed
     } catch (err: any) {
       setError(err.message || "Signup failed.");
       setIsLoading(false);

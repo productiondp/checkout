@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { getSupabaseClient } from "@/lib/supabase-client";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -8,7 +8,7 @@ export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     if (supabase) {
       supabase.auth.signOut().then(() => {
         router.replace("/");

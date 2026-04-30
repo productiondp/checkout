@@ -191,3 +191,6 @@ export default function CheckoutHomeFeed() {
     </ProtectedRoute>
   );
 }
+
+
+export const runtime = "edge";

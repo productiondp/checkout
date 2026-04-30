@@ -599,3 +599,6 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
     </motion.div>
   );
 }
+
+
+export const runtime = "edge";

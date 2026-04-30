@@ -474,3 +474,6 @@ function RadarDot({ x, y, label, color, blink }: any) {
     </div>
   );
 }
+
+
+export const runtime = "edge";

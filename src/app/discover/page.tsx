@@ -13,3 +13,6 @@ export default function DiscoverPage() {
     </TerminalLayout>
   );
 }
+
+
+export const runtime = "edge";

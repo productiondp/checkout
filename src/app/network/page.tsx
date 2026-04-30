@@ -15,3 +15,6 @@ export default function NetworkPage() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

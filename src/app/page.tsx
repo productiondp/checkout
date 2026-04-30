@@ -355,3 +355,6 @@ export default function AuthPage() {
     </Suspense>
   );
 }
+
+
+export const runtime = "edge";

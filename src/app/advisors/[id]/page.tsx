@@ -169,3 +169,6 @@ export default function AdvisorProfilePage() {
     </TerminalLayout>
   );
 }
+
+
+export const runtime = "edge";

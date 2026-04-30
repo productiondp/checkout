@@ -443,3 +443,6 @@ export default function CommunityDetailPage() {
     </ProtectedRoute>
   );
 }
+
+
+export const runtime = "edge";

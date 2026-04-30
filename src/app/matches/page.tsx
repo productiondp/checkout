@@ -365,3 +365,6 @@ function EmptyState({ title, description, icon: Icon }: any) {
     </div>
   );
 }
+
+
+export const runtime = "edge";

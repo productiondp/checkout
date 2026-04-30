@@ -506,3 +506,6 @@ function ChatContent() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

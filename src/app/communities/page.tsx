@@ -537,3 +537,6 @@ function CreateCommunityFlow({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+
+export const runtime = "edge";

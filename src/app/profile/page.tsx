@@ -742,3 +742,6 @@ export default function PremiumProfilePage() {
     </TerminalLayout>
   );
 }
+
+
+export const runtime = "edge";

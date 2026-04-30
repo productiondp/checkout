@@ -770,3 +770,6 @@ export default function MeetupPage() {
     </ProtectedRoute>
   );
 }
+
+
+export const runtime = "edge";

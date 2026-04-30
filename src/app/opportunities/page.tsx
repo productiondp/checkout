@@ -15,3 +15,6 @@ export default function OpportunitiesPage() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

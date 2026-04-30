@@ -244,3 +244,6 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
     </div>
   );
 }
+
+
+export const runtime = "edge";

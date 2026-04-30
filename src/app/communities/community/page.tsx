@@ -406,3 +406,6 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

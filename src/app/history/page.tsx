@@ -51,3 +51,6 @@ export default function HistoryPage() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

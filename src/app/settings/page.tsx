@@ -156,3 +156,6 @@ export default function SettingsHub() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

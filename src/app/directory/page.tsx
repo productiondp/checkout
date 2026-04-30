@@ -141,3 +141,6 @@ function UltimateBusinessCard({ business }: { business: BusinessListing }) {
     </div>
   );
 }
+
+
+export const runtime = "edge";

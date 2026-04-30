@@ -181,3 +181,6 @@ function EventCard({ event }: { event: Event }) {
     </div>
   );
 }
+
+
+export const runtime = "edge";

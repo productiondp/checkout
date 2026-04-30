@@ -25,3 +25,6 @@ export default function LogoutPage() {
     </div>
   );
 }
+
+
+export const runtime = "edge";

@@ -12,21 +12,31 @@ if (!supabaseUrl || !supabaseKey) {
 let supabaseInstance: any = null;
 
 export const createClient = () => {
-  // On the server, always create a new client
-  if (typeof window === 'undefined') {
+  const isServer = typeof window === 'undefined';
+  const isValidConfig = supabaseUrl && supabaseUrl.startsWith('http');
+
+  if (isServer) {
     return createBrowserClient(
-      supabaseUrl || "",
+      isValidConfig ? supabaseUrl : "https://placeholder.supabase.co",
       supabaseKey || ""
     );
   }
 
-  // On the client, use a singleton to prevent infinite initialization loops
   if (!supabaseInstance) {
-    console.log("[SUPABASE] Initializing Singleton Client...");
-    supabaseInstance = createBrowserClient(
-      supabaseUrl || "",
-      supabaseKey || ""
-    );
+    try {
+      console.log("[SUPABASE] Initializing Singleton Client...");
+      if (!isValidConfig) {
+        console.warn("[SUPABASE] Using placeholder URL due to missing environment variables.");
+      }
+      supabaseInstance = createBrowserClient(
+        isValidConfig ? supabaseUrl : "https://placeholder.supabase.co",
+        supabaseKey || ""
+      );
+    } catch (err) {
+      console.error("[SUPABASE] Critical initialization error:", err);
+      // Create a minimal fallback to prevent total application crash
+      return { auth: {}, from: () => ({ select: () => ({ order: () => ({ limit: () => ({}) }) }) }) } as any;
+    }
   }
   
   return supabaseInstance;

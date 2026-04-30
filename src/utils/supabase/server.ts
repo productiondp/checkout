@@ -5,8 +5,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) => {
+  const isValidConfig = supabaseUrl && supabaseUrl.startsWith('http');
+  
   return createServerClient(
-    supabaseUrl || "",
+    isValidConfig ? supabaseUrl : "https://placeholder.supabase.co",
     supabaseKey || "",
     {
       cookies: {

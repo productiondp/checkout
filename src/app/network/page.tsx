@@ -1,6 +1,5 @@
 "use client";
 export const runtime = 'edge';
-
 import React from "react";
 import SectionTerminal from "@/components/shared/SectionTerminal";
 import LandingHeader from "@/components/layout/LandingHeader";

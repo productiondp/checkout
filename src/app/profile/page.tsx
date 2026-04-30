@@ -1,6 +1,7 @@
+"use client";
 export const runtime = 'edge';
 // CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
-"use client";
+
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";

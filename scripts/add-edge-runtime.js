@@ -13,18 +13,23 @@ walkDir('./src/app', (filePath) => {
   if (filePath.endsWith('page.tsx') || filePath.endsWith('route.ts')) {
     let content = fs.readFileSync(filePath, 'utf8');
     
-    // Remove any existing runtime export to re-insert it at the top
+    // 1. Remove all existing runtime exports
     content = content.replace(/export const runtime = ['"].*?['"];?\n?/g, '');
     
-    if (content.startsWith('"use client"') || content.startsWith("'use client'")) {
-        const lines = content.split('\n');
-        lines.splice(1, 0, "export const runtime = 'edge';");
-        content = lines.join('\n');
+    // 2. Check for "use client" anywhere in the file
+    const hasClientDirective = /['"]use client['"];?/.test(content);
+    
+    if (hasClientDirective) {
+        // 3. Remove all occurrences of "use client"
+        content = content.replace(/['"]use client['"];?\n?/g, '');
+        // 4. Prepend it correctly at the very top
+        content = `"use client";\nexport const runtime = 'edge';\n` + content.trimStart();
     } else {
-        content = "export const runtime = 'edge';\n" + content;
+        // 5. No "use client", just prepend runtime at the top
+        content = `export const runtime = 'edge';\n` + content.trimStart();
     }
     
     fs.writeFileSync(filePath, content, 'utf8');
-    console.log(`Updated runtime config in ${filePath}`);
+    console.log(`Hard-fixed runtime and client directive in ${filePath}`);
   }
 });

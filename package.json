@@ -6,8 +6,6 @@
     "dev": "next dev",
     "auth-check": "node scripts/auth-check.js",
     "build": "npm run auth-check && next build",
-    "build:cloudflare": "next build && npx @cloudflare/next-on-pages",
-    "pages:build": "npx @cloudflare/next-on-pages",
     "start": "next start",
     "lint": "next lint"
   },
@@ -29,7 +27,6 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/node": "^20",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",

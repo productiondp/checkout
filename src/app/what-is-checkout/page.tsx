@@ -1,5 +1,4 @@
 "use client";
-export const runtime = 'edge';
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Zap, Users, Globe, Target, TrendingUp } from "lucide-react";

@@ -1,5 +1,4 @@
 "use client";
-export const runtime = 'edge';
 // CHECKOUT BUILD VERSION: V.5 | CHECKPOINT 5 SAFE BACKUP
 
 

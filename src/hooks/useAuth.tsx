@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authState, session, profileLoaded, user]);
 
   //  CORE LOGIC  DO NOT ALTER
-  const syncProfile = useCallback(async (currentSession: any) => {
+  const syncProfile = useCallback(async (currentSession: any, force = false) => {
     if (!currentSession?.user) {
       setSession(null);
       setUser(null);
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const sessionId = currentSession.user.id + currentSession.access_token.slice(-10);
-    if (profileFetchId.current === sessionId) return;
+    if (profileFetchId.current === sessionId && !force) return;
     profileFetchId.current = sessionId;
 
     try {
@@ -155,11 +155,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   //  CORE LOGIC  DO NOT ALTER
-  const initAuth = useCallback(async () => {
+  const initAuth = useCallback(async (force = false) => {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (currentSession) {
-        await syncProfile(currentSession);
+        await syncProfile(currentSession, force);
       } else {
         setAuthState("guest");
         setProfileLoaded(true);
@@ -383,13 +383,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = (data: Partial<UserProfile>) => {
-    if (user) {
-      const newUser = { ...user, ...data };
-      setUser(newUser);
-      if (data.onboarding_completed) {
-        setAuthState("authenticated");
-        lastProcessedState.current = ""; // Force sentinel re-run
-      }
+    const newUser = user ? { ...user, ...data } : { ...data } as UserProfile;
+    setUser(newUser);
+    if (data.onboarding_completed) {
+      setAuthState("authenticated");
+      lastProcessedState.current = ""; // Force sentinel re-run
     }
   };
 

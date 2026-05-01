@@ -148,8 +148,12 @@ export default function OnboardingPage() {
       alert(saveError.message);
     } else {
       if (isFinal) {
-        await initAuth();
-        updateProfile({ ...onboardingData, onboarding_completed: true });
+        await initAuth(true);
+        updateProfile({ 
+          ...onboardingData, 
+          full_name: onboardingData.name,
+          onboarding_completed: true 
+        });
         setIsCompleted(true);
         
         // Safety redirect

@@ -1,18 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // Disabled to prevent double useEffect invocations (chat duplicate message bug)
-  compress: true,         // Enable gzip/brotli HTTP compression
+  reactStrictMode: false,
+  swcMinify: true,
+  compress: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-  env: {
-    RESTART_COUNT: "1",
-  },
   images: {
-    formats: ['image/avif', 'image/webp'], // Modern image formats for faster loading
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'i.pravatar.cc' },
@@ -20,6 +22,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'ui-avatars.com' },
       { protocol: 'https', hostname: 'api.dicebear.com' },
     ],
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 };
 

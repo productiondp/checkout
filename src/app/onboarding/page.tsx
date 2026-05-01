@@ -98,6 +98,11 @@ export default function OnboardingPage() {
     }
   }, [user]);
 
+  // 🛡️ FLASH GUARD: Don't render UI if already completed
+  if (user?.onboarding_completed) {
+    return null;
+  }
+
   const saveCustomFocus = async (label: string, industry: string) => {
     const cleanLabel = label.trim().toLowerCase();
     if (cleanLabel.length < 3 || !isNaN(Number(cleanLabel))) return;
@@ -139,27 +144,27 @@ export default function OnboardingPage() {
 
     const { data, error: saveError } = await supabase
       .from('profiles')
-      .update(payload)
-      .eq('id', userId)
+      .upsert(payload, { onConflict: 'id' })
       .select();
     
     if (saveError) {
       console.error("ONBOARDING ERROR:", saveError);
-      alert(saveError.message);
+      setError(saveError.message);
     } else {
+      console.log("ONBOARDING PROGRESS SAVED:", isFinal ? "FINAL" : "PARTIAL", data);
       if (isFinal) {
-        await initAuth(true);
+        // Hard-set localStorage as a backup source of truth for the refresh case
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`checkout_onboarded_${userId}`, 'true');
+        }
+        
+        
         updateProfile({ 
           ...onboardingData, 
           full_name: onboardingData.name,
           onboarding_completed: true 
         });
         setIsCompleted(true);
-        
-        // Safety redirect
-        setTimeout(() => {
-          router.push('/home');
-        }, 3000);
       }
     }
     setIsSaving(false);
@@ -180,22 +185,37 @@ export default function OnboardingPage() {
     const userId = session?.user?.id;
     if (!file || !userId) return;
 
+    // 1. Create and set instant preview
     const localPreviewUrl = URL.createObjectURL(file);
     setOnboardingData(prev => ({ ...prev, avatar_url: localPreviewUrl }));
+    setIsUploading(true);
 
     try {
-      setIsUploading(true);
       const fileExt = file.name.split('.').pop();
-      const filePath = `${userId}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+      const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { 
+          upsert: true,
+          cacheControl: '3600'
+        });
+        
       if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // 2. Set the permanent URL
       setOnboardingData(prev => ({ ...prev, avatar_url: publicUrl }));
-      URL.revokeObjectURL(localPreviewUrl);
+      
+      // Revoke only after we have a valid state update queued
+      setTimeout(() => URL.revokeObjectURL(localPreviewUrl), 1000);
     } catch (err: any) {
-      setError("Upload failed.");
+      console.error("AVATAR_UPLOAD_FAILED:", err);
+      setError("Image upload failed. Please try again.");
       setOnboardingData(prev => ({ ...prev, avatar_url: user?.avatar_url || "" }));
-      URL.revokeObjectURL(localPreviewUrl);
     } finally {
       setIsUploading(false);
     }
@@ -295,7 +315,7 @@ export default function OnboardingPage() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-0">
-           <header className="px-10 lg:px-20 pt-12 pb-8 flex items-start justify-between shrink-0 border-b border-slate-50">
+           <header className="px-10 lg:px-20 pt-12 pb-8 flex items-start justify-between shrink-0 border-b border-slate-50 relative">
               <div className="space-y-4">
                  <div className="inline-flex items-center gap-2 text-[#FF3B30] text-[11px] font-black uppercase tracking-wider">
                     <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
@@ -307,6 +327,22 @@ export default function OnboardingPage() {
                     {step === 3 && "Almost done"}
                  </h1>
               </div>
+
+              <button 
+                onClick={() => {
+                  console.log("[AUTH] Onboarding: Cancel clicked");
+                  router.push("/");
+                  // Fallback for extreme cases
+                  setTimeout(() => {
+                    if (window.location.pathname !== "/") {
+                      window.location.href = "/";
+                    }
+                  }, 500);
+                }}
+                className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-[#1A1A1A] transition-all flex items-center gap-2 z-[99]"
+              >
+                <X size={14} /> Cancel
+              </button>
            </header>
 
            <main className="flex-1 overflow-y-auto no-scrollbar px-10 lg:px-20 py-10">

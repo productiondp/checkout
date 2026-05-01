@@ -30,7 +30,19 @@ export const createClient = () => {
       }
       supabaseInstance = createBrowserClient(
         isValidConfig ? supabaseUrl : "https://placeholder.supabase.co",
-        supabaseKey || ""
+        supabaseKey || "",
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storageKey: 'checkout-auth-token',
+            flowType: 'pkce',
+          },
+          global: {
+             headers: { 'x-checkout-client': 'sentinel-v3' }
+          }
+        }
       );
     } catch (err) {
       console.error("[SUPABASE] Critical initialization error:", err);

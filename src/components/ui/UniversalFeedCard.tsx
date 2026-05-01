@@ -117,32 +117,28 @@ function normalizeType(type: string): keyof typeof TYPE_CONFIG {
   return (map[type?.toUpperCase()] || "REQUIREMENT") as keyof typeof TYPE_CONFIG;
 }
 
-function HighlightTitle({ text }: { text: string }) {
+const HighlightTitle = React.memo(({ text }: { text: string }) => {
   if (!text || typeof text !== 'string') return null;
   
-  // Sentence case (First letter cap, rest lower)
   const sentence = text.length > 0 
     ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
     : "";
   
   if (!sentence) return null;
 
-  const keywords: string[] = [];
   const thinWords = ["i", "need", "a", "an", "the", "for", "of", "with", "and"];
-  
   const words = sentence.split(" ");
   
   return (
     <span className="leading-tight tracking-tight">
       {words.map((word, i) => {
         const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, "");
-        const isKeyword = keywords.includes(cleanWord);
         const isThin = thinWords.includes(cleanWord);
         
         return (
           <React.Fragment key={i}>
             <span className={cn(
-               isKeyword ? "font-black text-[#E53935]" : isThin ? "font-light text-[#1D1D1F]/40" : "font-bold text-[#1D1D1F]"
+               isThin ? "font-light text-[#1D1D1F]/40" : "font-bold text-[#1D1D1F]"
             )}>
               {word}
             </span>
@@ -152,9 +148,11 @@ function HighlightTitle({ text }: { text: string }) {
       })}
     </span>
   );
-}
+});
 
-export default function UniversalFeedCard({
+HighlightTitle.displayName = "HighlightTitle";
+
+const UniversalFeedCard = React.memo(({
   post,
   currentUserId,
   isExpanded,
@@ -162,7 +160,7 @@ export default function UniversalFeedCard({
   onAction,
   onEdit,
   onDelete,
-}: UniversalFeedCardProps) {
+}: UniversalFeedCardProps) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const [bookmarked, setBookmarked] = React.useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
@@ -506,9 +504,12 @@ export default function UniversalFeedCard({
       />
     </motion.div>
   );
-}
+});
 
-function MetaChip({ icon: Icon, label, isPrimary, className }: { icon: any; label: string; isPrimary?: boolean; className?: string }) {
+UniversalFeedCard.displayName = "UniversalFeedCard";
+export default UniversalFeedCard;
+
+const MetaChip = React.memo(({ icon: Icon, label, isPrimary, className }: { icon: any; label: string; isPrimary?: boolean; className?: string }) => {
   return (
     <div className={cn(
        "inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border",
@@ -521,4 +522,6 @@ function MetaChip({ icon: Icon, label, isPrimary, className }: { icon: any; labe
        {label}
     </div>
   );
-}
+});
+
+MetaChip.displayName = "MetaChip";

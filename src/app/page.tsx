@@ -21,7 +21,8 @@ import {
   Users,
   PlayCircle,
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -64,6 +65,39 @@ function AuthContent() {
     }
   }, [mode, mounted]);
 
+  // 🛡️ BACKUP REDIRECT (In case sentinel is slow)
+  const { user } = useAuth(); // Extract user directly for faster check
+  
+  useEffect(() => {
+    if (!mounted || authLoading) return;
+    
+    // Redirect if fully authenticated
+    if (authState === "authenticated" || (user?.onboarding_completed)) {
+      console.log("[AUTH] Landing Page Backup: Redirecting to home.", { authState, hasUser: !!user });
+      router.replace("/home");
+
+      const forceRedirect = setTimeout(() => {
+        if (window.location.pathname !== "/home") {
+          console.warn("[AUTH] Router replace hung. Forcing window.location.href.");
+          window.location.href = "/home";
+        }
+      }, 1500);
+      return () => clearTimeout(forceRedirect);
+    } 
+    // Redirect to onboarding if we are sure they need it
+    else if (authState === "onboarding" && isSuccess) {
+       console.log("[AUTH] Landing Page Backup: Redirecting to onboarding (After Login).");
+       router.replace("/onboarding");
+
+       const forceRedirect = setTimeout(() => {
+        if (window.location.pathname !== "/onboarding") {
+          window.location.href = "/onboarding";
+        }
+      }, 1500);
+      return () => clearTimeout(forceRedirect);
+    }
+  }, [authState, authLoading, mounted, router, user, isSuccess]);
+
   if (authLoading || !mounted) return null;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +128,6 @@ function AuthContent() {
           });
         }
         setIsSuccess(true);
-        await initAuth();
       } else {
         const { data: { session: currentSession }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -102,29 +135,23 @@ function AuthContent() {
         });
         if (signInError) throw signInError;
         setIsSuccess(true);
-        if (currentSession) {
-          await initAuth();
-        }
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-white text-[#000000E6] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
-      {/* Background is pure white */}
-      
       <LandingHeader 
          onJoinClick={() => setMode("signup")} 
          onSigninClick={() => setMode("signin")} 
       />
 
-      {/* ── HERO ── */}
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
-            
             <div className="w-full lg:w-1/2 space-y-8">
                <h1 className="text-4xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
                   <span className="font-extralight text-[0.8em] opacity-80">Connect.</span> Grow. <br />
@@ -254,7 +281,6 @@ function AuthContent() {
                              {isLoading ? <Loader2 className="animate-spin" size={20} /> : (mode === "signup" ? "Agree & join" : "Sign in")}
                           </button>
                        </form>
-
                     </motion.div>
                   ) : (
                     <div className="py-10 space-y-4">
@@ -276,7 +302,6 @@ function AuthContent() {
          </div>
       </main>
 
-      {/* ── TOPICS ── */}
       <section className="bg-gray-100 py-[63px]">
          <div className="max-w-[1128px] mx-auto px-6">
             <h2 className="text-3xl font-light mb-8">Find the right people, Business and Opportunities</h2>
@@ -293,7 +318,6 @@ function AuthContent() {
          </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer className="bg-white py-[47px]">
          <div className="max-w-[1128px] mx-auto px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -354,5 +378,3 @@ export default function AuthPage() {
     </Suspense>
   );
 }
-
-

@@ -127,10 +127,7 @@ function HighlightTitle({ text }: { text: string }) {
   
   if (!sentence) return null;
 
-  const keywords = [
-    "designer", "developer", "logo", "social", "graphics", "marketing", "strategic", "partner", "expert",
-    "design", "development", "lead", "business", "ui", "ux", "product", "growth", "strategy", "tech"
-  ];
+  const keywords: string[] = [];
   const thinWords = ["i", "need", "a", "an", "the", "for", "of", "with", "and"];
   
   const words = sentence.split(" ");

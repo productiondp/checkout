@@ -19,7 +19,7 @@ export default function SectionTerminal({ content }: SectionTerminalProps) {
       </header>
 
       <div className="space-y-12 pb-20">
-        {content.sections.map((section, idx) => (
+        {content.sections.length > 0 ? content.sections.map((section, idx) => (
           <section key={section.title} className="space-y-6">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-[#E53935] px-1">
               {section.title}
@@ -75,7 +75,12 @@ export default function SectionTerminal({ content }: SectionTerminalProps) {
               ))}
             </div>
           </section>
-        ))}
+        )) : (
+          <div className="py-20 text-center space-y-4 border-2 border-dashed border-gray-50 rounded-[2rem]">
+            <p className="text-gray-300 font-black uppercase tracking-widest text-xs">No active {content.title.toLowerCase()} found</p>
+            <p className="text-gray-400 text-[10px] font-bold uppercase">Check back soon for new activity</p>
+          </div>
+        )}
       </div>
     </div>
   );

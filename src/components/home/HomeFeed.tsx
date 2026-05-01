@@ -534,11 +534,7 @@ export default function HomeFeed({
                               </div>
 
                               <div className="space-y-4">
-                                 {[
-                                   { id: "rahul", name: "Rahul S.", role: "Tech Lead", score: 98, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul" },
-                                   { id: "anita", name: "Anita K.", role: "Product Expert", score: 94, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anita" },
-                                   { id: "vikram", name: "Vikram R.", role: "Strategic Partner", score: 89, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram" }
-                                 ].map((profile, i) => (
+                                 {[].map((profile: any, i) => (
                                    <motion.div 
                                      key={profile.name}
                                      initial={{ opacity: 0, x: 30 }}

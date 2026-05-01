@@ -99,18 +99,14 @@ export default function OnboardingPage() {
   }, [user]);
 
   const saveCustomFocus = async (label: string, industry: string) => {
-    // Step 3: Clean & Normalize
     const cleanLabel = label.trim().toLowerCase();
     if (cleanLabel.length < 3 || !isNaN(Number(cleanLabel))) return;
 
-    // 1. Check if exists
     const { data: existing } = await supabase.from('focus_library').select('*').eq('label', cleanLabel).eq('industry', industry).single();
     
     if (existing) {
-      // Step 4: Increment usage
       await supabase.from('focus_library').update({ usage_count: (existing.usage_count || 0) + 1 }).eq('id', existing.id);
     } else {
-      // Store new (Step 4: local count starts at 1, will show to others when usage >= 2)
       await supabase.from('focus_library').insert({ label: cleanLabel, industry, usage_count: 1 });
     }
   };
@@ -121,14 +117,11 @@ export default function OnboardingPage() {
     setIsSaving(true);
     setError(null);
     
-    // Save all selected focus areas to library
     for (const intent of onboardingData.intents) {
       await saveCustomFocus(intent, onboardingData.industry);
     }
 
-    // STEP 3: ONBOARDING BASE TAG DETECTION
     const detectedBaseTag = detectBaseTag(onboardingData.jobRole, onboardingData.intents);
-
     const finalIntents = onboardingData.intents.length > 0 ? onboardingData.intents : ["general"];
 
     const payload = {
@@ -137,15 +130,12 @@ export default function OnboardingPage() {
       industry: onboardingData.industry || "General",
       base_tag: detectedBaseTag,
       intent_tags: finalIntents,
-      skills: finalIntents, // Sync skills with intents for profile
+      skills: finalIntents,
       bio: onboardingData.bio,
       location: onboardingData.location,
       avatar_url: onboardingData.avatar_url,
       onboarding_completed: isFinal
     };
-
-    console.log("ONBOARDING BASE TAG DETECTED:", detectedBaseTag);
-    console.log("SAVING PROFILE DATA:", payload);
 
     const { data, error: saveError } = await supabase
       .from('profiles')
@@ -157,11 +147,15 @@ export default function OnboardingPage() {
       console.error("ONBOARDING ERROR:", saveError);
       alert(saveError.message);
     } else {
-      console.log("PROFILE SAVED SUCCESSFULLY:", data);
       if (isFinal) {
-        // Step 3 & 4 & 5: Force State + Routing
         await initAuth();
         updateProfile({ ...onboardingData, onboarding_completed: true });
+        setIsCompleted(true);
+        
+        // Safety redirect
+        setTimeout(() => {
+          router.push('/home');
+        }, 3000);
       }
     }
     setIsSaving(false);
@@ -182,7 +176,6 @@ export default function OnboardingPage() {
     const userId = session?.user?.id;
     if (!file || !userId) return;
 
-    // Show instant local preview BEFORE upload
     const localPreviewUrl = URL.createObjectURL(file);
     setOnboardingData(prev => ({ ...prev, avatar_url: localPreviewUrl }));
 
@@ -193,13 +186,10 @@ export default function OnboardingPage() {
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      // Replace local blob URL with the real public URL
       setOnboardingData(prev => ({ ...prev, avatar_url: publicUrl }));
-      // Clean up blob URL to free memory
       URL.revokeObjectURL(localPreviewUrl);
     } catch (err: any) {
       setError("Upload failed.");
-      // Revert to previous avatar on failure
       setOnboardingData(prev => ({ ...prev, avatar_url: user?.avatar_url || "" }));
       URL.revokeObjectURL(localPreviewUrl);
     } finally {
@@ -218,8 +208,6 @@ export default function OnboardingPage() {
           className="relative w-full max-w-5xl bg-white rounded-lg border border-black/[0.05] shadow-[0_20px_60px_rgba(0,0,0,0.04)] overflow-hidden"
         >
           <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-black/[0.03]">
-             
-             {/* CONTENT PANEL */}
              <div className="flex-1 p-10 lg:p-14 space-y-10">
                 <div className="space-y-6">
                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F5F5F7] border border-black/[0.05] rounded-full text-[#86868B] text-[10px] font-bold uppercase tracking-wider">
@@ -255,7 +243,6 @@ export default function OnboardingPage() {
                 </div>
              </div>
 
-             {/* ACTION PANEL */}
              <div className="w-full lg:w-[380px] p-10 lg:p-14 bg-[#FAFAFB] flex flex-col justify-center gap-6">
                 <button 
                   onClick={() => router.push("/?action=" + (onboardingData.role === 'ADVISOR' ? 'host_meetup' : 'post_need'))}
@@ -286,7 +273,6 @@ export default function OnboardingPage() {
                    Step into the ecosystem
                 </p>
              </div>
-
           </div>
         </motion.div>
       </div>
@@ -295,13 +281,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-[#FF3B30]/10">
-      
-      {/* ── BACKGROUND ── */}
       <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
-
       <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-[0_40px_100px_rgba(0,0,0,0.05)] flex flex-col h-full max-h-[85vh] overflow-hidden border border-slate-100">
-        
-        {/* ── PROGRESS ── */}
         <div className="h-1.5 bg-slate-50 w-full flex p-0 relative z-50">
            <div 
              className="h-full bg-[#FF3B30] transition-all duration-1000 ease-out" 
@@ -377,8 +358,6 @@ export default function OnboardingPage() {
 
                      {step === 2 && (
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                          
-                          {/* 1. IDENTITY INPUT */}
                           <div className="space-y-4">
                              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
                                 {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
@@ -407,7 +386,6 @@ export default function OnboardingPage() {
                                 />
                              </div>
                              
-                             {/* INDUSTRY DISAMBIGUATION / FALLBACK */}
                              <AnimatePresence>
                                {onboardingData.jobRole.length > 2 && (
                                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
@@ -437,7 +415,6 @@ export default function OnboardingPage() {
                              </AnimatePresence>
                           </div>
 
-                          {/* 2. FOCUS AREAS */}
                           <div className="space-y-6">
                              <div className="flex items-center justify-between">
                                 <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Suggested for you</label>
@@ -445,7 +422,6 @@ export default function OnboardingPage() {
                              </div>
 
                              <div className="flex flex-wrap gap-2.5">
-                                {/* Step 6 & 7: Priority Engine + Limit 4 */}
                                 {[
                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"]),
                                   ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
@@ -469,7 +445,6 @@ export default function OnboardingPage() {
                                   );
                                 })}
 
-                                {/* CUSTOM INPUT */}
                                 <div className="relative">
                                    <input 
                                      type="text"
@@ -491,7 +466,6 @@ export default function OnboardingPage() {
                              </div>
                           </div>
 
-                          {/* 3. BIO (SIMPLIFIED) */}
                           <div className="space-y-4">
                              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">About You</label>
                              <textarea 
@@ -570,5 +544,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-

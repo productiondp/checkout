@@ -183,6 +183,10 @@ export default function OnboardingPage() {
     const userId = session?.user?.id;
     if (!file || !userId) return;
 
+    // Show instant local preview BEFORE upload
+    const localPreviewUrl = URL.createObjectURL(file);
+    setOnboardingData(prev => ({ ...prev, avatar_url: localPreviewUrl }));
+
     try {
       setIsUploading(true);
       const fileExt = file.name.split('.').pop();
@@ -190,9 +194,15 @@ export default function OnboardingPage() {
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      // Replace local blob URL with the real public URL
       setOnboardingData(prev => ({ ...prev, avatar_url: publicUrl }));
+      // Clean up blob URL to free memory
+      URL.revokeObjectURL(localPreviewUrl);
     } catch (err: any) {
       setError("Upload failed.");
+      // Revert to previous avatar on failure
+      setOnboardingData(prev => ({ ...prev, avatar_url: user?.avatar_url || "" }));
+      URL.revokeObjectURL(localPreviewUrl);
     } finally {
       setIsUploading(false);
     }
@@ -500,9 +510,17 @@ export default function OnboardingPage() {
                           <div className="flex justify-center">
                              <div className="relative group">
                                 <div className="h-44 w-44 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 relative shadow-xl">
-                                   <img src={onboardingData.avatar_url || `https://ui-avatars.com/api/?name=${onboardingData.name}&background=f1f5f9&color=64748b&bold=true`} className="w-full h-full object-cover" />
+                                   <img src={onboardingData.avatar_url || `https://ui-avatars.com/api/?name=${onboardingData.name}&background=f1f5f9&color=64748b&bold=true`} className="w-full h-full object-cover" alt="Profile preview" />
+                                   {isUploading && (
+                                     <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2">
+                                       <Loader2 className="animate-spin text-white" size={28} />
+                                       <span className="text-[9px] font-black text-white uppercase tracking-widest">Uploading...</span>
+                                     </div>
+                                   )}
                                 </div>
-                                <button onClick={() => fileInputRef.current?.click()} className="absolute -bottom-3 -right-3 h-14 w-14 bg-[#FF3B30] text-white rounded-lg flex items-center justify-center shadow-xl border-4 border-white z-20 hover:scale-110 transition-transform"><Camera size={20} /></button>
+                                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="absolute -bottom-3 -right-3 h-14 w-14 bg-[#FF3B30] text-white rounded-lg flex items-center justify-center shadow-xl border-4 border-white z-20 hover:scale-110 transition-transform disabled:opacity-70 disabled:hover:scale-100">
+                                  {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+                                </button>
                                 <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                              </div>
                           </div>

@@ -55,6 +55,7 @@ function ChatContent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [isHost, setIsHost] = useState(false);
   const [outcomeSubmitted, setOutcomeSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   const searchParams = useSearchParams();
   const userParam = searchParams.get('user');
@@ -236,7 +237,12 @@ function ChatContent() {
     load();
     const ch = supabase.channel(`chat_${selectedChat.id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'messages' }, (p:any)=>{
       if (selectedChat.isGroup ? p.new.room_id === selectedChat.id : p.new.connection_id === selectedChat.id) {
-        setMessages(prev => [...prev, p.new]);
+        // Deduplicate: only add if this message isn't already in state (avoids echo from optimistic add)
+        setMessages(prev => {
+          const exists = prev.some(m => m.id === p.new.id);
+          if (exists) return prev;
+          return [...prev, p.new];
+        });
         if (p.new.sender_id !== user.id) { supabase.from('messages').update({is_read:true}).eq('id', p.new.id).then(()=>refreshCounts()); }
       }
     }).subscribe();
@@ -245,15 +251,19 @@ function ChatContent() {
 
   const handleSend = async (e: any) => {
     e.preventDefault();
-    if (!message.trim() || !selectedChat || !user) return;
-    let newMessage: any = { sender_id: user.id, content: message, type: 'USER' };
+    if (!message.trim() || !selectedChat || !user || isSending) return;
+    setIsSending(true);
+    const trimmedMessage = message.trim();
+    setMessage("");
+    
+    let newMessage: any = { sender_id: user.id, content: trimmedMessage, type: 'USER' };
     if (selectedChat.isGroup) newMessage.room_id = selectedChat.id;
     else {
       let connectionId = selectedChat.id;
       if (connectionId === "temp") { 
         const res = await ConnectionService.ensureConnection(user.id, selectedChat.partnerId); 
         connectionId = res.id; 
-        setSelectedChat(prev=>({...prev, id: connectionId})); 
+        setSelectedChat((prev: any)=>({...prev, id: connectionId})); 
       }
       newMessage.connection_id = connectionId; 
       newMessage.receiver_id = selectedChat.partnerId;
@@ -262,11 +272,22 @@ function ChatContent() {
       if (selectedChat.status === 'PENDING' && selectedChat.sender_id !== user.id) {
         await supabase.from('connections').update({ status: 'ACCEPTED' }).eq('id', connectionId);
         setChats(prev => prev.map(c => c.id === connectionId ? { ...c, status: 'ACCEPTED' } : c));
-        setSelectedChat(prev => ({ ...prev, status: 'ACCEPTED' }));
+        setSelectedChat((prev: any) => ({ ...prev, status: 'ACCEPTED' }));
       }
     }
-    setMessage(""); setMessages(prev=>[...prev, { ...newMessage, id: Math.random().toString(), created_at: new Date().toISOString() }]);
-    await supabase.from('messages').insert([newMessage]);
+    
+    // Optimistically add with a temp ID, the realtime subscription will replace it
+    const tempId = `temp_${Date.now()}`;
+    setMessages(prev => [...prev, { ...newMessage, id: tempId, created_at: new Date().toISOString() }]);
+    
+    const { data: inserted } = await supabase.from('messages').insert([newMessage]).select().single();
+    
+    // Replace the temp message with the real DB message (which has the real ID)
+    if (inserted) {
+      setMessages(prev => prev.map(m => m.id === tempId ? inserted : m));
+    }
+    
+    setIsSending(false);
   };
 
   const isPending = selectedChat?.status === 'PENDING';

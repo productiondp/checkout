@@ -6,6 +6,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import ProtocolGuard from "@/components/auth/ProtocolGuard";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"], variable: "--font-outfit" });
@@ -57,6 +59,8 @@ export default function RootLayout({
             </ErrorBoundary>
           </NotificationProvider>
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

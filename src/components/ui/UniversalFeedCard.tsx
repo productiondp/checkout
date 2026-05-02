@@ -433,82 +433,82 @@ const UniversalFeedCard = React.memo(({
               </div>
            ) : <div />}
 
-           <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-              <motion.button
-                 whileTap={{ scale: 0.9 }}
-                 onClick={handleShare}
-                 className="h-12 w-12 rounded-xl border border-black/[0.05] text-[#86868B] flex items-center justify-center hover:bg-slate-50 transition-all shrink-0"
-              >
-                 <Share2 size={16} />
-              </motion.button>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto ml-auto justify-end">
+               <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleShare}
+                  className="h-10 w-10 rounded-lg border border-black/[0.05] text-[#86868B] flex items-center justify-center hover:bg-slate-50 transition-all shrink-0"
+               >
+                  <Share2 size={14} />
+               </motion.button>
 
-              {!isOwner ? (
-                 <div className="flex flex-1 items-center gap-2 min-w-0">
-                    <div className="flex items-center gap-2">
-                       <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
-                          className={cn(
-                             "h-12 w-12 rounded-xl border flex items-center justify-center transition-all shrink-0",
-                             bookmarked ? "bg-amber-500 border-amber-500 text-white" : "border-black/[0.05] text-[#86868B] hover:bg-slate-50"
-                          )}
-                       >
-                          <Bookmark size={16} fill={bookmarked ? "currentColor" : "none"} />
-                       </motion.button>
-                       {nType !== 'MEETUP' && (
-                          <ConnectButton 
-                             targetId={author?.id || post.author_id} 
-                             size="sm"
-                             disabled={isPublicPreview}
-                          />
-                       )}
-                    </div>
+               {!isOwner ? (
+                  <div className="flex items-center gap-2 min-w-0">
+                     <div className="flex items-center gap-2">
+                        <motion.button
+                           whileTap={{ scale: 0.9 }}
+                           onClick={(e) => { e.stopPropagation(); setBookmarked(!bookmarked); }}
+                           className={cn(
+                              "h-10 w-10 rounded-lg border flex items-center justify-center transition-all shrink-0",
+                              bookmarked ? "bg-amber-500 border-amber-500 text-white" : "border-black/[0.05] text-[#86868B] hover:bg-slate-50"
+                           )}
+                        >
+                           <Bookmark size={14} fill={bookmarked ? "currentColor" : "none"} />
+                        </motion.button>
+                        {nType !== 'MEETUP' && (
+                           <ConnectButton 
+                              targetId={author?.id || post.author_id} 
+                              size="sm"
+                              disabled={isPublicPreview}
+                           />
+                        )}
+                     </div>
 
-                    <motion.button
-                       whileHover={isPublicPreview ? {} : { scale: 1.02 }}
-                       whileTap={isPublicPreview ? {} : { scale: 0.98 }}
-                       onClick={isPublicPreview ? undefined : handleJoin}
-                       disabled={isPublicPreview}
-                       className={cn(
-                          "flex-1 h-12 px-6 sm:px-8 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg min-w-0",
-                          isPublicPreview ? "bg-gray-200 text-gray-400 shadow-none cursor-not-allowed" : (
-                             nType === 'MEETUP' 
-                               ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
-                               : "bg-[#E53935] shadow-red-500/20"
-                          )
-                       )}
-                    >
-                       <div className="flex items-center justify-center gap-2 min-w-0">
-                          {nType === 'MEETUP' ? <Users size={14} className="shrink-0" /> : <MessageSquare size={14} className="shrink-0" />}
-                          <span className="truncate">
-                             {isPublicPreview ? "Join Now" : (
-                               nType === 'MEETUP' ? (
-                                  joinStatus === 'JOINED' ? "Chat Open" : 
-                                  joinStatus === 'REQUESTED' ? "Pending" : 
-                                  joinStatus === 'FULL' ? "Full" : "Join"
-                               ) : "Respond"
-                             )}
-                          </span>
-                       </div>
-                    </motion.button>
-                 </div>
-              ) : (
-                 <div className="flex items-center gap-2.5 w-full">
-                    <button 
-                       onClick={(e) => { e.stopPropagation(); onEdit?.(post); }}
-                       className="flex-1 h-10 px-4 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
-                    >
-                       Edit
-                    </button>
-                    <button 
-                       onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); }}
-                       className="flex-1 h-10 px-4 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
-                    >
-                       Delete
-                    </button>
-                 </div>
-              )}
-           </div>
+                     <motion.button
+                        whileHover={isPublicPreview ? {} : { scale: 1.02 }}
+                        whileTap={isPublicPreview ? {} : { scale: 0.98 }}
+                        onClick={isPublicPreview ? undefined : handleJoin}
+                        disabled={isPublicPreview}
+                        className={cn(
+                           "h-10 px-6 sm:px-8 rounded-lg text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-lg min-w-0",
+                           isPublicPreview ? "bg-gray-200 text-gray-400 shadow-none cursor-not-allowed" : (
+                              nType === 'MEETUP' 
+                                ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
+                                : "bg-[#E53935] shadow-red-500/20"
+                           )
+                        )}
+                     >
+                        <div className="flex items-center justify-center gap-2 min-w-0">
+                           {nType === 'MEETUP' ? <Users size={14} className="shrink-0" /> : <MessageSquare size={14} className="shrink-0" />}
+                           <span className="truncate">
+                              {isPublicPreview ? "Join Now" : (
+                                nType === 'MEETUP' ? (
+                                   joinStatus === 'JOINED' ? "Chat Open" : 
+                                   joinStatus === 'REQUESTED' ? "Pending" : 
+                                   joinStatus === 'FULL' ? "Full" : "Join"
+                                ) : "Respond"
+                              )}
+                           </span>
+                        </div>
+                     </motion.button>
+                  </div>
+               ) : (
+                  <div className="flex items-center gap-2">
+                     <button 
+                        onClick={(e) => { e.stopPropagation(); onEdit?.(post); }}
+                        className="h-10 px-6 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
+                     >
+                        Edit
+                     </button>
+                     <button 
+                        onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); }}
+                        className="h-10 px-6 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+                     >
+                        Delete
+                     </button>
+                  </div>
+               )}
+            </div>
         </div>
       </div>
 

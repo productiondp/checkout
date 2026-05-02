@@ -155,16 +155,16 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
           topbarChildren={
              <div className="flex items-center gap-2">
                 {SMART_FILTERS.map(f => (
-                   <button 
-                     key={f.id}
-                     onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
-                     className={cn(
-                       "px-4 h-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shrink-0",
-                       activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
-                     )}
-                   >
-                     {f.label}
-                   </button>
+                    <button 
+                      key={f.id}
+                      onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
+                      className={cn(
+                        "px-5 h-10 rounded-full text-[11px] font-bold tracking-wide transition-all border shrink-0",
+                        activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
+                      )}
+                    >
+                      {f.label}
+                    </button>
                 ))}
              </div>
           }
@@ -174,7 +174,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
               <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
               <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
               <div className="flex items-center justify-between mb-2">
-                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Discovery Stream</h3>
+                  <h3 className="text-[12px] font-black tracking-widest text-black/20">Discovery Stream</h3>
               </div>
               <Feed posts={filteredPosts} isLoading={isLoading} currentUserId={authUser?.id} onAction={(p) => router.push(`/chat?user=${p.author_id}`)} onEdit={(p) => { setEditPost(p); setIsPosting(true); }} onCreate={handleOpenPosting} onDelete={async (p) => { const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); if (error) { alert(error.message); return; } setPosts(prev => prev.filter(post => post.id !== p.id)); }} />
           </div>

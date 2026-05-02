@@ -340,11 +340,11 @@ const UniversalFeedCard = React.memo(({
                     <h4 className="text-[16px] font-black uppercase tracking-tight text-[#1D1D1F]">
                        {post.author_profile?.username || post.author_profile?.full_name || authorName || "Member"}
                     </h4>
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[7px] font-black uppercase tracking-widest rounded-md">
+                    <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[8px] font-bold tracking-wide rounded-md">
                        {rank || post.author_profile?.role || "Member"}
                     </span>
                  </div>
-                 <div className="flex items-center gap-3.5 text-[10px] font-bold text-[#86868B] uppercase tracking-wider">
+                  <div className="flex items-center gap-3.5 text-[10px] font-bold text-[#86868B] tracking-wide">
                     <span className="flex items-center gap-1.5">
                        <Clock size={11} className={cn("text-[#E53935]/40", isNew && "text-emerald-500 animate-pulse")} /> 
                        {isNew ? <span className="text-emerald-500 font-black">Just now</span> : time}
@@ -356,7 +356,7 @@ const UniversalFeedCard = React.memo(({
                          <span className="text-[#34C759] font-black">  {distance < 1 ? "< 1 km" : `${distance.toFixed(1)} km`}</span>
                        )}
                     </span>
-                 </div>
+                  </div>
               </div>
            </div>
 
@@ -368,10 +368,10 @@ const UniversalFeedCard = React.memo(({
                           <div key={i} className={cn("h-1.5 w-1.5 rounded-full", i <= Math.ceil(score/20) ? "bg-[#E53935]" : "bg-slate-200")} />
                        ))}
                     </div>
-                    <span className="text-[9px] font-black text-[#1D1D1F] uppercase tracking-tighter">{score}% Match</span>
+                    <span className="text-[9px] font-bold text-[#1D1D1F] tracking-wide">{score}% Match</span>
                  </div>
                  {relevanceLabel && (
-                    <span className="text-[7px] font-black text-[#E53935] uppercase tracking-[0.2em] mt-1.5 mr-1.5">{relevanceLabel}</span>
+                    <span className="text-[7px] font-bold text-[#E53935] tracking-wide mt-1.5 mr-1.5">{relevanceLabel}</span>
                  )}
               </div>
            )}
@@ -380,11 +380,11 @@ const UniversalFeedCard = React.memo(({
         <div className="space-y-4 mb-6">
            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
-                 <div className={cn("px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest border", cfg.chipBg, cfg.chipText, "border-black/[0.03]")}>
+                 <div className={cn("px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wide border", cfg.chipBg, cfg.chipText, "border-black/[0.03]")}>
                     {cfg.label}
                  </div>
                  {post.nudge && (
-                    <div className="text-[8px] font-black text-[#34C759] uppercase tracking-[0.1em] flex items-center gap-1.5">
+                    <div className="text-[9px] font-bold text-[#34C759] tracking-wide flex items-center gap-1.5">
                        <Zap size={9} className="fill-[#34C759]" /> {post.nudge}
                     </div>
                  )}
@@ -429,7 +429,7 @@ const UniversalFeedCard = React.memo(({
            {!isOwner ? (
               <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl self-start sm:self-auto">
                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Active Partner</span>
+                  <span className="text-[9px] font-bold text-emerald-700 tracking-wide">Active Partner</span>
               </div>
            ) : <div />}
 
@@ -470,7 +470,7 @@ const UniversalFeedCard = React.memo(({
                         onClick={isPublicPreview ? undefined : handleJoin}
                         disabled={isPublicPreview}
                         className={cn(
-                           "h-10 px-6 sm:px-8 rounded-lg text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-lg min-w-0",
+                           "h-10 px-6 sm:px-8 rounded-lg text-[10px] font-black tracking-widest text-white transition-all shadow-lg min-w-0",
                            isPublicPreview ? "bg-gray-200 text-gray-400 shadow-none cursor-not-allowed" : (
                               nType === 'MEETUP' 
                                 ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
@@ -496,13 +496,13 @@ const UniversalFeedCard = React.memo(({
                   <div className="flex items-center gap-2">
                      <button 
                         onClick={(e) => { e.stopPropagation(); onEdit?.(post); }}
-                        className="h-10 px-6 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
+                        className="h-10 px-6 rounded-lg border border-black/[0.05] text-[10px] font-black tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
                      >
                         Edit
                      </button>
                      <button 
                         onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); }}
-                        className="h-10 px-6 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+                        className="h-10 px-6 rounded-lg border border-red-100 text-[10px] font-black tracking-widest text-red-500 hover:bg-red-50 transition-all"
                      >
                         Delete
                      </button>

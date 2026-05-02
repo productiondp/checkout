@@ -115,7 +115,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
             className="w-full h-11 lg:h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[13px] font-bold text-black focus:bg-white focus:border-[#E53935]/20 transition-all outline-none"
           />
           {isSearchOpen && (
-            <button onClick={() => setIsSearchOpen(false)} className="ml-4 text-[10px] font-black uppercase text-gray-400">Cancel</button>
+            <button onClick={() => setIsSearchOpen(false)} className="ml-4 text-[10px] font-black text-gray-400">Cancel</button>
           )}
         </div>
 
@@ -141,18 +141,18 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
             className="flex items-center gap-2.5 px-3 lg:px-4 h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all group"
           >
             <MapPin size={14} className="text-[#E53935]" />
-            <span className="text-[10px] font-black text-black uppercase tracking-widest hidden md:inline">{authUser?.location || "Trivandrum"}</span>
+            <span className="text-[10px] font-bold text-black tracking-widest hidden md:inline">{authUser?.location || "Trivandrum"}</span>
             <ChevronDown size={14} className={cn("text-black/20 transition-transform duration-300", isLocationOpen && "rotate-180")} />
           </button>
 
           {isLocationOpen && (
             <div className="absolute top-[120%] left-0 w-64 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-2 animate-in fade-in slide-in-from-top-2 z-[200]">
-              <p className="px-4 py-3 text-[9px] font-black text-black/20 uppercase tracking-widest border-b border-black/[0.03] mb-2">Select Active Region</p>
+              <p className="px-4 py-3 text-[10px] font-bold text-black/20 tracking-widest border-b border-black/[0.03] mb-2">Select active region</p>
               {["Kochi", "Bangalore", "Chennai", "Mumbai"].map(loc => (
                 <button 
                   key={loc} 
                   onClick={() => setIsLocationOpen(false)}
-                  className="w-full text-left px-4 py-3.5 rounded-xl text-[11px] font-black uppercase text-black/40 hover:bg-[#F5F5F7] hover:text-[#E53935] flex items-center justify-between group transition-all"
+                  className="w-full text-left px-4 py-3.5 rounded-xl text-[12px] font-bold text-black/40 hover:bg-[#F5F5F7] hover:text-[#E53935] flex items-center justify-between group transition-all"
                 >
                   {loc}
                   <ChevronDown size={14} className="-rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
@@ -169,7 +169,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
           <Link href="/chat" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex">
             <MessageSquare size={20} strokeWidth={1.5} />
             {unreadMessagesCount > 0 && (
-               <div className="absolute top-2 right-2 h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full flex items-center justify-center text-[8px] font-black text-white ring-2 ring-white">
+               <div className="absolute top-2 right-2 h-4 min-w-[16px] px-1 bg-[#E53935] rounded-full flex items-center justify-center text-[8px] font-bold text-white ring-2 ring-white">
                  {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
                </div>
             )}
@@ -197,8 +197,8 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
             {isNotificationsOpen && (
                <div className="absolute top-[120%] right-[-10px] lg:right-0 w-[calc(100vw-32px)] lg:w-80 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-4 animate-in fade-in slide-in-from-top-2 z-[200]">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.03]">
-                     <h3 className="text-[11px] font-black uppercase tracking-widest text-black">Notifications</h3>
-                     <button onClick={markAllAsRead} className="text-[9px] font-bold text-[#E53935] uppercase">Clear</button>
+                     <h3 className="text-[11px] font-bold tracking-widest text-black">Notifications</h3>
+                     <button onClick={markAllAsRead} className="text-[10px] font-bold text-[#E53935]">Clear</button>
                   </div>
                   <div className="space-y-3 max-h-[320px] overflow-y-auto no-scrollbar">
                      {notifications.map((n, i) => (
@@ -208,12 +208,12 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                            </div>
                            <div className="flex-1 min-w-0">
                               <p className="text-[12px] font-bold text-black leading-tight mb-1">{n.message || "New activity in network"}</p>
-                              <p className="text-[9px] font-black text-black/20 uppercase tracking-tight">{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                              <p className="text-[10px] font-bold text-black/20 tracking-tight">{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                            </div>
                         </div>
                      ))}
                      {notifications.length === 0 && (
-                        <div className="py-8 text-center text-[10px] font-black uppercase text-black/10 italic">No new alerts</div>
+                        <div className="py-8 text-center text-[10px] font-bold text-black/10 italic">No new alerts</div>
                      )}
                   </div>
                </div>
@@ -236,11 +236,11 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                  <img src={authUser?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser?.full_name}`} className="w-full h-full object-cover" alt="" />
               </div>
               <div className="text-left flex flex-col justify-center hidden lg:flex">
-                 <p className="text-[14px] font-black uppercase text-black leading-none mb-1 tracking-tight font-outfit">
-                   {authUser?.full_name?.split(' ')[0] || "USER"}
+                 <p className="text-[14px] font-bold text-black leading-none mb-1 tracking-tight font-outfit">
+                   {authUser?.full_name?.split(' ')[0] || "User"}
                  </p>
-                 <p className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none">
-                   {authUser?.role || "PROFESSIONAL"}
+                 <p className="text-[9px] font-bold text-slate-400 tracking-widest leading-none">
+                   {authUser?.role || "Professional"}
                  </p>
               </div>
               <ChevronDown size={16} className={cn("text-black/20 group-hover:text-black transition-all duration-300 ml-1 hidden lg:block", isProfileOpen && "rotate-180")} />
@@ -249,21 +249,21 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
            {isProfileOpen && (
               <div className="absolute top-[120%] right-0 w-64 bg-white rounded-2xl shadow-4xl border border-black/[0.05] p-2 animate-in fade-in slide-in-from-top-2 z-[200]">
                  <div className="px-4 py-3 border-b border-black/[0.03] mb-2">
-                    <p className="text-[10px] font-black text-black uppercase tracking-widest">{authUser?.full_name}</p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{authUser?.email}</p>
+                    <p className="text-[10px] font-bold text-black tracking-widest">{authUser?.full_name}</p>
+                    <p className="text-[9px] font-bold text-slate-400 tracking-widest">{authUser?.email}</p>
                  </div>
                  
                  <button 
                     onClick={() => { router.push(`/profile/${authUser?.id}`); setIsProfileOpen(false); }}
-                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
+                    className="w-full text-left px-4 py-3 rounded-xl text-[12px] font-bold text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
                  >
                     <Users size={16} className="text-[#E53935]" />
                     View Profile
                  </button>
                  
                  <button 
-                    onClick={() => { router.push('/profile'); setIsProfileOpen(false); }} // Assuming /profile leads to settings/own profile
-                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
+                    onClick={() => { router.push('/profile'); setIsProfileOpen(false); }}
+                    className="w-full text-left px-4 py-3 rounded-xl text-[12px] font-bold text-black/40 hover:bg-[#F5F5F7] hover:text-black flex items-center gap-3 group transition-all"
                  >
                     <Settings size={16} className="text-[#E53935]" />
                     Settings
@@ -273,7 +273,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                  
                  <button 
                     onClick={() => { logout(); setIsProfileOpen(false); }}
-                    className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase text-red-500 hover:bg-red-50 flex items-center gap-3 group transition-all"
+                    className="w-full text-left px-4 py-3 rounded-xl text-[12px] font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 group transition-all"
                  >
                     <LogOut size={16} />
                     Sign Out

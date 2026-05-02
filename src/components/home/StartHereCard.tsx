@@ -65,13 +65,13 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                  {/* STATUS BADGE */}
                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#E53935]/10 border border-[#E53935]/20 rounded-lg">
                     <div className="h-1 w-1 bg-[#E53935] rounded-full animate-pulse" />
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#E53935]">Account Ready</span>
+                     <span className="text-[9px] font-black tracking-widest text-[#E53935]">Account Ready</span>
                  </div>
                  
                  <div className="space-y-3">
-                    <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white uppercase">
-                       Build with the right partners.
-                    </h2>
+                     <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white">
+                        Build with the right partners.
+                     </h2>
                     <p className="text-[15px] font-bold text-white/40 leading-relaxed max-w-2xl">
                        Your profile is verified. Post what you are looking for or find people to grow your business faster.
                     </p>
@@ -80,25 +80,25 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
 
               {/* ENHANCED ACTION BUTTONS */}
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-                 <motion.button 
-                   whileHover={{ scale: 1.02, y: -2 }}
-                   whileTap={{ scale: 0.98 }}
-                   onClick={onAction}
-                   className="h-14 px-8 bg-gradient-to-br from-[#E53935] to-[#D32F2F] text-white rounded-xl text-[12px] font-black uppercase tracking-widest shadow-[0_10px_30px_rgba(229,57,51,0.3)] hover:shadow-[0_20px_40px_rgba(229,57,51,0.4)] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-                 >
-                    <Plus size={18} strokeWidth={3} />
-                    <span>Post Now</span>
-                 </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onAction}
+                    className="h-14 px-8 bg-gradient-to-br from-[#E53935] to-[#D32F2F] text-white rounded-xl text-[12px] font-black tracking-widest shadow-[0_10px_30px_rgba(229,57,51,0.3)] hover:shadow-[0_20px_40px_rgba(229,57,51,0.4)] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
+                  >
+                     <Plus size={18} strokeWidth={3} />
+                     <span>Post Now</span>
+                  </motion.button>
                  
-                 <motion.button 
-                   whileHover={{ scale: 1.02, y: -2 }}
-                   whileTap={{ scale: 0.98 }}
-                   onClick={onExplore}
-                   className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-black uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-                 >
-                    <span>Find Partners</span>
-                    <ArrowRight size={18} strokeWidth={3} />
-                 </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onExplore}
+                    className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-black tracking-widest backdrop-blur-md hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
+                  >
+                     <span>Find Partners</span>
+                     <ArrowRight size={18} strokeWidth={3} />
+                  </motion.button>
               </div>
            </div>
 
@@ -113,10 +113,10 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                    <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                       <item.icon size={18} className={item.color} />
                    </div>
-                   <div>
-                      <p className="text-[12px] font-black text-white uppercase leading-none mb-1">{item.val}</p>
-                      <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
-                   </div>
+                    <div>
+                       <p className="text-[12px] font-black text-white leading-none mb-1">{item.val}</p>
+                       <p className="text-[8px] font-bold text-white/40 tracking-widest">{item.label}</p>
+                    </div>
                 </div>
               ))}
            </div>

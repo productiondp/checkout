@@ -37,7 +37,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-10 text-gray-400 font-black uppercase tracking-widest text-[11px]">
+        <div className="hidden lg:flex items-center gap-10 text-gray-400 font-bold tracking-wide text-[12px]">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-black transition-colors">
               {link.label}
@@ -53,9 +53,9 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
             </button>
             <button 
               onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
-              className="px-8 h-12 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-black/10"
+              className="px-8 h-12 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-black/10 font-bold"
             >
-              Join now
+              Join Now
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
                      setIsOpen(false);
                      onJoinClick ? onJoinClick() : window.location.href = '/?mode=signup';
                    }}
-                   className="w-full h-16 bg-black text-white font-black uppercase tracking-widest text-[11px] rounded-2xl shadow-xl shadow-black/10"
+                   className="w-full h-16 bg-black text-white font-bold tracking-wide text-[14px] rounded-2xl shadow-xl shadow-black/10"
                  >
                    Create Account
                  </button>
@@ -108,7 +108,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
                      setIsOpen(false);
                      onSigninClick ? onSigninClick() : window.location.href = '/?mode=signin';
                    }}
-                   className="w-full h-16 bg-gray-50 text-black font-black uppercase tracking-widest text-[11px] rounded-2xl border border-black/[0.05]"
+                   className="w-full h-16 bg-gray-50 text-black font-bold tracking-wide text-[14px] rounded-2xl border border-black/[0.05]"
                  >
                    Member Sign In
                  </button>

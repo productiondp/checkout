@@ -243,14 +243,14 @@ export default function HomeFeed({
                      <Target size={32} strokeWidth={2.5} />
                   </div>
                   <div className="space-y-3">
-                     <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-[#1D1D1F] leading-none">
+                     <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-[#1D1D1F] leading-none">
                         {hasPosted ? "Update Requirement" : "Post Requirement"}
                      </h3>
-                     <p className="text-[#86868B] text-[13px] font-bold uppercase tracking-wide leading-relaxed max-w-[260px]">
+                     <p className="text-[#86868B] text-[13px] font-bold tracking-wide leading-relaxed max-w-[260px]">
                         Share what you need and get matched with experts instantly.
                      </p>
                   </div>
-                  <div className="flex items-center gap-3 text-[#E53935] text-[11px] font-black uppercase tracking-[0.2em] pt-6 border-t border-black/[0.03]">
+                  <div className="flex items-center gap-3 text-[#E53935] text-[11px] font-black tracking-widest pt-6 border-t border-black/[0.03]">
                      <span>Broadcast Now</span>
                      <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
                   </div>
@@ -270,14 +270,14 @@ export default function HomeFeed({
                      <Users size={32} strokeWidth={2.5} />
                   </div>
                   <div className="space-y-3">
-                     <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-none">
+                     <h3 className="text-3xl lg:text-4xl font-black tracking-tight text-white leading-none">
                         {hasConnected ? "Network Active" : "Find Partner"}
                      </h3>
-                     <p className="text-white/40 text-[13px] font-bold uppercase tracking-wide leading-relaxed max-w-[260px]">
+                     <p className="text-white/40 text-[13px] font-bold tracking-wide leading-relaxed max-w-[260px]">
                         Explore the network and find the right partners to build with.
                      </p>
                   </div>
-                  <div className="flex items-center gap-3 text-white text-[11px] font-black uppercase tracking-[0.2em] pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-white text-[11px] font-black tracking-widest pt-6 border-t border-white/5">
                      <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
                         <span>{hasConnected ? "Explore Deeply" : "Start Discovery"}</span>
@@ -299,7 +299,7 @@ export default function HomeFeed({
                 className="px-5 py-2.5 bg-emerald-50 border border-emerald-100 rounded-full flex items-center gap-3 shadow-sm"
               >
                  <Sparkles size={12} className="text-emerald-600" />
-                 <span className="text-[10px] font-black uppercase text-emerald-700">{insight}</span>
+                 <span className="text-[11px] font-bold text-emerald-700">{insight}</span>
               </motion.div>
            ))}
         </div>

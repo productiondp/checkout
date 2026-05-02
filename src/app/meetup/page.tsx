@@ -23,10 +23,12 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { calculateMatchScore } from "@/lib/ai";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { AnimatePresence, motion } from "framer-motion";
-
+import TerminalLayout from "@/components/layout/TerminalLayout";
 
 const TOPICS = ["All", "Networking", "Investment", "Community", "Strategy", "Tech", "Logistics"];
 
@@ -131,8 +133,6 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
     </div>
   );
 };
-
-import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function MeetupPage() {
   const { user: authUser } = useAuth();

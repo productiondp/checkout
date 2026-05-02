@@ -28,6 +28,7 @@ import { useAuth, useAuthGuard } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import AuthSubmissionStatus from "@/components/auth/AuthSubmissionStatus";
 
 type Role = 'BUSINESS' | 'PROFESSIONAL' | 'ADVISOR' | 'STUDENT';
 
@@ -375,6 +376,15 @@ function OnboardingContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-[#FF3B30]/10">
+      <AnimatePresence>
+        {isSaving && step === 3 && (
+          <AuthSubmissionStatus 
+            state="INITIALIZING" 
+            onRetry={() => saveProgress(true)} 
+          />
+        )}
+      </AnimatePresence>
+
       <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
       <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-[0_40px_100px_rgba(0,0,0,0.05)] flex flex-col h-full max-h-[85vh] overflow-hidden border border-slate-100">
         <div className="h-1.5 bg-slate-50 w-full flex p-0 relative z-50">

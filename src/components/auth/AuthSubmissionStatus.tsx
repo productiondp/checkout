@@ -11,10 +11,12 @@ import {
   Sparkles,
   Lock,
   UserCheck
+  UserCheck,
+  Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type AuthSubmissionState = 'SECURING' | 'VERIFYING' | 'SYNCING' | 'SUCCESS' | 'FAILED';
+export type AuthSubmissionState = 'INITIALIZING' | 'SECURING' | 'VERIFYING' | 'SYNCING' | 'SUCCESS' | 'FAILED';
 
 interface AuthSubmissionStatusProps {
   state: AuthSubmissionState;
@@ -23,6 +25,13 @@ interface AuthSubmissionStatusProps {
 }
 
 const STATE_CONFIG = {
+  INITIALIZING: {
+    label: "Building Network",
+    icon: Globe,
+    color: "text-blue-500",
+    bg: "bg-blue-50",
+    description: "Calibrating your discovery stream"
+  },
   SECURING: {
     label: "Securing Credentials",
     icon: Lock,

@@ -62,49 +62,53 @@ function MapContent() {
   useEffect(() => {
     async function loadNetworkNodes() {
       try {
-        // Fetch All Posts with Geo metadata
+        // Fetch All Posts (Prioritize Marketplace Content)
         const { data: posts } = await supabase
           .from('posts')
           .select(`*, author:profiles(*)`)
-          .not('metadata->geo', 'is', null);
+          .order('created_at', { ascending: false });
 
         // Fetch Profiles (Partners/Businesses)
         const { data: profiles } = await supabase
           .from('profiles')
           .select('*')
-          .limit(50);
+          .limit(100);
 
         const nodes: any[] = [];
+        const HUB_LAT = 8.5241;
+        const HUB_LNG = 76.9467;
 
         // Map All Posts
-        (posts || []).forEach(p => {
-          if (p.metadata?.geo) {
-            // Normalize type for map layers
-            let nodeType: "Partners" | "Businesses" | "Events" = "Partners";
-            if (p.type === 'MEETUP') nodeType = "Events";
-            else if (p.type === 'REQUIREMENT') nodeType = "Partners";
-            else if (p.type === 'PARTNER' || p.type === 'PARTNERSHIP') nodeType = "Partners";
+        (posts || []).forEach((p, idx) => {
+          // Normalize type for map layers
+          let nodeType: "Partners" | "Businesses" | "Events" = "Partners";
+          if (p.type === 'MEETUP') nodeType = "Events";
+          else if (p.type === 'REQUIREMENT') nodeType = "Partners";
+          else if (p.type === 'PARTNER' || p.type === 'PARTNERSHIP') nodeType = "Partners";
 
-            nodes.push({
-              id: p.id,
-              type: nodeType,
-              subType: p.type,
-              lat: p.metadata.geo.lat,
-              lng: p.metadata.geo.lng,
-              title: p.title,
-              content: p.content,
-              author: p.author?.full_name || "Member",
-              avatar: p.author?.avatar_url
-            });
-          }
+          // Use real geo if exists, otherwise simulate proximity to hub
+          const lat = p.metadata?.geo?.lat || (HUB_LAT + (Math.random() - 0.5) * 0.05);
+          const lng = p.metadata?.geo?.lng || (HUB_LNG + (Math.random() - 0.5) * 0.05);
+
+          nodes.push({
+            id: p.id,
+            type: nodeType,
+            subType: p.type,
+            lat,
+            lng,
+            title: p.title || "Opportunity",
+            content: p.content,
+            author: p.author?.full_name || "Member",
+            avatar: p.author?.avatar_url,
+            isRealGeo: !!p.metadata?.geo
+          });
         });
 
-        // Map Profiles (Simulate spread for demo if no geo)
+        // Map Profiles
         (profiles || []).forEach((p, idx) => {
           const isBusiness = p.role === 'BUSINESS';
-          const spread = 0.02;
-          const lat = 8.5241 + (Math.random() - 0.5) * spread;
-          const lng = 76.9467 + (Math.random() - 0.5) * spread;
+          const lat = HUB_LAT + (Math.random() - 0.5) * 0.08;
+          const lng = HUB_LNG + (Math.random() - 0.5) * 0.08;
 
           nodes.push({
             id: p.id,
@@ -114,7 +118,8 @@ function MapContent() {
             lng,
             title: p.full_name,
             content: p.bio,
-            avatar: p.avatar_url
+            avatar: p.avatar_url,
+            isProfile: true
           });
         });
 

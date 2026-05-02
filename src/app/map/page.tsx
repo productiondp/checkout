@@ -184,20 +184,90 @@ function MapContent() {
     filteredMarkers.forEach(node => {
       const el = document.createElement('div');
       el.className = 'custom-marker';
+      
+      // Use avatar if available, otherwise type-based icon
+      const iconHtml = node.avatar 
+        ? `<img src="${node.avatar}" class="h-full w-full object-cover rounded-full border-2 border-white/20 shadow-xl" />`
+        : `<div class="h-full w-full rounded-full flex items-center justify-center bg-${activeLayer === 'Events' ? '[#E53935]' : activeLayer === 'Businesses' ? 'indigo-500' : 'emerald-500'} text-white shadow-xl">
+            ${activeLayer === 'Events' ? '🔥' : activeLayer === 'Businesses' ? '🏢' : '👤'}
+           </div>`;
+
       el.innerHTML = `
-        <div class="relative group cursor-pointer">
-          <div class="h-3 w-3 bg-${activeLayer === 'Events' ? '[#E53935]' : activeLayer === 'Businesses' ? 'indigo-500' : 'emerald-500'} rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)] border-2 border-white/20 transition-all group-hover:scale-150"></div>
-          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
-            <div class="bg-black/90 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg whitespace-nowrap">
-              <p class="text-[9px] font-black uppercase text-white">${node.title}</p>
+        <div class="relative group cursor-pointer h-10 w-10 transition-all hover:scale-125 z-10">
+          <div class="h-full w-full rounded-full overflow-hidden border-2 border-white/20 shadow-[0_0_20px_rgba(229,57,53,0.3)]">
+            ${iconHtml}
+          </div>
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
+            <div class="bg-black/90 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl whitespace-nowrap shadow-2xl">
+              <p class="text-[10px] font-black uppercase text-white tracking-widest">${node.title}</p>
+              <p class="text-[8px] font-bold text-white/40 uppercase mt-0.5">${node.author || node.type}</p>
             </div>
           </div>
         </div>
       `;
 
-      new maplibregl.Marker(el)
+      // Create Popup
+      const popupContent = document.createElement('div');
+      popupContent.className = 'map-popup-container';
+      popupContent.innerHTML = `
+        <div class="p-5 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] w-64 shadow-4xl text-white space-y-6">
+           <div class="flex items-center gap-4">
+              <div class="h-12 w-12 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                 <img src="${node.avatar || `https://i.pravatar.cc/150?u=${node.id}`}" class="h-full w-full object-cover" />
+              </div>
+              <div class="min-w-0">
+                 <p class="text-[10px] font-black text-[#E53935] uppercase tracking-[0.2em] leading-none mb-1.5">${activeLayer}</p>
+                 <p class="text-[14px] font-black uppercase truncate leading-tight">${node.title}</p>
+              </div>
+           </div>
+           
+           <p class="text-[11px] font-medium text-white/50 leading-relaxed line-clamp-2 uppercase tracking-tight italic">
+              "${node.content || "Connecting real-world opportunities across the network."}"
+           </p>
+
+           <div class="grid grid-cols-2 gap-3">
+              <button class="h-11 rounded-xl bg-white text-black text-[9px] font-black uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all active:scale-95 btn-connect">
+                 Connect
+              </button>
+              <button class="h-11 rounded-xl bg-white/10 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all active:scale-95 btn-response">
+                 Response
+              </button>
+           </div>
+        </div>
+      `;
+
+      const popup = new maplibregl.Popup({ 
+        offset: 25, 
+        closeButton: false,
+        maxWidth: 'none',
+        className: 'custom-map-popup'
+      }).setDOMContent(popupContent);
+
+      const marker = new maplibregl.Marker(el)
         .setLngLat([node.lng, node.lat])
         .addTo(map.current!);
+
+      // Click to open popup
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popup.setLngLat([node.lng, node.lat]).addTo(map.current!);
+        
+        // Add listeners to popup buttons after it's added to DOM
+        setTimeout(() => {
+          const connectBtn = document.querySelector('.btn-connect');
+          const responseBtn = document.querySelector('.btn-response');
+          
+          connectBtn?.addEventListener('click', () => {
+             alert(`Connection request sent to ${node.title}`);
+             popup.remove();
+          });
+          
+          responseBtn?.addEventListener('click', () => {
+             alert(`Response recorded for ${node.title}`);
+             popup.remove();
+          });
+        }, 100);
+      });
     });
   }, [filteredMarkers, activeLayer]);
 

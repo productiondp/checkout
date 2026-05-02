@@ -1,82 +1,67 @@
-# Product Requirements Document (PRD): Checkout Terminal
-**Version**: Build V.5 | **Status**: Checkpoint 5 Certified (Production Ready UI)
+# CheckOut OS: Product Requirements Document (PRD)
+**Status:** Active / Production Ready
+**Last Updated:** 2026-05-02
 
-## 1. Executive Summary
-**Checkout Terminal** is a hyper-local, result-oriented business discovery platform designed to eliminate social noise and maximize networking efficiency. Unlike traditional social networks, Checkout uses a proprietary **Hybrid Match Engine** to connect entrepreneurs, creators, and service providers based on intent, skills, and proximity.
+## 1. Product Vision
+CheckOut OS is a premium, high-fidelity Business Operating System designed for local commerce and professional networks. It moves beyond simple "social networking" by focusing on **outcome-driven interactions**, **verified matching**, and **strategic collaboration**.
 
-**Core Vision**: "Stop Networking. Start Building." - Transforming the city into a functional, interlinked business terminal.
+## 2. Core Design Principles
+*   **Editorial Excellence:** UI should feel like a premium magazine—bold typography, intentional whitespace, and high-contrast aesthetics.
+*   **Zero-Data Integrity:** No hardcoded dummy data. Every user, post, and score must originate from the database.
+*   **Scannability:** Information must be scannable in under 3 seconds. Use "One Word Per Concept" nomenclature.
+*   **Tactile Feedback:** Every action (click, hover, post) must have a subtle, premium micro-animation or transition.
 
----
+## 3. Functional Pillars
 
-## 2. Target Audience
-1.  **Local Entrepreneurs & Startups**: Seeking partners, clients, and supply chain deals.
-2.  **Freelancers & Creators**: Looking for high-authority local projects and expert help.
-3.  **B2B Service Providers**: Logistics, legal, and IT agencies connecting with MSMEs.
-4.  **Community Builders**: Organizing hyper-local meetups and events.
+### A. Discovery Stream (Home Feed)
+*   **Purpose:** A real-time, AI-ranked feed of network activity.
+*   **Key Features:** Smart filters (Requirements, Partners, Meetups), success probability indicators, and instant engagement CTAs.
 
----
+### B. Network Hub (Matches)
+*   **Purpose:** Algorithmic connection discovery.
+*   **Logic:** Matches users based on skill overlap, industry focus, and proximity.
+*   **UI:** High-impact Match Cards with percentage scores.
 
-## 3. Product Principles
--   **Simple English**: No corporate jargon. Every label is an action (e.g., "Find" instead of "Explore").
--   **Cinematic Authority**: A premium Charcoal (#292828) design system that feels like professional equipment, not a toy.
--   **Result Over Feed**: The UI prioritizes "Matches" and "Deals" over infinite social scrolling.
--   **Mobile-First Terminal**: Designed to load as a standalone PWA with native-feeling viewport and controls.
+### C. Marketplace
+*   **Purpose:** High-intent transaction and partnership layer.
+*   **Categories:** Requirements (Hiring/Leads) and Partnerships (Strategic).
+*   **Constraint:** Must display real countdowns and participant counts derived from DB.
 
----
+### D. Advisor Network
+*   **Purpose:** Direct access to verified experts.
+*   **Feature:** Trusted scores, helpfulness ratings, and direct session booking.
 
-## 4. Key Functional Features
+### E. Unified Chat
+*   **Purpose:** The conversion layer for all interactions.
+*   **Features:** Real-time messaging, group session rooms, and attachment support.
 
-### 4.1 Hybrid Match Engine (Backend Node)
--   **Semantic Search**: Uses OpenAI `text-embedding-3-small` to understand user intent beyond keywords.
--   **Hybrid Scoring Model**:
-    -   **40% Vector Similarity**: Semantic relevance and "vibes".
-    -   **35% Skill Overlap**: Hard verification of capabilities (30% minimum for feature visibility).
-    -   **25% Context/Location**: Proximity to the "Trivandrum Hub" and intent status.
+## 4. Technical Standards
+*   **Stack:** Next.js (App Router), Supabase (Auth/DB/Realtime), Framer Motion (Animations), Lucide (Icons).
+*   **Auth:** Centralized on root page. Zero-tolerance for redirect loops.
+*   **State:** Use `useAuth` as the master state machine. No redundant local storage for auth state.
+*   **Code Health:** No dead code, no redundant layouts, and no "dummy" files in `src/`.
 
-### 4.2 The Broadcast (Broadcast Engine)
--   **The Post**: A high-impact update system centered on actionable business outcomes (Deals, Jobs, Partnerships).
--   **Intelligent Routing**: Posts are matched to relevant users based on their "Checkout Rank" and profile skills.
--   **Center Action**: Accessible via the "Plus" button on mobile, optimized for instant sharing.
+## 5. Implementation Protocol (Rules to Follow)
+1.  **Always Check DB First:** Before adding a feature, verify if the schema supports it. Never hardcode return values.
+2.  **Mobile First:** Ensure every UI works perfectly on mobile safe areas.
+3.  **Analytics Driven:** Every major action must be tracked via the `AnalyticsEngine`.
+4.  **Premium Aesthetics:** Never use default browser colors or standard blue links. Use the HSL-tailored red (`#E53935`) and high-contrast blacks.
 
-### 4.3 Identity & Rank (Checkout Rank)
--   **Global Rank**: A meritocratic visibility score based on verification status and platform engagement.
--   **Verified Identity**: "Simple English" status markers (e.g., "Verified Startup Owner").
+## 6. Current Roadmap
+1.  **Phase 1 (Complete):** Data Sanitization & Code Cleanup.
+2.  **Phase 2 (Current):** Stability & Onboarding hardening.
+3.  **Phase 3 (Next):** AWS Chat Integration & Match-Engine v2.0 enhancements.
+4.  **Phase 4:** Production Scaling & Performance Optimization.
 
-### 4.4 The Hubs (Sub-Terminals)
--   **Marketplace**: Lease, lease, and trade hub for business assets (Electronics, Logistics, IT).
--   **Events & Meetups**: Discovery and booking engine for professional gatherings.
--   **Experts (Advisors)**: High-authority network for "Expert Help" with integrated "Price/Book" logic.
--   **Community**: Group-based nodes (e.g., "Technopark Logistics Node") for industry-wide collaboration.
+## 7. Mandatory Development Workflow (Safe-Sync)
+To ensure a non-breaking production environment, all contributors must follow the **Dev-First Protocol**:
+1.  **SQL Synchronization:** Any change to the database schema must be applied to the `checkout-dev` project first.
+2.  **Local Isolation:** The `.env.local` file must strictly point to the Dev Sandbox and must NEVER be committed to Git.
+3.  **Production Gatekeeping:** Only run "Foundation" scripts in Production. NEVER run "Reset" or "Truncate" scripts in the live environment.
 
----
+## 8. Zero-Data Experience (Founding Member Standard)
+The platform must never feel "empty." In the absence of user-generated content:
+*   **Founding Member UI:** Show the premium "Founding Node Detected" experience.
+*   **Call to Leadership:** Use exclusive language (e.g., "Activate the Network") instead of generic actions.
+*   **Zero Placeholders:** Never use dummy data. If no real data exists, use the Founding Member standard.
 
-## 5. UI/UX Specifications
-
-### 5.1 Design System: Cinematic Grey
--   **Primary Color**: `#292828` (Charcoal Base).
--   **Accent Color**: `#E53935` (Authority Red).
--   **Typography**: `Outfit` (Headings), `Inter` (Body). zero italics, zero character tracking for maximal clarity.
-
-### 5.2 Mobile Terminal Layout
--   **Sticky Global Header**: Quick access to Search, Notifications, and Profile.
--   **Bottom Navigation**: One-handed access to Home, People, Post (Center), Chats, and Identity.
--   **Hamburger Drawer**: Expansive menu for categorized hubs and system settings.
-
----
-
-## 6. Technical Stack
--   **Frontend**: Next.js 14 (App Router), React 18, Tailwind CSS.
--   **Infrastructure**: Cloudflare Pages (Git Integration), Wrangler/OpenNext.
--   **AI Layer**: OpenAI (Embeddings & Semantic Match).
--   **Payment Engine**: Razorpay (Consultation Hub).
--   **Data Consistency**: Lucide-React for standardized authoritative iconography.
-
----
-
-## 7. Roadmap (Coming in V.6+)
-1.  **Live Database Integration**: Transition from `dummyData.ts` to persistent Supabase/PostgreSQL.
-2.  **Auth Modal Gate**: Implement full clerk/auth flow for identity protection.
-3.  **Real-Time Chats**: Activate WebSocket/Edge-based messaging for matched users.
-4.  **Checkout Rank API**: Dynamic calculation of user authority based on actual marketplace transactions and successful match outcomes.
-
-**Authorized PRD for Checkout Terminal Build V.5.**

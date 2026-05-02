@@ -26,7 +26,6 @@ import { calculateMatchScore, getRelevanceLabel, IntentMode } from "@/utils/matc
 import { useUserSuccess } from "@/hooks/useUserSuccess";
 import { SignalGuard } from "@/utils/signal-guard";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { MomentumBanner } from "@/components/growth/MomentumBanner";
 
 interface HomeFeedProps {
   posts: any[];
@@ -94,17 +93,7 @@ export default function HomeFeed({
     }
   }, [hasPosted, hasConnected]);
 
-  // ── STEP 6: LIGHT NOTIFICATION SYSTEM ──
-  useEffect(() => {
-    // Simulate a high-value event (e.g. connection accepted) after 30s
-    if (hasConnected) {
-      const timer = setTimeout(() => {
-        setNotification({ message: "Connection accepted by Rahul S.", type: "SUCCESS" });
-        setTimeout(() => setNotification(null), 6000);
-      }, 20000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasConnected]);
+    // Notification system is now driven by real context events.
 
   // ── STEP 1: POST VISIBILITY LOCK ──
   useEffect(() => {
@@ -221,10 +210,6 @@ export default function HomeFeed({
 
   return (
     <div className="space-y-8 pb-20">
-      {/* 📈 GROWTH: MOMENTUM TRIGGER */}
-      <MomentumBanner unreadCount={unreadMessagesCount} pendingRequests={pendingRequestsCount} />
-      
-      {/* --- STEP 6: LIGHT NOTIFICATION (High Value Only) --- */}
       <AnimatePresence>
         {notification && (
           <motion.div 
@@ -425,19 +410,35 @@ export default function HomeFeed({
       </div>
 
       {posts.length === 0 ? (
-        <div className="py-32 text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-           <div className="h-24 w-24 bg-slate-50 rounded-lg flex items-center justify-center mx-auto border-2 border-dashed border-slate-100">
-              <Sparkles size={32} className="text-slate-200" />
+        <div className="py-24 text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+           <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border-2 border-dashed border-[#E53935]/20 rounded-full"
+              />
+              <div className="h-24 w-24 bg-[#1D1D1F] rounded-[2rem] flex items-center justify-center shadow-2xl border border-white/5">
+                 <Zap size={32} className="text-[#E53935] fill-[#E53935] shadow-[0_0_20px_#E53935]" />
+              </div>
            </div>
-           <div className="space-y-2">
-              <h3 className="text-xl font-black uppercase  text-[#292828]">Your network is empty</h3>
-              <p className="text-[13px] font-bold text-slate-400 uppercase ">Share what you need to discover relevant partners.</p>
+           
+           <div className="space-y-4 max-w-md mx-auto">
+              <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#1D1D1F]">
+                 Founding Node <span className="text-[#E53935]">Detected</span>
+              </h3>
+              <p className="text-[12px] font-bold text-slate-400 uppercase leading-relaxed tracking-widest">
+                 The network is currently in prime-state. As a founding member, your first post will define the collective momentum. 
+              </p>
            </div>
+
            <button 
              onClick={onCreate}
-             className="px-10 py-5 bg-[#292828] text-white rounded-lg text-[11px] font-black uppercase  hover:bg-[#E53935] transition-all shadow-2xl"
+             className="group relative h-16 px-12 bg-[#1D1D1F] text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all duration-500 shadow-2xl overflow-hidden"
            >
-              Post First Requirement
+              <span className="relative z-10 flex items-center gap-3">
+                 Activate the Network <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
            </button>
         </div>
       ) : (

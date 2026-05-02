@@ -49,7 +49,7 @@ export default function AdvisorProfilePage() {
           score: Number(rawAdvisor.advisor_score) || 0,
           role: rawAdvisor.professional_role || rawAdvisor.role || "Advisor",
           industry: rawAdvisor.industry || "Tech",
-          bio: rawAdvisor.bio || "I help startups scale their operations and build high-performance teams."
+          bio: rawAdvisor.bio || ""
         };
         setAdvisor(normalizedAdvisor);
         setMeetups(data.meetups || []);
@@ -90,7 +90,7 @@ export default function AdvisorProfilePage() {
                   <p className="text-[10px] font-black text-black/20 uppercase tracking-widest">{advisor.role} • {advisor.industry}</p>
                </div>
             </div>
-            <p className="text-2xl font-black text-black uppercase font-outfit leading-tight italic mb-10">"{advisor.bio}"</p>
+            {advisor.bio && <p className="text-2xl font-black text-black uppercase font-outfit leading-tight italic mb-10">"{advisor.bio}"</p>}
             <div className="flex gap-4">
                <button 
                 onClick={() => {
@@ -120,7 +120,7 @@ export default function AdvisorProfilePage() {
                </div>
                <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-[10px] border border-black/[0.03] p-6"><p className="text-[20px] font-black text-black font-outfit">{advisor.sessions_count || 0}</p><p className="text-[8px] font-black text-black/20 uppercase tracking-widest">Sessions</p></div>
-                  <div className="bg-white rounded-[10px] border border-black/[0.03] p-6"><p className="text-[20px] font-black text-emerald-500 font-outfit">{advisor.helpfulness_rating || 90}%</p><p className="text-[8px] font-black text-black/20 uppercase tracking-widest">Helpful</p></div>
+                  <div className="bg-white rounded-[10px] border border-black/[0.03] p-6"><p className="text-[20px] font-black text-emerald-500 font-outfit">{advisor.helpfulness_rating || '--'}%</p><p className="text-[8px] font-black text-black/20 uppercase tracking-widest">Helpful</p></div>
                </div>
             </div>
          </section>

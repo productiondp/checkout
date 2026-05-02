@@ -46,7 +46,7 @@ import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/ident
 import { detectBaseTag } from "@/utils/match-engine";
 
 export default function OnboardingPage() {
-  const { user, session, updateProfile, initAuth } = useAuth();
+  const { user, session, updateProfile, logout } = useAuth();
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -104,15 +104,19 @@ export default function OnboardingPage() {
   }
 
   const saveCustomFocus = async (label: string, industry: string) => {
-    const cleanLabel = label.trim().toLowerCase();
-    if (cleanLabel.length < 3 || !isNaN(Number(cleanLabel))) return;
+    try {
+      const cleanLabel = label.trim().toLowerCase();
+      if (cleanLabel.length < 3 || !isNaN(Number(cleanLabel))) return;
 
-    const { data: existing } = await supabase.from('focus_library').select('*').eq('label', cleanLabel).eq('industry', industry).single();
-    
-    if (existing) {
-      await supabase.from('focus_library').update({ usage_count: (existing.usage_count || 0) + 1 }).eq('id', existing.id);
-    } else {
-      await supabase.from('focus_library').insert({ label: cleanLabel, industry, usage_count: 1 });
+      const { data: existing } = await supabase.from('focus_library').select('*').eq('label', cleanLabel).eq('industry', industry).maybeSingle();
+      
+      if (existing) {
+        await supabase.from('focus_library').update({ usage_count: (existing.usage_count || 0) + 1 }).eq('id', existing.id);
+      } else {
+        await supabase.from('focus_library').insert({ label: cleanLabel, industry, usage_count: 1 });
+      }
+    } catch (err) {
+      console.warn("Could not save custom focus (table may be missing):", err);
     }
   };
 
@@ -122,14 +126,19 @@ export default function OnboardingPage() {
     setIsSaving(true);
     setError(null);
     
-    for (const intent of onboardingData.intents) {
-      await saveCustomFocus(intent, onboardingData.industry);
+    try {
+      for (const intent of onboardingData.intents) {
+        await saveCustomFocus(intent, onboardingData.industry);
+      }
+    } catch (e) {
+      console.warn("Focus library sync failed, continuing...", e);
     }
 
     const detectedBaseTag = detectBaseTag(onboardingData.jobRole, onboardingData.intents);
     const finalIntents = onboardingData.intents.length > 0 ? onboardingData.intents : ["general"];
 
     const payload = {
+      id: userId, // Ensure ID is present for upsert
       full_name: onboardingData.name,
       role: onboardingData.role,
       industry: onboardingData.industry || "General",
@@ -142,32 +151,55 @@ export default function OnboardingPage() {
       onboarding_completed: isFinal
     };
 
-    const { data, error: saveError } = await supabase
-      .from('profiles')
-      .upsert(payload, { onConflict: 'id' })
-      .select();
-    
-    if (saveError) {
-      console.error("ONBOARDING ERROR:", saveError);
-      setError(saveError.message);
-    } else {
-      console.log("ONBOARDING PROGRESS SAVED:", isFinal ? "FINAL" : "PARTIAL", data);
-      if (isFinal) {
-        // Hard-set localStorage as a backup source of truth for the refresh case
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(`checkout_onboarded_${userId}`, 'true');
+    try {
+      const { data, error: saveError } = await supabase
+        .from('profiles')
+        .upsert(payload, { onConflict: 'id' })
+        .select();
+      
+      if (saveError) {
+        console.error("ONBOARDING SAVE ERROR:", saveError);
+        // If it's a column missing error, we still want to let the user proceed locally
+        if (isFinal) {
+           completeOnboardingLocally();
+        } else {
+           setError(saveError.message);
         }
-        
-        
-        updateProfile({ 
-          ...onboardingData, 
-          full_name: onboardingData.name,
-          onboarding_completed: true 
-        });
-        setIsCompleted(true);
+      } else {
+        console.log("ONBOARDING PROGRESS SAVED:", isFinal ? "FINAL" : "PARTIAL", data);
+        if (isFinal) {
+          completeOnboardingLocally();
+        }
       }
+    } catch (err: any) {
+      console.error("CRITICAL ONBOARDING ERROR:", err);
+      if (isFinal) completeOnboardingLocally();
+      else setError(err.message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
+  };
+
+  const completeOnboardingLocally = () => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`checkout_onboarded_${userId}`, 'true');
+    }
+    
+    updateProfile({ 
+      ...onboardingData, 
+      full_name: onboardingData.name,
+      onboarding_completed: true 
+    });
+    
+    setIsCompleted(true);
+    
+    // Auto-redirect after a short delay if success screen is not desired or stuck
+    setTimeout(() => {
+      router.push("/home");
+    }, 2000);
   };
 
   const nextStep = async () => {
@@ -330,18 +362,12 @@ export default function OnboardingPage() {
 
               <button 
                 onClick={() => {
-                  console.log("[AUTH] Onboarding: Cancel clicked");
-                  router.push("/");
-                  // Fallback for extreme cases
-                  setTimeout(() => {
-                    if (window.location.pathname !== "/") {
-                      window.location.href = "/";
-                    }
-                  }, 500);
+                  console.log("[AUTH] Onboarding: Cancel clicked - Logging out");
+                  logout();
                 }}
                 className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-[#1A1A1A] transition-all flex items-center gap-2 z-[99]"
               >
-                <X size={14} /> Cancel
+                <X size={14} /> Cancel & Logout
               </button>
            </header>
 

@@ -33,8 +33,6 @@ import {
 } from "lucide-react";
 import { TrustBadge } from "@/components/trust/TrustBadge";
 import { TrustInsights } from "@/components/trust/TrustInsights";
-import { OutcomeSelector } from "@/components/trust/OutcomeSelector";
-import { MeetupFeedback } from "@/components/trust/MeetupFeedback";
 import MeetupPreviewModal from "@/components/modals/MeetupPreviewModal";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";

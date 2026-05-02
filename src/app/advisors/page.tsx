@@ -43,14 +43,14 @@ export default function AdvisorsPage() {
             return conn?.status !== 'BLOCKED';
           }).map(p => ({
             id: p.id,
-            name: p.full_name || "Elite Advisor",
-            role: p.headline || "Professional Advisor",
-            industry: p.city || "National Network",
-            experience: p.experience_years ? `${p.experience_years}+ Years` : "10+ Years",
-            expertise: p.skills || p.expertise || ["Strategy", "Growth", "Scale"],
+            name: p.full_name || "Member",
+            role: p.headline || p.role || "Professional",
+            industry: p.city || "Member",
+            experience: p.experience_years ? `${p.experience_years}+ Years` : "",
+            expertise: p.skills || p.expertise || [],
             avatar: p.avatar_url || DEFAULT_AVATAR,
-            matchScore: p.matchScore || Math.floor(Math.random() * 10) + 88,
-            bestFor: p.bio?.substring(0, 100) || "Strategic scaling and growth.",
+            matchScore: p.matchScore || 0,
+            bestFor: p.bio?.substring(0, 100) || "",
             bio: p.bio || "",
             connectionStatus: 'none'
           }));

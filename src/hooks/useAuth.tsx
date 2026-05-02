@@ -38,15 +38,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── ATOMIC STATES ──
   const [authState, setAuthState] = useState<AuthState>("loading");
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    // ⚡ PRE-FLIGHT CACHE LOAD (Instant UI)
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('checkout_user_cache');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
   const [session, setSession] = useState<Session | null>(null);
   
   // ── EXECUTION GUARD ──
   const initialized = useRef(false);
+  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── PROFILE SYNC ──
   const syncProfile = async (currentSession: Session | null) => {
-    if (!currentSession?.user) return;
+    if (!currentSession?.user) {
+      setAuthState(prev => prev === "loading" ? "guest" : prev);
+      return;
+    }
     
     setSession(currentSession);
     try {
@@ -66,6 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(userData);
         
+        // 💾 CACHE FOR NEXT LOAD
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('checkout_user_cache', JSON.stringify(userData));
+        }
+
         if (userData.onboarding_completed || (userData.full_name && userData.role && userData.full_name !== 'New Member')) {
           setAuthState("authenticated");
         } else {
@@ -76,7 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error("[AUTH] Profile Sync Error:", err);
-      setAuthState("onboarding");
+      // Fallback to cached state if available, or onboarding
+      if (!user) setAuthState("onboarding");
     }
   };
 
@@ -85,35 +108,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (initialized.current) return;
     initialized.current = true;
 
-    // 🛡️ FAST WATCHDOG (1.5s) - Prevents infinite loading
-    const watchdog = setTimeout(() => {
-      setAuthState(prev => prev === "loading" ? "guest" : prev);
-    }, 1500);
+    // 🛡️ STABLE WATCHDOG (5s) - Prevents infinite loading
+    if (!watchdogRef.current) {
+      watchdogRef.current = setTimeout(() => {
+        setAuthState(prev => {
+          if (prev === "loading") {
+            console.log("[AUTH] Watchdog expired. Setting to guest.");
+            return "guest";
+          }
+          return prev;
+        });
+      }, 5000);
+    }
 
     const init = async () => {
       try {
+        // ⚡ OPTIMISTIC INITIAL STATE
+        if (user) {
+          if (user.onboarding_completed) setAuthState("authenticated");
+          else setAuthState("onboarding");
+        }
+
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-        if (initialSession) await syncProfile(initialSession);
-        else {
-          setAuthState("guest");
+        console.log("[AUTH] init session check", { hasSession: !!initialSession });
+        
+        if (initialSession) {
+          if (watchdogRef.current) clearTimeout(watchdogRef.current);
+          await syncProfile(initialSession);
+        } else {
+          console.log("[AUTH] No initial session found. Waiting for events.");
+          if (typeof window !== 'undefined') localStorage.removeItem('checkout_user_cache');
         }
       } catch (err) {
+        console.error("[AUTH] Init error:", err);
         setAuthState("guest");
-      } finally {
-        clearTimeout(watchdog);
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
       }
     };
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log(`[AUTH] onAuthStateChange: ${event}`, { hasSession: !!currentSession });
+      
       if (event === 'SIGNED_OUT') {
         setSession(null);
         setUser(null);
         setAuthState("guest");
-        window.location.href = '/';
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
       } else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
-        if (currentSession) await syncProfile(currentSession);
+        if (currentSession) {
+          if (watchdogRef.current) clearTimeout(watchdogRef.current);
+          await syncProfile(currentSession);
+        } else {
+          setAuthState(prev => prev === "loading" ? "guest" : prev);
+        }
+      } else if (event === 'INITIAL_SESSION' && !currentSession) {
+        // Supabase has confirmed no session exists. We can safely stop waiting.
+        console.log("[AUTH] Supabase confirmed no session. Setting to guest.");
+        setAuthState("guest");
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
       }
     });
 
@@ -127,20 +181,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (authState === "loading") return;
 
-    const currentPath = window.location.pathname;
-    const PUBLIC_ROUTES = ["/", "/auth/callback"];
+    const currentPath = path || window.location.pathname;
+    const PUBLIC_ROUTES = ["/", "/auth/callback", "/what-is-checkout"];
 
     if (authState === "guest") {
-      if (!PUBLIC_ROUTES.includes(currentPath)) router.replace("/");
+      if (!PUBLIC_ROUTES.includes(currentPath)) {
+        console.log(`[AUTH] Redirecting GUEST from ${currentPath} to /`);
+        window.location.href = "/";
+      }
     } 
     else if (authState === "onboarding") {
-      if (currentPath !== "/onboarding" && !PUBLIC_ROUTES.includes(currentPath)) {
-        router.replace("/onboarding");
+      // If we are in onboarding mode, push to /onboarding unless we are ALREADY there
+      if (currentPath !== "/onboarding") {
+        console.log(`[AUTH] Redirecting ONBOARDING from ${currentPath} to /onboarding`);
+        window.location.href = "/onboarding";
       }
     } 
     else if (authState === "authenticated") {
-      if (currentPath === "/onboarding" || currentPath === "/") {
-        router.replace("/home");
+      // If we are fully authenticated, push to /home if we are on a public page or onboarding
+      if (currentPath === "/onboarding" || PUBLIC_ROUTES.includes(currentPath)) {
+        console.log(`[AUTH] Redirecting AUTHENTICATED from ${currentPath} to /home`);
+        window.location.href = "/home";
       }
     }
   }, [authState, path, router]);
@@ -148,16 +209,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async () => {}; // Handled in components
   
   const logout = async () => {
-    console.log("[AUTH] Manual Logout...");
+    console.log("[AUTH] Definitive Logout...");
     setAuthState("loading");
-    await supabase.auth.signOut();
-    // onAuthStateChange SIGNED_OUT event will handle cleanup and redirect
+    
+    try {
+      // ⚡ SPEED GUARDIAN: Don't wait more than 1s for the server
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
+      ]);
+    } catch (e) {
+      console.warn("SignOut timed out or failed, forcing redirect:", e);
+    }
+    
+    // 2. Nuclear Clear
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // 3. COOKIE SHREDDER
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+      
+      // 4. Force Redirect
+      window.location.href = "/";
+    }
+    
+    setSession(null);
+    setUser(null);
+    setAuthState("guest");
   };
 
   const updateProfile = (data: Partial<UserProfile>) => {
     if (!user) return;
     const newUser = { ...user, ...data };
     setUser(newUser);
+    
+    // Sync to cache
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('checkout_user_cache', JSON.stringify(newUser));
+    }
+
     if (data.onboarding_completed) {
       setAuthState("authenticated");
       if (typeof window !== 'undefined') {
@@ -189,4 +286,13 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
+}
+
+export function useRequiredUser() {
+  const { user } = useAuth();
+  if (!user) {
+    // This is a safety fallback, usually handled by ProtectedRoute
+    console.warn("[AUTH] useRequiredUser called without user session");
+  }
+  return user;
 }

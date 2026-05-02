@@ -26,7 +26,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClarityInput } from "@/components/ui/ClarityInput";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import { formatRelativeTime } from "@/utils/date-utils";
-import { OutcomeSelector } from "@/components/trust/OutcomeSelector";
 
 export default function ChatPage() {
   return (
@@ -464,11 +463,11 @@ function ChatContent() {
              </div>
              {selectedChat.isGroup && meetupDetails?.status === 'completed' && !outcomeSubmitted && (
                 <div className="p-8 bg-white border-t border-black/[0.03] animate-in slide-in-from-bottom-4">
-                   <OutcomeSelector 
-                     meetupId={meetupDetails.id} 
-                     advisorId={meetupDetails.author_id} 
-                     onProcessed={() => setOutcomeSubmitted(true)}
-                   />
+                   <div className="text-center p-10 border-2 border-dashed border-black/[0.03] rounded-3xl">
+                      <CheckCircle2 size={32} className="mx-auto mb-4 text-[#34C759]" />
+                      <h4 className="text-[12px] font-black uppercase tracking-widest text-[#1D1D1F]">Meetup Completed</h4>
+                      <p className="text-[10px] font-bold text-black/20 uppercase mt-2">The session has ended. Thank you for participating.</p>
+                   </div>
                 </div>
              )}
             <div className="p-6 bg-white border-t border-black/[0.03]">

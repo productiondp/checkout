@@ -67,9 +67,13 @@ export async function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(route + '/')
   )
 
+  // Redirection is handled on the client-side by useAuth.tsx and ProtectedRoute.tsx
+  // This prevents the infinite redirect loop between server and client.
+  /*
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/?mode=signin', request.url))
   }
+  */
 
   return response
 }

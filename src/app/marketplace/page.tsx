@@ -461,11 +461,13 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
             </p>
             <div className="flex items-center gap-4 shrink-0 border-l border-black/[0.03] pl-6">
                <span className="text-[9px] font-black text-black/20 uppercase tracking-widest flex items-center gap-1.5">
-                  <Clock size={12} className="text-[#E53935]" /> 2d left
+                  <Clock size={12} className="text-[#E53935]" /> {item.type === 'MEETUP' ? 'Upcoming' : 'New'}
                </span>
-               <span className="text-[9px] font-black text-black/20 uppercase tracking-widest flex items-center gap-1.5">
-                  <Users size={12} className="text-[#E53935]" /> 3+ joined
-               </span>
+               {item.type === 'MEETUP' && (
+                 <span className="text-[9px] font-black text-black/20 uppercase tracking-widest flex items-center gap-1.5">
+                    <Users size={12} className="text-[#E53935]" /> {item.metadata?.participant_count || 0} joined
+                 </span>
+               )}
             </div>
           </div>
         </div>
@@ -581,7 +583,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
          </motion.button>
          <div className="flex items-center justify-between">
             <span className="text-[8px] font-black text-black/10 uppercase tracking-widest flex items-center gap-1">
-               <Clock size={10} /> 2 days left
+               <Clock size={10} /> {item.type === 'MEETUP' ? 'Upcoming' : 'New'}
             </span>
             <span className="text-[8px] font-black text-black/10 uppercase tracking-widest flex items-center gap-1">
                <Users size={10} /> 3+ joined

@@ -503,7 +503,7 @@ export default function MeetupPage() {
                     </div>
                     
                     <p className="text-[14px] font-medium text-white/70 leading-relaxed mb-8 uppercase ">
-                       "Found 3 optimal slots for a logistics sync in <span className="text-[#E53935]">Indiranagar</span> today. Participation potential is at peak capacity."
+                       "Select a category to see high-probability match opportunities in your current location."
                     </p>
                     
                     <button onClick={() => setShowAiArchitect(true)} className="w-full h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg text-[10px] font-bold uppercase  hover:bg-white hover:text-[#292828] transition-all">
@@ -533,8 +533,8 @@ export default function MeetupPage() {
   
                  <div className="absolute bottom-6 inset-x-6 flex items-center justify-between bg-white/90 backdrop-blur-md p-5 rounded-lg border border-[#292828]/5 shadow-xl">
                     <div>
-                       <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">Trivandrum Hub</p>
-                       <p className="text-[9px] font-bold text-emerald-600 uppercase ">8 Active Sessions</p>
+                       <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5">Local Network</p>
+                       <p className="text-[9px] font-bold text-emerald-600 uppercase ">{meetups.length} Active Sessions</p>
                     </div>
                     <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white hover:bg-[#E53935] transition-colors">
                        <Maximize2 size={16} />
@@ -611,11 +611,11 @@ export default function MeetupPage() {
                       <div className="grid grid-cols-2 gap-4">
                          <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
                             <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Venue Match</p>
-                            <p className="text-2xl font-bold text-[#292828]">94<span className="text-[12px] opacity-30">%</span></p>
+                            <p className="text-2xl font-bold text-[#292828]">--<span className="text-[12px] opacity-30">%</span></p>
                          </div>
                          <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
                             <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Network Reach</p>
-                            <p className="text-2xl font-bold text-[#292828]">12.4<span className="text-[12px] opacity-30">k</span></p>
+                            <p className="text-2xl font-bold text-[#292828]">--<span className="text-[12px] opacity-30">k</span></p>
                          </div>
                       </div>
                    </section>

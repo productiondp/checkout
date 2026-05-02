@@ -8,7 +8,7 @@ import {
   Home, 
   MessageSquare, 
   UserPlus, 
-  Search, 
+  ShoppingBag, 
   User
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -22,7 +22,7 @@ export default function MobileNavbar() {
   const navItems = [
     { label: "Home", icon: Home, href: "/home" },
     { label: "Network", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount : null },
-    { label: "Discover", icon: Search, href: "/discover" },
+    { label: "Market", icon: ShoppingBag, href: "/marketplace" },
     { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
     { label: "Profile", icon: User, href: `/profile/${user?.id}` },
   ];

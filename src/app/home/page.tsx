@@ -58,11 +58,11 @@ export default function CheckoutHomeFeed() {
     recent_actions: [],
     interactions: { impressions: {}, clicks: {}, connects: {}, replies: {}, last_interaction_time: Date.now() },
     network_stats: {
-      category_quality: { 'REQUIREMENT': 0.85, 'PARTNER': 0.70, 'MEETUP': 0.90 },
-      trending_categories: ['MEETUP'],
-      peer_group_focus: { 'REQUIREMENT': 0.1 },
-      unique_users_per_category: { 'REQUIREMENT': 150, 'PARTNER': 80, 'MEETUP': 200 },
-      anomaly_flags: { 'PARTNER': false }
+      category_quality: {},
+      trending_categories: [],
+      peer_group_focus: {},
+      unique_users_per_category: {},
+      anomaly_flags: {}
     },
     user_trust_weight: 1.0
   });

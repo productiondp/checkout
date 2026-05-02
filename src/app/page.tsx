@@ -68,35 +68,7 @@ function AuthContent() {
   // 🛡️ BACKUP REDIRECT (In case sentinel is slow)
   const { user } = useAuth(); // Extract user directly for faster check
   
-  useEffect(() => {
-    if (!mounted || authLoading) return;
-    
-    // Redirect if fully authenticated
-    if (authState === "authenticated" || (user?.onboarding_completed)) {
-      console.log("[AUTH] Landing Page Backup: Redirecting to home.", { authState, hasUser: !!user });
-      router.replace("/home");
-
-      const forceRedirect = setTimeout(() => {
-        if (window.location.pathname !== "/home") {
-          console.warn("[AUTH] Router replace hung. Forcing window.location.href.");
-          window.location.href = "/home";
-        }
-      }, 1500);
-      return () => clearTimeout(forceRedirect);
-    } 
-    // Redirect to onboarding if we are sure they need it
-    else if (authState === "onboarding" && isSuccess) {
-       console.log("[AUTH] Landing Page Backup: Redirecting to onboarding (After Login).");
-       router.replace("/onboarding");
-
-       const forceRedirect = setTimeout(() => {
-        if (window.location.pathname !== "/onboarding") {
-          window.location.href = "/onboarding";
-        }
-      }, 1500);
-      return () => clearTimeout(forceRedirect);
-    }
-  }, [authState, authLoading, mounted, router, user, isSuccess]);
+  // Redirection is now centrally handled by useAuth.tsx
 
   if (authLoading || !mounted) return null;
 

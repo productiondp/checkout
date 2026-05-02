@@ -82,27 +82,7 @@ export default function ClientLayout({
 
   const isAuthPage = pathname === "/" || 
                     pathname === "/auth" || 
-                    pathname === "/onboarding" || 
-                    pathname === "/admin" ||
-                    pathname === "/discover" || 
-                    pathname === "/network" || 
-                    pathname === "/matches" || 
-                    pathname === "/chat" || 
-                    pathname === "/home" || 
-                    pathname === "/communities" || 
-                    pathname === "/marketplace" || 
-                    pathname === "/advisors" || 
-                    pathname === "/directory" || 
-                    pathname === "/events" || 
-                    pathname === "/insights" || 
-                    pathname === "/opportunities" || 
-                    pathname === "/what-is-checkout" ||
-                    pathname?.startsWith("/profile") ||
-                    pathname?.startsWith("/communities/") ||
-                    pathname?.startsWith("/marketplace/") ||
-                    pathname?.startsWith("/advisors/") ||
-                    pathname?.startsWith("/directory/") ||
-                    pathname?.startsWith("/events/");
+                    pathname === "/onboarding";
 
   if (!mounted) {
     return (
@@ -115,7 +95,7 @@ export default function ClientLayout({
             />
          </div>
          <div className="animate-pulse text-[9px] font-black text-white/20 uppercase ">
-            Initializing your network...
+            Initializing CheckOut OS...
          </div>
       </div>
     );
@@ -123,35 +103,9 @@ export default function ClientLayout({
 
   return (
     <ConnectionProvider>
-      {isAuthPage ? (
-        <div className="min-h-screen-safe w-full max-w-[1920px] mx-auto selection:bg-[#E53935] selection:text-white shadow-2xl">
-          {children}
-        </div>
-      ) : (
-        <div className="h-screen-safe w-full max-w-[1920px] mx-auto flex flex-col bg-white lg:bg-[#F2F5F7] selection:bg-[#E53935] selection:text-white font-sans antialiased shadow-2xl">
-          <GlobalHeader />
-          
-          <div className="flex flex-1 overflow-hidden relative">
-            <div className="flex-shrink-0">
-              <DesktopSidebar />
-            </div>
-            
-            <main className="flex-1 flex overflow-hidden bg-white">
-              <div className="flex-1 h-full overflow-y-auto scroll-smooth pb-32 lg:pb-0">
-                 {children}
-              </div>
-
-              {pathname === "/home" && (
-                <div className="hidden xl:block">
-                  <RightSocialRail />
-                </div>
-              )}
-            </main>
-          </div>
-
-          <MobileNav />
-        </div>
-      )}
+      <div className="min-h-screen-safe w-full max-w-[1920px] mx-auto selection:bg-[#E53935] selection:text-white shadow-2xl">
+        {children}
+      </div>
     </ConnectionProvider>
   );
 }

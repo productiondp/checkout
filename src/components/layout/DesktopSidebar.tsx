@@ -46,14 +46,7 @@ export default function DesktopSidebar() {
       items: [
         { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
         { label: "Advisors", icon: Target, href: "/advisors" },
-        { label: "Meetups", icon: LayoutGrid, href: "/events" },
-      ]
-    },
-    {
-      group: "Intelligence",
-      items: [
-        { label: "Directory", icon: Building2, href: "/directory" },
-        { label: "Discovery Map", icon: Search, href: "/discover" },
+        { label: "Meetups", icon: LayoutGrid, href: "/meetup" },
       ]
     }
   ];

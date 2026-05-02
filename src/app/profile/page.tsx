@@ -69,7 +69,10 @@ export default function PremiumProfilePage() {
      expertise: [] as string[],
      intents: [] as string[],
      base_tag: "",
-     metadata: {} as any
+     metadata: {} as any,
+     postCount: 0,
+     connectionCount: 0,
+     solvedCount: 0
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +149,23 @@ export default function PremiumProfilePage() {
               priority: "High",
               status: "General"
             })));
+            
+            // Set counts
+            setUserData(prev => ({
+              ...prev,
+              postCount: userPosts.length,
+              solvedCount: userPosts.filter(p => p.status === 'SOLVED').length
+            }));
           }
+
+          // Load Connection Count
+          const { count: connCount } = await supabase
+            .from('connections')
+            .select('*', { count: 'exact', head: true })
+            .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
+            .eq('status', 'ACCEPTED');
+          
+          setUserData(prev => ({ ...prev, connectionCount: connCount || 0 }));
         }
       } catch (err) {
         console.error("[PROFILE] Load Error:", err);
@@ -550,8 +569,9 @@ export default function PremiumProfilePage() {
                    </div>
                 </div>
 
-                {/* COLUMN 3: PERFORMANCE ARCHITECTURE */}
-                <div className="lg:col-span-3 space-y-8">
+                 {/* COLUMN 3: PERFORMANCE & IMPACT */}
+                 <div className="lg:col-span-3 space-y-8">
+                   {/* Performance Section */}
                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 space-y-8">
                       <div className="flex items-center justify-between">
                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -587,6 +607,33 @@ export default function PremiumProfilePage() {
                                   />
                                </div>
                             </motion.div>
+                         ))}
+                      </div>
+                   </div>
+
+                   {/* Impact Section */}
+                   <div className="bg-black rounded-3xl p-8 shadow-2xl space-y-8 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                      <h3 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2 relative z-10">
+                         <Target size={16} className="text-[#E53935]" /> Network Impact
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 gap-4 relative z-10">
+                         {[
+                            { label: "Total Posts", value: userData.postCount, icon: Megaphone },
+                            { label: "Partner Connections", value: userData.connectionCount, icon: Users },
+                            { label: "Issues Solved", value: userData.solvedCount, icon: CheckCircle2 },
+                            { label: "Endorsements", value: 0, icon: Award },
+                         ].map((item, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl group hover:bg-white/10 transition-all">
+                               <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white/40 group-hover:text-[#E53935] transition-colors">
+                                     <item.icon size={18} />
+                                  </div>
+                                  <span className="text-[12px] font-medium text-white/60">{item.label}</span>
+                               </div>
+                               <span className="text-xl font-bold text-white">{item.value}</span>
+                            </div>
                          ))}
                       </div>
                    </div>

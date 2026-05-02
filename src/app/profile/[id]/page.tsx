@@ -31,7 +31,10 @@ import {
   Image as ImageIcon,
   Compass,
   Layout,
-  BookOpen
+  BookOpen,
+  Sparkles,
+  Users,
+  ShoppingBag
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -56,6 +59,7 @@ function ProfileContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   const supabase = createClient();
+  const [dependencyList, setDependencyList] = useState<any[]>([]);
 
   React.useEffect(() => {
     async function fetchProfile() {
@@ -74,9 +78,27 @@ function ProfileContent() {
           role: data.role || "Professional",
           company: data.location || "Global",
           city: data.location || "Virtual",
-          match: data.match_score || 95
+          match: data.match_score || 95,
+          primaryIntent: data.primaryIntent || "Growth & Scaling"
         });
       }
+
+      const { data: posts } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('author_id', profileId)
+        .order('created_at', { ascending: false });
+
+      if (posts) {
+        setDependencyList(posts.map((p: any) => ({
+          id: p.id,
+          content: p.content,
+          type: p.type === "LEAD" ? "Hiring" : p.type === "PARTNERSHIP" ? "Partnership" : p.type === "MEETUP" ? "Meetup" : "General",
+          priority: "High",
+          status: p.status || "Active"
+        })));
+      }
+
       setIsLoading(false);
     }
     if (profileId) fetchProfile();
@@ -271,54 +293,62 @@ function ProfileContent() {
                     ))}
                  </div>
 
-                 {/* INTRO VIDEO */}
-                 <div className="bg-black rounded-[10px] overflow-hidden relative group aspect-video shadow-2xl">
-                    <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1200" className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-1000" alt="" />
-                    <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-black via-black/40 to-transparent flex items-end justify-between">
-                       <div className="space-y-2">
-                          <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">Introduction</p>
-                          <h3 className="text-3xl font-black text-white uppercase leading-none font-outfit">Vision 2026</h3>
+                 {/* PUBLIC STRATEGIC ROADMAP */}
+                 <div className="space-y-8">
+                    {/* Network Intent */}
+                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                       <div className="flex items-center justify-between mb-8">
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <Target size={16} className="text-[#E53935]" /> Core Network Mission
+                             </h3>
+                             <p className="text-xl font-bold text-[#1D1D1F]">{profile.primaryIntent}</p>
+                          </div>
                        </div>
-                       <button className="h-16 w-16 bg-[#E53935] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all active:scale-95">
-                          <Play fill="currentColor" size={28} />
-                       </button>
+                       <p className="text-[13px] text-slate-400 font-medium leading-relaxed">
+                          This partner's primary intent defines their strategic feed. Advisors and opportunities are prioritized based on this mission.
+                       </p>
                     </div>
-                 </div>
 
-                 {/* Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     {performanceMetrics.map((met, i) => (
-                       <motion.div 
-                          key={i} 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm group hover:border-[#E53935]/20 transition-all duration-500"
-                       >
-                          <div className="flex items-center justify-between mb-8">
-                             <div className="h-14 w-14 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
-                                <met.icon size={20} />
+                    {/* Strategic Roadmap List */}
+                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden">
+                       <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Activity size={16} className="text-[#E53935]" /> Strategic Roadmap
+                             </h3>
+                          </div>
+                       </div>
+
+                       <div className="space-y-5">
+                          {dependencyList.length > 0 ? dependencyList.map(dep => (
+                             <div key={dep.id} className="p-8 bg-slate-50/50 border border-slate-50 rounded-3xl flex items-center justify-between group hover:bg-white hover:shadow-xl hover:border-[#E53935]/20 transition-all duration-500">
+                                <div className="flex items-center gap-6">
+                                   <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
+                                      {dep.type === "Hiring" && <Briefcase size={22} />}
+                                      {dep.type === "Partnership" && <Users size={22} />}
+                                      {dep.type === "Investment" && <TrendingUp size={22} />}
+                                      {dep.type === "Technology" && <Database size={22} />}
+                                      {dep.type === "Procurement" && <ShoppingBag size={22} />}
+                                   </div>
+                                   <div>
+                                      <div className="flex items-center gap-3 mb-2">
+                                         <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold uppercase rounded-[4px] tracking-widest">{dep.type}</span>
+                                         <h4 className="text-[14px] font-bold text-[#1D1D1F] line-clamp-1">{dep.content}</h4>
+                                      </div>
+                                      <p className="text-[11px] font-medium text-slate-400">Active Priority</p>
+                                   </div>
+                                </div>
                              </div>
-                             <span className="text-3xl font-bold text-[#1D1D1F]">{met.value}%</span>
-                          </div>
-                          <p className="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">{met.label}</p>
-                          <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                             <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${met.value}%` }}
-                                transition={{ duration: 1.5, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
-                                className={cn("h-full rounded-full transition-all", met.color)} 
-                             />
-                          </div>
-                       </motion.div>
-                     ))}
-                  </div>
-
-                 {/* EMPTY STATE FOR FEED */}
-                 <div className="py-20 text-center bg-white border border-black/[0.03] rounded-[10px]">
-                    <Activity size={40} className="text-black/10 mx-auto mb-6" />
-                    <h4 className="text-xl font-black text-black uppercase font-outfit">No Activity Logs</h4>
-                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mt-2">Activity will appear here.</p>
+                          )) : (
+                             <div className="py-20 text-center opacity-30">
+                                <Sparkles size={40} className="mx-auto mb-4 text-[#1D1D1F]" />
+                                <p className="text-[11px] font-bold text-[#1D1D1F] uppercase tracking-widest italic">No active strategic objectives</p>
+                             </div>
+                          )}
+                       </div>
+                    </div>
                  </div>
 
               </div>

@@ -24,7 +24,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 h-[80px] lg:h-[100px] z-[100] px-6 lg:px-12 flex items-center justify-between bg-white/90 backdrop-blur-xl border-b border-black/[0.03]">
+      <nav className="fixed top-0 inset-x-0 h-16 lg:h-20 z-[100] px-6 lg:px-12 flex items-center justify-between bg-white/90 backdrop-blur-xl border-b border-black/[0.03]">
         <Link href="/" className="group flex items-center">
            <Image 
               src="/logo.png" 
@@ -37,7 +37,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-10 text-gray-400 font-black uppercase tracking-widest text-[11px]">
+        <div className="hidden lg:flex items-center gap-10 text-[#86868B] font-black uppercase tracking-widest text-[10px]">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-black transition-colors">
               {link.label}
@@ -47,13 +47,13 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
           <div className="flex items-center gap-6">
             <button 
               onClick={onSigninClick || (() => window.location.href = '/?mode=signin')} 
-              className="text-gray-400 hover:text-black transition-all"
+              className="text-[#86868B] hover:text-black transition-all"
             >
               Sign In
             </button>
             <button 
               onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
-              className="px-8 h-12 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-black/10"
+              className="px-8 h-11 lg:h-12 bg-[#E53935] text-white rounded-xl hover:bg-[#B71C1C] transition-all shadow-xl shadow-red-500/20"
             >
               Join now
             </button>

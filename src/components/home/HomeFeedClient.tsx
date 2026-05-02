@@ -171,20 +171,12 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
           rightSidebar={<RightSocialRail />}
         >
           <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8">
+              <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
               <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
-              <Feed 
-                posts={filteredPosts} 
-                isLoading={isLoading} 
-                currentUserId={authUser?.id} 
-                onAction={(p) => router.push(`/chat?user=${p.author_id}`)} 
-                onEdit={(p) => { setEditPost(p); setIsPosting(true); }} 
-                onCreate={handleOpenPosting} 
-                onDelete={async (p) => { 
-                   const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); 
-                   if (error) { alert(error.message); return; } 
-                   setPosts(prev => prev.filter(post => post.id !== p.id)); 
-                }} 
-              />
+              <div className="flex items-center justify-between mb-2">
+                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Discovery Stream</h3>
+              </div>
+              <Feed posts={filteredPosts} isLoading={isLoading} currentUserId={authUser?.id} onAction={(p) => router.push(`/chat?user=${p.author_id}`)} onEdit={(p) => { setEditPost(p); setIsPosting(true); }} onCreate={handleOpenPosting} onDelete={async (p) => { const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); if (error) { alert(error.message); return; } setPosts(prev => prev.filter(post => post.id !== p.id)); }} />
           </div>
 
           <div className="fixed bottom-10 right-10 z-[100]">

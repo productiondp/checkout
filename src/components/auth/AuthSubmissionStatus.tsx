@@ -10,7 +10,6 @@ import {
   Zap,
   Sparkles,
   Lock,
-  UserCheck
   UserCheck,
   Globe
 } from "lucide-react";

@@ -62,11 +62,10 @@ function MapContent() {
   useEffect(() => {
     async function loadNetworkNodes() {
       try {
-        // Fetch Meetups (Events) with Geo metadata
+        // Fetch All Posts with Geo metadata
         const { data: posts } = await supabase
           .from('posts')
           .select(`*, author:profiles(*)`)
-          .eq('type', 'MEETUP')
           .not('metadata->geo', 'is', null);
 
         // Fetch Profiles (Partners/Businesses)
@@ -77,25 +76,32 @@ function MapContent() {
 
         const nodes: any[] = [];
 
-        // Map Meetups
+        // Map All Posts
         (posts || []).forEach(p => {
           if (p.metadata?.geo) {
+            // Normalize type for map layers
+            let nodeType: "Partners" | "Businesses" | "Events" = "Partners";
+            if (p.type === 'MEETUP') nodeType = "Events";
+            else if (p.type === 'REQUIREMENT') nodeType = "Partners";
+            else if (p.type === 'PARTNER' || p.type === 'PARTNERSHIP') nodeType = "Partners";
+
             nodes.push({
               id: p.id,
-              type: 'Events',
+              type: nodeType,
+              subType: p.type,
               lat: p.metadata.geo.lat,
               lng: p.metadata.geo.lng,
               title: p.title,
               content: p.content,
-              author: p.author?.full_name || "Member"
+              author: p.author?.full_name || "Member",
+              avatar: p.author?.avatar_url
             });
           }
         });
 
-        // Map Profiles (Simulate Trivandrum spread if no precise geo yet)
+        // Map Profiles (Simulate spread for demo if no geo)
         (profiles || []).forEach((p, idx) => {
           const isBusiness = p.role === 'BUSINESS';
-          // Basic spread around Trivandrum center for demo if no geo
           const spread = 0.02;
           const lat = 8.5241 + (Math.random() - 0.5) * spread;
           const lng = 76.9467 + (Math.random() - 0.5) * spread;
@@ -103,6 +109,7 @@ function MapContent() {
           nodes.push({
             id: p.id,
             type: isBusiness ? 'Businesses' : 'Partners',
+            subType: isBusiness ? 'BUSINESS' : 'PARTNER',
             lat,
             lng,
             title: p.full_name,

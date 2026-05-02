@@ -78,7 +78,7 @@ function MarketplaceContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [dismissedTopOp, setDismissedTopOp] = useState(false);
   
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
   
   // Smart Filters State
   const [filters, setFilters] = useState({
@@ -209,9 +209,9 @@ function MarketplaceContent() {
         </div>
       }
     >
-      <div className="bg-[#FDFDFF] min-h-screen">
+      <div className="bg-[#FDFDFF] min-h-screen flex flex-col">
         {/* SECOND ROW: SMART FILTERS & VIEW SWITCHER */}
-        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-[100px] lg:top-[80px] z-40">
+        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
              <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 lg:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
                 <SmartFilter 
@@ -233,15 +233,6 @@ function MarketplaceContent() {
                   onToggle={() => setActiveFilterDropdown(activeFilterDropdown === "focus" ? null : "focus")}
                 />
                 <SmartFilter 
-                  icon={BarChart3} 
-                  label="Experience" 
-                  value={filters.experience} 
-                  options={["All", "Junior", "Senior", "Expert"]}
-                  onChange={(val: string) => setFilters(prev => ({ ...prev, experience: val }))}
-                  active={activeFilterDropdown === "experience"}
-                  onToggle={() => setActiveFilterDropdown(activeFilterDropdown === "experience" ? null : "experience")}
-                />
-                <SmartFilter 
                   icon={MapPin} 
                   label="Location" 
                   value={filters.location} 
@@ -254,82 +245,160 @@ function MarketplaceContent() {
              </div>
 
              <div className="flex items-center justify-end gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] w-fit self-end md:self-auto">
-                <button 
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
-                    viewMode === "list" ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
-                  )}
-                >
-                   <List size={16} />
-                </button>
-                <button 
-                  onClick={() => setViewMode("grid")}
-                  className={cn(
-                    "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
-                    viewMode === "grid" ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
-                  )}
-                >
-                   <LayoutGrid size={16} />
-                </button>
+                {[
+                  { id: 'list', icon: List },
+                  { id: 'grid', icon: LayoutGrid },
+                  { id: 'map', icon: MapPin }
+                ].map(mode => (
+                  <button 
+                    key={mode.id}
+                    onClick={() => setViewMode(mode.id as any)}
+                    className={cn(
+                      "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
+                      viewMode === mode.id ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
+                    )}
+                  >
+                     <mode.icon size={16} />
+                  </button>
+                ))}
              </div>
           </div>
         </div>
 
-        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
-          
-          {/* PRIORITY SECTION */}
+        <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
+          {/* FEED COLUMN */}
+          <div className={cn(
+            "flex-1 overflow-y-auto no-scrollbar transition-all duration-500",
+            viewMode === "map" ? "lg:w-1/2" : "w-full"
+          )}>
+            <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
+              
+              {/* PRIORITY SECTION */}
+              <AnimatePresence>
+                {topOpportunity && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#E53935] flex items-center gap-2">
+                        <Sparkles size={14} className="animate-pulse" /> Top opportunity for you
+                      </h3>
+                      <button onClick={() => setDismissedTopOp(true)} className="text-[9px] font-bold text-black/20 hover:text-black uppercase">Dismiss</button>
+                    </div>
+                    <OpportunityCard item={topOpportunity} isPinned />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+ 
+              {/* LIST FEED */}
+              <div className="space-y-6">
+                <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/20">
+                  {activeType === "All" ? "Ecosystem Feed" : `${activeType} Opportunities`}
+                </h3>
+ 
+                {isLoading ? (
+                  <div className={cn("space-y-4", (viewMode === "grid" || viewMode === "map") && "grid grid-cols-1 md:grid-cols-2 gap-6 space-y-0")}>
+                    {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-black/[0.02] rounded-[2rem] animate-pulse" />)}
+                  </div>
+                ) : otherItems.length > 0 ? (
+                  <div className={cn(
+                    "transition-all duration-500",
+                    viewMode === "list" ? "space-y-4 md:space-y-6" : "grid grid-cols-1 md:grid-cols-2 gap-6"
+                  )}>
+                    {otherItems.map((item, idx) => (
+                      <OpportunityCard key={item.id} item={item} index={idx} viewMode={viewMode === 'list' ? 'list' : 'grid'} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 md:py-32 text-center space-y-4">
+                    <div className="h-16 w-16 bg-[#F5F5F7] rounded-2xl flex items-center justify-center mx-auto text-black/10">
+                      <Target size={32} />
+                    </div>
+                    <p className="text-[13px] font-bold text-black/40">No results here. Try changing filters.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* MAP COLUMN (Conditional) */}
           <AnimatePresence>
-            {topOpportunity && (
+            {viewMode === "map" && (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="space-y-4"
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="hidden lg:block lg:w-1/2 h-[calc(100vh-160px)] sticky top-[64px] border-l border-black/[0.03] bg-black overflow-hidden"
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#E53935] flex items-center gap-2">
-                    <Sparkles size={14} className="animate-pulse" /> Top opportunity for you
-                  </h3>
-                  <button onClick={() => setDismissedTopOp(true)} className="text-[9px] font-bold text-black/20 hover:text-black uppercase">Dismiss</button>
-                </div>
-                <OpportunityCard item={topOpportunity} isPinned />
+                <MarketplaceMiniMap items={filteredItems} />
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* LIST FEED */}
-          <div className="space-y-6">
-            <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/20">
-              {activeType === "All" ? "Ecosystem Feed" : `${activeType} Opportunities`}
-            </h3>
-
-            {isLoading ? (
-              <div className={cn("space-y-4", viewMode === "grid" && "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 space-y-0")}>
-                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-black/[0.02] rounded-[2rem] animate-pulse" />)}
-              </div>
-            ) : otherItems.length > 0 ? (
-              <div className={cn(
-                "transition-all duration-500",
-                viewMode === "list" ? "space-y-4 md:space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              )}>
-                {otherItems.map((item, idx) => (
-                  <OpportunityCard key={item.id} item={item} index={idx} viewMode={viewMode} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-20 md:py-32 text-center space-y-4">
-                <div className="h-16 w-16 bg-[#F5F5F7] rounded-2xl flex items-center justify-center mx-auto text-black/10">
-                  <Target size={32} />
-                </div>
-                <p className="text-[13px] font-bold text-black/40">No results here. Try changing filters.</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </TerminalLayout>
   );
+}
+
+function MarketplaceMiniMap({ items }: { items: MarketplaceItem[] }) {
+  const mapContainer = React.useRef<HTMLDivElement>(null);
+  const map = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (!mapContainer.current) return;
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      center: [76.9467, 8.5241], // Trivandrum
+      zoom: 12,
+      attributionControl: false
+    });
+
+    return () => map.current?.remove();
+  }, []);
+
+  React.useEffect(() => {
+    if (!map.current) return;
+
+    // Clear markers
+    const existing = document.querySelectorAll('.marketplace-marker');
+    existing.forEach(m => m.remove());
+
+    items.forEach(item => {
+      // Simulate/Use geo
+      const lat = item.metadata?.geo?.lat || (8.5241 + (Math.random() - 0.5) * 0.05);
+      const lng = item.metadata?.geo?.lng || (76.9467 + (Math.random() - 0.5) * 0.05);
+
+      const el = document.createElement('div');
+      el.className = 'marketplace-marker';
+      
+      const color = item.type === 'REQUIREMENT' ? '#F59E0B' : item.type === 'MEETUP' ? '#4F46E5' : '#E53935';
+      
+      el.innerHTML = `
+        <div class="relative group cursor-pointer">
+          <div class="h-10 w-10 rounded-2xl overflow-hidden border-2 border-white shadow-xl transition-all group-hover:scale-110" style="background: ${color}">
+            <img src="${item.author.avatar}" class="h-full w-full object-cover grayscale group-hover:grayscale-0" />
+          </div>
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
+            <div class="bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-lg whitespace-nowrap shadow-2xl">
+              <p class="text-[9px] font-black uppercase text-white">${item.title}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      new maplibregl.Marker(el)
+        .setLngLat([lng, lat])
+        .addTo(map.current);
+    });
+  }, [items]);
+
+  return <div ref={mapContainer} className="w-full h-full" />;
 }
 
 function SmartFilter({ icon: Icon, label, value, options, onChange, active, onToggle }: any) {

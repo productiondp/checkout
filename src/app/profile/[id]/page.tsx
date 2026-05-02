@@ -132,8 +132,7 @@ function ProfileContent() {
 
                  <div className="flex items-center gap-4">
                     <ConnectButton 
-                       userId={profileId} 
-                       userName={profile.name}
+                       targetId={profileId} 
                        className="h-16 px-10 rounded-[10px] text-[11px] font-black uppercase"
                     />
                     <button className="h-16 w-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-[10px] flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">

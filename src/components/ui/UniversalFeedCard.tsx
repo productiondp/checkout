@@ -427,9 +427,8 @@ const UniversalFeedCard = React.memo(({
                        </motion.button>
                        {nType !== 'MEETUP' && (
                           <ConnectButton 
-                             userId={author?.id || post.author_id} 
-                             userName={authorName}
-                             label={cfg.ctaLabel}
+                             targetId={author?.id || post.author_id} 
+                             size="sm"
                           />
                        )}
                     </div>

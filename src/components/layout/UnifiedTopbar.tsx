@@ -121,7 +121,7 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
 
         {/* CONTEXTUAL FILTERS - Horizontal Scroll on Mobile */}
         <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar mask-fade-right lg:mask-none py-1">
-           <div className="flex items-center gap-2 lg:gap-3 whitespace-nowrap px-1">
+           <div className="flex items-center justify-end gap-2 lg:gap-3 whitespace-nowrap px-1">
               {children}
            </div>
         </div>

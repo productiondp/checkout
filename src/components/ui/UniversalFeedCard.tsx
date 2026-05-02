@@ -14,8 +14,8 @@ import {
   Sparkles, 
   MapPin, 
   Clock, 
-  ArrowUpRight,
   Bookmark,
+  Share2,
   Pencil,
   Trash2,
   MoreHorizontal,
@@ -241,6 +241,26 @@ const UniversalFeedCard = React.memo(({
      }
    }, [post.id, authUser?.id, nType]);
   
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/home?post=${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: title,
+          text: `Check out this ${cfg.label} opportunity on Checkout: ${title}`,
+          url: shareUrl
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        // We could use a toast here, but simple alert fallback for desktop
+        alert("Link copied to clipboard!");
+      }
+    } catch (err) {
+      console.log("User cancelled share or error:", err);
+    }
+  };
+
   const handleJoin = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!authUser || isJoining || joinStatus === 'FULL') return;
@@ -424,6 +444,13 @@ const UniversalFeedCard = React.memo(({
                           )}
                        >
                           <Bookmark size={16} fill={bookmarked ? "currentColor" : "none"} />
+                       </motion.button>
+                       <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleShare}
+                          className="h-12 w-12 rounded-xl border border-black/[0.05] text-[#86868B] flex items-center justify-center hover:bg-slate-50 transition-all shrink-0"
+                       >
+                          <Share2 size={16} />
                        </motion.button>
                        {nType !== 'MEETUP' && (
                           <ConnectButton 

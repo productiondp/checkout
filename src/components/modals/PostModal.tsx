@@ -297,6 +297,9 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
       }, 2000);
 
     } catch (err: any) {
+      console.error("[COMPOSER_FATAL_ERROR] Database rejected the payload:", err);
+      if (err.details) console.error("Error Details:", err.details);
+      if (err.hint) console.error("Error Hint:", err.hint);
       setSubmissionState('FAILED');
       setError(err.message || "Failed to post. Please try again.");
     }

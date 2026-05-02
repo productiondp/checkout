@@ -146,10 +146,7 @@ function AuthContent() {
       setError(err.message || "Authentication failed. Please try again.");
     } finally {
       setIsLoading(false);
-      // Safety reset
-      if (submissionState !== 'SUCCESS' && submissionState !== 'FAILED') {
-        setSubmissionState(null);
-      }
+      // Removed the closure-captured safety reset that was wiping out the FAILED state!
     }
   };
 

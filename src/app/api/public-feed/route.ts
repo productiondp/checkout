@@ -16,8 +16,9 @@ export async function GET() {
       .from('posts')
       .select(`
         *,
-        author_profile:profiles!author_id(*)
+        profiles(*)
       `)
+      .eq('status', 'ACTIVE')
       .order('created_at', { ascending: false })
       .limit(100);
 

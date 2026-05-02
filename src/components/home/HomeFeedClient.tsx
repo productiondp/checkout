@@ -105,14 +105,16 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
     if (!authUser) return;
     if (posts.length === 0) setIsLoading(true);
     try {
-      const { data: postsData } = await supabase.from('posts').select(`*, author_profile:profiles(*)`).order('created_at', { ascending: false }).limit(100);
+      const { data: postsData, error: fetchErr } = await supabase.from('posts').select(`*, profiles(*)`).order('created_at', { ascending: false }).limit(100);
+      if (fetchErr) console.error("[FEED_FATAL_ERROR] Supabase rejected fetch:", fetchErr);
+      
       const { data: connections } = await supabase.from('connections').select('*').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
       const mapped = (postsData || []).filter(p => {
-        const authorId = p.author_profile?.id || p.author_id;
+        const authorId = p.profiles?.id || p.author_id;
         const conn = (connections || []).find(c => (c.sender_id === authUser.id && c.receiver_id === authorId) || (c.receiver_id === authorId && c.sender_id === authUser.id));
         return conn?.status !== 'BLOCKED';
       }).map(p => {
-        const author = p.author_profile;
+        const author = p.profiles;
         const conn = (connections || []).find(c => (c.sender_id === authUser.id && c.receiver_id === author?.id) || (c.receiver_id === author?.id && c.sender_id === authUser.id));
         return { ...p, authorName: author?.full_name || "Anonymous", avatar: author?.avatar_url || DEFAULT_AVATAR, time: p.created_at ? new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "Just now", rank: author?.role || "Member", connectionStatus: conn ? conn.status.toLowerCase() : 'none' };
       });

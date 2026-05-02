@@ -71,7 +71,6 @@ export default function PremiumProfilePage() {
      base_tag: "",
      metadata: {} as any,
      postCount: 0,
-     postCount: 0,
      connectionCount: 0,
      solvedCount: 0,
      primaryIntent: "Growth & Scaling"

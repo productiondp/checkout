@@ -166,9 +166,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (!data) setProfile(hydratedProfile as UserProfile);
 
-      // [SEC] DETERMINISTIC ONBOARDING CHECK
-      // Must have a profile AND have completed the onboarding steps
-      const nextTag = (hydratedProfile.onboarding_completed) ? 'authenticated' : 'onboarding';
+      // [SEC] DETERMINISTIC ONBOARDING CHECK (V16.6)
+      // Resilience: If user has a name and role, they are likely onboarded even if flag is missing.
+      const hasBasicInfo = !!(data?.full_name && data?.role);
+      const isOnboarded = data?.onboarding_completed || hasBasicInfo;
+      
+      const nextTag = isOnboarded ? 'authenticated' : 'onboarding';
+      
+      console.log(`[AUTH] Session Resolved: ${nextTag}`, { hasBasicInfo, isOnboarded });
       
       setAuthState({ 
         state: { tag: nextTag as any }, 
@@ -176,6 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
     } catch (e: any) {
+      console.error("[AUTH] Resolution Error:", e);
       setAuthState({ state: { tag: 'onboarding' }, isAuthResolved: true });
     } finally {
       isResolvingRef.current = false;

@@ -151,50 +151,65 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
   return (
     <ProtectedRoute>
       {!authUser ? null : (
-        <TerminalLayout
-          topbarChildren={
-             <div className="flex items-center gap-2">
-                {SMART_FILTERS.map(f => (
-                    <button 
-                      key={f.id}
-                      onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
-                      className={cn(
-                        "px-5 h-10 rounded-full text-[11px] font-bold tracking-wide transition-all border shrink-0",
-                        activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
-                      )}
-                    >
-                      {f.label}
-                    </button>
-                ))}
-             </div>
-          }
-          rightSidebar={<RightSocialRail />}
-        >
-          <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8">
-              <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
-              <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
-              <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[12px] font-black tracking-widest text-black/20">Discovery Stream</h3>
-              </div>
-              <Feed posts={filteredPosts} isLoading={isLoading} currentUserId={authUser?.id} onAction={(p) => router.push(`/chat?user=${p.author_id}`)} onEdit={(p) => { setEditPost(p); setIsPosting(true); }} onCreate={handleOpenPosting} onDelete={async (p) => { const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); if (error) { alert(error.message); return; } setPosts(prev => prev.filter(post => post.id !== p.id)); }} />
+        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
+          <div className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+             {SMART_FILTERS.map(f => (
+                 <button 
+                   key={f.id}
+                   onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
+                   className={cn(
+                     "px-5 h-9 md:h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border shrink-0 whitespace-nowrap",
+                     activeFilter === f.id ? "bg-black text-white border-black shadow-lg" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
+                   )}
+                 >
+                   <div className="flex items-center gap-2">
+                     <f.icon size={12} className={cn(activeFilter === f.id ? "text-white" : "text-black/20")} />
+                     {f.label}
+                   </div>
+                 </button>
+             ))}
           </div>
+        </div>
 
-          <div className="fixed bottom-10 right-10 z-[100]">
-            <motion.button 
-              whileHover={{ scale: 1.1, rotate: 5 }} 
-              whileTap={{ scale: 0.9 }} 
-              onClick={() => handleOpenPosting()} 
-              className="h-16 w-16 bg-[#1D1D1F] text-white rounded-full flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:bg-[#E53935] transition-all duration-500 ring-1 ring-white/10 group"
-            >
-               <motion.div 
-                 animate={{ rotate: [0, 90, 0] }}
-                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                 className="h-7 w-7 flex items-center justify-center"
-               >
-                 <Plus size={28} strokeWidth={3} />
-               </motion.div>
-            </motion.button>
-          </div>
+        <div className="p-4 md:p-8 lg:p-12 max-w-5xl mx-auto space-y-10 md:space-y-12">
+            <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
+            <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
+            
+            <div className="flex items-center justify-between mb-2">
+                <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.2em] text-black/20">Discovery Stream</h3>
+            </div>
+
+            <Feed 
+              posts={filteredPosts} 
+              isLoading={isLoading} 
+              currentUserId={authUser?.id} 
+              onAction={(p) => router.push(`/chat?user=${p.author_id}`)} 
+              onEdit={(p) => { setEditPost(p); setIsPosting(true); }} 
+              onCreate={handleOpenPosting} 
+              onDelete={async (p) => { 
+                const { error } = await supabase.from('posts').delete().eq('id', p.id).eq('author_id', authUser.id); 
+                if (error) { alert(error.message); return; } 
+                setPosts(prev => prev.filter(post => post.id !== p.id)); 
+              }} 
+            />
+        </div>
+
+        <div className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[100]">
+          <motion.button 
+            whileHover={{ scale: 1.1, rotate: 5 }} 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => handleOpenPosting()} 
+            className="h-14 w-14 md:h-16 md:w-16 bg-[#1D1D1F] text-white rounded-full flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:bg-[#E53935] transition-all duration-500 ring-1 ring-white/10 group"
+          >
+             <motion.div 
+               animate={{ rotate: [0, 90, 0] }}
+               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+               className="h-6 w-6 md:h-7 md:w-7 flex items-center justify-center"
+             >
+               <Plus size={24} md:size={28} strokeWidth={3} />
+             </motion.div>
+          </motion.button>
+        </div>
 
           {isPosting && <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} initialFormType={postInitialType} onPostSuccess={(newPost) => { trackAction('POST', newPost.type); initHome(); setIsPosting(false); setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type }); }} editPost={editPost} />}
           {isPostActionLoop.active && <MomentumView postId={isPostActionLoop.postId} type={isPostActionLoop.type} onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })} />}

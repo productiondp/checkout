@@ -80,17 +80,17 @@ function AdvisorsContent() {
     <TerminalLayout>
       <div className="bg-[#FDFDFF] min-h-screen">
         {/* SECOND ROW: STICKY FILTERS & SWITCHER */}
-        <div className="bg-white border-b border-black/[0.03] px-8 py-3 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-             <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase text-black/20 tracking-widest mr-2">Sort by:</span>
-                <div className="flex p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03]">
+        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-auto">
+                <span className="text-[10px] font-black uppercase text-black/20 tracking-widest mr-2 whitespace-nowrap">Sort by:</span>
+                <div className="flex p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] overflow-x-auto no-scrollbar">
                   {["Match", "Exp", "Active"].map(sort => (
                     <button 
                       key={sort}
                       onClick={() => setActiveSort(sort)}
                       className={cn(
-                        "px-4 h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                        "px-4 h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                         activeSort.startsWith(sort) ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
                       )}
                     >
@@ -100,7 +100,7 @@ function AdvisorsContent() {
                 </div>
              </div>
 
-             <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03]">
+             <div className="flex items-center justify-end gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] w-fit self-end md:self-auto">
                 <button 
                   onClick={() => setViewMode("list")}
                   className={cn(
@@ -123,42 +123,42 @@ function AdvisorsContent() {
           </div>
         </div>
 
-      <div className="p-8 max-w-7xl mx-auto space-y-12">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
         {/* SEARCH SECTION */}
         <div className="relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={20} />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={18} md:size={20} />
           <input 
             type="text" 
             placeholder="Search experts, mentors, or advisors..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-16 bg-white border border-black/[0.03] rounded-[10px] pl-16 pr-6 text-sm font-bold text-[#1D1D1F] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all shadow-sm" 
+            className="w-full h-14 md:h-16 bg-white border border-black/[0.03] rounded-[10px] pl-14 md:pl-16 pr-6 text-sm font-bold text-[#1D1D1F] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all shadow-sm" 
           />
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[1, 2, 4].map(i => <div key={i} className="h-64 bg-[#F5F5F7] rounded-[10px] animate-pulse" />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map(i => <div key={i} className="h-64 bg-[#F5F5F7] rounded-[10px] animate-pulse" />)}
           </div>
         ) : filteredAdvisors.length > 0 ? (
           <>
             {/* TOP MATCHES */}
             <section>
-              <div className="flex items-center gap-3 text-[#E53935] mb-8">
+              <div className="flex items-center gap-3 text-[#E53935] mb-6 md:mb-8">
                 <Sparkles size={20} fill="currentColor" />
-                <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Elite Advisors</h2>
+                <h2 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Elite Advisors</h2>
               </div>
-              <div className="flex overflow-x-auto no-scrollbar gap-6 pb-6">
+              <div className="flex overflow-x-auto no-scrollbar gap-6 pb-6 -mx-6 px-6 md:mx-0 md:px-0">
                 {filteredAdvisors.filter(a => a.matchScore > 90).map((advisor) => (
-                  <div key={advisor.id} onClick={() => router.push(`/advisors/${advisor.id}`)} className="min-w-[400px] bg-white rounded-[10px] p-10 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full">
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="h-24 w-24 rounded-[10px] overflow-hidden border-4 border-[#F5F5F7] shadow-lg"><img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" /></div>
-                      <div className="relative h-16 w-16 flex items-center justify-center"><svg className="w-full h-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F5F5F7" strokeWidth="8" /><circle cx="50" cy="50" r="45" fill="none" stroke="#E53935" strokeWidth="8" strokeDasharray={2 * Math.PI * 45} strokeDashoffset={(2 * Math.PI * 45) * (1 - advisor.matchScore / 100)} strokeLinecap="round" /></svg><span className="absolute text-[12px] font-black text-black font-outfit">{advisor.matchScore}%</span></div>
+                  <div key={advisor.id} onClick={() => router.push(`/advisors/${advisor.id}`)} className="min-w-[280px] md:min-w-[400px] bg-white rounded-[10px] p-6 md:p-10 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full">
+                    <div className="flex items-start justify-between mb-6 md:mb-8">
+                      <div className="h-16 w-16 md:h-24 md:w-24 rounded-[10px] overflow-hidden border-4 border-[#F5F5F7] shadow-lg"><img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" /></div>
+                      <div className="relative h-12 w-12 md:h-16 md:w-16 flex items-center justify-center"><svg className="w-full h-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F5F5F7" strokeWidth="8" /><circle cx="50" cy="50" r="45" fill="none" stroke="#E53935" strokeWidth="8" strokeDasharray={2 * Math.PI * 45} strokeDashoffset={(2 * Math.PI * 45) * (1 - advisor.matchScore / 100)} strokeLinecap="round" /></svg><span className="absolute text-[10px] md:text-[12px] font-black text-black font-outfit">{advisor.matchScore}%</span></div>
                     </div>
-                    <h3 className="text-2xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role}  {advisor.industry}</p>
-                    <div className="p-6 bg-[#F5F5F7] rounded-[10px] border border-black/[0.02] mb-8"><p className="text-xs font-bold text-black/60 leading-relaxed italic uppercase">"{advisor.bestFor}"</p></div>
-                    <div className="mt-auto pt-6 border-t border-black/[0.03] flex items-center justify-between"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" /></div>
+                    <h3 className="text-xl md:text-2xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 group-hover:text-[#E53935] transition-colors line-clamp-1">{advisor.name}</h3>
+                    <p className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role}  {advisor.industry}</p>
+                    <div className="p-4 md:p-6 bg-[#F5F5F7] rounded-[10px] border border-black/[0.02] mb-6 md:mb-8"><p className="text-[11px] md:text-xs font-bold text-black/60 leading-relaxed italic uppercase line-clamp-2">"{advisor.bestFor}"</p></div>
+                    <div className="mt-auto pt-6 border-t border-black/[0.03] flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[9px] md:text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" /></div>
                   </div>
                 ))}
               </div>
@@ -167,7 +167,7 @@ function AdvisorsContent() {
             {/* FULL LIST / GRID */}
             <main className={cn(
               "transition-all duration-500",
-              viewMode === "list" ? "space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              viewMode === "list" ? "space-y-4 md:space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
             )}>
               {filteredAdvisors.map((advisor) => (
                 <AdvisorCard key={advisor.id} advisor={advisor} viewMode={viewMode} />
@@ -192,19 +192,19 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
   
   if (viewMode === "list") {
     return (
-      <div onClick={() => router.push(`/advisors/${advisor.id}`)} className="bg-white rounded-[2rem] p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex items-center gap-8">
-        <div className="h-28 w-28 shrink-0 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:rotate-3 transition-all duration-500">
+      <div onClick={() => router.push(`/advisors/${advisor.id}`)} className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-6 md:gap-8">
+        <div className="h-20 w-20 md:h-28 md:w-28 shrink-0 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:rotate-3 transition-all duration-500">
           <img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-3">
-            <div className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+            <div className="px-2.5 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
                <Target size={12} /> {advisor.matchScore}% Match
             </div>
-            <span className="text-[9px] font-black text-black/20 uppercase tracking-widest">{advisor.experience}</span>
+            <span className="text-[9px] font-black text-black/20 uppercase tracking-widest whitespace-nowrap">{advisor.experience}</span>
           </div>
-          <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{advisor.role}  {advisor.industry}</p>
+          <h3 className="text-lg md:text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors truncate">{advisor.name}</h3>
+          <p className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mb-4 truncate">{advisor.role}  {advisor.industry}</p>
           <div className="flex flex-wrap gap-2">
             {advisor.expertise.slice(0, 4).map(tag => (
               <span key={tag} className="px-3 py-1 bg-[#F5F5F7] text-black/40 rounded-lg text-[8px] font-black uppercase tracking-widest">
@@ -213,21 +213,21 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
             ))}
           </div>
         </div>
-        <div className="shrink-0">
-          <ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" />
+        <div className="shrink-0 w-full md:w-auto">
+          <ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" className="w-full" />
         </div>
       </div>
     );
   }
 
   return (
-    <div onClick={() => router.push(`/advisors/${advisor.id}`)} className="bg-white rounded-[2rem] p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full">
+    <div onClick={() => router.push(`/advisors/${advisor.id}`)} className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full">
       <div className="flex items-start justify-between mb-6">
-        <div className="h-20 w-20 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:scale-105 transition-all duration-500">
+        <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:scale-105 transition-all duration-500">
           <img src={advisor.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
         </div>
         <div className="flex flex-col items-end gap-2">
-           <div className="px-2.5 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+           <div className="px-2 py-0.5 md:px-2.5 md:py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
               <Target size={10} /> {advisor.matchScore}%
            </div>
            <span className="text-[8px] font-black text-black/20 uppercase tracking-widest">{advisor.experience}</span>
@@ -235,7 +235,7 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
       </div>
       
       <div className="flex-1 space-y-2 mb-6">
-        <h3 className="text-lg font-black text-[#1D1D1F] uppercase font-outfit group-hover:text-[#E53935] transition-colors leading-none">{advisor.name}</h3>
+        <h3 className="text-lg font-black text-[#1D1D1F] uppercase font-outfit group-hover:text-[#E53935] transition-colors leading-tight line-clamp-2">{advisor.name}</h3>
         <p className="text-[9px] font-black text-black/20 uppercase tracking-widest line-clamp-1">{advisor.role}</p>
         <div className="flex flex-wrap gap-1.5 pt-2">
           {advisor.expertise.slice(0, 3).map(tag => (

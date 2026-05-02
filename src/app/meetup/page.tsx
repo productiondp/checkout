@@ -40,25 +40,25 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
           isJoined && "border-emerald-500/30 ring-4 ring-emerald-500/5 shadow-2xl shadow-emerald-500/10"
       )}>
           {/* AI Alignment Indicator */}
-          <div className="absolute top-6 right-6 z-10">
-            <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-lg border border-[#292828]/10 flex items-center gap-2 shadow-lg">
-                <Sparkles size={14} className="text-[#E53935] animate-pulse" />
-                <span className="text-[10px] font-black text-[#292828] uppercase">{meetup.matchPotential}% Score</span>
+          <div className="absolute top-4 right-4 md:top-6 md:right-6 z-10">
+            <div className="px-3 py-1.5 md:px-4 md:py-2 bg-white/90 backdrop-blur-md rounded-lg border border-[#292828]/10 flex items-center gap-2 shadow-lg">
+                <Sparkles size={12} className="text-[#E53935] animate-pulse" />
+                <span className="text-[9px] md:text-[10px] font-black text-[#292828] uppercase">{meetup.matchPotential}% Score</span>
             </div>
           </div>
 
           {/* Card Content */}
-          <div className="p-8 lg:p-10 space-y-8">
-            <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
+          <div className="p-6 md:p-8 lg:p-10 space-y-6 md:space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl overflow-hidden border border-[#292828]/10 shadow-sm relative group-hover:rotate-3 transition-transform">
                   <img src={meetup.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
                   <div className="absolute inset-0 bg-[#E53935]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <Link href={`/advisor/${meetup.author_id}`} className="hover:opacity-80 transition-opacity">
-                  <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 ">{meetup.authorName}</h4>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{meetup.category}  {meetup.timeAgo}</p>
-                    <div className="h-1 w-1 bg-black/10 rounded-full" />
+                <Link href={`/advisor/${meetup.author_id}`} className="hover:opacity-80 transition-opacity min-w-0">
+                  <h4 className="text-[13px] md:text-[14px] font-black text-[#E53935] uppercase leading-none mb-1.5 truncate">{meetup.authorName}</h4>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[9px] md:text-[10px] font-bold text-[#292828]/30 uppercase whitespace-nowrap">{meetup.category}  {meetup.timeAgo}</p>
+                    <div className="hidden sm:block h-1 w-1 bg-black/10 rounded-full" />
                     <div className="flex items-center gap-1">
                       <Target size={10} className="text-emerald-500" />
                       <span className="text-[9px] font-bold text-emerald-600 uppercase">{meetup.trustScore}% Trust</span>
@@ -68,8 +68,8 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
             </div>
 
             <div className="space-y-3">
-                <h3 className="text-xl font-black uppercase group-hover:text-[#E53935] transition-colors">{meetup.title}</h3>
-                <p className="text-[14px] font-medium text-[#292828]/60 leading-relaxed italic line-clamp-2">"{meetup.content}"</p>
+                <h3 className="text-lg md:text-xl font-black uppercase group-hover:text-[#E53935] transition-colors line-clamp-2">{meetup.title}</h3>
+                <p className="text-[13px] md:text-[14px] font-medium text-[#292828]/60 leading-relaxed italic line-clamp-2">"{meetup.content}"</p>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -77,54 +77,54 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
                   onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meetup.location || "Trivandrum")}`, '_blank'); }}
                   className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all cursor-pointer"
                 >
-                  <div className="h-10 w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
-                      <MapPin size={18} />
+                  <div className="h-9 w-9 md:h-10 md:w-10 bg-[#292828] rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg group-hover:bg-[#E53935]">
+                      <MapPin size={16} />
                   </div>
                   <div className="min-w-0">
-                      <p className="text-[9px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Venue</p>
-                      <p className="text-[12px] font-bold text-[#292828] uppercase truncate">{meetup.location || "Online"}</p>
+                      <p className="text-[8px] font-bold text-[#292828]/30 uppercase leading-none mb-1.5">Venue</p>
+                      <p className="text-[11px] md:text-[12px] font-bold text-[#292828] uppercase truncate">{meetup.location || "Online"}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 p-4 bg-[#292828]/5 rounded-xl border border-[#292828]/5 group-hover:bg-white group-hover:border-[#292828]/10 transition-all">
-                  <div className="h-10 w-10 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
-                      <Clock size={18} />
+                  <div className="h-9 w-9 md:h-10 md:w-10 bg-[#E53935]/10 rounded-lg flex items-center justify-center text-[#E53935] shrink-0 border border-[#E53935]/20">
+                      <Clock size={16} />
                   </div>
-                  <div>
-                      <p className="text-[9px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Time</p>
-                      <p className="text-[12px] font-bold text-[#292828] uppercase">{meetup.dateTime || "TODAY, 18:30"}</p>
+                  <div className="min-w-0">
+                      <p className="text-[8px] font-bold text-[#E53935] uppercase leading-none mb-1.5">Time</p>
+                      <p className="text-[11px] md:text-[12px] font-bold text-[#292828] uppercase truncate">{meetup.dateTime || "TODAY, 18:30"}</p>
                   </div>
                 </div>
             </div>
 
-            <div className="flex items-center justify-between pt-8 border-t border-[#292828]/5 mt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6 pt-6 md:pt-8 border-t border-[#292828]/5 mt-4">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2.5">
                       {[1,2,3].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200">
+                        <div key={i} className="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200">
                           <img src={`https://i.pravatar.cc/150?u=${meetup.id + i}`} alt="" className="grayscale" />
                         </div>
                       ))}
                   </div>
-                  <span className="text-[11px] font-bold text-[#292828]/40 uppercase ">{meetup.attendees}/{meetup.maxAttendees} Occupied</span>
+                  <span className="text-[10px] md:text-[11px] font-bold text-[#292828]/40 uppercase ">{meetup.attendees}/{meetup.maxAttendees} Occupied</span>
                 </div>
 
                 <button 
                   onClick={onJoin}
                   disabled={!isJoined && meetup.attendees >= meetup.maxAttendees}
                   className={cn(
-                    "h-14 px-8 rounded-xl font-black text-[11px] uppercase transition-all duration-500 shadow-xl flex items-center gap-3 active:scale-95",
+                    "h-12 md:h-14 px-6 md:px-8 rounded-xl font-black text-[10px] md:text-[11px] uppercase transition-all duration-500 shadow-xl flex items-center justify-center gap-3 active:scale-95",
                     isJoined 
                     ? "bg-emerald-500 text-white shadow-emerald-500/20" 
                     : meetup.attendees >= meetup.maxAttendees ? "bg-black/10 text-black/20 cursor-not-allowed" : "bg-[#292828] text-white hover:bg-[#E53935] shadow-black/10"
                   )}
                 >
                   {isJoined ? (
-                    <><CheckCircle2 size={18} strokeWidth={3} /> You're In  Chat Open</>
+                    <><CheckCircle2 size={16} strokeWidth={3} /> You're In</>
                   ) : meetup.attendees >= meetup.maxAttendees ? (
                     "Full"
                   ) : (
-                    <><Plus size={18} strokeWidth={3} /> Join Meetup</>
+                    <><Plus size={16} strokeWidth={3} /> Join Meetup</>
                   )}
                 </button>
             </div>
@@ -313,42 +313,42 @@ export default function MeetupPage() {
         <main className="flex-1 overflow-y-auto no-scrollbar border-r border-[#292828]/5 pb-32 lg:pb-0 scroll-smooth">
            
            {/* HEADER */}
-           <div className="p-8 lg:p-12 bg-white/50 backdrop-blur-xl border-b border-[#292828]/5 sticky top-0 z-40">
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-10">
+           <div className="p-6 md:p-8 lg:p-12 bg-white/50 backdrop-blur-xl border-b border-[#292828]/5 sticky top-0 z-40">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 md:gap-8 mb-8 md:mb-10">
                  <div>
-                    <div className="label-premium">
-                       <Target size={12} className="text-[#E53935]" /> Area Discovery Active
+                    <div className="label-premium inline-flex items-center gap-2 px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
+                       <Target size={12} /> Area Discovery Active
                     </div>
-                    <h1 className="text-xl md:text-2xl lg:text-3xl mb-0  font-black uppercase">
+                    <h1 className="text-2xl md:text-2xl lg:text-3xl mb-0 font-black uppercase">
                        Meetups<span className="text-[#E53935]">.</span>
                     </h1>
-                    <p className="subheading-editorial mt-2">Connect with people in your area.</p>
+                    <p className="subheading-editorial mt-1 text-[11px] md:text-sm text-slate-400 font-medium">Connect with people in your area.</p>
                  </div>
                  
                  <div className="flex items-center gap-4">
-                     <button 
-                       onClick={() => setShowAiArchitect(true)}
-                       className="h-16 px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
-                     >
-                        <div className="h-10 w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
-                           <BrainCircuit size={20} />
-                        </div>
-                        <div className="text-left">
-                           <p className="text-[9px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
-                           <p className="text-[11px] font-bold uppercase">Plan Meeting</p>
-                        </div>
-                     </button>
-                  </div>
+                      <button 
+                        onClick={() => setShowAiArchitect(true)}
+                        className="h-14 md:h-16 flex-1 md:flex-none px-6 md:px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-3 md:gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
+                      >
+                         <div className="h-8 w-8 md:h-10 md:w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
+                            <BrainCircuit size={20} />
+                         </div>
+                         <div className="text-left">
+                            <p className="text-[8px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
+                            <p className="text-[10px] md:text-[11px] font-bold uppercase">Plan Meeting</p>
+                         </div>
+                      </button>
+                   </div>
               </div>
   
-               <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto">
+               <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto -mx-6 px-6 lg:mx-0 lg:px-0">
                      {TOPICS.map(t => (
                        <button 
                          key={t}
                          onClick={() => setActiveTopic(t)}
                          className={cn(
-                           "px-6 h-11 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
+                           "px-5 md:px-6 h-10 md:h-11 rounded-lg text-[9px] md:text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
                            activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
                          )}
                        >
@@ -357,58 +357,60 @@ export default function MeetupPage() {
                      ))}
                   </div>
 
-                  <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-xl border border-black/[0.05]">
-                    {(['NEARBY', 'RELEVANT', 'UPCOMING'] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setSortMode(mode)}
-                        className={cn(
-                          "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                          sortMode === mode 
-                            ? "bg-white text-black shadow-sm" 
-                            : "text-slate-400 hover:text-slate-600"
-                        )}
-                      >
-                        {mode.charAt(0) + mode.slice(1).toLowerCase()}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center gap-4 shrink-0">
-                     <button 
-                       onClick={() => { setShowHostModal(true); setHostStep(1); }}
-                       className="h-11 px-6 bg-black text-white rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg active:scale-95 transition-all"
-                     >
-                        <Plus size={14} /> Host Meetup
-                     </button>
-   
-                     <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
-                        <button onClick={() => setViewMode("grid")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                           <LayoutGrid size={14} />
+                  <div className="flex flex-col md:flex-row items-center gap-4">
+                    <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.05] w-full md:w-auto overflow-x-auto no-scrollbar">
+                      {(['NEARBY', 'RELEVANT', 'UPCOMING'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          onClick={() => setSortMode(mode)}
+                          className={cn(
+                            "flex-1 md:flex-none px-4 py-2 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                            sortMode === mode 
+                              ? "bg-white text-black shadow-sm" 
+                              : "text-slate-400 hover:text-slate-600"
+                          )}
+                        >
+                          {mode.charAt(0) + mode.slice(1).toLowerCase()}
                         </button>
-                        <button onClick={() => setViewMode("list")} className={cn("h-9 px-4 rounded-lg flex items-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                           <List size={14} />
-                        </button>
-                     </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                       <button 
+                         onClick={() => { setShowHostModal(true); setHostStep(1); }}
+                         className="flex-1 md:flex-none h-11 px-6 bg-black text-white rounded-lg flex items-center justify-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg active:scale-95 transition-all"
+                       >
+                          <Plus size={14} /> Host
+                       </button>
+     
+                       <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
+                          <button onClick={() => setViewMode("grid")} className={cn("h-9 w-10 md:w-auto md:px-4 rounded-lg flex items-center justify-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                             <LayoutGrid size={14} />
+                          </button>
+                          <button onClick={() => setViewMode("list")} className={cn("h-9 w-10 md:w-auto md:px-4 rounded-lg flex items-center justify-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
+                             <List size={14} />
+                          </button>
+                       </div>
+                    </div>
                   </div>
                </div>
             </div>
   
            {/* CONTENT GRID */}
-           <div className="p-8 lg:p-12 space-y-16">
+           <div className="p-6 md:p-8 lg:p-12 space-y-12 md:space-y-16">
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                   <div className="h-12 w-12 border-4 border-[#E53935] border-t-transparent rounded-full animate-spin" />
                   <p className="text-[10px] font-black uppercase tracking-widest text-black/20">Syncing Meetups...</p>
                 </div>
               ) : meetups.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 text-center space-y-8 bg-slate-50/50 rounded-[2rem] border border-dashed border-black/10">
-                   <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-xl border border-black/5">
+                <div className="flex flex-col items-center justify-center py-20 md:py-32 text-center space-y-8 bg-slate-50/50 rounded-[2rem] border border-dashed border-black/10 p-6">
+                   <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-full flex items-center justify-center shadow-xl border border-black/5">
                       <Calendar size={40} className="text-black/10" />
                    </div>
                    <div className="space-y-2">
-                      <h3 className="text-2xl font-black uppercase">No meetups found nearby</h3>
-                      <p className="text-slate-400 max-w-sm mx-auto text-sm">Expand your search or be the first to host a session in your current industry node.</p>
+                      <h3 className="text-xl md:text-2xl font-black uppercase">No meetups found nearby</h3>
+                      <p className="text-slate-400 max-w-sm mx-auto text-[12px] md:text-sm font-medium">Expand your search or be the first to host a session in your current industry node.</p>
                    </div>
                    <button 
                     onClick={() => { setShowHostModal(true); setHostStep(1); }}
@@ -429,7 +431,7 @@ export default function MeetupPage() {
                           <h2 className="text-xl font-black uppercase tracking-tight">Top <span className="text-[#E53935]">Meetups</span></h2>
                        </div>
                        <div className={cn(
-                          "grid gap-10",
+                          "grid gap-6 md:gap-10",
                           viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
                        )}>
                           {topMeetups.map(m => (
@@ -455,7 +457,7 @@ export default function MeetupPage() {
                           <h2 className="text-xl font-black uppercase tracking-tight">All <span className="text-slate-300">Meetups</span></h2>
                        </div>
                        <div className={cn(
-                          "grid gap-10",
+                          "grid gap-6 md:gap-10",
                           viewMode === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
                        )}>
                           {allMeetups.map(m => (

@@ -198,27 +198,27 @@ function MarketplaceContent() {
   return (
     <TerminalLayout
       topbarChildren={
-        <div className="flex items-center gap-8 flex-1 max-w-4xl">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 flex-1 max-w-4xl py-2 lg:py-0">
           {/* SEARCH */}
-          <div className="flex-1 relative group">
+          <div className="flex-1 relative group w-full lg:w-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
             <input 
               type="text" 
               placeholder="What are you looking for?" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[13px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
+              className="w-full h-10 md:h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[12px] md:text-[13px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
             />
           </div>
 
           {/* TYPE CHIPS */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
             {TYPE_FILTERS.map(f => (
               <button 
                 key={f.value}
                 onClick={() => setActiveType(f.value)}
                 className={cn(
-                  "px-4 h-9 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
+                  "px-4 h-8 md:h-9 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap",
                   activeType === f.value 
                     ? "bg-black text-white border-black" 
                     : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
@@ -233,9 +233,9 @@ function MarketplaceContent() {
     >
       <div className="bg-[#FDFDFF] min-h-screen">
         {/* SECOND ROW: SMART FILTERS & VIEW SWITCHER */}
-        <div className="bg-white border-b border-black/[0.03] px-8 py-3 sticky top-[64px] lg:top-[80px] z-40">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-[100px] lg:top-[80px] z-40">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 lg:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
                 <SmartFilter 
                   icon={Briefcase} 
                   label="Industry" 
@@ -275,7 +275,7 @@ function MarketplaceContent() {
                 />
              </div>
 
-             <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03]">
+             <div className="flex items-center justify-end gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] w-fit self-end md:self-auto">
                 <button 
                   onClick={() => setViewMode("list")}
                   className={cn(
@@ -298,7 +298,7 @@ function MarketplaceContent() {
           </div>
         </div>
 
-        <div className="p-8 max-w-7xl mx-auto space-y-12">
+        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
           
           {/* PRIORITY SECTION */}
           <AnimatePresence>
@@ -310,7 +310,7 @@ function MarketplaceContent() {
                 className="space-y-4"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#E53935] flex items-center gap-2">
+                  <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#E53935] flex items-center gap-2">
                     <Sparkles size={14} className="animate-pulse" /> Top opportunity for you
                   </h3>
                   <button onClick={() => setDismissedTopOp(true)} className="text-[9px] font-bold text-black/20 hover:text-black uppercase">Dismiss</button>
@@ -322,7 +322,7 @@ function MarketplaceContent() {
 
           {/* LIST FEED */}
           <div className="space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20">
+            <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/20">
               {activeType === "All" ? "Ecosystem Feed" : `${activeType} Opportunities`}
             </h3>
 
@@ -333,14 +333,14 @@ function MarketplaceContent() {
             ) : otherItems.length > 0 ? (
               <div className={cn(
                 "transition-all duration-500",
-                viewMode === "list" ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                viewMode === "list" ? "space-y-4 md:space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               )}>
                 {otherItems.map((item, idx) => (
                   <OpportunityCard key={item.id} item={item} index={idx} viewMode={viewMode} />
                 ))}
               </div>
             ) : (
-              <div className="py-20 text-center space-y-4">
+              <div className="py-20 md:py-32 text-center space-y-4">
                 <div className="h-16 w-16 bg-[#F5F5F7] rounded-2xl flex items-center justify-center mx-auto text-black/10">
                   <Target size={32} />
                 </div>
@@ -360,12 +360,12 @@ function SmartFilter({ icon: Icon, label, value, options, onChange, active, onTo
       <button 
         onClick={onToggle}
         className={cn(
-          "flex items-center gap-2.5 px-4 h-10 border rounded-xl transition-all group shrink-0",
+          "flex items-center gap-2.5 px-4 h-9 md:h-10 border rounded-xl transition-all group shrink-0",
           active ? "bg-white border-black/[0.1] shadow-sm" : "bg-[#F5F5F7] border-black/[0.03] hover:bg-white hover:border-black/[0.08]"
         )}
       >
         <Icon size={14} className={cn("transition-colors", active ? "text-[#E53935]" : "text-black/20 group-hover:text-[#E53935]")} />
-        <span className="text-[10px] font-bold text-black/40 group-hover:text-black">{label}:</span>
+        <span className="hidden sm:inline text-[10px] font-bold text-black/40 group-hover:text-black">{label}:</span>
         <span className="text-[10px] font-black uppercase text-black">{value}</span>
         <ChevronDown size={12} className={cn("ml-1 transition-transform duration-300 text-black/20", active && "rotate-180")} />
       </button>
@@ -434,11 +434,11 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
         transition={{ delay: index ? index * 0.05 : 0 }}
         onClick={() => router.push(`/marketplace/${item.id}`)}
         className={cn(
-          "bg-white rounded-[2rem] p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex items-center gap-8 relative overflow-hidden",
+          "bg-white rounded-[2rem] p-6 md:p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-6 md:gap-8 relative overflow-hidden",
           isPinned && "border-[#E53935]/20 shadow-[0_40px_80px_-20px_rgba(229,57,51,0.08)] ring-1 ring-[#E53935]/10"
         )}
       >
-        <div className="h-28 w-28 shrink-0 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:rotate-3 transition-all duration-500">
+        <div className="h-20 w-20 md:h-28 md:w-28 shrink-0 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:rotate-3 transition-all duration-500">
           <img src={item.author.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
         </div>
         
@@ -461,8 +461,8 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
             </div>
           </div>
           
-          <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors line-clamp-1">{item.title}</h3>
-          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">
+          <h3 className="text-lg md:text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors line-clamp-1">{item.title}</h3>
+          <p className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">
             {item.author.name}  {item.industry}  
             <span 
               onClick={(e) => {
@@ -479,11 +479,11 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
             </span>
           </p>
           
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
             <p className="text-[13px] font-bold text-black/60 line-clamp-1 flex-1">
               {item.description}
             </p>
-            <div className="flex items-center gap-4 shrink-0 border-l border-black/[0.03] pl-6">
+            <div className="flex items-center gap-4 shrink-0 border-t md:border-t-0 md:border-l border-black/[0.03] pt-4 md:pt-0 md:pl-6">
                <span className="text-[9px] font-black text-black/20 uppercase tracking-widest flex items-center gap-1.5">
                   <Clock size={12} className="text-[#E53935]" /> {item.type === 'MEETUP' ? 'Upcoming' : 'New'}
                </span>
@@ -496,7 +496,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 w-full md:w-auto">
            <motion.button 
              whileHover={{ scale: 1.02 }}
              whileTap={{ scale: 0.98 }}
@@ -518,7 +518,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
                }
              }}
              className={cn(
-               "h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] shadow-xl transition-all flex items-center justify-center gap-3", 
+               "h-12 md:h-14 w-full md:px-8 rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] shadow-xl transition-all flex items-center justify-center gap-3", 
                item.type === 'MEETUP' && joinStatus === 'JOINED' ? "bg-emerald-600 text-white shadow-emerald-600/20" : cta.color
              )}
            >
@@ -548,10 +548,10 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index ? index * 0.05 : 0 }}
       onClick={() => router.push(`/marketplace/${item.id}`)}
-      className="bg-white rounded-[2rem] p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full"
+      className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full"
     >
       <div className="flex items-start justify-between mb-6">
-        <div className="h-20 w-20 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:scale-105 transition-all duration-500">
+        <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden border-4 border-[#F5F5F7] shadow-md group-hover:scale-105 transition-all duration-500">
           <img src={item.author.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -599,14 +599,14 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
                      else alert("Preparing group chat...");
                    });
                 } else {
-                  setIsPreviewOpen(true);
-               }
+                   setIsPreviewOpen(true);
+                }
              } else {
                router.push(`/chat?user=${item.author?.id}`); 
              }
            }}
            className={cn(
-              "h-12 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2", 
+              "h-11 md:h-12 w-full rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2", 
               item.type === 'MEETUP' && joinStatus === 'JOINED' ? "bg-emerald-600 text-white" : cta.color
            )}
          >

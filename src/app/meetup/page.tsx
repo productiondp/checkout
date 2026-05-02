@@ -250,7 +250,7 @@ export default function MeetupPage() {
 
   const handleJoin = async (id: string) => {
     if (!authUser) {
-      router.push('/auth');
+      router.push('/');
       return;
     }
     

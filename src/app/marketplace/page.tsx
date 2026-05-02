@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { 
   Search, 
   MapPin, 
@@ -63,6 +64,14 @@ const TYPE_FILTERS: { label: string; value: MarketplaceType }[] = [
 ];
 
 export default function MarketplacePage() {
+  return (
+    <ProtectedRoute>
+      <MarketplaceContent />
+    </ProtectedRoute>
+  );
+}
+
+function MarketplaceContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeType, setActiveType] = useState<MarketplaceType>("All");
   const [items, setItems] = useState<MarketplaceItem[]>([]);

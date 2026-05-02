@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -20,6 +21,14 @@ import { motion } from "framer-motion";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function AdvisorProfilePage() {
+  return (
+    <ProtectedRoute>
+      <AdvisorProfileContent />
+    </ProtectedRoute>
+  );
+}
+
+function AdvisorProfileContent() {
   const params = useParams();
   const router = useRouter();
   const advisorId = params.id as string;
@@ -143,7 +152,7 @@ export default function AdvisorProfilePage() {
                            try {
                               const { MeetupService } = await import("@/services/meetup-service");
                               const { data: { user } } = await (await import("@/utils/supabase/client")).createClient().auth.getUser();
-                              if (!user) { router.push('/auth'); return; }
+                              if (!user) { router.push('/'); return; }
                               const { roomId } = await MeetupService.joinMeetup(m.id, user.id);
                               if (roomId) router.push(`/chat?room=${roomId}`);
                               else {

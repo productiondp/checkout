@@ -110,7 +110,7 @@ export default function HomeFeed({
         }, 300);
 
         // Snappy transition
-        setTimeout(() => setNewlyCreatedPostId(null), 15000); // 15 seconds as requested
+        setTimeout(() => setNewlyCreatedPostId(null), 3000); // 3 seconds as requested
       }
     }
   }, [posts, currentUserId, newlyCreatedPostId]);
@@ -472,6 +472,7 @@ export default function HomeFeed({
                       currentUserId={currentUserId}
                       onAction={() => onAction?.(post)}
                       onDelete={() => onDelete?.(post)}
+                      isNew={isNew}
                     />
                   </motion.div>
 

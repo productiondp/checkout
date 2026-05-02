@@ -1,15 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { Database } from "@/types/supabase";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
 export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) => {
-  const isValidConfig = supabaseUrl && supabaseUrl.startsWith('http');
-  
-  return createServerClient(
-    isValidConfig ? supabaseUrl : "https://placeholder.supabase.co",
-    supabaseKey || "",
+  return createServerClient<Database>(
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

@@ -46,6 +46,7 @@ interface UniversalFeedCardProps {
   onAction?: (post: any) => void;
   onEdit?: (post: any) => void;
   onDelete?: (post: any) => void;
+  isNew?: boolean;
 }
 
 const TYPE_CONFIG: Record<string, {
@@ -158,6 +159,7 @@ const UniversalFeedCard = React.memo(({
   onAction,
   onEdit,
   onDelete,
+  isNew,
 }: UniversalFeedCardProps) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const [bookmarked, setBookmarked] = React.useState(false);
@@ -322,7 +324,8 @@ const UniversalFeedCard = React.memo(({
                  </div>
                  <div className="flex items-center gap-3.5 text-[10px] font-bold text-[#86868B] uppercase tracking-wider">
                     <span className="flex items-center gap-1.5">
-                       <Clock size={11} className="text-[#E53935]/40" /> {time}
+                       <Clock size={11} className={cn("text-[#E53935]/40", isNew && "text-emerald-500 animate-pulse")} /> 
+                       {isNew ? <span className="text-emerald-500 font-black">Just now</span> : time}
                     </span>
                     <div className="h-1 w-1 rounded-full bg-slate-200" />
                     <span className="flex items-center gap-1.5">

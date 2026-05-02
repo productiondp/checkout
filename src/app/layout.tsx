@@ -1,11 +1,7 @@
 import React from "react";
 import "./globals.css";
-import ClientLayout from "../components/layout/ClientLayout";
 import { Inter, Outfit } from "next/font/google";
-import { AuthProvider } from "@/hooks/useAuth";
-import ErrorBoundary from "@/components/ui/ErrorBoundary";
-import ProtocolGuard from "@/components/auth/ProtocolGuard";
-import { NotificationProvider } from "@/contexts/NotificationContext";
+import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -29,6 +25,9 @@ export const metadata = {
     statusBarStyle: "black-translucent",
     title: "Checkout",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   formatDetection: {
      telephone: false,
   },
@@ -47,16 +46,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="font-sans bg-white min-h-screen selection:bg-red-50">
-        <AuthProvider>
-          <NotificationProvider>
-            <ErrorBoundary>
-              <ProtocolGuard />
-              <ClientLayout>
-                {children}
-              </ClientLayout>
-            </ErrorBoundary>
-          </NotificationProvider>
-        </AuthProvider>
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
         <SpeedInsights />
       </body>

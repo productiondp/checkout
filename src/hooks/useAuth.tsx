@@ -1,305 +1,383 @@
 "use client";
 
 /**
- *  AUTH SYSTEM - MINIMAL SINGLE-THREADED (RACE-FREE)
+ * DETERMINISTIC AUTHENTICATION PROVIDER (V16.5)
  * 
- * Enforces a strict single-flow authentication lifecycle:
- * 1. ONLY onAuthStateChange listener
- * 2. NO manual getSession/init calls
- * 3. NO watchdogs or forced timers
- * 4. NO duplicate client instances
+ * Features:
+ * 1. UNIVERSAL TRIGGER: Every auth event triggers a terminal state resolution.
+ * 2. PRODUCTION FAILSAFE: 6-second watchdog prevents any infinite loading.
+ * 3. HARD REDIRECTS: Guarantees navigation even if the router encounters an internal hang.
+ * 4. SURGICAL MUTEX: Serialization ensures atomic state updates.
  */
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useMemo } from "react";
+import { clearCache } from "@/lib/cache";
 import { UserProfile } from "@/types/core";
-import { createClient } from "@/utils/supabase/client";
+import { createClient, runAuthSafe } from "@/utils/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
-import FullScreenLoader from "@/components/auth/FullScreenLoader";
-import { Session } from "@supabase/supabase-js";
-
-export type AuthState = "loading" | "guest" | "authenticated" | "onboarding";
+import { Session, User } from "@supabase/supabase-js";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import { AuthState, AuthEvent } from "@/lib/auth-fsm";
+import { monitoredTransition, metrics } from "@/lib/auth-monitor";
+import { LiveOpsDashboard } from "@/devtools/live-ops/LiveOpsDashboard";
 
 interface AuthContextType {
-  user: UserProfile | null;
-  authState: AuthState;
-  login: (credentials: any) => Promise<void>;
-  logout: () => void;
-  updateProfile: (data: Partial<UserProfile>) => void;
-  loading: boolean;
+  state: AuthState;
   session: Session | null;
+  user: User | null;
+  profile: UserProfile | null;
+  isAuthResolved: boolean;
+  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  updateProfile: (data: Partial<UserProfile>) => void;
+  initAuth: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
+const supabase = createClient();
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabase = useMemo(() => createClient(), []);
-  const router = useRouter();
-  const path = usePathname();
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  console.log('[AUTH HOOK MOUNTED]');
 
-  // ── ATOMIC STATES ──
-  const [authState, setAuthState] = useState<AuthState>("loading");
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    // ⚡ PRE-FLIGHT CACHE LOAD (Instant UI)
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('checkout_user_cache');
-      if (cached) {
-        try {
-          return JSON.parse(cached);
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  });
+  const [state, setState] = useState<AuthState>({ tag: 'initializing' });
   const [session, setSession] = useState<Session | null>(null);
-  
-  // ── EXECUTION GUARD ──
-  const initialized = useRef(false);
-  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isAuthResolved, setIsAuthResolved] = useState(false);
 
-  // ── PROFILE SYNC ──
-  const syncProfile = async (currentSession: Session | null) => {
-    if (!currentSession?.user) {
-      setAuthState(prev => prev === "loading" ? "guest" : prev);
-      return;
-    }
-    
-    setSession(currentSession);
-    try {
-      // ⚡ FAILSAFE: Don't wait more than 4s for the profile
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentSession.user.id)
-        .single();
+  const router = useRouter();
+  const pathname = usePathname();
+  const sessionAuthorityRef = useRef<string | null>(null);
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Profile sync timeout")), 4000)
-      );
-
-      const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any;
-
-      if (profile) {
-        const userData = {
-          ...profile,
-          expertise: profile.skills || [],
-          intents: profile.intent_tags || [],
-          onboarding_completed: !!profile.onboarding_completed || (typeof window !== 'undefined' && localStorage.getItem(`checkout_onboarded_${currentSession.user.id}`) === 'true')
-        } as UserProfile;
-
-        setUser(userData);
-        
-        // 💾 CACHE FOR NEXT LOAD
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('checkout_user_cache', JSON.stringify(userData));
-        }
-
-        if (userData.onboarding_completed || (userData.full_name && userData.role && userData.full_name !== 'New Member')) {
-          setAuthState("authenticated");
-        } else {
-          setAuthState("onboarding");
-        }
-      } else {
-        setAuthState("onboarding");
-      }
-    } catch (err) {
-      console.error("[AUTH] Profile Sync Error or Timeout:", err);
-      // Fallback: If we have a session but sync failed/timed out, assume onboarding
-      setAuthState("onboarding");
-    }
+  const dispatch = (event: AuthEvent) => {
+    setState(prev => {
+      const next = monitoredTransition(prev, event);
+      return next;
+    });
   };
 
-  // ── SINGLE AUTH FLOW ──
+  /**
+   * 1. AUTH INITIALIZATION & EVENT LISTENER
+   */
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    let mounted = true;
 
-    // 🛡️ STABLE WATCHDOG (5s) - Prevents infinite loading
-    if (!watchdogRef.current) {
-      watchdogRef.current = setTimeout(() => {
-        setAuthState(prev => {
-          if (prev === "loading") {
-            console.log("[AUTH] Watchdog expired. Setting to guest.");
-            return "guest";
-          }
-          return prev;
-        });
-      }, 5000);
-    }
-
-    const init = async () => {
+    const startSystem = async () => {
       try {
-        // Clear local cache in development to prevent loops
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-           localStorage.removeItem('checkout_user_cache');
-        }
+        await runAuthSafe(async () => {
+          try {
+            // [SEC] INITIAL SESSION TIMEOUT (V16.11)
+            const sessionWithTimeout = Promise.race([
+              supabase.auth.getSession(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_FETCH_TIMEOUT')), 3000))
+            ]) as Promise<{ data: { session: Session | null } }>;
 
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        console.log("[AUTH] init session check", { hasSession: !!initialSession });
-        
-        if (initialSession) {
-          if (watchdogRef.current) clearTimeout(watchdogRef.current);
-          await syncProfile(initialSession);
-        } else {
-          console.log("[AUTH] No initial session found. Waiting for events.");
-          if (typeof window !== 'undefined') localStorage.removeItem('checkout_user_cache');
-        }
-      } catch (err) {
-        console.error("[AUTH] Init error:", err);
-        setAuthState("guest");
-        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+            const { data: { session: initialSession } } = await sessionWithTimeout;
+            
+            if (!mounted) return;
+            console.log('[AUTH EVENT] INITIAL_BOOT', !!initialSession);
+            await resolveSession(initialSession);
+          } catch (e) {
+            console.error("[AUTH] Internal Resolve Failure:", e);
+            dispatch({ type: 'NO_SESSION' });
+            setIsAuthResolved(true);
+          }
+        }, { label: 'INITIAL_BOOT' });
+      } catch (mutexError) {
+        console.error("[AUTH] Mutex Timeout during Boot:", mutexError);
+        setIsAuthResolved(true);
       }
     };
 
-    init();
+    startSystem();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log(`[AUTH] onAuthStateChange: ${event}`, { hasSession: !!currentSession });
-      
-      if (event === 'SIGNED_OUT') {
-        setSession(null);
-        setUser(null);
-        setAuthState("guest");
-        if (watchdogRef.current) clearTimeout(watchdogRef.current);
-      } else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
-        if (currentSession) {
-          if (watchdogRef.current) clearTimeout(watchdogRef.current);
-          await syncProfile(currentSession);
-        } else {
-          setAuthState(prev => prev === "loading" ? "guest" : prev);
-        }
-      } else if (event === 'INITIAL_SESSION' && !currentSession) {
-        // Supabase has confirmed no session exists. We can safely stop waiting.
-        console.log("[AUTH] Supabase confirmed no session. Setting to guest.");
-        setAuthState("guest");
-        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+      if (!mounted) return;
+      console.log('[AUTH EVENT]', event, !!currentSession);
+
+      try {
+        await runAuthSafe(async () => {
+          try {
+            // [SEC] UNIVERSAL RESOLUTION TRIGGER
+            await resolveSession(currentSession);
+          } finally {
+            console.log(`[AUTH EVENT: ${event}] Processed`);
+          }
+        }, { label: 'AUTH_CHANGE' });
+      } catch (mutexError) {
+        console.error("[AUTH] Mutex Timeout during AuthChange:", mutexError);
+        setIsAuthResolved(true);
       }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      clearTimeout(watchdog);
     };
-  }, [supabase]);
+  }, []);
 
-  // ── SIMPLIFIED REDIRECT ENGINE ──
+  /**
+   * [DEBUG] STUCK-STATE WATCHDOG (V16.25)
+   * Monitors for genuine initialization hangs.
+   */
   useEffect(() => {
-    if (authState === "loading") return;
+    if (state.tag !== 'initializing') return;
 
-    const currentPath = path || window.location.pathname;
-    const PUBLIC_ROUTES = ["/", "/auth/callback", "/what-is-checkout"];
+    const debugTimer = setTimeout(() => {
+      if (state.tag === 'initializing') {
+        console.warn('[AUTH DEBUG] System stuck in initializing after 6s. Mutex depth:', metrics.mutexQueueLength);
+      }
+    }, 6000);
 
-    if (authState === "guest") {
-      if (!PUBLIC_ROUTES.includes(currentPath)) {
-        console.log(`[AUTH] Redirecting GUEST from ${currentPath} to /`);
-        window.location.href = "/";
+    return () => clearTimeout(debugTimer);
+  }, [state.tag]);
+
+  /**
+   * [SEC] AUTH FAILSAFE (PRODUCTION GUARD)
+   * 
+   * Ensures that the system NEVER remains stuck in 'initializing'.
+   */
+  useEffect(() => {
+    if (isAuthResolved) return;
+
+    const failsafe = setTimeout(() => {
+      if (!isAuthResolved) {
+        console.error('[AUTH FAILSAFE] System took too long to resolve. Forcing fallback.');
+        dispatch({ type: 'NO_SESSION' });
+        setIsAuthResolved(true);
       }
-    } 
-    else if (authState === "onboarding") {
-      // 🛡️ Redirect to onboarding if we're not there yet
-      // We allow redirect FROM root (/) to onboarding, but block it from other public pages to prevent loops
-      if (currentPath !== "/onboarding" && (currentPath === "/" || !PUBLIC_ROUTES.includes(currentPath))) {
-        console.log(`[AUTH] Redirecting ONBOARDING from ${currentPath} to /onboarding`);
-        window.location.href = "/onboarding";
+    }, 8000);
+
+    return () => clearTimeout(failsafe);
+  }, [isAuthResolved]);
+
+  /**
+   * 2. SESSION RESOLUTION (AUTHORITATIVE)
+   */
+  const resolveSession = async (currentSession: Session | null) => {
+    const timestamp = () => new Date().toISOString();
+    console.log('[RESOLVE START]', timestamp());
+
+    if (!currentSession) {
+      console.warn('[RESOLVE] 1. No session found → Treating as guest', timestamp());
+      sessionAuthorityRef.current = 'GUEST';
+      
+      if (state.tag !== 'unauthenticated') {
+        dispatch({ type: 'NO_SESSION' });
+      } else {
+        console.log('[RESOLVE] 1a. Already guest. Skipping dispatch.', timestamp());
       }
-    } 
-    else if (authState === "authenticated") {
-      // If we are fully authenticated, push to /home if we are on a public page or onboarding
-      if (currentPath === "/onboarding" || PUBLIC_ROUTES.includes(currentPath)) {
-        console.log(`[AUTH] Redirecting AUTHENTICATED from ${currentPath} to /home`);
-        window.location.href = "/home";
-      }
+      
+      setIsAuthResolved(true);
+      return;
     }
-  }, [authState, path, router]);
 
-  const login = async () => {}; // Handled in components
-  
-  const logout = async () => {
-    console.log("[AUTH] Definitive Logout...");
-    setAuthState("loading");
-    
+    sessionAuthorityRef.current = currentSession.access_token;
+
     try {
-      // ⚡ SPEED GUARDIAN: Don't wait more than 1s for the server
-      await Promise.race([
-        supabase.auth.signOut(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
-      ]);
-    } catch (e) {
-      console.warn("SignOut timed out or failed, forcing redirect:", e);
-    }
-    
-    // 2. Nuclear Clear
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // 3. COOKIE SHREDDER
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      setSession(currentSession);
+      setUser(currentSession.user);
+
+      console.log('[RESOLVE] 2. Initiating Profile Fetch...', timestamp());
+
+      // [SEC] ACCELERATED FETCH TIMEOUT (V16.7)
+      console.log('[RESOLVE] 2a. Accelerated timeout active (2s)', timestamp());
+      const profileWithTimeout = Promise.race([
+        supabase.from('profiles').select('*').eq('id', currentSession.user.id).maybeSingle(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('PROFILE_FETCH_TIMEOUT')), 2000)
+        )
+      ]) as Promise<{ data: any; error: any }>;
+
+      const { data, error } = await profileWithTimeout;
+      if (error) throw error;
+
+      // 🛡️ STALE PROTECTION
+      const isCurrent = sessionAuthorityRef.current === currentSession.access_token;
+      if (!isCurrent) {
+        console.warn('[RESOLVE] 2b. Authority changed during fetch. Aborting.', timestamp());
+        return;
       }
+
+      setProfile(data);
+      console.log(`[RESOLVE] 3. Profile synced. Target: ${data ? 'authenticated' : 'onboarding'}`, timestamp());
+      dispatch({ type: 'SESSION_FOUND', hasProfile: !!data });
       
-      // 4. Force Redirect
-      window.location.href = "/";
+    } catch (e: any) {
+      console.error('[RESOLVE] Critical Error:', e.message || e, timestamp());
+      dispatch({ type: 'SESSION_FOUND', hasProfile: false });
+    } finally {
+      setIsAuthResolved(true);
+      console.log('[RESOLVE COMPLETE]', timestamp());
     }
-    
-    setSession(null);
-    setUser(null);
-    setAuthState("guest");
   };
 
+  const logout = async () => {
+    await runAuthSafe(async () => {
+      try {
+        console.log('[LOGOUT] 1. Instant local state reset...');
+        setIsAuthResolved(false);
+        
+        // [UI-FIRST] RESET (V16.19)
+        // Clear all identity state immediately to unmount protected components
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+        sessionAuthorityRef.current = 'GUEST';
+        
+        console.log('[LOGOUT] 2. Submitting SignOut to Supabase...');
+        // 🛡️ SIGNOUT TIMEOUT (V16.15)
+        try {
+          await Promise.race([
+            supabase.auth.signOut(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('SIGNOUT_TIMEOUT')), 3000))
+          ]);
+          console.log('[LOGOUT] 2a. Supabase SignOut Complete.');
+        } catch (signOutError) {
+          console.warn('[LOGOUT] 2b. SignOut network hang, continuing with local reset.', signOutError);
+        }
+
+        clearCache();
+        dispatch({ type: 'LOGOUT' });
+        setIsAuthResolved(true);
+        console.log('[LOGOUT] 3. Cleanup complete.');
+      } catch (e) {
+        console.error("[LOGOUT] Critical Failure:", e);
+        setIsAuthResolved(true);
+      }
+    }, { priority: 'high', label: 'LOGOUT' });
+  };
+
+  const login = async (email: string, password: string) => {
+    const timestamp = () => new Date().toISOString();
+    console.log('[LOGIN] Initiating high-priority task...', timestamp());
+    await runAuthSafe(async () => {
+      console.log('[LOGIN] 1. Submitting credentials to Supabase...', timestamp());
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        console.error('[LOGIN] Supabase Error:', error.message, timestamp());
+        throw error;
+      }
+      
+      if (data.session) {
+        console.log('[LOGIN] 2. Success. Transitioning to resolution...', timestamp());
+        await resolveSession(data.session);
+        console.log('[LOGIN] 3. Terminal state achieved.', timestamp());
+      } else {
+        console.warn('[LOGIN] No session returned from Supabase.', timestamp());
+      }
+    }, { priority: 'high', label: 'LOGIN' });
+  };
+
+  /**
+   * 🛡️ RESTORED: HARD-SYNC PROFILE (c9cb87d)
+   */
   const updateProfile = (data: Partial<UserProfile>) => {
-    if (!user) return;
-    const newUser = { ...user, ...data };
-    setUser(newUser);
-    
-    // Sync to cache
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('checkout_user_cache', JSON.stringify(newUser));
-    }
-
-    if (data.onboarding_completed) {
-      setAuthState("authenticated");
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`checkout_onboarded_${user.id}`, 'true');
+    setProfile(prev => {
+      const updated = prev ? { ...prev, ...data } : { ...data } as UserProfile;
+      if (data.onboarding_completed) {
+        dispatch({ type: 'SESSION_FOUND', hasProfile: true });
       }
-    }
+      return updated;
+    });
   };
 
-  if (authState === "loading") {
-    return <FullScreenLoader status="loading" />;
+  /**
+   * 🛡️ RESTORED: MANUAL INIT (c9cb87d)
+   */
+  const initAuth = async () => {
+    await runAuthSafe(async () => {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      await resolveSession(s);
+    }, { label: 'MANUAL_INIT' });
+  };
+
+  const value = useMemo(() => ({
+    state, session, user, profile, isAuthResolved, logout, login, updateProfile, initAuth
+  }), [session, user, profile, state, isAuthResolved]);
+
+  if (state.tag === "initializing" || !isAuthResolved) {
+    return <LoadingScreen />;
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      authState,
-      login, 
-      logout, 
-      updateProfile, 
-      loading: authState === "loading", 
-      session 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
+      <LiveOpsDashboard />
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
+};
+
+/**
+ * 🛡️ DETERMINISTIC ROUTE GUARD HOOK
+ */
+export function useAuthGuard(required: 'authenticated' | 'unauthenticated' | 'onboarding') {
+  const { state, isAuthResolved } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const hasRedirectedRef = useRef(false);
+
+  useEffect(() => {
+    hasRedirectedRef.current = false;
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isAuthResolved || state.tag === 'initializing') return;
+    if (hasRedirectedRef.current) return;
+
+    // Guest trying to access protected route
+    if (required === 'authenticated' && state.tag === 'unauthenticated') {
+      console.log('[GUARD] Unauthenticated user on protected route. Redirecting to /');
+      hasRedirectedRef.current = true;
+      router.replace('/');
+
+      // 🛡️ HARD REDIRECT FALLBACK
+      setTimeout(() => {
+        if (window.location.pathname !== '/') window.location.href = '/';
+      }, 2000);
+      return;
+    }
+
+    // Authenticated user trying to access landing/guest page
+    if (required === 'unauthenticated' && state.tag === 'authenticated') {
+      console.log('[GUARD] Authenticated user on guest route. Redirecting to /home');
+      hasRedirectedRef.current = true;
+      router.replace('/home');
+
+      // 🛡️ HARD REDIRECT FALLBACK
+      setTimeout(() => {
+        if (window.location.pathname !== '/home') window.location.href = '/home';
+      }, 2000);
+      return;
+    }
+
+    // New user needs onboarding
+    if (state.tag === 'onboarding' && required !== 'onboarding') {
+      console.log('[GUARD] User needs onboarding. Redirecting to /onboarding');
+      hasRedirectedRef.current = true;
+      router.replace('/onboarding');
+
+      // 🛡️ HARD REDIRECT FALLBACK
+      setTimeout(() => {
+        if (window.location.pathname !== '/onboarding') window.location.href = '/onboarding';
+      }, 2000);
+      return;
+    }
+  }, [state.tag, isAuthResolved, required, router]);
+
+  return { loading: state.tag === 'initializing' || !isAuthResolved, state };
 }
 
 export function useRequiredUser() {
-  const { user } = useAuth();
-  if (!user) {
-    // This is a safety fallback, usually handled by ProtectedRoute
-    console.warn("[AUTH] useRequiredUser called without user session");
-  }
-  return user;
+  const { user, state, isAuthResolved } = useAuth();
+  if (state.tag === 'initializing' || !isAuthResolved) return { user: null, loading: true };
+  if (!user || state.tag !== 'authenticated') throw new Error('User not authenticated');
+  return { user, loading: false };
 }

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -46,6 +47,14 @@ import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/ident
 import { detectBaseTag } from "@/utils/match-engine";
 
 export default function OnboardingPage() {
+  return (
+    <ProtectedRoute>
+      <OnboardingContent />
+    </ProtectedRoute>
+  );
+}
+
+function OnboardingContent() {
   const { user, session, updateProfile, logout } = useAuth();
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,12 +81,22 @@ export default function OnboardingPage() {
   // Fetch Focus Library
   useEffect(() => {
     async function fetchLibrary() {
-      const { data } = await supabase
-        .from('focus_library')
-        .select('*')
-        .order('usage_count', { ascending: false })
-        .limit(10);
-      if (data) setLibraryFocus(data);
+      try {
+        const { data, error: libError } = await supabase
+          .from('focus_library')
+          .select('*')
+          .order('usage_count', { ascending: false })
+          .limit(10);
+        
+        // Graceful handle 404 (table missing) or 403 (forbidden)
+        if (libError) {
+          console.warn("[ONBOARDING] Focus library unavailable, using defaults.", libError.message);
+          return;
+        }
+        if (data) setLibraryFocus(data);
+      } catch (err) {
+        console.warn("[ONBOARDING] Library fetch bypassed.");
+      }
     }
     fetchLibrary();
   }, []);
@@ -98,10 +117,6 @@ export default function OnboardingPage() {
     }
   }, [user]);
 
-  // 🛡️ FLASH GUARD: Don't render UI if already completed
-  if (user?.onboarding_completed) {
-    return null;
-  }
 
   const saveCustomFocus = async (label: string, industry: string) => {
     try {
@@ -178,6 +193,16 @@ export default function OnboardingPage() {
       } else {
         console.log("ONBOARDING: Save Success!");
         if (isFinal) {
+          // 🛡️ Deterministic: Update the independent onboarding_state tracker
+          await supabase
+            .from('onboarding_state')
+            .upsert({
+              user_id: userId,
+              completed: true,
+              step: 'completed',
+              updated_at: new Date().toISOString()
+            });
+
           completeOnboardingLocally();
         }
       }
@@ -211,7 +236,7 @@ export default function OnboardingPage() {
     
     setIsCompleted(true);
     
-    // Auto-redirect after a short delay if success screen is not desired or stuck
+    // Auto-redirect after a short delay
     setTimeout(() => {
       router.push("/home");
     }, 2000);

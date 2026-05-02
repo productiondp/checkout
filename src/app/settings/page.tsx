@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Link from "next/link";
 import { 
   Settings, 
@@ -21,6 +22,14 @@ import { cn } from "@/lib/utils";
 import { analytics } from "@/utils/analytics";
 
 export default function SettingsHub() {
+  return (
+    <ProtectedRoute>
+      <SettingsContent />
+    </ProtectedRoute>
+  );
+}
+
+function SettingsContent() {
   const { user: authUser, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);

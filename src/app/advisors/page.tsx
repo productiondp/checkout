@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { 
   Search, 
   Filter, 
@@ -22,6 +23,14 @@ import { useAuth } from "@/hooks/useAuth";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function AdvisorsPage() {
+  return (
+    <ProtectedRoute>
+      <AdvisorsContent />
+    </ProtectedRoute>
+  );
+}
+
+function AdvisorsContent() {
   const { user: authUser } = useAuth();
   const [advisors, setAdvisors] = useState<Advisor[]>([]);
   const [loading, setLoading] = useState(true);

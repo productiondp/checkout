@@ -22,11 +22,14 @@ import {
   PlayCircle,
   BookOpen,
   ChevronRight,
-  X
+  X,
+  Lock as LockIcon,
+  ShieldCheck as ShieldIcon
 } from "lucide-react";
+import AuthSubmissionStatus, { AuthSubmissionState } from "@/components/auth/AuthSubmissionStatus";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useAuthGuard } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 
 type AuthMode = "signin" | "signup";
@@ -40,14 +43,17 @@ const ROLES: { value: Role; icon: any; desc: string }[] = [
 ];
 
 function AuthContent() {
-  const router = useRouter();
-  const { authState, loading: authLoading, initAuth } = useAuth();
+  // 🛡️ DECENTRALIZED GUEST GUARD
+  useAuthGuard('unauthenticated');
+  const { login } = useAuth();
+  
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<AuthMode>((searchParams.get("mode") as AuthMode) || "signup");
   const [role, setRole] = useState<Role>("Business");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "", fullName: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [submissionState, setSubmissionState] = useState<AuthSubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
@@ -65,12 +71,7 @@ function AuthContent() {
     }
   }, [mode, mounted]);
 
-  // 🛡️ BACKUP REDIRECT (In case sentinel is slow)
-  const { user } = useAuth(); // Extract user directly for faster check
-  
-  // Redirection is now centrally handled by useAuth.tsx
-
-  if (authLoading || !mounted) return null;
+  if (!mounted) return null;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -79,11 +80,24 @@ function AuthContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
     setIsLoading(true);
     setError(null);
 
+    // 🛡️ SUBMISSION WATCHDOG (5s)
+    const watchdog = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        setSubmissionState('FAILED');
+        setError("Authentication is taking longer than expected. Please check your connection.");
+      }
+    }, 5000);
+
     try {
+      // Only show verifying overlay if it takes > 300ms
+      const overlayTimer = setTimeout(() => {
+        if (!isSuccess) setSubmissionState('VERIFYING');
+      }, 300);
+
       if (mode === "signup") {
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
@@ -91,6 +105,7 @@ function AuthContent() {
           options: { data: { full_name: formData.fullName || "New Member", role: role.toUpperCase() } },
         });
         if (signUpError) throw signUpError;
+        
         if (authData.user) {
           await supabase.from("profiles").upsert({
             id: authData.user.id,
@@ -99,19 +114,29 @@ function AuthContent() {
             location: "Trivandrum",
           });
         }
-        setIsSuccess(true);
+
+        // AUTO-SIGNIN Fallback
+        if (!authData.session) {
+           await login(formData.email, formData.password);
+        }
       } else {
-        const { data: { session: currentSession }, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-        if (signInError) throw signInError;
-        setIsSuccess(true);
+        await login(formData.email, formData.password);
       }
+
+      // Clear overlay and allow useAuth to redirect
+      setTimeout(() => setSubmissionState(null), 500);
+
     } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
+      console.error("[AUTH] Nuclear Failure:", err);
+      clearTimeout(watchdog);
+      setSubmissionState('FAILED');
+      setError(err.message || "Authentication failed. Please try again.");
     } finally {
       setIsLoading(false);
+      // Safety reset
+      if (submissionState !== 'SUCCESS' && submissionState !== 'FAILED') {
+        setSubmissionState(null);
+      }
     }
   };
 
@@ -245,15 +270,28 @@ function AuthContent() {
 
                           {error && <p className="text-red-600 text-sm">{error}</p>}
 
-                          <button
-                             type="submit"
-                             disabled={isLoading}
-                             className="w-full h-12 bg-[#E53935] hover:bg-[#B71C1C] text-white font-bold rounded-full transition-all flex items-center justify-center"
-                          >
-                             {isLoading ? <Loader2 className="animate-spin" size={20} /> : (mode === "signup" ? "Agree & join" : "Sign in")}
-                          </button>
-                       </form>
-                    </motion.div>
+                           <button
+                              type="submit"
+                              disabled={isLoading}
+                              className="w-full h-12 bg-[#E53935] hover:bg-[#B71C1C] text-white font-bold rounded-full transition-all flex items-center justify-center relative overflow-hidden"
+                           >
+                              {mode === "signup" ? "Agree & join" : "Sign in"}
+                           </button>
+                        </form>
+
+                        <AnimatePresence>
+                           {submissionState && (
+                              <AuthSubmissionStatus 
+                                 state={submissionState} 
+                                 error={error}
+                                 onRetry={() => {
+                                    setSubmissionState(null);
+                                    setError(null);
+                                 }}
+                              />
+                           )}
+                        </AnimatePresence>
+                     </motion.div>
                   ) : (
                     <div className="py-10 space-y-4">
                        <CheckCircle2 size={48} className="text-[#E53935]" />

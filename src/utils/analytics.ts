@@ -58,8 +58,16 @@ class AnalyticsEngine {
 
     this.sessionEvents.push(event);
 
+    // 🛡️ SYNC USER ID TO INSTANCE
+    if (userId) {
+      this.startTime = Date.now(); // Reset session start on identity
+    }
+
     // STRUCTURED LOGGING
     if (process.env.NODE_ENV === 'development') {
+      // Quiet logs for anonymous initial handshake
+      if (!userId && (event === 'SESSION_START' || event === 'SCREEN_VIEW')) return;
+      
       console.log(`%c[ANALYTICS] ${event}`, 'color: #E53935; font-weight: bold;', eventData);
     } else {
       // PRODUCTION MONITORING LOG
@@ -69,16 +77,25 @@ class AnalyticsEngine {
     // PERSIST TO SUPABASE
     try {
       const supabase = createClient();
-      await supabase.from('analytics_events').insert([{
+      const { error } = await supabase.from('analytics_events').insert([{
         user_id: userId || null,
         event_type: event,
-        metadata: eventData.metadata
+        metadata: {
+          ...eventData.metadata,
+          persisted_at: new Date().toISOString()
+        }
       }]);
-    } catch (err) {
-      // Don't crash on analytics failure
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[ANALYTICS] Persistence failed:', err);
+      
+      if (error) {
+        // [SEC] RLS / AUTH SILENCING (V16.24)
+        // If RLS fails, we log it once but don't treat it as a system error
+        const isAuthError = error.code === '42501' || error.message.includes('row-level security');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`[ANALYTICS] Persistence ${isAuthError ? 'Silenced (RLS)' : 'Failed'}: ${error.message}`);
+        }
       }
+    } catch (err: any) {
+      // Definitive silence for analytics infrastructure
     }
   }
 

@@ -47,10 +47,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const broadcastCounts = useCallback((unread: number, pending: number) => {
-    syncChannel.current?.postMessage({
-      type: "UPDATE_COUNTS",
-      data: { unreadMessagesCount: unread, pendingRequestsCount: pending }
-    });
+    try {
+      if (syncChannel.current) {
+        syncChannel.current.postMessage({
+          type: "UPDATE_COUNTS",
+          data: { unreadMessagesCount: unread, pendingRequestsCount: pending }
+        });
+      }
+    } catch (err) {
+      // Ignore "Channel is closed" errors during unmount
+      if (!(err instanceof Error && err.name === 'InvalidStateError')) {
+        console.warn("Broadcast Error:", err);
+      }
+    }
   }, []);
 
   const fetchCounts = useCallback(async () => {

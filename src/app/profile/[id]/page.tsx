@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useParams } from "next/navigation";
 import { 
   User, 
@@ -36,6 +37,14 @@ import { createClient } from "@/utils/supabase/client";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 
 export default function DynamicProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfileContent />
+    </ProtectedRoute>
+  );
+}
+
+function ProfileContent() {
   const params = useParams();
   const profileId = params.id as string;
   const [profile, setProfile] = useState<any>(null);

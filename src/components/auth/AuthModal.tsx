@@ -9,15 +9,18 @@ import {
   Lock,
   User,
   Briefcase,
-  GraduationCap,
   CheckCircle2,
   AlertCircle,
   Chrome,
   Eye,
-  EyeOff
+  EyeOff,
+  Sparkles
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { analytics } from "@/utils/analytics";
+import AuthSubmissionStatus, { AuthSubmissionState } from "./AuthSubmissionStatus";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 type AuthMode = "signin" | "signup";
 type Role = "Business" | "Professional" | "Student" | "Advisor";
@@ -33,9 +36,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<Role>("Business");
   const [isLoading, setIsLoading] = useState(false);
+  const [submissionState, setSubmissionState] = useState<AuthSubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -61,7 +67,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
   if (!isOpen) return null;
 
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError(null);
@@ -73,12 +78,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
     // 🛡️ FRONTEND GUARD: Anti-Spam UX
     const now = Date.now();
     if (mode === "signup") {
-      if (now - lastSignupTime < 10000) { // 1 attempt per 10 seconds
+      if (now - lastSignupTime < 10000) {
         setError("Please wait a few seconds before trying again.");
         return;
       }
-      
-      if (signupAttempts >= 5 && now - lastSignupTime < 300000) { // 5 attempts per 5 mins
+      if (signupAttempts >= 5 && now - lastSignupTime < 300000) {
         setError("Too many signup attempts. Please wait 5 minutes.");
         return;
       }
@@ -86,16 +90,29 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
 
     setIsLoading(true);
     setError(null);
-
     const supabase = createClient();
 
+    // 🛡️ SUBMISSION WATCHDOG (5s)
+    const watchdog = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        setSubmissionState('FAILED');
+        setError("The authentication mesh is taking too long to respond. Please try again.");
+      }
+    }, 5000);
+
     try {
+      // Direct call - only show overlay if it takes > 300ms
+      const overlayTimeout = setTimeout(() => {
+        if (!isSuccess) setSubmissionState('VERIFYING');
+      }, 300);
+
       if (mode === "signup") {
         if (!formData.fullName || formData.fullName.length < 2) {
           throw new Error("Please enter your full name.");
         }
         
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -106,43 +123,47 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
           },
         });
         
-        if (signUpError) {
-          if (signUpError.status === 429 || signUpError.message.includes("rate limit")) {
-            throw new Error("Too many attempts. Please wait a moment and try again.");
-          }
-          if (signUpError.message.includes("already registered")) {
-            throw new Error("This email is already registered. Please sign in instead.");
-          }
-          throw signUpError;
-        }
+        if (signUpError) throw signUpError;
         
         setSignupAttempts(prev => prev + 1);
         setLastSignupTime(now);
-        setIsSuccess(true);
-        analytics.track('SIGNUP_COMPLETED', undefined, { role: role.toUpperCase(), email: formData.email });
         
-        // 🛡️ DELEGATED TO useAuth: Navigation to /onboarding happens automatically
-        setTimeout(() => {
-          onClose();
-        }, 1500);
+        // Auto-Signin fallback if no session
+        if (!authData.session) {
+          await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+        }
       } else {
-        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-        
-        setIsSuccess(true);
-        if (user) {
-          analytics.track('SESSION_START', user.id, { method: 'password' });
-        }
-        onClose();
-        // 🛡️ DELEGATED TO useAuth: Navigation to /home happens automatically
+        if (signInError) throw signInError;
       }
+
+      clearTimeout(overlayTimeout);
+      clearTimeout(watchdog);
+      setSubmissionState('SUCCESS');
+      setIsSuccess(true);
+      
+      setTimeout(() => {
+        setSubmissionState(null);
+        onClose();
+      }, 500);
+
     } catch (err: any) {
-      console.error("Auth Failure:", err);
+      console.error("[AUTH] Submission Failure:", err);
+      clearTimeout(watchdog);
+      setSubmissionState('FAILED');
       setError(err.message || "Credential verification failed.");
     } finally {
       setIsLoading(false);
+      // Ensure we don't stay stuck in VERIFYING if an error occurred
+      if (submissionState !== 'SUCCESS' && submissionState !== 'FAILED') {
+        setSubmissionState(null);
+      }
     }
   };
 
@@ -384,19 +405,23 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
                 }`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span>Loading</span>
-                </div>
-              ) : (
-                <>
-                  <span>{mode === "signin" ? "Sign In" : "Join Now"}</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
+              <span>{mode === "signin" ? "Sign In" : "Join Now"}</span>
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
+
+          <AnimatePresence>
+            {submissionState && (
+              <AuthSubmissionStatus 
+                state={submissionState} 
+                error={error}
+                onRetry={() => {
+                  setSubmissionState(null);
+                  setError(null);
+                }}
+              />
+            )}
+          </AnimatePresence>
 
           {/* Social Access */}
           <div className="relative pt-2">

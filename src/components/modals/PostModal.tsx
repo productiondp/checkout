@@ -19,6 +19,7 @@ import { detectBaseTag } from "@/utils/match-engine";
 import { ClarityTextarea } from "@/components/ui/ClarityTextarea";
 import { INDUSTRY_DATA, getIndustryById, detectTaxonomy, EXPERIENCE_LEVELS } from "@/utils/industry-data";
 import { DEFAULT_AVATAR } from "@/utils/constants";
+import PostSubmissionStatus, { SubmissionState } from "./PostSubmissionStatus";
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -111,7 +112,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   const [isImproving, setIsImproving] = useState(false);
 
   const [suggestion, setSuggestion] = useState<{ industry: string, focus: string } | null>(null);
-  const [isPosting, setIsPosting] = useState(false);
+  const [submissionState, setSubmissionState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
@@ -119,6 +120,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   // RESET LOGIC
   useEffect(() => {
     if (isOpen) {
+      setSubmissionState(null);
       if (editPost) {
         setContent(editPost.content || "");
         setType(editPost.type);
@@ -232,8 +234,13 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
       return;
     }
 
-    setIsPosting(true);
+    setSubmissionState('PREPARING');
     setError(null);
+
+    // Confidence delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    setSubmissionState('POSTING');
     const idempotencyKey = `${authUser.id}-${Date.now()}`;
     
     const payload = {
@@ -274,18 +281,24 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
         : await supabase.from('posts').insert([payload]).select().single();
       if (postErr) throw postErr;
       
-      // Register for auto-scroll in Feed
+      setSubmissionState('SUCCESS');
+      
+      // Register for auto-scroll and highlight in Feed
       localStorage.setItem('checkout_last_post', JSON.stringify({
         title: payload.title,
         time: Date.now()
       }));
 
-      onPostSuccess?.(data);
-      onClose();
+      // Show success for 2 seconds before closing
+      setTimeout(() => {
+        onPostSuccess?.(data);
+        onClose();
+        setSubmissionState(null);
+      }, 2000);
+
     } catch (err: any) {
+      setSubmissionState('FAILED');
       setError(err.message || "Failed to post. Please try again.");
-    } finally {
-      setIsPosting(false);
     }
   };
 
@@ -744,13 +757,27 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                           setError(null); setCurrentStep(prev => prev + 1);
                         }} className={cn("flex-1 h-16 text-white rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3", config.color)}>Next<ArrowRight size={18} /></button>
                       ) : (
-                        <button onClick={handlePost} disabled={isPosting} className={cn("flex-1 h-16 text-white rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 group", config.color)}>{isPosting ? <Activity className="animate-spin" size={18} /> : <Zap size={18} />}{config.cta}</button>
+                        <button onClick={handlePost} disabled={submissionState !== null} className={cn("flex-1 h-16 text-white rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 group", config.color)}>{submissionState ? <Activity className="animate-spin" size={18} /> : <Zap size={18} />}{config.cta}</button>
                       )}
                    </div>
                 </div>
              </motion.div>
           </AnimatePresence>
         </div>
+        <AnimatePresence>
+          {submissionState && (
+            <PostSubmissionStatus 
+              state={submissionState} 
+              onRetry={() => {
+                setSubmissionState('RETRYING');
+                setTimeout(handlePost, 1000);
+              }}
+              onCancel={() => {
+                setSubmissionState(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );

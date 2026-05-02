@@ -9,8 +9,7 @@ import {
   MessageSquare, 
   UserPlus, 
   ShoppingBag, 
-  User,
-  MapPin
+  User
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,7 +22,6 @@ export default function MobileNavbar() {
   const navItems = [
     { label: "Home", icon: Home, href: "/home" },
     { label: "Network", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount : null },
-    { label: "Discover", icon: MapPin, href: "/discover" },
     { label: "Market", icon: ShoppingBag, href: "/marketplace" },
     { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
     { label: "Profile", icon: User, href: `/profile/${user?.id}` },

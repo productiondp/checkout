@@ -47,7 +47,6 @@ export default function DesktopSidebar() {
         { label: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
         { label: "Advisors", icon: Target, href: "/advisors" },
         { label: "Meetups", icon: LayoutGrid, href: "/meetup" },
-        { label: "Discover Map", icon: MapPin, href: "/discover" },
       ]
     }
   ];

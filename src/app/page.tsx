@@ -151,7 +151,7 @@ function AuthContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#1D1D1F] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
       <LandingHeader 
          onJoinClick={() => setMode("signup")} 
          onSigninClick={() => setMode("signin")} 
@@ -160,8 +160,8 @@ function AuthContent() {
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
-               <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.9]">
-                  <span className="font-extralight opacity-60">Connect.</span><br className="hidden lg:block" /> Grow. <br />
+               <h1 className="text-5xl lg:text-[100px] font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.85] mb-8">
+                  Connect. Grow. <br />
                   <span className="text-[#E53935]">Succeed.</span>
                </h1>
 
@@ -176,8 +176,8 @@ function AuthContent() {
                        <form onSubmit={handleSubmit} className="space-y-4">
                           {mode === "signup" && (
                              <div className="space-y-4">
-                                <div className="space-y-1 relative">
-                                   <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">I am a...</label>
+                                <div className="space-y-1.5 relative">
+                                   <label className="text-[12px] font-bold text-gray-900 ml-1">I am a...</label>
                                    <div className="relative">
                                       <button 
                                         type="button"
@@ -228,44 +228,44 @@ function AuthContent() {
                                    </div>
                                 </div>
 
-                                <div className="space-y-1">
-                                   <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Full name</label>
+                                <div className="space-y-1.5">
+                                   <label className="text-[12px] font-bold text-gray-900 ml-1">Full name</label>
                                    <input
                                       type="text"
                                       name="fullName"
                                       value={formData.fullName}
                                       onChange={handleInput}
                                       placeholder="John Doe"
-                                      className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px]"
+                                      className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
                                       required
                                    />
                                 </div>
                              </div>
                           )}
 
-                          <div className="space-y-1">
-                             <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Email address</label>
+                          <div className="space-y-1.5">
+                             <label className="text-[12px] font-bold text-gray-900 ml-1">Email</label>
                              <input
                                 type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInput}
                                 placeholder="name@company.com"
-                                className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px]"
+                                className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
                                 required
                              />
                           </div>
 
-                          <div className="space-y-1">
-                              <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Security key</label>
+                          <div className="space-y-1.5">
+                              <label className="text-[12px] font-bold text-gray-900 ml-1">Password</label>
                               <div className="relative group">
                                  <input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleInput}
-                                    placeholder="••••••••"
-                                    className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px] pr-12"
+                                    placeholder="••••••"
+                                    className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px] pr-12"
                                     required
                                  />
                                  <button 
@@ -283,7 +283,7 @@ function AuthContent() {
                            <button
                               type="submit"
                               disabled={isLoading}
-                              className="w-full h-16 bg-black text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl shadow-xl shadow-black/10 hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 mt-4"
+                              className="w-full h-14 bg-[#E53935] text-white font-bold rounded-xl shadow-lg hover:bg-[#D32F2F] transition-all flex items-center justify-center gap-3 mt-6"
                            >
                               {isLoading ? <Loader2 size={18} className="animate-spin" /> : (mode === "signup" ? "Agree & join" : "Sign in")}
                            </button>

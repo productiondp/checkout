@@ -37,25 +37,25 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-10 text-gray-400 font-bold tracking-wide text-[12px]">
+        <div className="hidden lg:flex items-center gap-8 text-[#1D1D1F] font-medium text-[14px]">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-black transition-colors">
+            <Link key={link.href} href={link.href} className="hover:text-[#E53935] transition-colors">
               {link.label}
             </Link>
           ))}
-          <div className="h-6 w-px bg-black/[0.05] mx-2" />
+          <div className="h-4 w-px bg-black/[0.1] mx-2" />
           <div className="flex items-center gap-6">
             <button 
-              onClick={onSigninClick || (() => window.location.href = '/?mode=signin')} 
-              className="text-gray-400 hover:text-black transition-all"
+              onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
+              className="text-[#1D1D1F] hover:text-[#E53935] transition-all font-bold"
             >
-              Sign In
+              Join now
             </button>
             <button 
-              onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
-              className="px-8 h-12 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-black/10 font-bold"
+              onClick={onSigninClick || (() => window.location.href = '/?mode=signin')} 
+              className="px-6 h-10 border border-[#E53935] text-[#E53935] rounded-full hover:bg-[#E53935] hover:text-white transition-all font-bold"
             >
-              Join Now
+              Sign in
             </button>
           </div>
         </div>

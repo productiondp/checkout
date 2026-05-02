@@ -40,9 +40,6 @@ type OnboardingState = {
   bio: string;
   location: string;
   avatar_url: string;
-  primaryIntent: string;
-  firstObjective: string;
-  objectiveCategory: string;
 };
 
 import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/identity-engine";
@@ -80,10 +77,7 @@ function OnboardingContent() {
     intents: [],
     bio: "",
     location: "Trivandrum",
-    avatar_url: "",
-    primaryIntent: "Growth & Scaling",
-    firstObjective: "",
-    objectiveCategory: "Hiring"
+    avatar_url: ""
   });
 
   // Fetch Focus Library
@@ -173,9 +167,6 @@ function OnboardingContent() {
       bio: onboardingData.bio,
       location: onboardingData.location,
       avatar_url: onboardingData.avatar_url,
-      metadata: {
-        primaryIntent: onboardingData.primaryIntent
-      },
       onboarding_completed: isFinal
     };
 
@@ -204,17 +195,6 @@ function OnboardingContent() {
       } else {
         console.log("ONBOARDING: Save Success!");
         if (isFinal) {
-          //  Insert First Objective if provided
-          if (onboardingData.firstObjective.trim()) {
-             await supabase.from('posts').insert({
-                author_id: userId,
-                title: onboardingData.firstObjective,
-                type: onboardingData.objectiveCategory.toUpperCase(),
-                content: `Initial strategic objective set during onboarding: ${onboardingData.primaryIntent}`,
-                status: 'ACTIVE'
-             });
-          }
-
           //  Deterministic: Update the independent onboarding_state tracker
           await supabase
             .from('onboarding_state')
@@ -400,7 +380,7 @@ function OnboardingContent() {
         <div className="h-1.5 bg-slate-50 w-full flex p-0 relative z-50">
            <div 
              className="h-full bg-[#FF3B30] transition-all duration-1000 ease-out" 
-             style={{ width: `${(step / 4) * 100}%` }}
+             style={{ width: `${(step / 3) * 100}%` }}
            />
         </div>
 
@@ -409,13 +389,12 @@ function OnboardingContent() {
               <div className="space-y-4">
                  <div className="inline-flex items-center gap-2 text-[#FF3B30] text-[11px] font-black uppercase tracking-wider">
                     <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
-                    Step {step} of 4 // About you
+                    Step {step} of 3 // About you
                  </div>
                  <h1 className="text-5xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
                     {step === 1 && "Who are you?"}
                     {step === 2 && (onboardingData.role === 'ADVISOR' ? "How can you help?" : "What do you do?")}
-                    {step === 3 && "Where are you?"}
-                    {step === 4 && "Your Mission"}
+                    {step === 3 && "Almost done"}
                  </h1>
               </div>
 
@@ -636,75 +615,6 @@ function OnboardingContent() {
                              <div>
                                 <p className="text-[16px] font-black text-emerald-800 uppercase tracking-wider mb-0.5">All set</p>
                                 <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-tight">Your profile is ready to go.</p>
-                             </div>
-                          </div>
-                       </div>
-                    )}
-
-                    {step === 4 && (
-                       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                          <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
-                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF3B30]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                             <div className="flex flex-col md:items-center md:flex-row justify-between gap-6 mb-8 relative z-10">
-                                <div>
-                                   <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                      <Target size={16} className="text-[#FF3B30]" /> Core Network Mission
-                                   </h3>
-                                   <p className="text-2xl font-bold text-[#1D1D1F]">What are you solving for?</p>
-                                </div>
-                                <select 
-                                   value={onboardingData.primaryIntent}
-                                   onChange={(e) => setOnboardingData(prev => ({ ...prev, primaryIntent: e.target.value }))}
-                                   className="h-16 px-8 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-600 outline-none focus:border-[#FF3B30] transition-all cursor-pointer"
-                                >
-                                   <option>Growth & Scaling</option>
-                                   <option>Investment & Funding</option>
-                                   <option>Talent Acquisition</option>
-                                   <option>Strategic Partnerships</option>
-                                   <option>Market Entry</option>
-                                </select>
-                             </div>
-                             <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-xl relative z-10">
-                                Your mission helps our AI prioritize your feed with the most relevant advisors, partners, and high-value opportunities.
-                             </p>
-                          </div>
-
-                          <div className="space-y-6">
-                             <div className="flex items-center justify-between px-1">
-                                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest">Your First Strategic Objective</label>
-                                <span className="text-[10px] font-bold text-slate-300 uppercase">Visible to network</span>
-                             </div>
-                             
-                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                <div className="lg:col-span-2 relative bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
-                                   <Activity className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={20} />
-                                   <input 
-                                      type="text" 
-                                      value={onboardingData.firstObjective}
-                                      onChange={e => setOnboardingData(prev => ({ ...prev, firstObjective: e.target.value }))}
-                                      placeholder="e.g. Hire a Strategic Advisor for Q3"
-                                      className="w-full h-16 bg-transparent pl-16 pr-8 text-lg font-bold text-[#1A1A1A] outline-none placeholder:text-slate-200"
-                                   />
-                                </div>
-                                <select 
-                                   value={onboardingData.objectiveCategory}
-                                   onChange={(e) => setOnboardingData(prev => ({ ...prev, objectiveCategory: e.target.value }))}
-                                   className="h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold text-slate-600 outline-none focus:border-[#FF3B30] transition-all"
-                                >
-                                   <option>Hiring</option>
-                                   <option>Partnership</option>
-                                   <option>Investment</option>
-                                   <option>Technology</option>
-                                   <option>Procurement</option>
-                                </select>
-                             </div>
-                          </div>
-
-                          <div className="bg-emerald-50 rounded-2xl p-8 flex items-center gap-6 border border-emerald-100">
-                             <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-emerald-500 shrink-0 shadow-lg shadow-emerald-500/10"><Rocket size={32} /></div>
-                             <div>
-                                <p className="text-[16px] font-black text-emerald-800 uppercase tracking-wider mb-0.5">Deployment Ready</p>
-                                <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-tight">Your mission and first objective will be broadcasted once you finish.</p>
                              </div>
                           </div>
                        </div>

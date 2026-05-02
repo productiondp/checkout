@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useParams, useRouter } from "next/navigation";
 import { 
@@ -33,8 +34,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { motion, AnimatePresence } from "framer-motion";
 
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import ConnectButton from "@/components/ui/ConnectButton";

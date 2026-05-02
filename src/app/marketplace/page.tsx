@@ -175,34 +175,44 @@ function MarketplaceContent() {
   return (
     <TerminalLayout
       topbarChildren={
-        <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 flex-1 max-w-5xl py-2 lg:py-0">
-          {/* SEARCH */}
-          <div className="flex-1 relative group w-full lg:max-w-xs">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search ecosystem..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 md:h-10 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-11 pr-4 text-[12px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
-            />
-          </div>
-
+        <div className="flex items-center gap-3 lg:gap-6 flex-1 overflow-x-auto no-scrollbar py-2 lg:py-0">
           {/* TYPE CHIPS */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
+          <div className="flex items-center gap-2">
             {TYPE_FILTERS.map(f => (
               <button 
                 key={f.value}
                 onClick={() => setActiveType(f.value)}
                 className={cn(
-                  "px-4 h-9 md:h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-2.5",
+                  "px-6 h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-2.5 shadow-sm hover:shadow-md",
                   activeType === f.value 
-                    ? "bg-black text-white border-black shadow-lg" 
-                    : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
+                    ? "bg-black text-white border-black ring-4 ring-black/5" 
+                    : "bg-white text-black/40 border-black/[0.03] hover:border-black/10"
                 )}
               >
                 <f.icon size={14} className={cn(activeType === f.value ? "text-white" : "text-black/20")} />
                 {f.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-6 w-px bg-black/[0.05] mx-2 hidden lg:block" />
+
+          {/* VIEW SWITCHER IN TOPBAR FOR MORE SPACE */}
+          <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] shrink-0">
+            {[
+              { id: 'list', icon: List },
+              { id: 'grid', icon: LayoutGrid },
+              { id: 'map', icon: MapPin }
+            ].map(mode => (
+              <button 
+                key={mode.id}
+                onClick={() => setViewMode(mode.id as any)}
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
+                  viewMode === mode.id ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
+                )}
+              >
+                 <mode.icon size={16} />
               </button>
             ))}
           </div>
@@ -212,7 +222,7 @@ function MarketplaceContent() {
       <div className="bg-[#FDFDFF] min-h-screen flex flex-col">
         {/* SECOND ROW: SMART FILTERS & VIEW SWITCHER */}
         <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
              <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 lg:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
                 <SmartFilter 
                   icon={Briefcase} 
@@ -242,25 +252,6 @@ function MarketplaceContent() {
                   onToggle={() => setActiveFilterDropdown(activeFilterDropdown === "location" ? null : "location")}
                   isLocation 
                 />
-             </div>
-
-             <div className="flex items-center justify-end gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] w-fit self-end md:self-auto">
-                {[
-                  { id: 'list', icon: List },
-                  { id: 'grid', icon: LayoutGrid },
-                  { id: 'map', icon: MapPin }
-                ].map(mode => (
-                  <button 
-                    key={mode.id}
-                    onClick={() => setViewMode(mode.id as any)}
-                    className={cn(
-                      "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
-                      viewMode === mode.id ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
-                    )}
-                  >
-                     <mode.icon size={16} />
-                  </button>
-                ))}
              </div>
           </div>
         </div>

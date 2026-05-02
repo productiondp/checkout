@@ -175,30 +175,30 @@ function MarketplaceContent() {
   return (
     <TerminalLayout
       topbarChildren={
-        <div className="flex items-center gap-3 lg:gap-6 flex-1 overflow-x-auto no-scrollbar py-2 lg:py-0">
-          {/* TYPE CHIPS */}
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2 lg:gap-4 flex-1 overflow-x-auto no-scrollbar py-2">
+          {/* COMPACT PILL SWITCHER */}
+          <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-full border border-black/[0.03] shadow-inner shrink-0">
             {TYPE_FILTERS.map(f => (
               <button 
                 key={f.value}
                 onClick={() => setActiveType(f.value)}
                 className={cn(
-                  "px-6 h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-2.5 shadow-sm hover:shadow-md",
+                  "px-4 lg:px-6 h-8 lg:h-9 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2",
                   activeType === f.value 
-                    ? "bg-black text-white border-black ring-4 ring-black/5" 
-                    : "bg-white text-black/40 border-black/[0.03] hover:border-black/10"
+                    ? "bg-white text-black shadow-md shadow-black/5" 
+                    : "text-black/30 hover:text-black/60"
                 )}
               >
-                <f.icon size={14} className={cn(activeType === f.value ? "text-white" : "text-black/20")} />
+                <f.icon size={12} className={cn("transition-colors", activeType === f.value ? "text-[#E53935]" : "text-black/20")} />
                 {f.label}
               </button>
             ))}
           </div>
 
-          <div className="h-6 w-px bg-black/[0.05] mx-2 hidden lg:block" />
+          <div className="h-6 w-px bg-black/[0.05] shrink-0 hidden md:block" />
 
-          {/* VIEW SWITCHER IN TOPBAR FOR MORE SPACE */}
-          <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] shrink-0">
+          {/* VIEW SWITCHER */}
+          <div className="flex items-center gap-1 p-1 bg-black/[0.02] rounded-xl shrink-0">
             {[
               { id: 'list', icon: List },
               { id: 'grid', icon: LayoutGrid },
@@ -212,7 +212,7 @@ function MarketplaceContent() {
                   viewMode === mode.id ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black"
                 )}
               >
-                 <mode.icon size={16} />
+                 <mode.icon size={15} />
               </button>
             ))}
           </div>

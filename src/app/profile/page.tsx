@@ -248,6 +248,37 @@ export default function PremiumProfilePage() {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser?.id) return;
+
+    setIsSaving(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${authUser.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`; 
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const updatedData = { ...userData, avatar_url: publicUrl };
+      setUserData(updatedData);
+      await handleSaveProfile(updatedData);
+      
+    } catch (err) {
+      console.error("[AVATAR] Upload Error:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#292828] flex flex-col items-center justify-center gap-6">
@@ -283,24 +314,41 @@ export default function PremiumProfilePage() {
 
                    <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
                       {/* IDENTITY & AVATAR GLOW */}
-                      <div className="relative">
-                         <div className="absolute inset-0 bg-[#E53935]/20 blur-2xl rounded-full animate-pulse" />
-                         <div className="h-40 w-40 rounded-lg overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/50 transition-all duration-700 shadow-4xl relative">
-                            <img 
-                              src={userData.avatar_url} 
-                              className="w-full h-full object-cover rounded-[1.8rem]" 
-                              alt={userData.full_name} 
-                            />
-                            {isSaving && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[1.8rem]"><Loader2 className="animate-spin text-white" size={24} /></div>}
-                         </div>
-                         <motion.div 
-                            animate={{ y: [0, -5, 0] }}
-                            transition={{ duration: 4, repeat: Infinity }}
-                            className="absolute -bottom-3 -right-3 h-12 w-12 bg-[#E53935] rounded-[8px] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(229,57,51,0.5)] border-4 border-[#0A0A0A]"
-                         >
-                            <Award size={20} />
-                         </motion.div>
-                      </div>
+                       <div className="relative group/avatar cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                          <div className="absolute inset-0 bg-[#E53935]/20 blur-2xl rounded-full animate-pulse" />
+                          <div className="h-40 w-40 rounded-lg overflow-hidden border-4 border-white/10 p-2 backdrop-blur-xl group-hover:border-[#E53935]/50 transition-all duration-700 shadow-4xl relative">
+                             <img 
+                               src={userData.avatar_url} 
+                               className="w-full h-full object-cover rounded-[1.8rem]" 
+                               alt={userData.full_name} 
+                             />
+                             {/* Upload Overlay */}
+                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center rounded-[1.8rem] transition-all">
+                                <div className="flex flex-col items-center gap-2 text-white">
+                                   <Plus size={24} />
+                                   <span className="text-[10px] font-black uppercase">Change</span>
+                                </div>
+                             </div>
+                             {isSaving && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[1.8rem]"><Loader2 className="animate-spin text-white" size={24} /></div>}
+                          </div>
+                          
+                          {/* HIDDEN FILE INPUT */}
+                          <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                          />
+
+                          <motion.div 
+                             animate={{ y: [0, -5, 0] }}
+                             transition={{ duration: 4, repeat: Infinity }}
+                             className="absolute -bottom-3 -right-3 h-12 w-12 bg-[#E53935] rounded-[8px] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(229,57,51,0.5)] border-4 border-[#0A0A0A]"
+                          >
+                             <Award size={20} />
+                          </motion.div>
+                       </div>
 
                       {/* PROFILE INFO */}
                       <div className="text-center md:text-left flex-1">

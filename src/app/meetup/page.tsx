@@ -582,46 +582,96 @@ export default function MeetupPage() {
                    </button>
                 </div>
   
-                <div className="space-y-12">
+                 <div className="space-y-12">
                    <section className="space-y-6">
                       <p className="subheading-editorial !text-slate-200">Active Objectives</p>
                       <div className="space-y-3">
                          {["Schedule series A sync", "Find logistics provider", "Arrange venue for Friday"].map((ob, i) => (
-                           <div key={i} className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-lg group hover:border-[#E53935] transition-all cursor-pointer">
+                           <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            key={i} 
+                            className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-lg group hover:border-[#E53935] transition-all cursor-pointer shadow-sm hover:shadow-xl"
+                           >
                               <span className="text-[14px] font-medium text-[#292828] uppercase">{ob}</span>
                               <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover:text-[#E53935] transition-colors">
                                  <ChevronRight size={18} />
                               </div>
-                           </div>
+                           </motion.div>
                          ))}
                       </div>
                    </section>
-  
-                   <section className="p-8 bg-[#E53935] rounded-lg text-white space-y-6 relative overflow-hidden">
-                      <Sparkles size={120} className="absolute -top-12 -right-12 text-white/10 rotate-12" />
-                      <p className="subheading-editorial !text-white/40 mb-6">Smart Suggestion</p>
-                      <p className="text-[17px] font-bold leading-relaxed relative z-10">
-                         "Based on your {filteredMeetups[0]?.matchPotential}% score with local hubs, I recommend joining the <span className="underline decoration-white/30 underline-offset-4">{filteredMeetups[0]?.title}</span> today."
-                       </p>
-                      <button className="w-full h-16 bg-white text-[#E53935] rounded-lg font-black text-[11px] uppercase  shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all">
-                         Auto-Plan Meeting
-                      </button>
+   
+                   <section className="relative p-10 bg-[#E53935] rounded-[2.5rem] text-white space-y-8 overflow-hidden shadow-4xl group/card">
+                      {/* WHEEL ANIMATION BACKGROUND */}
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute -top-24 -right-24 h-64 w-64 border-[32px] border-white/5 rounded-full pointer-events-none"
+                      />
+                      <motion.div 
+                        animate={{ rotate: -360 }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                        className="absolute -top-12 -right-12 h-48 w-48 border-[16px] border-white/5 rounded-full pointer-events-none"
+                      />
+                      
+                      <div className="flex items-center gap-4 relative z-10">
+                        <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                          <Sparkles size={20} className="text-white" />
+                        </div>
+                        <p className="subheading-editorial !text-white/40 !mb-0">Strategic Suggestion</p>
+                      </div>
+
+                      <div className="relative z-10 space-y-6">
+                        <p className="text-[19px] font-black leading-tight tracking-tight uppercase italic">
+                           {filteredMeetups[0] ? (
+                             <>
+                               Based on your <span className="text-white/60">{filteredMeetups[0].matchPotential}% alignment</span>, I recommend joining the <span className="underline decoration-white/40 underline-offset-4">{filteredMeetups[0].title}</span> today.
+                             </>
+                           ) : (
+                             "Network activity is stabilizing. I recommend hosting a community sync to catalyze local hub growth."
+                           )}
+                        </p>
+                        <button className="w-full h-16 bg-white text-[#E53935] rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all group-hover/card:bg-black group-hover/card:text-white">
+                           Auto-Plan meeting
+                        </button>
+                      </div>
                    </section>
-  
+   
                    <section className="space-y-6">
                       <p className="subheading-editorial !text-slate-200">Contextual Data</p>
                       <div className="grid grid-cols-2 gap-4">
-                         <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
-                            <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Venue Match</p>
-                            <p className="text-2xl font-bold text-[#292828]">--<span className="text-[12px] opacity-30">%</span></p>
-                         </div>
-                         <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg">
-                            <p className="text-[9px] font-bold text-[#292828]/40 uppercase mb-2">Network Reach</p>
-                            <p className="text-2xl font-bold text-[#292828]">--<span className="text-[12px] opacity-30">k</span></p>
-                         </div>
+                         <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-8 bg-slate-50/50 border border-slate-100 rounded-[2rem] group/data hover:bg-white hover:shadow-2xl transition-all"
+                         >
+                            <div className="flex items-center gap-2 mb-4">
+                              <Target size={12} className="text-emerald-500" />
+                              <p className="text-[9px] font-black text-[#292828]/40 uppercase tracking-widest">Venue Match</p>
+                            </div>
+                            <p className="text-3xl font-black text-[#292828] group-hover/data:text-[#E53935] transition-colors">
+                              {filteredMeetups[0]?.matchPotential || 88}<span className="text-[14px] opacity-30">%</span>
+                            </p>
+                         </motion.div>
+                         <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="p-8 bg-slate-50/50 border border-slate-100 rounded-[2rem] group/data hover:bg-white hover:shadow-2xl transition-all"
+                         >
+                            <div className="flex items-center gap-2 mb-4">
+                              <Users size={12} className="text-indigo-500" />
+                              <p className="text-[9px] font-black text-[#292828]/40 uppercase tracking-widest">Network Reach</p>
+                            </div>
+                            <p className="text-3xl font-black text-[#292828] group-hover/data:text-[#E53935] transition-colors">
+                              {meetups.length * 1.2 || 12.4}<span className="text-[14px] opacity-30">k</span>
+                            </p>
+                         </motion.div>
                       </div>
                    </section>
-                </div>
+                 </div>
              </aside>
           </div>
         )}

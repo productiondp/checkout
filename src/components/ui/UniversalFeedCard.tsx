@@ -432,6 +432,14 @@ const UniversalFeedCard = React.memo(({
            ) : <div />}
 
            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <motion.button
+                 whileTap={{ scale: 0.9 }}
+                 onClick={handleShare}
+                 className="h-12 w-12 rounded-xl border border-black/[0.05] text-[#86868B] flex items-center justify-center hover:bg-slate-50 transition-all shrink-0"
+              >
+                 <Share2 size={16} />
+              </motion.button>
+
               {!isOwner ? (
                  <>
                     <div className="flex items-center gap-2">
@@ -444,13 +452,6 @@ const UniversalFeedCard = React.memo(({
                           )}
                        >
                           <Bookmark size={16} fill={bookmarked ? "currentColor" : "none"} />
-                       </motion.button>
-                       <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={handleShare}
-                          className="h-12 w-12 rounded-xl border border-black/[0.05] text-[#86868B] flex items-center justify-center hover:bg-slate-50 transition-all shrink-0"
-                       >
-                          <Share2 size={16} />
                        </motion.button>
                        {nType !== 'MEETUP' && (
                           <ConnectButton 

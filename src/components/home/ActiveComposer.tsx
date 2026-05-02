@@ -22,7 +22,7 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
     <div className="w-full bg-white border border-black/[0.05] rounded-3xl p-6 mb-8 shadow-2xl shadow-black/[0.02] animate-in slide-in-from-top-4 duration-700">
       
       {/* 1. TOP ROW: AVATAR + COMPOSER INPUT */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 relative">
         <div className="h-14 w-14 rounded-2xl overflow-hidden border border-black/[0.05] shadow-sm shrink-0">
           <img 
             src={user?.avatar_url || DEFAULT_AVATAR} 
@@ -35,17 +35,19 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
           whileHover={{ scale: 1.005 }}
           whileTap={{ scale: 0.995 }}
           onClick={() => onPost('REQUIREMENT')}
-          className="flex-1 h-16 bg-[#F5F5F7] rounded-2xl px-6 flex items-center justify-between cursor-pointer group hover:bg-[#E8E8ED] transition-all"
+          className="flex-1 h-16 bg-[#F5F5F7] rounded-2xl px-6 flex items-center justify-between cursor-pointer group hover:bg-[#E8E8ED] transition-all relative overflow-hidden"
         >
-          <div>
+          <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-white/20 to-transparent pointer-events-none" />
+          
+          <div className="relative z-10">
             <h3 className="text-[15px] font-black italic uppercase tracking-tighter text-[#1D1D1F]/60 group-hover:text-[#1D1D1F] transition-colors leading-none mb-1">
-              I need help with...
+              Mission Brief...
             </h3>
-            <p className="text-[9px] font-black uppercase text-[#86868B] tracking-widest">
-              Launch a new requirement
+            <p className="text-[9px] font-black uppercase text-[#86868B] tracking-widest flex items-center gap-1.5">
+              Launch a new mission <Sparkles size={8} className="text-[#E53935] animate-pulse" />
             </p>
           </div>
-          <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform">
+          <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform relative z-10">
             <Plus size={20} className="text-white" strokeWidth={3} />
           </div>
         </motion.div>

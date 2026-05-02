@@ -322,35 +322,45 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
         exit={{ opacity: 0, y: 100 }}
         className="relative w-full sm:w-[90%] sm:max-w-xl bg-white rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-[92vh] sm:h-auto max-h-[92vh] sm:max-h-[95vh]"
       >
-        {/* HEADER */}
-        <div className="flex items-center justify-between shrink-0 p-6 md:p-8 lg:p-10 pb-4 border-b border-black/[0.03]">
-           <div className="flex items-center gap-3">
-              <div className={cn("h-10 w-10 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all", config.color, config.shadow)}>
-                 <config.icon size={20} />
+        {/* EDITORIAL HEADER */}
+        <div className="flex items-center justify-between shrink-0 p-8 md:p-10 pb-6 border-b border-black/[0.03] relative overflow-hidden">
+           {/* Subtle background glow */}
+           <div className={cn("absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-20 -mr-16 -mt-16 rounded-full transition-colors duration-700", config.color)} />
+           
+           <div className="flex items-center gap-4 relative z-10">
+              <div className={cn("h-14 w-14 text-white rounded-[1.25rem] flex items-center justify-center shadow-2xl transition-all duration-700 group-hover:scale-110", config.color, config.shadow)}>
+                 <config.icon size={28} strokeWidth={2.5} />
               </div>
-              <h2 className="text-xl font-black italic tracking-tight text-[#1D1D1F] uppercase">{config.label}</h2>
+              <div className="space-y-0.5">
+                 <h2 className="text-2xl font-black italic tracking-tighter text-[#1D1D1F] uppercase leading-none">
+                    Launch <span className={cn("transition-colors duration-700", type === 'MEETUP' ? "text-[#E53935]" : type === 'PARTNERSHIP' ? "text-[#34C759]" : "text-black")}>{config.label}</span>
+                 </h2>
+                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Step {currentStep} of {config.steps} • Mission Control</p>
+              </div>
            </div>
-           <button onClick={onClose} className="h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all">
-             <X size={20} />
+           <button onClick={onClose} className="h-12 w-12 bg-slate-50 border border-black/[0.03] rounded-full flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all relative z-10">
+             <X size={20} strokeWidth={3} />
            </button>
         </div>
 
-        {/* SELECTOR */}
+        {/* PREMIUM MODE SELECTOR */}
         {currentStep === 1 && (
-           <div className="flex gap-2 p-1 bg-slate-50 border border-black/[0.03] rounded-2xl shrink-0">
-              {Object.entries(TYPE_CONFIG).map(([key, cfg]) => (
-                <button
-                  key={key}
-                  onClick={() => { setType(key as any); setCurrentStep(1); }}
-                  className={cn(
-                    "flex-1 h-11 rounded-xl flex items-center justify-center gap-2.5 text-[9px] font-black uppercase transition-all",
-                    type === key ? "bg-white text-black shadow-sm" : "text-slate-400 hover:text-slate-600"
-                  )}
-                >
-                  <cfg.icon size={12} />
-                  {cfg.label}
-                </button>
-              ))}
+           <div className="px-8 md:px-10 py-4 bg-white border-b border-black/[0.03]">
+              <div className="flex gap-2 p-1.5 bg-slate-100/50 rounded-2xl">
+                 {Object.entries(TYPE_CONFIG).map(([key, cfg]) => (
+                   <button
+                     key={key}
+                     onClick={() => { setType(key as any); setCurrentStep(1); }}
+                     className={cn(
+                       "flex-1 h-12 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                       type === key ? "bg-white text-black shadow-lg shadow-black/5 scale-[1.02]" : "text-slate-400 hover:text-slate-600"
+                     )}
+                   >
+                     <cfg.icon size={14} strokeWidth={type === key ? 3 : 2} className={cn("transition-colors", type === key ? "text-[#E53935]" : "text-slate-400")} />
+                     {cfg.label}
+                   </button>
+                 ))}
+              </div>
            </div>
         )}
 
@@ -360,20 +370,38 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                key={`${type}-${currentStep}`}
                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                className="space-y-6 pb-2"
-             >
-                {/* STEP 1: WHAT */}
+             >                {/* STEP 1: WHAT */}
                 {currentStep === 1 && (
-                   <div className="space-y-6">
-                      <div className="space-y-2">
-                        <h3 className="text-2xl md:text-3xl font-black tracking-tight leading-none text-[#1D1D1F]">
-                           {type === 'MEETUP' ? "What is this meetup about?" : 
-                            type === 'PARTNERSHIP' ? "What are you trying to build?" : 
-                            "What do you need help with?"}
+                   <div className="space-y-8">
+                      <div className="space-y-3">
+                        <h3 className="text-3xl md:text-4xl font-black italic tracking-tighter leading-none text-[#1D1D1F] uppercase">
+                           {type === 'MEETUP' ? "Meetup Vision" : 
+                            type === 'PARTNERSHIP' ? "Project Vision" : 
+                            "Mission Brief"}
                         </h3>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Keep it simple and clear</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Define the core objective of your broadcast</p>
                       </div>
                       
                       <div className="relative group">
+                        <div className="absolute -top-4 -right-4 z-20">
+                           <motion.div 
+                             initial={{ scale: 0, rotate: -20 }}
+                             animate={{ scale: 1, rotate: 0 }}
+                             className="bg-white border border-[#E53935]/20 shadow-2xl rounded-2xl p-4 max-w-[200px] relative"
+                           >
+                              <div className="flex items-center gap-2 mb-2">
+                                 <Sparkles size={14} className="text-[#E53935]" />
+                                 <span className="text-[9px] font-black uppercase text-[#E53935]">AI Intelligence</span>
+                              </div>
+                              <p className="text-[10px] font-bold text-slate-600 leading-relaxed">
+                                 {content.length < 10 ? "Start typing to see match potential..." : 
+                                  content.length < 50 ? "Be more specific about your industry for 2x better matches." :
+                                  "Great detail! This will likely match with 12+ experts."}
+                              </p>
+                              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-b border-r border-[#E53935]/10 rotate-45" />
+                           </motion.div>
+                        </div>
+
                         <ClarityTextarea
                           ref={inputRef}
                           value={content}
@@ -384,42 +412,30 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                             "E.g. Need a senior dev for a 2-week sprint..."
                           }
                           type={type}
-                          className="min-h-[180px] text-lg p-6 bg-slate-50 border-none rounded-[1.5rem] focus:ring-2 focus:ring-black/5"
+                          className="min-h-[240px] text-xl p-8 bg-[#FDFDFF] border-2 border-black/[0.03] rounded-[2.5rem] focus:border-[#E53935]/20 focus:ring-0 transition-all placeholder:text-slate-300 font-bold italic"
                         />
                       </div>
 
                       {(suggestedIndustry || content.length > 20) && (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 p-5 bg-[#F5F5F7] rounded-[2rem] border border-black/[0.03] shadow-sm">
                             {suggestedIndustry?.confidence >= 70 ? (
                                <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-[#E53935]"><Sparkles size={16} /></div>
+                                  <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#E53935] shadow-sm"><Sparkles size={20} /></div>
                                   <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Suggested Category</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label}  {suggestedIndustry.focus}</p>
+                                     <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Auto-Detection</p>
+                                     <p className="text-[12px] font-black uppercase text-slate-800 tracking-tighter italic">{getIndustryById(suggestedIndustry.industry)?.label} • {suggestedIndustry.focus}</p>
                                   </div>
                                   <button 
                                     onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
-                                    className="h-8 px-3 bg-black text-white rounded-lg text-[9px] font-black uppercase"
-                                  >Apply</button>
-                               </>
-                            ) : suggestedIndustry?.isPartial ? (
+                                    className="h-10 px-5 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all"
+                                  >Deploy</button>
                                <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-amber-500"><Info size={16} /></div>
-                                  <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Select category manually</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">Closest match: {getIndustryById(suggestedIndustry.industry)?.label}</p>
-                                  </div>
-                                  <button 
-                                    onClick={() => { setIndustry(suggestedIndustry.industry); setSuggestedIndustry(null); }}
-                                    className="h-8 px-3 bg-white border border-slate-200 text-slate-400 rounded-lg text-[9px] font-black uppercase hover:text-black hover:border-black transition-all"
-                                  >Use Guess</button>
-                               </>
                             ) : (
                                <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-slate-400"><TagIcon size={16} /></div>
+                                  <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-slate-400"><TagIcon size={20} /></div>
                                   <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Manual Selection Required</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">Topic not in taxonomy. Select manually.</p>
+                                     <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Intelligence Scan</p>
+                                     <p className="text-[11px] font-black uppercase text-slate-700">{content.length < 30 ? "Keep describing your mission..." : "Almost ready. Select category manually."}</p>
                                   </div>
                                </>
                             )}
@@ -427,6 +443,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                       )}
                    </div>
                 )}
+
 
                 {/* STEP 2: CATEGORY */}
                 {currentStep === 2 && (

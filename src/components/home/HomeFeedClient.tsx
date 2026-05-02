@@ -105,7 +105,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
     if (!authUser) return;
     if (posts.length === 0) setIsLoading(true);
     try {
-      const { data: postsData } = await supabase.from('posts').select(`*, author_profile:profiles!author_id(*)`).order('created_at', { ascending: false }).limit(100);
+      const { data: postsData } = await supabase.from('posts').select(`*, author_profile:profiles(*)`).order('created_at', { ascending: false }).limit(100);
       const { data: connections } = await supabase.from('connections').select('*').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
       const mapped = (postsData || []).filter(p => {
         const authorId = p.author_profile?.id || p.author_id;

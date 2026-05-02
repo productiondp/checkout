@@ -74,6 +74,12 @@ export default function PremiumProfilePage() {
      connectionCount: 0,
      solvedCount: 0
   });
+  
+  const [settings, setSettings] = useState({
+     publicVisibility: true,
+     allowMatching: true,
+     notifications: true
+  });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -696,25 +702,66 @@ export default function PremiumProfilePage() {
              </div>
           )}
 
-          {/* SETTINGS MODAL */}
+          {/* SETTINGS CONTROL CENTER */}
           {showSettingsModal && (
              <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/80 animate-in fade-in duration-500">
                 <motion.div 
                    initial={{ opacity: 0, scale: 0.95, y: 40 }}
                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                   className="bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex flex-col border border-[#0A0A0A]/5"
+                   className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex flex-col border border-[#0A0A0A]/5"
                 >
-                   <div className="p-10 border-b border-slate-100 flex items-center justify-between">
-                      <h2 className="text-2xl font-black text-[#0A0A0A] uppercase italic leading-none mb-2">Settings</h2>
-                      <button onClick={() => setShowSettingsModal(false)} className="h-10 w-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-300 hover:bg-[#E53935] hover:text-white transition-all"><X size={16} /></button>
+                   <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                      <div>
+                         <h2 className="text-2xl font-bold text-[#0A0A0A] uppercase tracking-tight leading-none mb-2">Controls</h2>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage your network identity</p>
+                      </div>
+                      <button onClick={() => setShowSettingsModal(false)} className="h-10 w-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-300 hover:bg-[#E53935] hover:text-white transition-all shadow-sm"><X size={16} /></button>
                    </div>
-                   <div className="p-8 space-y-4">
-                      <button onClick={() => logout()} className="w-full h-16 bg-red-50 text-[#E53935] rounded-2xl border border-red-100 flex items-center justify-between px-8 hover:bg-[#E53935] hover:text-white transition-all group active:scale-95 shadow-xl shadow-red-500/5">
-                         <div className="flex items-center gap-4">
-                            <LogOut size={20} className="group-hover:translate-x-[-4px] transition-transform" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em]">Sign Out</span>
+                   
+                   <div className="p-8 space-y-2">
+                      {[
+                         { id: 'publicVisibility', label: "Public Visibility", desc: "Make profile discoverable", icon: Globe },
+                         { id: 'allowMatching', label: "Strategic Matching", desc: "AI-driven partner suggestions", icon: Target },
+                         { id: 'notifications', label: "Real-time Alerts", desc: "Push & email notifications", icon: Bell },
+                      ].map((item) => (
+                         <div key={item.id} className="flex items-center justify-between p-6 hover:bg-slate-50 rounded-3xl transition-all group">
+                            <div className="flex items-center gap-4">
+                               <div className="h-12 w-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-[#E53935] transition-colors">
+                                  <item.icon size={20} />
+                               </div>
+                               <div>
+                                  <p className="text-[13px] font-bold text-[#1D1D1F]">{item.label}</p>
+                                  <p className="text-[11px] font-medium text-slate-400">{item.desc}</p>
+                               </div>
+                            </div>
+                            <button 
+                               onClick={() => setSettings(prev => ({ ...prev, [item.id]: !prev[item.id as keyof typeof settings] }))}
+                               className={cn(
+                                  "w-12 h-6 rounded-full p-1 transition-all duration-500 relative",
+                                  settings[item.id as keyof typeof settings] ? "bg-[#E53935]" : "bg-slate-200"
+                               )}
+                            >
+                               <motion.div 
+                                  animate={{ x: settings[item.id as keyof typeof settings] ? 24 : 0 }}
+                                  className="h-4 w-4 bg-white rounded-full shadow-lg" 
+                               />
+                            </button>
                          </div>
-                      </button>
+                      ))}
+                      
+                      <div className="pt-6 mt-4 border-t border-slate-100">
+                         <button onClick={() => logout()} className="w-full h-16 bg-red-50 text-[#E53935] rounded-3xl border border-red-100 flex items-center justify-between px-8 hover:bg-[#E53935] hover:text-white transition-all group active:scale-95 shadow-xl shadow-red-500/5">
+                            <div className="flex items-center gap-4">
+                               <LogOut size={20} className="group-hover:translate-x-[-4px] transition-transform" />
+                               <span className="text-[11px] font-black uppercase tracking-[0.2em]">Sign Out</span>
+                            </div>
+                            <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 transition-all" />
+                         </button>
+                      </div>
+                   </div>
+                   
+                   <div className="p-6 bg-slate-50 text-center">
+                      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Checkout Business OS v.1.2</p>
                    </div>
                 </motion.div>
              </div>

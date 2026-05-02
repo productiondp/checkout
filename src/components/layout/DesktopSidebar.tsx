@@ -49,6 +49,12 @@ export default function DesktopSidebar() {
         { label: "Advisors", icon: Target, href: "/advisors" },
         { label: "Meetups", icon: LayoutGrid, href: "/meetup" },
       ]
+    },
+    {
+      group: "System",
+      items: [
+        { label: "Live Ops", icon: Zap, href: "/live-ops" },
+      ]
     }
   ];
 

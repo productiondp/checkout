@@ -142,7 +142,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       sessionAuthorityRef.current = currentSession.access_token;
       setSession(currentSession);
-      setUser(currentSession.user);
 
       const { data, error } = await Promise.race([
         supabase.from('profiles').select('*').eq('id', currentSession.user.id).maybeSingle(),
@@ -150,11 +149,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ]) as any;
 
       if (error) throw error;
-
       setProfile(data);
+      setUser(currentSession.user);
+
+      //  HYDRATION GATE: If profile is missing (new signup), use metadata
+      const hydratedProfile: Partial<UserProfile> = data || {
+        id: currentSession.user.id,
+        full_name: currentSession.user.user_metadata?.full_name || "New Member",
+        role: currentSession.user.user_metadata?.role as any || "PROFESSIONAL",
+        onboarding_completed: false,
+        avatar_url: currentSession.user.user_metadata?.avatar_url || "",
+        expertise: [],
+        intents: [],
+        bio: ""
+      };
+      
+      if (!data) setProfile(hydratedProfile as UserProfile);
+
       // [SEC] DETERMINISTIC ONBOARDING CHECK
       // Must have a profile AND have completed the onboarding steps
-      const nextTag = (data && data.onboarding_completed) ? 'authenticated' : 'onboarding';
+      const nextTag = (hydratedProfile.onboarding_completed) ? 'authenticated' : 'onboarding';
       
       setAuthState({ 
         state: { tag: nextTag as any }, 

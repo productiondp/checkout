@@ -57,7 +57,7 @@ export default function OnboardingPage() {
 }
 
 function OnboardingContent() {
-  const { user, session, updateProfile, logout } = useAuth();
+  const { profile, session, updateProfile, logout } = useAuth();
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -104,20 +104,20 @@ function OnboardingContent() {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (profile) {
       setOnboardingData(prev => ({
         ...prev,
-        name: user.full_name || prev.name,
-        role: (user.role as Role) || prev.role,
-        jobRole: user.job_role || prev.jobRole,
-        industry: user.industry || prev.industry,
-        intents: user.intents || prev.intents,
-        bio: user.bio || prev.bio,
-        location: user.location || prev.location,
-        avatar_url: user.avatar_url || prev.avatar_url,
+        name: profile.full_name || prev.name,
+        role: (profile.role as Role) || prev.role,
+        jobRole: profile.jobRole || prev.jobRole,
+        industry: profile.industry || prev.industry,
+        intents: profile.intents || prev.intents,
+        bio: profile.bio || prev.bio,
+        location: profile.location || prev.location,
+        avatar_url: profile.avatar_url || prev.avatar_url,
       }));
     }
-  }, [user]);
+  }, [profile]);
 
 
   const saveCustomFocus = async (label: string, industry: string) => {

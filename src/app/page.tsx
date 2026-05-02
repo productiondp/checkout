@@ -150,7 +150,7 @@ function AuthContent() {
     }
   };
 
-   return (
+  return (
     <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
       <LandingHeader 
          onJoinClick={() => setMode("signup")} 
@@ -160,8 +160,8 @@ function AuthContent() {
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
-               <h1 className="text-5xl lg:text-8xl font-black text-[#1D1D1F] tracking-tighter leading-[0.85] lg:leading-[0.9] font-outfit">
-                  <span className="font-extralight opacity-40">Connect.</span><br className="hidden lg:block" /> Grow. <br />
+               <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.9]">
+                  <span className="font-extralight opacity-60">Connect.</span><br className="hidden lg:block" /> Grow. <br />
                   <span className="text-[#E53935]">Succeed.</span>
                </h1>
 
@@ -319,193 +319,80 @@ function AuthContent() {
                  className="w-full h-auto"
                />
             </div>
-        {/* Auth Container */}
-        <div className="w-full lg:w-[460px] relative z-10">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-8 lg:p-10 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-black/[0.03]"
-          >
-            <div className="mb-10">
-              <h2 className="text-2xl lg:text-3xl font-black text-[#1D1D1F] mb-2 tracking-tighter font-outfit uppercase">
-                {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
-              </h2>
-              <p className="text-sm font-medium text-[#86868B]">
-                {mode === 'signin' 
-                  ? 'Access your global business dashboard.' 
-                  : 'Join the most elite business network in your city.'}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-6">
-              {mode === 'signup' && (
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#86868B] ml-1">I am a...</label>
-                  <div className="relative group">
-                    <button 
-                      type="button"
-                      onClick={() => setIsRoleOpen(!isRoleOpen)}
-                      className="w-full h-14 px-6 bg-[#F5F5F7] border border-transparent rounded-2xl text-[13px] font-black text-[#1D1D1F] flex items-center justify-between focus:bg-white focus:border-[#E53935] transition-all cursor-pointer z-10 relative"
-                    >
-                      <span className="uppercase tracking-widest">{role || "Select your role"}</span>
-                      <ChevronDown size={18} className={cn("text-black/20 transition-transform", isRoleOpen && "rotate-180")} />
-                    </button>
-                    
-                    <AnimatePresence>
-                      {isRoleOpen && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-[115%] left-0 right-0 bg-white border border-black/[0.05] rounded-2xl shadow-4xl z-50 p-2 overflow-hidden"
-                        >
-                          {ROLES.map(r => (
-                            <button
-                              key={r.value}
-                              type="button"
-                              onClick={() => { setRole(r.value); setIsRoleOpen(false); }}
-                              className={cn(
-                                "w-full text-left px-4 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-3 transition-all",
-                                role === r.value ? "bg-[#E53935]/5 text-[#E53935]" : "text-black/40 hover:bg-[#F5F5F7] hover:text-black"
-                              )}
-                            >
-                              <r.icon size={18} />
-                              {r.value}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              )}
-
-              {mode === 'signup' && (
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#86868B] ml-1">Full Name</label>
-                  <input 
-                    name="fullName"
-                    type="text" 
-                    required
-                    placeholder="John Doe"
-                    className="w-full h-14 px-6 bg-[#F5F5F7] border border-transparent rounded-2xl text-[13px] font-black text-[#1D1D1F] focus:bg-white focus:border-[#E53935] transition-all uppercase tracking-widest"
-                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#86868B] ml-1">Email Address</label>
-                <input 
-                  name="email"
-                  type="email" 
-                  required
-                  placeholder="name@company.com"
-                  className="w-full h-14 px-6 bg-[#F5F5F7] border border-transparent rounded-2xl text-[13px] font-black text-[#1D1D1F] focus:bg-white focus:border-[#E53935] transition-all uppercase tracking-widest"
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#86868B] ml-1">Security Key</label>
-                <input 
-                  name="password"
-                  type="password" 
-                  required
-                  placeholder="••••••••"
-                  className="w-full h-14 px-6 bg-[#F5F5F7] border border-transparent rounded-2xl text-[13px] font-black text-[#1D1D1F] focus:bg-white focus:border-[#E53935] transition-all uppercase tracking-widest"
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                />
-              </div>
-
-              <motion.button 
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                disabled={isLoading}
-                className="w-full h-16 bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-black/10 hover:bg-[#1d1d1f] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mt-4"
-              >
-                {isLoading ? <Loader2 size={18} className="animate-spin" /> : (mode === 'signin' ? 'Sign In' : 'Join Network')}
-              </motion.button>
-
-              <div className="text-center mt-6">
-                <button 
-                  type="button"
-                  onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-                  className="text-[10px] font-black uppercase tracking-widest text-[#86868B] hover:text-[#E53935] transition-colors"
-                >
-                  {mode === 'signin' ? "Don't have an account? Join now" : "Already a member? Sign in"}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
+         </div>
       </main>
 
-      <section className="bg-white py-24 border-y border-black/[0.03]">
-         <div className="max-w-[1128px] mx-auto px-6 text-center lg:text-left">
-            <h2 className="text-4xl lg:text-5xl font-black text-[#1D1D1F] mb-12 tracking-tighter font-outfit uppercase leading-[0.9]">Find the right people, <br className="lg:hidden" /><span className="text-[#E53935]">Business</span> and Opportunities</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="bg-white border-t border-black/[0.04] py-16 lg:py-24">
+         <div className="max-w-[1128px] mx-auto px-6">
+            <div className="mb-10">
+               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E53935] mb-3">Discover the Network</p>
+               <h2 className="text-3xl lg:text-4xl font-bold text-[#1D1D1F] tracking-tighter">Find the right people,<br className="hidden lg:block" /> businesses and opportunities.</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                {[
-                 "Engineering", "Business Development", "Finance", "Sales",
-                 "Marketing", "Design", "Human Resources", "Operations"
+                 { label: "Engineering", icon: "⚙️" },
+                 { label: "Business Dev", icon: "📈" },
+                 { label: "Finance", icon: "💰" },
+                 { label: "Sales", icon: "🤝" },
+                 { label: "Marketing", icon: "📣" },
+                 { label: "Design", icon: "🎨" },
+                 { label: "Human Resources", icon: "👥" },
+                 { label: "Operations", icon: "🏗️" }
                ].map((topic) => (
-                  <button key={topic} className="p-6 bg-[#F5F5F7] border border-black/[0.03] rounded-2xl font-black uppercase text-[11px] tracking-widest text-black/60 hover:bg-white hover:border-black/[0.08] hover:shadow-xl hover:shadow-black/5 transition-all text-left group flex items-center justify-between">
-                     {topic}
-                     <ChevronDown size={14} className="-rotate-90 opacity-0 group-hover:opacity-100 transition-all text-[#E53935]" />
+                  <button key={topic.label} className="p-5 bg-[#FBFBFD] border border-black/[0.05] rounded-2xl font-black text-[12px] uppercase tracking-widest text-[#1D1D1F]/60 hover:bg-white hover:border-[#E53935]/20 hover:text-[#E53935] hover:shadow-lg hover:shadow-black/5 transition-all text-left flex items-center gap-3 group">
+                     <span className="text-xl group-hover:scale-110 transition-transform">{topic.icon}</span>
+                     {topic.label}
                   </button>
                ))}
             </div>
          </div>
       </section>
 
-      <footer className="bg-[#FBFBFD] py-24">
+      <footer className="bg-[#FBFBFD] border-t border-black/[0.05] py-14">
          <div className="max-w-[1128px] mx-auto px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-               <div className="space-y-6">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-black">General</h4>
-                  <ul className="space-y-3 text-[11px] text-[#86868B] font-black uppercase tracking-widest">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1D1D1F]">General</h4>
+                  <ul className="space-y-3 text-[11px] text-[#86868B] font-bold uppercase tracking-wider">
                      <li><Link href="/what-is-checkout" className="hover:text-[#E53935] transition-colors">What is Checkout</Link></li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Help Center</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Press</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Blog</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Help Center</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Press</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Blog</li>
                   </ul>
                </div>
-               <div className="space-y-6">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-black">Browse</h4>
-                  <ul className="space-y-3 text-[11px] text-[#86868B] font-black uppercase tracking-widest">
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Learning</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Jobs</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Salary</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Mobile</li>
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1D1D1F]">Browse</h4>
+                  <ul className="space-y-3 text-[11px] text-[#86868B] font-bold uppercase tracking-wider">
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Learning</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Jobs</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Salary</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Mobile</li>
                   </ul>
                </div>
-               <div className="space-y-6">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-black">Business</h4>
-                  <ul className="space-y-3 text-[11px] text-[#86868B] font-black uppercase tracking-widest">
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Talent</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Marketing</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Sales</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Learning</li>
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1D1D1F]">Business</h4>
+                  <ul className="space-y-3 text-[11px] text-[#86868B] font-bold uppercase tracking-wider">
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Talent</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Marketing</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Sales</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Learning</li>
                   </ul>
                </div>
-               <div className="space-y-6">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-black">Support</h4>
-                  <ul className="space-y-3 text-[11px] text-[#86868B] font-black uppercase tracking-widest">
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Privacy Policy</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">User Agreement</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Cookie Policy</li>
-                     <li className="hover:text-[#E53935] transition-colors cursor-pointer">Copyright Policy</li>
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1D1D1F]">Support</h4>
+                  <ul className="space-y-3 text-[11px] text-[#86868B] font-bold uppercase tracking-wider">
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Privacy Policy</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">User Agreement</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Cookie Policy</li>
+                     <li className="cursor-pointer hover:text-[#E53935] transition-colors">Copyright Policy</li>
                   </ul>
                </div>
             </div>
-            <div className="pt-12 border-t border-black/[0.03] flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-[#86868B] font-black uppercase tracking-widest">
-               <div className="flex items-center gap-4">
-                  <Image src="/logo.png" alt="Logo" width={100} height={25} className="opacity-40 grayscale h-6 w-auto" />
-                  <span> 2026 Checkout</span>
-               </div>
-               <div className="flex gap-8">
-                  <span className="hover:text-black transition-colors cursor-pointer">Accessibility</span>
-                  <span className="hover:text-black transition-colors cursor-pointer">Community Guidelines</span>
+            <div className="pt-8 border-t border-black/[0.05] flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] text-[#86868B] font-black uppercase tracking-widest">
+               <span>© Checkout 2026 · All Rights Reserved</span>
+               <div className="flex gap-6">
+                  <span className="cursor-pointer hover:text-[#E53935] transition-colors">Accessibility</span>
+                  <span className="cursor-pointer hover:text-[#E53935] transition-colors">Community Guidelines</span>
                </div>
             </div>
          </div>

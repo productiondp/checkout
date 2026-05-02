@@ -41,7 +41,7 @@ interface HomeFeedClientProps {
 }
 
 export default function HomeFeedClient({ initialPosts = [], initialProfile }: HomeFeedClientProps) {
-  const { user: authUser } = useAuth();
+  const { profile: authUser } = useAuth();
   const router = useRouter();
   
   const [activeFilter, setActiveFilter] = useState("All");

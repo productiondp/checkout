@@ -77,30 +77,48 @@ function AdvisorsContent() {
   );
 
   return (
-    <TerminalLayout>
-      <div className="bg-[#FDFDFF] min-h-screen">
-        {/* SECOND ROW: STICKY FILTERS & SWITCHER */}
-        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-             <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-auto">
-                <span className="text-[10px] font-black uppercase text-black/20 tracking-widest mr-2 whitespace-nowrap">Sort by:</span>
-                <div className="flex p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] overflow-x-auto no-scrollbar">
-                  {["Match", "Exp", "Active"].map(sort => (
-                    <button 
-                      key={sort}
-                      onClick={() => setActiveSort(sort)}
-                      className={cn(
-                        "px-4 h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                        activeSort.startsWith(sort) ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
-                      )}
-                    >
-                      {sort}
-                    </button>
-                  ))}
-                </div>
-             </div>
+    <TerminalLayout
+      topbarChildren={
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 flex-1 max-w-5xl py-2 lg:py-0">
+          {/* SEARCH */}
+          <div className="flex-1 relative group w-full lg:max-w-xs">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search advisors..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-9 md:h-10 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-11 pr-4 text-[12px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
+            />
+          </div>
 
-             <div className="flex items-center justify-end gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03] w-fit self-end md:self-auto">
+          {/* SORT CONTROLS */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
+            <span className="text-[9px] font-black uppercase text-black/20 tracking-widest mr-1 hidden sm:inline">Sort:</span>
+            <div className="flex p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03]">
+              {["Match", "Exp", "Active"].map(sort => (
+                <button 
+                  key={sort}
+                  onClick={() => setActiveSort(sort)}
+                  className={cn(
+                    "px-4 h-7 md:h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                    activeSort.startsWith(sort) ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black"
+                  )}
+                >
+                  {sort}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <div className="bg-[#FDFDFF] min-h-screen">
+        {/* VIEW SWITCHER ROW */}
+        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+             <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/20">Advisor Network</h3>
+             <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-xl border border-black/[0.03]">
                 <button 
                   onClick={() => setViewMode("list")}
                   className={cn(
@@ -124,17 +142,6 @@ function AdvisorsContent() {
         </div>
 
       <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
-        {/* SEARCH SECTION */}
-        <div className="relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={20} />
-          <input 
-            type="text" 
-            placeholder="Search experts, mentors, or advisors..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-14 md:h-16 bg-white border border-black/[0.03] rounded-[10px] pl-14 md:pl-16 pr-6 text-sm font-bold text-[#1D1D1F] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all shadow-sm" 
-          />
-        </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -152,28 +152,25 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
     <ProtectedRoute>
       {!authUser ? null : (
         <TerminalLayout
+          topbarChildren={
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+               {SMART_FILTERS.map(f => (
+                   <button 
+                     key={f.id}
+                     onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
+                     className={cn(
+                       "px-5 h-9 md:h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border shrink-0 whitespace-nowrap flex items-center gap-2.5",
+                       activeFilter === f.id ? "bg-black text-white border-black shadow-lg" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
+                     )}
+                   >
+                     <f.icon size={14} className={cn(activeFilter === f.id ? "text-white" : "text-black/20")} />
+                     {f.label}
+                   </button>
+               ))}
+            </div>
+          }
           rightSidebar={<RightSocialRail />}
         >
-          <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
-          <div className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-             {SMART_FILTERS.map(f => (
-                 <button 
-                   key={f.id}
-                   onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
-                   className={cn(
-                     "px-5 h-9 md:h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border shrink-0 whitespace-nowrap",
-                     activeFilter === f.id ? "bg-black text-white border-black shadow-lg" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
-                   )}
-                 >
-                   <div className="flex items-center gap-2">
-                     <f.icon size={12} className={cn(activeFilter === f.id ? "text-white" : "text-black/20")} />
-                     {f.label}
-                   </div>
-                 </button>
-             ))}
-          </div>
-        </div>
-
         <div className="p-4 md:p-8 lg:p-12 max-w-5xl mx-auto space-y-10 md:space-y-12">
             <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
             <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />

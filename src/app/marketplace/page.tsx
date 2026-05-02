@@ -56,11 +56,11 @@ interface MarketplaceItem {
   status?: string;
 }
 
-const TYPE_FILTERS: { label: string; value: MarketplaceType }[] = [
-  { label: "All", value: "All" },
-  { label: "Requirements", value: "REQUIREMENT" },
-  { label: "Partners", value: "PARTNERSHIP" },
-  { label: "Meetups", value: "MEETUP" },
+const TYPE_FILTERS: { label: string; value: MarketplaceType; icon: any }[] = [
+  { label: "All", value: "All", icon: LayoutGrid },
+  { label: "Requirements", value: "REQUIREMENT", icon: Target },
+  { label: "Partners", value: "PARTNERSHIP", icon: Zap },
+  { label: "Meetups", value: "MEETUP", icon: Users },
 ];
 
 export default function MarketplacePage() {
@@ -175,16 +175,16 @@ function MarketplaceContent() {
   return (
     <TerminalLayout
       topbarChildren={
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 flex-1 max-w-4xl py-2 lg:py-0">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 flex-1 max-w-5xl py-2 lg:py-0">
           {/* SEARCH */}
-          <div className="flex-1 relative group w-full lg:w-auto">
+          <div className="flex-1 relative group w-full lg:max-w-xs">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
             <input 
               type="text" 
-              placeholder="What are you looking for?" 
+              placeholder="Search ecosystem..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 md:h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[12px] md:text-[13px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
+              className="w-full h-9 md:h-10 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-11 pr-4 text-[12px] font-bold text-black outline-none focus:bg-white focus:border-black/[0.08] transition-all"
             />
           </div>
 
@@ -195,12 +195,13 @@ function MarketplaceContent() {
                 key={f.value}
                 onClick={() => setActiveType(f.value)}
                 className={cn(
-                  "px-4 h-8 md:h-9 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap",
+                  "px-4 h-9 md:h-10 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-2.5",
                   activeType === f.value 
-                    ? "bg-black text-white border-black" 
+                    ? "bg-black text-white border-black shadow-lg" 
                     : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
                 )}
               >
+                <f.icon size={14} className={cn(activeType === f.value ? "text-white" : "text-black/20")} />
                 {f.label}
               </button>
             ))}

@@ -47,6 +47,7 @@ interface UniversalFeedCardProps {
   onEdit?: (post: any) => void;
   onDelete?: (post: any) => void;
   isNew?: boolean;
+  isPublicPreview?: boolean;
 }
 
 const TYPE_CONFIG: Record<string, {
@@ -160,6 +161,7 @@ const UniversalFeedCard = React.memo(({
   onEdit,
   onDelete,
   isNew,
+  isPublicPreview = false,
 }: UniversalFeedCardProps) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const [bookmarked, setBookmarked] = React.useState(false);
@@ -457,29 +459,35 @@ const UniversalFeedCard = React.memo(({
                           <ConnectButton 
                              targetId={author?.id || post.author_id} 
                              size="sm"
+                             disabled={isPublicPreview}
                           />
                        )}
                     </div>
 
                     <motion.button
-                       whileHover={{ scale: 1.02 }}
-                       whileTap={{ scale: 0.98 }}
-                       onClick={handleJoin}
+                       whileHover={isPublicPreview ? {} : { scale: 1.02 }}
+                       whileTap={isPublicPreview ? {} : { scale: 0.98 }}
+                       onClick={isPublicPreview ? undefined : handleJoin}
+                       disabled={isPublicPreview}
                        className={cn(
                           "flex-1 sm:flex-none h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg",
-                          nType === 'MEETUP' 
-                            ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
-                            : "bg-[#E53935] shadow-red-500/20"
+                          isPublicPreview ? "bg-gray-200 text-gray-400 shadow-none cursor-not-allowed" : (
+                             nType === 'MEETUP' 
+                               ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
+                               : "bg-[#E53935] shadow-red-500/20"
+                          )
                        )}
                     >
                        <div className="flex items-center justify-center gap-2.5">
                           {nType === 'MEETUP' ? <Users size={14} /> : <MessageSquare size={14} />}
                           <span className="whitespace-nowrap">
-                             {nType === 'MEETUP' ? (
-                                joinStatus === 'JOINED' ? "You're in  Chat is open" : 
-                                joinStatus === 'REQUESTED' ? "Awaiting Approval" : 
-                                joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
-                             ) : cfg.ctaLabel}
+                             {isPublicPreview ? "Sign Up to Respond" : (
+                               nType === 'MEETUP' ? (
+                                  joinStatus === 'JOINED' ? "You're in  Chat is open" : 
+                                  joinStatus === 'REQUESTED' ? "Awaiting Approval" : 
+                                  joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
+                               ) : "Respond Now"
+                             )}
                           </span>
                        </div>
                     </motion.button>

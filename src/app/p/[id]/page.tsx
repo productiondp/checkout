@@ -1,12 +1,14 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import PublicPostView from './PublicPostView';
 
 // Force dynamic rendering to ensure the shared post always has the latest data
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
   const { data: post } = await supabase.from('posts').select('title, type, content').eq('id', params.id).single();
   
   if (!post) return { title: 'Post Not Found | Checkout' };
@@ -18,7 +20,8 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 export default async function PublicPostPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
   
   // Fetch post with author profile attached using the clean relation we fixed earlier!
   const { data: post, error } = await supabase

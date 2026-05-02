@@ -507,27 +507,47 @@ export default function PremiumProfilePage() {
                    </div>
                 </div>
 
-                 {/* CENTRAL: MY STRATEGIC POSTS */}
+                 {/* CENTRAL STRATEGIC ROADMAP */}
                  <div className="lg:col-span-6 space-y-8">
-                    {/* Core Mission Indicator */}
-                    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex items-center justify-between">
-                       <div>
-                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Current Network Mission</h3>
-                          <p className="text-lg font-bold text-[#1D1D1F]">{userData.primaryIntent}</p>
+                    {/* Network Intent Selector */}
+                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                       <div className="flex items-center justify-between mb-8">
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <Target size={16} className="text-[#E53935]" /> Core Network Mission
+                             </h3>
+                             <p className="text-xl font-bold text-[#1D1D1F]">What are you solving for?</p>
+                          </div>
+                          <select 
+                             value={userData.primaryIntent}
+                             onChange={(e) => setUserData(prev => ({ ...prev, primaryIntent: e.target.value }))}
+                             className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold text-slate-600 outline-none focus:border-[#E53935] transition-all cursor-pointer"
+                          >
+                             <option>Growth & Scaling</option>
+                             <option>Investment & Funding</option>
+                             <option>Talent Acquisition</option>
+                             <option>Strategic Partnerships</option>
+                             <option>Market Entry</option>
+                          </select>
                        </div>
-                       <button onClick={() => setShowSettingsModal(true)} className="h-10 px-4 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E53935] hover:text-white transition-all">Change</button>
+                       <p className="text-[13px] text-slate-400 font-medium leading-relaxed">
+                          Your primary intent defines your **Strategic Feed**. Advisors and opportunities will be prioritized based on this mission.
+                       </p>
                     </div>
 
                     <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden">
                        <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
-                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                             <Target size={16} className="text-[#E53935]" /> My Strategic Posts
-                          </h3>
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Activity size={16} className="text-[#E53935]" /> Strategic Roadmap
+                             </h3>
+                          </div>
                           <button 
                              onClick={() => setIsAddingDep(!isAddingDep)} 
                              className="h-11 px-8 bg-[#1D1D1F] text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E53935] transition-all flex items-center gap-3 shadow-xl"
                           >
-                             {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "New Post"}
+                             {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "Add Objective"}
                           </button>
                        </div>
 
@@ -535,8 +555,8 @@ export default function PremiumProfilePage() {
                           <div className="mb-10 p-10 bg-slate-50 rounded-3xl border border-slate-100 animate-in fade-in slide-in-from-top-4 shadow-inner">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                                 <div className="space-y-2">
-                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Post Content</p>
-                                   <input type="text" placeholder="e.g. Looking for a Senior Frontend Lead..." value={newDep.content || ''} onChange={(e) => setNewDep({...newDep, content: e.target.value})} className="w-full h-14 px-6 rounded-2xl border border-slate-200 text-sm font-bold text-[#1D1D1F] focus:border-[#E53935] outline-none shadow-sm" />
+                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Objective Title</p>
+                                   <input type="text" placeholder="e.g. Expand to Southeast Asia" value={newDep.content || ''} onChange={(e) => setNewDep({...newDep, content: e.target.value})} className="w-full h-14 px-6 rounded-2xl border border-slate-200 text-sm font-bold text-[#1D1D1F] focus:border-[#E53935] outline-none shadow-sm" />
                                 </div>
                                 <div className="space-y-2">
                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Category</p>
@@ -549,7 +569,7 @@ export default function PremiumProfilePage() {
                                    </select>
                                 </div>
                              </div>
-                             <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-[#1D1D1F] transition-all shadow-2xl">Publish Post</button>
+                             <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-[#1D1D1F] transition-all shadow-2xl">Publish Objective</button>
                           </div>
                        )}
 
@@ -565,11 +585,11 @@ export default function PremiumProfilePage() {
                                       {dep.type === "Procurement" && <ShoppingBag size={22} />}
                                    </div>
                                    <div>
-                                      <div className="flex items-center gap-3 mb-1">
+                                      <div className="flex items-center gap-3 mb-2">
                                          <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold uppercase rounded-[4px] tracking-widest">{dep.type}</span>
                                          <h4 className="text-[14px] font-bold text-[#1D1D1F] line-clamp-1">{dep.content}</h4>
                                       </div>
-                                      <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">{dep.status}</p>
+                                      <p className="text-[11px] font-medium text-slate-400">Active Priority</p>
                                    </div>
                                 </div>
                                 <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all"><X size={18} /></button>
@@ -577,7 +597,7 @@ export default function PremiumProfilePage() {
                           )) : (
                              <div className="py-20 text-center opacity-30">
                                 <Sparkles size={40} className="mx-auto mb-4 text-[#1D1D1F]" />
-                                <p className="text-[11px] font-bold text-[#1D1D1F] uppercase tracking-widest italic">No active strategic posts</p>
+                                <p className="text-[11px] font-bold text-[#1D1D1F] uppercase tracking-widest italic">No active strategic objectives</p>
                              </div>
                           )}
                        </div>

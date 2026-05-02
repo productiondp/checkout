@@ -71,8 +71,10 @@ export default function PremiumProfilePage() {
      base_tag: "",
      metadata: {} as any,
      postCount: 0,
+     postCount: 0,
      connectionCount: 0,
-     solvedCount: 0
+     solvedCount: 0,
+     primaryIntent: "Growth & Scaling"
   });
   
   const [settings, setSettings] = useState({
@@ -506,74 +508,102 @@ export default function PremiumProfilePage() {
                    </div>
                 </div>
 
-                {/* CENTRAL BROADCAST FEED */}
-                <div className="lg:col-span-6 space-y-8">
-                   <div className="bg-white rounded-[8px] p-10 border border-[#292828]/5 shadow-2xl relative overflow-hidden">
-                      <div className="flex items-center justify-between mb-10 pb-6 border-b border-[#0A0A0A]/5">
-                         <div>
-                            <h3 className="text-sm font-black uppercase text-[#0A0A0A] flex items-center gap-3  italic">
-                               <Target size={20} className="text-[#E53935]" /> My Posts
-                            </h3>
-                         </div>
-                         <button 
-                            onClick={() => setIsAddingDep(!isAddingDep)} 
-                            className="h-11 px-8 bg-[#0A0A0A] text-white rounded-[8px] text-[10px] font-black uppercase hover:bg-[#E53935] transition-all flex items-center gap-3 shadow-2xl"
-                         >
-                            {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "Post Need"}
-                         </button>
-                      </div>
+                 {/* CENTRAL STRATEGIC ROADMAP */}
+                 <div className="lg:col-span-6 space-y-8">
+                    {/* Network Intent Selector */}
+                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                       <div className="flex items-center justify-between mb-8">
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <Target size={16} className="text-[#E53935]" /> Core Network Mission
+                             </h3>
+                             <p className="text-xl font-bold text-[#1D1D1F]">What are you solving for?</p>
+                          </div>
+                          <select 
+                             value={userData.primaryIntent}
+                             onChange={(e) => setUserData(prev => ({ ...prev, primaryIntent: e.target.value }))}
+                             className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold text-slate-600 outline-none focus:border-[#E53935] transition-all cursor-pointer"
+                          >
+                             <option>Growth & Scaling</option>
+                             <option>Investment & Funding</option>
+                             <option>Talent Acquisition</option>
+                             <option>Strategic Partnerships</option>
+                             <option>Market Entry</option>
+                          </select>
+                       </div>
+                       <p className="text-[13px] text-slate-400 font-medium leading-relaxed">
+                          Your primary intent defines your **Strategic Feed**. Advisors and opportunities will be prioritized based on this mission.
+                       </p>
+                    </div>
 
-                      {isAddingDep && (
-                         <div className="mb-10 p-10 bg-slate-50 rounded-[8px] border border-[#0A0A0A]/5 animate-in fade-in slide-in-from-top-4 shadow-inner">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                               <div className="space-y-2">
-                                  <p className="text-[8px] font-black text-slate-200 uppercase ">Requirement Title</p>
-                                  <input type="text" placeholder="e.g. Senior Frontend Lead" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-[8px] border border-slate-200 text-sm font-black uppercase  focus:border-[#E53935] outline-none shadow-sm" />
-                               </div>
-                               <div className="space-y-2">
-                                  <p className="text-[8px] font-black text-slate-200 uppercase ">Post Category</p>
-                                  <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-[8px] border border-slate-200 text-[10px] font-black uppercase  outline-none focus:border-[#E53935] bg-white">
-                                     <option>Hiring</option>
-                                     <option>Partnership</option>
-                                     <option>Procurement</option>
-                                     <option>Investment</option>
-                                     <option>Technology</option>
-                                  </select>
-                               </div>
-                            </div>
-                            <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-[8px] text-[11px] font-black uppercase  hover:bg-[#0A0A0A] transition-all shadow-2xl">Post Now</button>
-                         </div>
-                      )}
+                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden">
+                       <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
+                          <div>
+                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Activity size={16} className="text-[#E53935]" /> Strategic Roadmap
+                             </h3>
+                          </div>
+                          <button 
+                             onClick={() => setIsAddingDep(!isAddingDep)} 
+                             className="h-11 px-8 bg-[#1D1D1F] text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E53935] transition-all flex items-center gap-3 shadow-xl"
+                          >
+                             {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "Add Objective"}
+                          </button>
+                       </div>
 
-                      <div className="space-y-5">
-                         {dependencyList.length > 0 ? dependencyList.map(dep => (
-                            <div key={dep.id} className="p-8 bg-slate-50/50 border border-[#0A0A0A]/5 rounded-[8px] flex items-center justify-between group hover:bg-white hover:shadow-2xl hover:border-[#E53935]/20 transition-all duration-500">
-                               <div className="flex items-center gap-6">
-                                  <div className="h-14 w-14 bg-white rounded-[8px] flex items-center justify-center text-[#E53935] shadow-lg border border-[#0A0A0A]/5 group-hover:bg-[#E53935] group-hover:text-white transition-all">
-                                     {dep.type === "Hiring" && <Briefcase size={22} />}
-                                     {dep.type === "Partnership" && <Users size={22} />}
-                                     {dep.type === "Investment" && <TrendingUp size={22} />}
-                                     {dep.type === "Technology" && <Database size={22} />}
-                                     {dep.type === "Procurement" && <ShoppingBag size={22} />}
-                                  </div>
-                                  <div>
-                                     <div className="flex items-center gap-3 mb-2">
-                                        <span className="px-2 py-0.5 bg-[#0A0A0A] text-white text-[8px] font-black uppercase rounded-[4px] ">{dep.type}</span>
-                                        <h4 className="text-[16px] font-black text-[#0A0A0A] uppercase italic ">{dep.title}</h4>
-                                     </div>
-                                  </div>
-                               </div>
-                               <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-[8px] text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all"><X size={18} /></button>
-                            </div>
-                         )) : (
-                            <div className="py-20 text-center opacity-30">
-                               <Sparkles size={40} className="mx-auto mb-4 text-[#0A0A0A]" />
-                               <p className="text-[11px] font-black text-[#0A0A0A] uppercase  italic">No active strategic needs</p>
-                            </div>
-                         )}
-                      </div>
-                   </div>
-                </div>
+                       {isAddingDep && (
+                          <div className="mb-10 p-10 bg-slate-50 rounded-3xl border border-slate-100 animate-in fade-in slide-in-from-top-4 shadow-inner">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                                <div className="space-y-2">
+                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Objective Title</p>
+                                   <input type="text" placeholder="e.g. Expand to Southeast Asia" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-2xl border border-slate-200 text-sm font-bold text-[#1D1D1F] focus:border-[#E53935] outline-none shadow-sm" />
+                                </div>
+                                <div className="space-y-2">
+                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Category</p>
+                                   <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-2xl border border-slate-200 text-[12px] font-bold text-slate-600 outline-none focus:border-[#E53935] bg-white">
+                                      <option>Hiring</option>
+                                      <option>Partnership</option>
+                                      <option>Procurement</option>
+                                      <option>Investment</option>
+                                      <option>Technology</option>
+                                   </select>
+                                </div>
+                             </div>
+                             <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-[#1D1D1F] transition-all shadow-2xl">Publish Objective</button>
+                          </div>
+                       )}
+
+                       <div className="space-y-5">
+                          {dependencyList.length > 0 ? dependencyList.map(dep => (
+                             <div key={dep.id} className="p-8 bg-slate-50/50 border border-slate-50 rounded-3xl flex items-center justify-between group hover:bg-white hover:shadow-xl hover:border-[#E53935]/20 transition-all duration-500">
+                                <div className="flex items-center gap-6">
+                                   <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
+                                      {dep.type === "Hiring" && <Briefcase size={22} />}
+                                      {dep.type === "Partnership" && <Users size={22} />}
+                                      {dep.type === "Investment" && <TrendingUp size={22} />}
+                                      {dep.type === "Technology" && <Database size={22} />}
+                                      {dep.type === "Procurement" && <ShoppingBag size={22} />}
+                                   </div>
+                                   <div>
+                                      <div className="flex items-center gap-3 mb-2">
+                                         <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold uppercase rounded-[4px] tracking-widest">{dep.type}</span>
+                                         <h4 className="text-[15px] font-bold text-[#1D1D1F]">{dep.title}</h4>
+                                      </div>
+                                      <p className="text-[11px] font-medium text-slate-400">Active Priority</p>
+                                   </div>
+                                </div>
+                                <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all"><X size={18} /></button>
+                             </div>
+                          )) : (
+                             <div className="py-20 text-center opacity-30">
+                                <Sparkles size={40} className="mx-auto mb-4 text-[#1D1D1F]" />
+                                <p className="text-[11px] font-bold text-[#1D1D1F] uppercase tracking-widest italic">No active strategic objectives</p>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                 </div>
 
                  {/* COLUMN 3: PERFORMANCE & IMPACT */}
                  <div className="lg:col-span-3 space-y-8">

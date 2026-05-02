@@ -552,30 +552,41 @@ export default function PremiumProfilePage() {
 
                 {/* COLUMN 3: PERFORMANCE ARCHITECTURE */}
                 <div className="lg:col-span-3 space-y-8">
-                   <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 space-y-10">
-                      <h3 className="text-[10px] font-black text-[#292828]/30 uppercase flex items-center gap-3 ">
-                         <Activity size={18} className="text-[#E53935]" /> My Stats
-                      </h3>
-                      <div className="space-y-8">
+                   <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 space-y-8">
+                      <div className="flex items-center justify-between">
+                         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                            <Activity size={16} className="text-[#E53935]" /> Performance
+                         </h3>
+                      </div>
+                      <div className="grid grid-cols-1 gap-6">
                          {performanceMetrics.map((metric, i) => (
-                            <div key={i} className="space-y-4">
-                               <div className="flex justify-between items-end">
-                                  <div>
-                                     <span className="text-[11px] font-black text-[#0A0A0A] uppercase flex items-center gap-2.5 italic">
-                                        <metric.icon size={14} className="text-[#E53935]" /> {metric.label}
+                            <motion.div 
+                               key={i} 
+                               initial={{ opacity: 0, x: -10 }}
+                               animate={{ opacity: 1, x: 0 }}
+                               transition={{ delay: i * 0.1 }}
+                               className="group"
+                            >
+                               <div className="flex justify-between items-center mb-3">
+                                  <div className="flex items-center gap-3">
+                                     <div className={cn("p-2 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-[#E53935]/5 group-hover:text-[#E53935] transition-colors")}>
+                                        <metric.icon size={14} />
+                                     </div>
+                                     <span className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider">
+                                        {metric.label}
                                      </span>
                                   </div>
-                                  <span className="text-[14px] font-black text-[#0A0A0A]">{metric.value}%</span>
+                                  <span className="text-[14px] font-bold text-[#1D1D1F]">{metric.value}%</span>
                                </div>
-                               <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100 p-0.5">
+                               <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden relative">
                                   <motion.div 
                                      initial={{ width: 0 }}
                                      animate={{ width: `${metric.value}%` }}
-                                     transition={{ duration: 1.5, delay: i * 0.1, ease: "circOut" }}
+                                     transition={{ duration: 1.5, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
                                      className={cn("h-full rounded-full shadow-inner relative", metric.color)} 
                                   />
                                </div>
-                            </div>
+                            </motion.div>
                          ))}
                       </div>
                    </div>

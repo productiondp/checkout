@@ -218,22 +218,31 @@ function ProfileContent() {
                        </div>
 
                        <div className="space-y-6">
-                          <p className="text-[10px] font-black text-white/40 uppercase flex items-center gap-2 mb-2 tracking-[0.2em]">
-                             Performance
+                          <p className="text-[10px] font-bold text-white/40 uppercase flex items-center gap-2 mb-2 tracking-[0.2em]">
+                             Performance Indicators
                           </p>
-                          {[
-                             { label: "Successful Connections", val: "12/20", progress: 60 },
-                             { label: "Match Score", val: `${profile.match}%`, progress: profile.match },
-                          ].map((param, i) => (
-                             <div key={i} className="space-y-2">
-                                <div className="flex justify-between text-[9px] font-black text-white/30 uppercase tracking-widest">
+                          {performanceMetrics.map((param, i) => (
+                             <motion.div 
+                                key={i} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="space-y-2"
+                             >
+                                <div className="flex justify-between text-[10px] font-semibold text-white/30 uppercase tracking-widest">
                                    <span>{param.label}</span>
-                                   <span className="text-white">{param.val}</span>
+                                   <span className="text-white">{param.value}%</span>
                                 </div>
-                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-0.5">
-                                   <div className="h-full bg-[#E53935] rounded-full transition-all" style={{ width: `${param.progress}%` }} />
+                                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                   <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${param.value}%` }}
+                                      transition={{ duration: 1.5, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                      className={cn("h-full rounded-full transition-all", param.color.replace('bg-', 'bg-opacity-80 bg-'))} 
+                                      style={{ backgroundColor: param.color.includes('#') ? param.color : undefined }}
+                                   />
                                 </div>
-                             </div>
+                             </motion.div>
                           ))}
                        </div>
                     </div>
@@ -275,25 +284,33 @@ function ProfileContent() {
                  </div>
 
                  {/* Metrics */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {performanceMetrics.map((met, i) => (
-                      <div key={i} className="bg-white p-10 rounded-[1.625rem] border border-black/[0.03] shadow-sm group hover:border-[#E53935]/20 transition-all duration-500">
-                         <div className="flex items-center justify-between mb-10">
-                            <div className="h-16 w-16 bg-black/[0.03] rounded-[10px] flex items-center justify-center text-black/20 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
-                               <met.icon size={24} />
-                            </div>
-                            <span className="text-4xl font-black text-black font-outfit">{met.value}%</span>
-                         </div>
-                         <p className="text-[10px] font-black text-black/20 uppercase mb-5 tracking-widest">{met.label}</p>
-                         <div className="h-2 w-full bg-black/[0.03] rounded-full overflow-hidden p-0.5">
-                            <div 
-                               className={cn("h-full rounded-full transition-all duration-1000", met.color)} 
-                               style={{ width: `${met.value}%` }} 
-                            />
-                         </div>
-                      </div>
-                    ))}
-                 </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     {performanceMetrics.map((met, i) => (
+                       <motion.div 
+                          key={i} 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm group hover:border-[#E53935]/20 transition-all duration-500"
+                       >
+                          <div className="flex items-center justify-between mb-8">
+                             <div className="h-14 w-14 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
+                                <met.icon size={20} />
+                             </div>
+                             <span className="text-3xl font-bold text-[#1D1D1F]">{met.value}%</span>
+                          </div>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">{met.label}</p>
+                          <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                             <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${met.value}%` }}
+                                transition={{ duration: 1.5, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                className={cn("h-full rounded-full transition-all", met.color)} 
+                             />
+                          </div>
+                       </motion.div>
+                     ))}
+                  </div>
 
                  {/* EMPTY STATE FOR FEED */}
                  <div className="py-20 text-center bg-white border border-black/[0.03] rounded-[10px]">

@@ -26,13 +26,11 @@ export async function runAuthSafe<T>(
   return new Promise((resolve, reject) => {
     const priority = options.priority || 'low';
     const label = options.label || 'unlabeled';
-    console.log(`[AUTH MUTEX] Task Queued (Priority: ${priority}, Label: ${label})`);
     metrics.mutexQueueLength++;
     
     const task = { fn, resolve, reject, queuedAt: Date.now(), label, priority };
     
     if (priority === 'high') {
-      console.log(`[AUTH MUTEX] High-priority jump: ${label}`);
       queue.unshift(task);
     } else {
       queue.push(task);
@@ -53,8 +51,6 @@ async function processQueue() {
     console.warn(`[AUTH MUTEX] High wait time for ${label}: ${waitTime}ms`);
   }
 
-  console.log(`[AUTH MUTEX] Task Running: ${label} (Timeout: 5000ms) | Queue Status: ${queue.length} pending`);
-  
   const watchdog = new Promise((_, reject) => 
     setTimeout(() => reject(new Error(`AUTH_MUTEX_TIMEOUT [${label}] after 5000ms`)), 5000)
   );
@@ -67,7 +63,6 @@ async function processQueue() {
     reject(e);
   } finally {
     metrics.mutexQueueLength--;
-    console.log('[AUTH MUTEX] Task Released.');
     isProcessing = false;
     setTimeout(processQueue, 0);
   }

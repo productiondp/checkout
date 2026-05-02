@@ -133,11 +133,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     isResolvingRef.current = true;
-    console.log('[RESOLVE START]', timestamp());
-
     try {
       if (!currentSession) {
-        console.log('[RESOLVE] No session. Setting unauthenticated.');
         sessionAuthorityRef.current = 'GUEST';
         setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: true });
         return;
@@ -165,11 +162,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
     } catch (e: any) {
-      console.error('[RESOLVE] Error:', e.message || e);
       setAuthState({ state: { tag: 'onboarding' }, isAuthResolved: true });
     } finally {
       isResolvingRef.current = false;
-      console.log('[RESOLVE COMPLETE]', timestamp());
     }
   };
 

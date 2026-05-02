@@ -236,8 +236,8 @@ function OnboardingContent() {
       onboarding_completed: true 
     });
     
-    //  Immediate redirect to home (useAuth state machine will also enforce this)
-    router.replace('/home');
+    // REDIRECT NOTE: The useAuth state machine automatically detects 'onboarding_completed' 
+    // and triggers the transition to /home. Manual routing is banned by Sentinel.
   };
 
   const nextStep = async () => {

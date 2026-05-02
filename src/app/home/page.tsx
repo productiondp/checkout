@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
 import HomeFeedClient from '@/components/home/HomeFeedClient';
 import { createClient } from '@/utils/supabase/server';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 /**
- * SERVER-SIDE HOME FEED
+ * SERVER-SIDE HOME FEED (Sentinel V.25 Protected)
  * 
  * Performs 3-layer hydration:
  * 1. Public Feed: Fetched from Edge Cache for instant delivery.
@@ -55,9 +56,11 @@ export default async function Home() {
   }
 
   return (
-    <HomeFeedClient 
-      initialPosts={initialPosts} 
-      initialProfile={initialProfile} 
-    />
+    <ProtectedRoute>
+      <HomeFeedClient 
+        initialPosts={initialPosts} 
+        initialProfile={initialProfile} 
+      />
+    </ProtectedRoute>
   );
 }

@@ -28,18 +28,30 @@ export default function MapPage() {
   React.useEffect(() => {
     if (!mapContainer.current) return;
 
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: [76.9467, 8.5241], // Trivandrum
-      zoom: 12,
-      attributionControl: false
-    });
+    try {
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: 'https://tiles.openfreemap.org/styles/dark',
+        center: [76.9467, 8.5241], // Trivandrum
+        zoom: 12,
+        attributionControl: false
+      });
 
-    // Add navigation controls
-    map.current.addControl(new maplibregl.NavigationControl({
-      showCompass: false
-    }), 'top-right');
+      map.current.on('error', (e) => {
+        console.error('[MAP ERROR]', e);
+      });
+
+      map.current.on('load', () => {
+        console.log('[MAP LOADED]');
+      });
+
+      // Add navigation controls
+      map.current.addControl(new maplibregl.NavigationControl({
+        showCompass: false
+      }), 'top-right');
+    } catch (err) {
+      console.error('[MAP INIT ERROR]', err);
+    }
 
     return () => {
       map.current?.remove();

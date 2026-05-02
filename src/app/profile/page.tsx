@@ -509,20 +509,20 @@ export default function PremiumProfilePage() {
 
                  {/* CENTRAL STRATEGIC ROADMAP */}
                  <div className="lg:col-span-6 space-y-8">
-                    {/* Network Intent Selector */}
-                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                    {/* Strategic Intent Hub */}
+                    <div className="bg-white rounded-[8px] p-10 border border-[#292828]/5 shadow-2xl relative overflow-hidden group">
                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                       <div className="flex items-center justify-between mb-8">
-                          <div>
-                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                <Target size={16} className="text-[#E53935]" /> Core Network Mission
+                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                          <div className="space-y-2">
+                             <h3 className="text-[10px] font-black text-[#292828]/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Target size={14} className="text-[#E53935]" /> Core Network Mission
                              </h3>
-                             <p className="text-xl font-bold text-[#1D1D1F]">What are you solving for?</p>
+                             <p className="text-2xl font-black text-[#0A0A0A] uppercase italic">What are you solving for?</p>
                           </div>
                           <select 
                              value={userData.primaryIntent}
                              onChange={(e) => setUserData(prev => ({ ...prev, primaryIntent: e.target.value }))}
-                             className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold text-slate-600 outline-none focus:border-[#E53935] transition-all cursor-pointer"
+                             className="h-14 px-8 bg-[#0A0A0A]/5 border border-transparent rounded-[8px] text-[11px] font-black uppercase text-[#0A0A0A] outline-none focus:bg-white focus:border-[#E53935]/20 transition-all cursor-pointer"
                           >
                              <option>Growth & Scaling</option>
                              <option>Investment & Funding</option>
@@ -531,36 +531,36 @@ export default function PremiumProfilePage() {
                              <option>Market Entry</option>
                           </select>
                        </div>
-                       <p className="text-[13px] text-slate-400 font-medium leading-relaxed">
-                          Your primary intent defines your **Strategic Feed**. Advisors and opportunities will be prioritized based on this mission.
-                       </p>
                     </div>
 
-                    <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden">
-                       <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
-                          <div>
-                             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Activity size={16} className="text-[#E53935]" /> Strategic Roadmap
-                             </h3>
-                          </div>
+                    {/* My Posts Feed (Restored Locked Design) */}
+                    <div className="space-y-8">
+                       <div className="flex items-center justify-between px-2">
+                          <h3 className="text-[10px] font-black text-[#292828]/30 uppercase tracking-[0.2em] flex items-center gap-3">
+                             <Activity size={16} className="text-[#E53935]" /> Your Published Nodes
+                          </h3>
                           <button 
-                             onClick={() => setIsAddingDep(!isAddingDep)} 
-                             className="h-11 px-8 bg-[#1D1D1F] text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E53935] transition-all flex items-center gap-3 shadow-xl"
+                             onClick={() => setIsAddingDep(!isAddingDep)}
+                             className="h-10 px-6 bg-[#0A0A0A] text-white rounded-[8px] text-[9px] font-black uppercase tracking-widest hover:bg-[#E53935] transition-all flex items-center gap-2 shadow-xl"
                           >
-                             {isAddingDep ? <X size={16} /> : <Plus size={16} />} {isAddingDep ? "Close" : "Add Objective"}
+                             {isAddingDep ? <X size={14} /> : <Plus size={14} />} {isAddingDep ? "Cancel" : "New Post"}
                           </button>
                        </div>
 
                        {isAddingDep && (
-                          <div className="mb-10 p-10 bg-slate-50 rounded-3xl border border-slate-100 animate-in fade-in slide-in-from-top-4 shadow-inner">
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                          <motion.div 
+                             initial={{ opacity: 0, y: 10 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="p-8 bg-white rounded-[8px] border border-[#E53935]/20 shadow-4xl"
+                          >
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div className="space-y-2">
-                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Objective Title</p>
-                                   <input type="text" placeholder="e.g. Expand to Southeast Asia" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-2xl border border-slate-200 text-sm font-bold text-[#1D1D1F] focus:border-[#E53935] outline-none shadow-sm" />
+                                   <p className="text-[9px] font-black text-[#0A0A0A]/30 uppercase tracking-widest px-1">Post Title</p>
+                                   <input type="text" placeholder="What are you looking for?" value={newDep.title} onChange={(e) => setNewDep({...newDep, title: e.target.value})} className="w-full h-14 px-6 rounded-[8px] bg-slate-50 border border-transparent font-black uppercase text-xs outline-none focus:bg-white focus:border-[#E53935]/20 transition-all" />
                                 </div>
                                 <div className="space-y-2">
-                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Category</p>
-                                   <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-2xl border border-slate-200 text-[12px] font-bold text-slate-600 outline-none focus:border-[#E53935] bg-white">
+                                   <p className="text-[9px] font-black text-[#0A0A0A]/30 uppercase tracking-widest px-1">Category</p>
+                                   <select value={newDep.type} onChange={(e) => setNewDep({...newDep, type: e.target.value})} className="w-full h-14 px-5 rounded-[8px] bg-slate-50 border border-transparent text-[10px] font-black uppercase outline-none focus:bg-white focus:border-[#E53935]/20">
                                       <option>Hiring</option>
                                       <option>Partnership</option>
                                       <option>Procurement</option>
@@ -569,35 +569,39 @@ export default function PremiumProfilePage() {
                                    </select>
                                 </div>
                              </div>
-                             <button onClick={addDependency} className="w-full h-16 bg-[#E53935] text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-[#1D1D1F] transition-all shadow-2xl">Publish Objective</button>
-                          </div>
+                             <button onClick={addDependency} className="w-full h-14 bg-[#E53935] text-white rounded-[8px] text-[10px] font-black uppercase tracking-widest hover:bg-[#0A0A0A] transition-all shadow-2xl">Publish to Network</button>
+                          </motion.div>
                        )}
 
-                       <div className="space-y-5">
+                       <div className="space-y-6">
                           {dependencyList.length > 0 ? dependencyList.map(dep => (
-                             <div key={dep.id} className="p-8 bg-slate-50/50 border border-slate-50 rounded-3xl flex items-center justify-between group hover:bg-white hover:shadow-xl hover:border-[#E53935]/20 transition-all duration-500">
-                                <div className="flex items-center gap-6">
-                                   <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:bg-[#E53935] group-hover:text-white transition-all duration-500">
-                                      {dep.type === "Hiring" && <Briefcase size={22} />}
-                                      {dep.type === "Partnership" && <Users size={22} />}
-                                      {dep.type === "Investment" && <TrendingUp size={22} />}
-                                      {dep.type === "Technology" && <Database size={22} />}
-                                      {dep.type === "Procurement" && <ShoppingBag size={22} />}
-                                   </div>
-                                   <div>
-                                      <div className="flex items-center gap-3 mb-2">
-                                         <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold uppercase rounded-[4px] tracking-widest">{dep.type}</span>
-                                         <h4 className="text-[15px] font-bold text-[#1D1D1F]">{dep.title}</h4>
+                             <div key={dep.id} className="group bg-white rounded-[8px] border border-[#292828]/5 p-8 shadow-xl hover:shadow-2xl hover:border-[#E53935]/20 transition-all duration-500 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-[#E53935] opacity-0 group-hover:opacity-100 transition-all" />
+                                <div className="flex items-start justify-between relative z-10">
+                                   <div className="flex gap-6">
+                                      <div className="h-16 w-16 bg-[#0A0A0A]/5 rounded-[8px] flex items-center justify-center text-[#0A0A0A] group-hover:bg-[#0A0A0A] group-hover:text-white transition-all duration-500 shadow-sm">
+                                         {dep.type === "Hiring" && <Briefcase size={24} />}
+                                         {dep.type === "Partnership" && <Users size={24} />}
+                                         {dep.type === "Investment" && <TrendingUp size={24} />}
+                                         {dep.type === "Technology" && <Database size={24} />}
+                                         {dep.type === "Procurement" && <ShoppingBag size={24} />}
                                       </div>
-                                      <p className="text-[11px] font-medium text-slate-400">Active Priority</p>
+                                      <div>
+                                         <div className="flex items-center gap-3 mb-2">
+                                            <span className="px-3 py-1 bg-[#E53935]/5 text-[#E53935] text-[8px] font-black uppercase rounded-full tracking-widest">{dep.type}</span>
+                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Active Node</span>
+                                         </div>
+                                         <h4 className="text-xl font-black text-[#0A0A0A] uppercase italic leading-tight">{dep.title}</h4>
+                                         <p className="text-[11px] font-bold text-slate-400 mt-2">Strategic impact priority defined for the current quarter.</p>
+                                      </div>
                                    </div>
+                                   <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-[8px] text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all opacity-0 group-hover:opacity-100"><X size={18} /></button>
                                 </div>
-                                <button onClick={() => removeDependency(dep.id)} className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-200 hover:bg-red-50 hover:text-[#E53935] transition-all"><X size={18} /></button>
                              </div>
                           )) : (
-                             <div className="py-20 text-center opacity-30">
-                                <Sparkles size={40} className="mx-auto mb-4 text-[#1D1D1F]" />
-                                <p className="text-[11px] font-bold text-[#1D1D1F] uppercase tracking-widest italic">No active strategic objectives</p>
+                             <div className="py-24 text-center bg-white rounded-[8px] border border-dashed border-slate-100">
+                                <Sparkles size={32} className="mx-auto mb-4 text-slate-200" />
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">Your network feed is empty</p>
                              </div>
                           )}
                        </div>
@@ -606,72 +610,72 @@ export default function PremiumProfilePage() {
 
                  {/* COLUMN 3: PERFORMANCE & IMPACT */}
                  <div className="lg:col-span-3 space-y-8">
-                   {/* Performance Section */}
-                   <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 space-y-8">
-                      <div className="flex items-center justify-between">
-                         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <Activity size={16} className="text-[#E53935]" /> Performance
-                         </h3>
-                      </div>
-                      <div className="grid grid-cols-1 gap-6">
-                         {performanceMetrics.map((metric, i) => (
-                            <motion.div 
-                               key={i} 
-                               initial={{ opacity: 0, x: -10 }}
-                               animate={{ opacity: 1, x: 0 }}
-                               transition={{ delay: i * 0.1 }}
-                               className="group"
-                            >
-                               <div className="flex justify-between items-center mb-3">
-                                  <div className="flex items-center gap-3">
-                                     <div className={cn("p-2 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-[#E53935]/5 group-hover:text-[#E53935] transition-colors")}>
-                                        <metric.icon size={14} />
-                                     </div>
-                                     <span className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider">
-                                        {metric.label}
-                                     </span>
-                                  </div>
-                                  <span className="text-[14px] font-bold text-[#1D1D1F]">{metric.value}%</span>
-                               </div>
-                               <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden relative">
-                                  <motion.div 
-                                     initial={{ width: 0 }}
-                                     animate={{ width: `${metric.value}%` }}
-                                     transition={{ duration: 1.5, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
-                                     className={cn("h-full rounded-full shadow-inner relative", metric.color)} 
-                                  />
-                               </div>
-                            </motion.div>
-                         ))}
-                      </div>
-                   </div>
+                    {/* Performance Section (Restored Locked Style) */}
+                    <div className="bg-white rounded-[8px] p-8 shadow-2xl border border-[#292828]/5 space-y-8">
+                       <div className="flex items-center justify-between">
+                          <h3 className="text-[10px] font-black text-[#292828]/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                             <Activity size={16} className="text-[#E53935]" /> Your Stats
+                          </h3>
+                       </div>
+                       <div className="grid grid-cols-1 gap-8">
+                          {performanceMetrics.map((metric, i) => (
+                             <div key={i} className="group">
+                                <div className="flex justify-between items-center mb-3">
+                                   <div className="flex items-center gap-3">
+                                      <span className="text-[10px] font-black text-[#0A0A0A] uppercase tracking-wider">
+                                         {metric.label}
+                                      </span>
+                                   </div>
+                                   <span className="text-[12px] font-black text-[#E53935]">{metric.value}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-[#0A0A0A]/5 rounded-full overflow-hidden">
+                                   <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${metric.value}%` }}
+                                      transition={{ duration: 1.5, delay: i * 0.1 }}
+                                      className={cn("h-full rounded-full shadow-inner", metric.color)} 
+                                   />
+                                </div>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
 
-                   {/* Impact Section */}
-                   <div className="bg-black rounded-3xl p-8 shadow-2xl space-y-8 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                      <h3 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2 relative z-10">
-                         <Target size={16} className="text-[#E53935]" /> Network Impact
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 gap-4 relative z-10">
-                         {[
-                            { label: "Total Posts", value: userData.postCount, icon: Megaphone },
-                            { label: "Partner Connections", value: userData.connectionCount, icon: Users },
-                            { label: "Issues Solved", value: userData.solvedCount, icon: CheckCircle2 },
-                            { label: "Endorsements", value: 0, icon: Award },
-                         ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl group hover:bg-white/10 transition-all">
-                               <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white/40 group-hover:text-[#E53935] transition-colors">
-                                     <item.icon size={18} />
-                                  </div>
-                                  <span className="text-[12px] font-medium text-white/60">{item.label}</span>
-                               </div>
-                               <span className="text-xl font-bold text-white">{item.value}</span>
-                            </div>
-                         ))}
-                      </div>
-                   </div>
+                    {/* Impact Section (Restored Locked Style) */}
+                    <div className="bg-[#0A0A0A] rounded-[8px] p-8 shadow-4xl space-y-8 relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                       <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] flex items-center gap-2 relative z-10">
+                          <Target size={16} className="text-[#E53935]" /> Network Impact
+                       </h3>
+                       
+                       <div className="grid grid-cols-1 gap-4 relative z-10">
+                          {[
+                             { label: "Total Posts", value: userData.postCount, icon: Megaphone },
+                             { label: "Partner Connections", value: userData.connectionCount, icon: Users },
+                             { label: "Issues Solved", value: userData.solvedCount, icon: CheckCircle2 },
+                          ].map((item, i) => (
+                             <div key={i} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-[8px] group hover:bg-white/10 transition-all">
+                                <div className="flex items-center gap-4">
+                                   <div className="h-10 w-10 bg-white/10 rounded-[8px] flex items-center justify-center text-white/40 group-hover:text-[#E53935] transition-colors shadow-sm">
+                                      <item.icon size={18} />
+                                   </div>
+                                   <span className="text-[10px] font-black text-white/40 uppercase">{item.label}</span>
+                                </div>
+                                <span className="text-xl font-black text-white italic">{item.value}</span>
+                             </div>
+                          ))}
+                       </div>
+                       
+                       <div className="pt-6 border-t border-white/10 relative z-10">
+                          <div className="flex items-center justify-between p-5 bg-[#E53935] rounded-[8px] shadow-2xl shadow-[#E53935]/20">
+                             <div className="flex items-center gap-4 text-white">
+                                <Award size={20} />
+                                <span className="text-[10px] font-black uppercase">Market Authority</span>
+                             </div>
+                             <span className="text-xl font-black text-white italic">Elite</span>
+                          </div>
+                       </div>
+                    </div>
                 </div>
              </div>
           </div>

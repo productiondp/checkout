@@ -34,6 +34,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { motion, AnimatePresence } from "framer-motion";
 
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import ConnectButton from "@/components/ui/ConnectButton";

@@ -313,87 +313,101 @@ export default function MeetupPage() {
         <main className="flex-1 overflow-y-auto no-scrollbar border-r border-[#292828]/5 pb-32 lg:pb-0 scroll-smooth">
            
            {/* HEADER */}
-           <div className="p-6 md:p-8 lg:p-12 bg-white/50 backdrop-blur-xl border-b border-[#292828]/5 sticky top-0 z-40">
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 md:gap-8 mb-8 md:mb-10">
-                 <div>
-                    <div className="label-premium inline-flex items-center gap-2 px-3 py-1 bg-[#E53935]/5 text-[#E53935] rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
-                       <Target size={12} /> Area Discovery Active
+           <div className="bg-white/80 backdrop-blur-3xl border-b border-black/[0.03] sticky top-0 z-40 p-6 md:p-8">
+              <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#E53935]/5 text-[#E53935] rounded-full border border-[#E53935]/10 shadow-sm">
+                       <Target size={14} />
+                       <span className="text-[10px] font-black uppercase tracking-widest">Area Discovery Active</span>
                     </div>
-                    <h1 className="text-2xl md:text-2xl lg:text-3xl mb-0 font-black uppercase">
-                       Meetups<span className="text-[#E53935]">.</span>
-                    </h1>
-                    <p className="subheading-editorial mt-1 text-[11px] md:text-sm text-slate-400 font-medium">Connect with people in your area.</p>
-                 </div>
-                 
-                 <div className="flex items-center gap-4">
-                      <button 
-                        onClick={() => setShowAiArchitect(true)}
-                        className="h-14 md:h-16 flex-1 md:flex-none px-6 md:px-8 rounded-lg bg-gradient-to-br from-[#292828] to-[#1a1a1a] text-white flex items-center gap-3 md:gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group"
-                      >
-                         <div className="h-8 w-8 md:h-10 md:w-10 bg-[#E53935] rounded-lg flex items-center justify-center text-white shadow-xl animate-pulse">
-                            <BrainCircuit size={20} />
-                         </div>
-                         <div className="text-left">
-                            <p className="text-[8px] font-black text-white/50 uppercase leading-none mb-1">AI Assistant</p>
-                            <p className="text-[10px] md:text-[11px] font-bold uppercase">Plan Meeting</p>
-                         </div>
-                      </button>
-                   </div>
-              </div>
-  
-               <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto -mx-6 px-6 lg:mx-0 lg:px-0">
-                     {TOPICS.map(t => (
-                       <button 
-                         key={t}
-                         onClick={() => setActiveTopic(t)}
-                         className={cn(
-                           "px-5 md:px-6 h-10 md:h-11 rounded-lg text-[9px] md:text-[10px] font-bold uppercase transition-all whitespace-nowrap border-2",
-                           activeTopic === t ? "bg-[#292828] text-white border-[#292828] shadow-lg" : "bg-white text-[#292828]/40 border-transparent hover:border-[#292828]/10"
-                         )}
-                       >
-                          {t}
-                       </button>
-                     ))}
+                    <div className="space-y-1">
+                      <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-none">
+                         Meetups<span className="text-[#E53935]">.</span>
+                      </h1>
+                      <p className="text-[12px] md:text-sm font-medium text-black/40 uppercase tracking-tight">Connect with high-signal partners in your node.</p>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row items-center gap-4">
-                    <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.05] w-full md:w-auto overflow-x-auto no-scrollbar">
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => setShowAiArchitect(true)}
+                      className="group relative overflow-hidden flex items-center gap-4 bg-black text-white p-1 rounded-2xl border border-white/10 shadow-2xl transition-all hover:scale-[1.02] active:scale-95 shrink-0"
+                    >
+                      <div className="h-12 w-12 md:h-14 md:w-14 bg-[#E53935] rounded-xl flex items-center justify-center text-white shadow-xl relative z-10">
+                        <BrainCircuit size={24} className="group-hover:rotate-12 transition-transform" />
+                      </div>
+                      <div className="pr-6 relative z-10 text-left">
+                        <p className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">AI Architect</p>
+                        <p className="text-[11px] font-black uppercase tracking-tight">Plan Meeting</p>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pt-4 border-t border-black/[0.03]">
+                  {/* TOPIC PILLS - Right-aligned with scroll */}
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                    <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-full border border-black/[0.03] shadow-inner">
+                      {TOPICS.map(t => (
+                        <button 
+                          key={t}
+                          onClick={() => setActiveTopic(t)}
+                          className={cn(
+                            "px-5 h-9 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center",
+                            activeTopic === t 
+                              ? "bg-white text-black shadow-md shadow-black/5" 
+                              : "text-black/30 hover:text-black/60"
+                          )}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 xl:justify-end">
+                    {/* SORT MODES */}
+                    <div className="flex items-center gap-1 p-1 bg-black/[0.02] rounded-xl border border-black/[0.03]">
                       {(['NEARBY', 'RELEVANT', 'UPCOMING'] as const).map((mode) => (
                         <button
                           key={mode}
                           onClick={() => setSortMode(mode)}
                           className={cn(
-                            "flex-1 md:flex-none px-4 py-2 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                            "px-4 h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center",
                             sortMode === mode 
                               ? "bg-white text-black shadow-sm" 
-                              : "text-slate-400 hover:text-slate-600"
+                              : "text-black/20 hover:text-black"
                           )}
                         >
-                          {mode.charAt(0) + mode.slice(1).toLowerCase()}
+                          {mode}
                         </button>
                       ))}
                     </div>
-                    
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                       <button 
-                         onClick={() => { setShowHostModal(true); setHostStep(1); }}
-                         className="flex-1 md:flex-none h-11 px-6 bg-black text-white rounded-lg flex items-center justify-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-[#E53935] shadow-lg active:scale-95 transition-all"
-                       >
-                          <Plus size={14} /> Host
-                       </button>
-     
-                       <div className="flex items-center gap-1 bg-[#292828]/5 p-1 rounded-lg">
-                          <button onClick={() => setViewMode("grid")} className={cn("h-9 w-10 md:w-auto md:px-4 rounded-lg flex items-center justify-center gap-2 text-[9px] font-bold uppercase", viewMode === "grid" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                             <LayoutGrid size={14} />
-                          </button>
-                          <button onClick={() => setViewMode("list")} className={cn("h-9 w-10 md:w-auto md:px-4 rounded-lg flex items-center justify-center gap-2 text-[9px] font-bold uppercase", viewMode === "list" ? "bg-white text-[#292828] shadow-sm" : "text-[#292828]/30")}>
-                             <List size={14} />
-                          </button>
-                       </div>
+
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => { setShowHostModal(true); setHostStep(1); }}
+                        className="h-10 px-6 bg-[#E53935] text-white rounded-xl flex items-center justify-center gap-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-[#E53935]/10 active:scale-95"
+                      >
+                         <Plus size={16} strokeWidth={3} /> Host
+                      </button>
+
+                      <div className="h-8 w-px bg-black/[0.05] hidden md:block" />
+
+                      <div className="flex items-center gap-1 p-1 bg-black/[0.02] rounded-lg">
+                        <button onClick={() => setViewMode("grid")} className={cn("h-8 w-9 rounded-lg flex items-center justify-center transition-all", viewMode === "grid" ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black")}>
+                           <LayoutGrid size={15} />
+                        </button>
+                        <button onClick={() => setViewMode("list")} className={cn("h-8 w-9 rounded-lg flex items-center justify-center transition-all", viewMode === "list" ? "bg-white text-black shadow-sm" : "text-black/20 hover:text-black")}>
+                           <List size={15} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-               </div>
+                </div>
+              </div>
             </div>
   
            {/* CONTENT GRID */}

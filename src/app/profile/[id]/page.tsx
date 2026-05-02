@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { 
   User, 
   Mail, 
@@ -47,6 +47,8 @@ export default function DynamicProfilePage() {
 
 function ProfileContent() {
   const params = useParams();
+  const router = useRouter();
+  const { user: authUser } = useAuth();
   const profileId = params.id as string;
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,10 +133,20 @@ function ProfileContent() {
                  </div>
 
                  <div className="flex items-center gap-4">
-                    <ConnectButton 
-                       targetId={profileId} 
-                       className="h-16 px-10 rounded-[10px] text-[11px] font-black uppercase"
-                    />
+                    {authUser?.id === profileId ? (
+                       <button 
+                          onClick={() => router.push('/profile')} 
+                          className="h-16 px-10 bg-black text-white rounded-[10px] font-black text-[11px] uppercase shadow-2xl hover:bg-[#E53935] transition-all active:scale-95 flex items-center gap-3"
+                       >
+                          <Settings size={18} />
+                          Edit Profile
+                       </button>
+                    ) : (
+                       <ConnectButton 
+                          targetId={profileId} 
+                          className="h-16 px-10 rounded-[10px] text-[11px] font-black uppercase"
+                       />
+                    )}
                     <button className="h-16 w-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-[10px] flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
                        <Plus size={24} />
                     </button>

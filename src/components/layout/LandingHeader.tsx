@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Terminal, Menu, X } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface LandingHeaderProps {
@@ -23,41 +24,45 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 h-[calc(60px+env(safe-area-inset-top))] lg:h-[80px] z-50 px-6 lg:px-[10%] pt-[env(safe-area-inset-top)] flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 lg:h-10 w-8 lg:w-10 bg-[#E53935] rounded flex items-center justify-center">
-            <Terminal size={22} className="text-white" />
-          </div>
-          <span className="text-xl lg:text-2xl font-bold text-[#E53935]">CheckOut</span>
+      <nav className="fixed top-0 inset-x-0 h-[80px] lg:h-[100px] z-[100] px-6 lg:px-12 flex items-center justify-between bg-white/90 backdrop-blur-xl border-b border-black/[0.03]">
+        <Link href="/" className="group flex items-center">
+           <Image 
+              src="/logo.png" 
+              alt="Checkout Logo" 
+              width={180} 
+              height={45} 
+              className="h-8 lg:h-10 w-auto object-contain transition-transform group-hover:scale-105" 
+              priority
+           />
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-10 text-gray-500 font-bold text-[13px] tracking-tight">
+        <div className="hidden lg:flex items-center gap-10 text-gray-400 font-black uppercase tracking-widest text-[11px]">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-black transition-colors">
               {link.label}
             </Link>
           ))}
-          <div className="h-6 w-px bg-gray-100 mx-2" />
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
-              className="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-full transition-all"
-            >
-              Join now
-            </button>
+          <div className="h-6 w-px bg-black/[0.05] mx-2" />
+          <div className="flex items-center gap-6">
             <button 
               onClick={onSigninClick || (() => window.location.href = '/?mode=signin')} 
-              className="px-6 py-2 border border-[#E53935] text-[#E53935] font-bold rounded-full hover:bg-red-50 transition-all"
+              className="text-gray-400 hover:text-black transition-all"
             >
-              Sign in
+              Sign In
+            </button>
+            <button 
+              onClick={onJoinClick || (() => window.location.href = '/?mode=signup')} 
+              className="px-8 h-12 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-black/10"
+            >
+              Join now
             </button>
           </div>
         </div>
 
         {/* Mobile Toggle */}
         <button 
-          className="lg:hidden p-2 text-gray-900"
+          className="lg:hidden h-12 w-12 flex items-center justify-center rounded-xl bg-gray-50 text-gray-900 border border-black/[0.05]"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -68,43 +73,46 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-white pt-[80px] px-6 lg:hidden"
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[90] bg-white lg:hidden"
           >
-            <div className="flex flex-col gap-6 pt-10">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.href} 
-                  href={link.href} 
-                  className="text-2xl font-bold text-gray-900 border-b border-gray-50 pb-4"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <div className="flex flex-col h-full pt-[100px] px-8 pb-12">
+               <div className="flex flex-col gap-6 flex-1 overflow-y-auto pt-6">
+                  {navLinks.map((link) => (
+                    <Link 
+                      key={link.href} 
+                      href={link.href} 
+                      className="text-3xl font-bold text-gray-900 tracking-tighter hover:text-[#E53935] transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+               </div>
               
-              <div className="flex flex-col gap-4 pt-10">
-                <button 
-                  onClick={() => {
-                    setIsOpen(false);
-                    onJoinClick ? onJoinClick() : window.location.href = '/?mode=signup';
-                  }}
-                  className="w-full h-14 bg-gray-900 text-white font-bold rounded-xl"
-                >
-                  Join now
-                </button>
-                <button 
-                  onClick={() => {
-                    setIsOpen(false);
-                    onSigninClick ? onSigninClick() : window.location.href = '/?mode=signin';
-                  }}
-                  className="w-full h-14 border-2 border-[#E53935] text-[#E53935] font-bold rounded-xl"
-                >
-                  Sign in
-                </button>
-              </div>
+               <div className="flex flex-col gap-4 pt-12 border-t border-black/[0.05]">
+                 <button 
+                   onClick={() => {
+                     setIsOpen(false);
+                     onJoinClick ? onJoinClick() : window.location.href = '/?mode=signup';
+                   }}
+                   className="w-full h-16 bg-black text-white font-black uppercase tracking-widest text-[11px] rounded-2xl shadow-xl shadow-black/10"
+                 >
+                   Create Account
+                 </button>
+                 <button 
+                   onClick={() => {
+                     setIsOpen(false);
+                     onSigninClick ? onSigninClick() : window.location.href = '/?mode=signin';
+                   }}
+                   className="w-full h-16 bg-gray-50 text-black font-black uppercase tracking-widest text-[11px] rounded-2xl border border-black/[0.05]"
+                 >
+                   Member Sign In
+                 </button>
+               </div>
             </div>
           </motion.div>
         )}

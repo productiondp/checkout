@@ -385,13 +385,13 @@ function OnboardingContent() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-0">
-           <header className="px-10 lg:px-20 pt-12 pb-8 flex items-start justify-between shrink-0 border-b border-slate-50 relative">
+           <header className="px-6 lg:px-20 pt-8 lg:pt-12 pb-6 lg:pb-8 flex items-start justify-between shrink-0 border-b border-slate-50 relative">
               <div className="space-y-4">
                  <div className="inline-flex items-center gap-2 text-[#FF3B30] text-[11px] font-black uppercase tracking-wider">
                     <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
                     Step {step} of 3 // About you
                  </div>
-                 <h1 className="text-5xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
+                 <h1 className="text-4xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
                     {step === 1 && "Who are you?"}
                     {step === 2 && (onboardingData.role === 'ADVISOR' ? "How can you help?" : "What do you do?")}
                     {step === 3 && "Almost done"}
@@ -409,7 +409,7 @@ function OnboardingContent() {
               </button>
            </header>
 
-           <main className="flex-1 overflow-y-auto no-scrollbar px-10 lg:px-20 py-10">
+           <main className="flex-1 overflow-y-auto no-scrollbar px-6 lg:px-20 py-8 lg:py-10">
               <AnimatePresence mode="wait">
                  <motion.div
                    key={step}
@@ -428,7 +428,7 @@ function OnboardingContent() {
                                   value={onboardingData.name}
                                   onChange={e => setOnboardingData(prev => ({ ...prev, name: e.target.value }))}
                                   placeholder="Full Name"
-                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
+                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
                              </div>
                           </div>
@@ -486,7 +486,7 @@ function OnboardingContent() {
                                     }));
                                   }}
                                   placeholder={onboardingData.role === 'ADVISOR' ? "e.g. Startup Strategy, Marketing Guidance" : "e.g. Video Editor, Founder, Developer"}
-                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
+                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
                              </div>
                              
@@ -606,7 +606,7 @@ function OnboardingContent() {
                              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Location</label>
                              <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
                                 <MapPin size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" />
-                                <input type="text" value={onboardingData.location} onChange={e => setOnboardingData(prev => ({ ...prev, location: e.target.value }))} className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-2xl font-black text-[#1A1A1A] outline-none uppercase" />
+                                <input type="text" value={onboardingData.location} onChange={e => setOnboardingData(prev => ({ ...prev, location: e.target.value }))} className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none uppercase" />
                              </div>
                           </div>
 
@@ -623,7 +623,7 @@ function OnboardingContent() {
               </AnimatePresence>
            </main>
 
-           <footer className="px-10 lg:px-20 py-8 bg-white border-t border-slate-100 flex items-center gap-6 shrink-0">
+           <footer className="px-6 lg:px-20 py-6 lg:py-8 bg-white border-t border-slate-100 flex items-center gap-4 lg:gap-6 shrink-0">
               {step > 1 && <button onClick={() => setStep(step - 1)} className="h-16 w-16 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#1A1A1A] transition-all border border-slate-100"><ChevronLeft size={24} /></button>}
               <button 
                 onClick={step === 3 ? () => saveProgress(true) : nextStep} 

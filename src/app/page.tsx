@@ -160,12 +160,9 @@ function AuthContent() {
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
-               <h1 className="text-4xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
-                  <span className="font-extralight text-[0.8em] opacity-80">Connect.</span> Grow. <br />
-                  <span className="text-[#E53935] relative">
-                     Succeed.
-                     <span className="absolute -bottom-2 left-0 w-24 h-1 bg-[#E53935] rounded-full opacity-20 blur-[2px]" />
-                  </span>
+               <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.9]">
+                  <span className="font-extralight opacity-60">Connect.</span><br className="hidden lg:block" /> Grow. <br />
+                  <span className="text-[#E53935]">Succeed.</span>
                </h1>
 
                <AnimatePresence mode="wait">
@@ -174,18 +171,18 @@ function AuthContent() {
                       key="form"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="space-y-6 max-w-[400px]"
+                      className="space-y-6 w-full max-w-[400px]"
                     >
                        <form onSubmit={handleSubmit} className="space-y-4">
                           {mode === "signup" && (
-                             <>
+                             <div className="space-y-4">
                                 <div className="space-y-1 relative">
-                                   <label className="text-sm font-semibold text-gray-600">I am a...</label>
+                                   <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">I am a...</label>
                                    <div className="relative">
                                       <button 
                                         type="button"
                                         onClick={() => setIsRoleOpen(!isRoleOpen)}
-                                        className="w-full h-12 px-10 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all bg-white font-bold text-[13px] flex items-center justify-between group"
+                                        className="w-full h-14 px-6 border border-gray-200 rounded-2xl hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all bg-white font-bold text-[13px] flex items-center justify-between group"
                                       >
                                          <div className="flex items-center gap-3">
                                             <div className="text-[#E53935]">
@@ -206,7 +203,7 @@ function AuthContent() {
                                                initial={{ opacity: 0, y: -10 }}
                                                animate={{ opacity: 1, y: 0 }}
                                                exit={{ opacity: 0, y: -10 }}
-                                               className="absolute top-[110%] inset-x-0 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] py-2 overflow-hidden"
+                                               className="absolute top-[115%] inset-x-0 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden"
                                             >
                                                {ROLES.map(r => (
                                                   <button
@@ -214,7 +211,7 @@ function AuthContent() {
                                                      type="button"
                                                      onClick={() => { setRole(r.value); setIsRoleOpen(false); }}
                                                      className={cn(
-                                                        "w-full px-4 py-3 flex items-center gap-3 hover:bg-red-50 transition-colors text-left",
+                                                        "w-full px-5 py-3.5 flex items-center gap-3 hover:bg-red-50 transition-colors text-left",
                                                         role === r.value ? "bg-red-50 text-[#E53935]" : "text-gray-700"
                                                      )}
                                                   >
@@ -232,60 +229,63 @@ function AuthContent() {
                                 </div>
 
                                 <div className="space-y-1">
-                                   <label className="text-sm font-semibold text-gray-600">Full name</label>
+                                   <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Full name</label>
                                    <input
                                       type="text"
                                       name="fullName"
                                       value={formData.fullName}
                                       onChange={handleInput}
-                                      className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all"
+                                      placeholder="John Doe"
+                                      className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px]"
                                       required
                                    />
                                 </div>
-                             </>
+                             </div>
                           )}
 
                           <div className="space-y-1">
-                             <label className="text-sm font-semibold text-gray-600">Email</label>
+                             <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Email address</label>
                              <input
                                 type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInput}
-                                className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all"
+                                placeholder="name@company.com"
+                                className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px]"
                                 required
                              />
                           </div>
 
                           <div className="space-y-1">
-                              <label className="text-sm font-semibold text-gray-600">Password</label>
+                              <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">Security key</label>
                               <div className="relative group">
                                  <input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleInput}
-                                    className="w-full h-12 px-3 border border-gray-400 rounded hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all pr-12"
+                                    placeholder="••••••••"
+                                    className="w-full h-14 px-6 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-[#E53935] outline-none transition-all font-bold text-[13px] pr-12"
                                     required
                                  />
                                  <button 
                                    type="button" 
                                    onClick={() => setShowPassword(!showPassword)}
-                                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E53935] transition-all p-1"
+                                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E53935] transition-all p-1"
                                  >
                                     {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
                                  </button>
                               </div>
                            </div>
 
-                          {error && <p className="text-red-600 text-sm">{error}</p>}
+                          {error && <p className="text-red-600 text-xs font-bold px-1">{error}</p>}
 
                            <button
                               type="submit"
                               disabled={isLoading}
-                              className="w-full h-12 bg-[#E53935] hover:bg-[#B71C1C] text-white font-bold rounded-full transition-all flex items-center justify-center relative overflow-hidden"
+                              className="w-full h-16 bg-black text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl shadow-xl shadow-black/10 hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 mt-4"
                            >
-                              {mode === "signup" ? "Agree & join" : "Sign in"}
+                              {isLoading ? <Loader2 size={18} className="animate-spin" /> : (mode === "signup" ? "Agree & join" : "Sign in")}
                            </button>
                         </form>
 

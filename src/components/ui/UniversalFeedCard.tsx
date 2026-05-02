@@ -389,13 +389,13 @@ const UniversalFeedCard = React.memo(({
                     </div>
                  )}
               </div>
-              <h3 className="text-xl lg:text-2xl text-[#1D1D1F] leading-tight transition-colors duration-500">
+              <h3 className="text-lg sm:text-xl lg:text-2xl text-[#1D1D1F] leading-tight transition-colors duration-500">
                  <HighlightTitle text={title} />
               </h3>
            </div>
            
            {post.content && post.content.trim() !== title.trim() && (
-              <p className="text-[14px] font-medium text-[#86868B] leading-relaxed max-w-2xl line-clamp-2">
+              <p className="text-[13px] sm:text-[14px] font-medium text-[#86868B] leading-relaxed max-w-2xl line-clamp-2">
                  {post.content}
               </p>
            )}
@@ -433,7 +433,7 @@ const UniversalFeedCard = React.memo(({
               </div>
            ) : <div />}
 
-           <div className="flex items-center gap-2.5 w-full sm:w-auto">
+           <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
               <motion.button
                  whileTap={{ scale: 0.9 }}
                  onClick={handleShare}
@@ -443,7 +443,7 @@ const UniversalFeedCard = React.memo(({
               </motion.button>
 
               {!isOwner ? (
-                 <>
+                 <div className="flex flex-1 items-center gap-2 min-w-0">
                     <div className="flex items-center gap-2">
                        <motion.button
                           whileTap={{ scale: 0.9 }}
@@ -470,7 +470,7 @@ const UniversalFeedCard = React.memo(({
                        onClick={isPublicPreview ? undefined : handleJoin}
                        disabled={isPublicPreview}
                        className={cn(
-                          "flex-1 sm:flex-none h-12 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg",
+                          "flex-1 h-12 px-6 sm:px-8 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white transition-all shadow-lg min-w-0",
                           isPublicPreview ? "bg-gray-200 text-gray-400 shadow-none cursor-not-allowed" : (
                              nType === 'MEETUP' 
                                ? (joinStatus === 'JOINED' ? "bg-emerald-600 shadow-emerald-600/20" : "bg-black shadow-black/10")
@@ -478,20 +478,20 @@ const UniversalFeedCard = React.memo(({
                           )
                        )}
                     >
-                       <div className="flex items-center justify-center gap-2.5">
-                          {nType === 'MEETUP' ? <Users size={14} /> : <MessageSquare size={14} />}
-                          <span className="whitespace-nowrap">
-                             {isPublicPreview ? "Sign Up to Respond" : (
+                       <div className="flex items-center justify-center gap-2 min-w-0">
+                          {nType === 'MEETUP' ? <Users size={14} className="shrink-0" /> : <MessageSquare size={14} className="shrink-0" />}
+                          <span className="truncate">
+                             {isPublicPreview ? "Join Now" : (
                                nType === 'MEETUP' ? (
-                                  joinStatus === 'JOINED' ? "You're in  Chat is open" : 
-                                  joinStatus === 'REQUESTED' ? "Awaiting Approval" : 
-                                  joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
-                               ) : "Respond Now"
+                                  joinStatus === 'JOINED' ? "Chat Open" : 
+                                  joinStatus === 'REQUESTED' ? "Pending" : 
+                                  joinStatus === 'FULL' ? "Full" : "Join"
+                               ) : "Respond"
                              )}
                           </span>
                        </div>
                     </motion.button>
-                 </>
+                 </div>
               ) : (
                  <div className="flex items-center gap-2.5 w-full">
                     <button 

@@ -92,27 +92,47 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+
   return (
     <header className="h-16 lg:h-20 bg-white border-b border-black/[0.05] flex items-center justify-between px-4 lg:px-8 px-safe sticky top-0 z-[100] backdrop-blur-xl bg-white/80">
       {/* LEFT SIDE: SEARCH + LOCATION + CONTEXTUAL */}
-      <div className="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
+      <div className="flex items-center gap-2 lg:gap-8 flex-1 min-w-0">
         <Link href="/home" className="shrink-0 lg:hidden">
            <Zap size={28} className="text-[#E53935]" fill="currentColor" />
         </Link>
 
-        {/* GLOBAL SEARCH */}
-        <div className="hidden lg:flex max-w-sm w-full relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={16} />
+        {/* GLOBAL SEARCH - Now Responsive */}
+        <div className={cn(
+          "flex-1 max-w-sm relative group transition-all duration-300",
+          isSearchOpen ? "flex fixed inset-x-0 top-0 h-16 bg-white z-[210] px-4 items-center animate-in slide-in-from-top" : "hidden lg:flex"
+        )}>
+          <Search className="absolute left-8 lg:left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-[#E53935] transition-colors" size={16} />
           <input 
+            autoFocus={isSearchOpen}
             type="text" 
             placeholder="Search network..." 
-            className="w-full h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[13px] font-bold text-black focus:bg-white focus:border-[#E53935]/20 transition-all outline-none"
+            className="w-full h-11 lg:h-11 bg-[#F5F5F7] border border-black/[0.03] rounded-xl pl-12 pr-4 text-[13px] font-bold text-black focus:bg-white focus:border-[#E53935]/20 transition-all outline-none"
           />
+          {isSearchOpen && (
+            <button onClick={() => setIsSearchOpen(false)} className="ml-4 text-[10px] font-black uppercase text-gray-400">Cancel</button>
+          )}
         </div>
-        {/* CONTEXTUAL FILTERS (Passed from Page) */}
-        <div className="flex items-center gap-2 lg:gap-3 min-w-0 ml-auto">
-          {children}
+
+        {/* CONTEXTUAL FILTERS - Horizontal Scroll on Mobile */}
+        <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar mask-fade-right lg:mask-none py-1">
+           <div className="flex items-center gap-2 lg:gap-3 whitespace-nowrap px-1">
+              {children}
+           </div>
         </div>
+
+        {/* MOBILE SEARCH TOGGLE */}
+        <button 
+          onClick={() => setIsSearchOpen(true)}
+          className="h-10 w-10 flex lg:hidden items-center justify-center text-black/40 hover:text-black transition-all"
+        >
+          <Search size={20} />
+        </button>
 
         {/* LOCATION SELECTOR */}
         <div className="relative block" ref={locationRef}>

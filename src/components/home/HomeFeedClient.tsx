@@ -153,13 +153,13 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
       {!authUser ? null : (
         <TerminalLayout
           topbarChildren={
-             <div className="hidden md:flex items-center gap-2">
+             <div className="flex items-center gap-2">
                 {SMART_FILTERS.map(f => (
                    <button 
                      key={f.id}
                      onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
                      className={cn(
-                       "px-4 h-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
+                       "px-4 h-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shrink-0",
                        activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"
                      )}
                    >
@@ -170,7 +170,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
           }
           rightSidebar={<RightSocialRail />}
         >
-          <div className="p-8 max-w-5xl mx-auto space-y-8">
+          <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8">
               <StartHereCard onAction={() => handleOpenPosting()} onExplore={() => router.push('/matches')} />
               <ActiveComposer user={authUser} onPost={(type) => handleOpenPosting(type)} />
               <div className="flex items-center justify-between mb-2">

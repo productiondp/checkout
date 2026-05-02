@@ -21,12 +21,12 @@ import StartHereCard from "@/components/home/StartHereCard";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import RightSocialRail from "@/components/layout/RightSocialRail";
 import { setCache } from "@/lib/cache";
+import ActiveComposer from "@/components/home/ActiveComposer";
 
 const DealEngine = dynamic(() => import("@/components/modals/DealEngine"), { ssr: false });
 const PostModal = dynamic(() => import("@/components/modals/PostModal"), { ssr: false });
 const MomentumView = dynamic(() => import("@/components/modals/MomentumView"), { ssr: false });
 const Feed = dynamic(() => import("@/components/home/HomeFeed"), { ssr: false });
-const ActiveComposer = dynamic(() => import("@/components/home/ActiveComposer"), { ssr: false });
 
 const SMART_FILTERS = [
   { id: 'All', label: 'All', icon: LayoutGrid },

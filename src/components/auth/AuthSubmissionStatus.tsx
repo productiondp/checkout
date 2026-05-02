@@ -69,50 +69,91 @@ export default function AuthSubmissionStatus({ state, error, onRetry }: AuthSubm
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center p-10 text-center"
+      className="fixed inset-0 z-[10000] bg-white flex flex-col items-center justify-center p-6 text-center overflow-hidden"
     >
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full max-w-sm flex flex-col items-center gap-12">
         
-        {/* ICON HERO */}
-        <div className="relative">
+        {/* WHEEL ANIMATION HERO */}
+        <div className="relative h-48 w-48 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={state}
-              initial={{ scale: 0.5, opacity: 0, rotate: -20 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 1.5, opacity: 0, rotate: 20 }}
-              className={cn(
-                "h-24 w-24 mx-auto rounded-[2rem] flex items-center justify-center shadow-2xl relative z-10",
-                config.bg,
-                config.color
-              )}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.1, opacity: 0 }}
+              className="relative z-10"
             >
-              {state === 'SUCCESS' ? (
-                <Icon size={40} className="animate-in zoom-in duration-500" />
-              ) : (
-                <Loader2 size={40} className="animate-spin" />
-              )}
+              {/* Outer Glow */}
+              <div className={cn(
+                "absolute inset-0 rounded-full blur-2xl opacity-20 animate-pulse",
+                state === 'FAILED' ? "bg-red-500" : state === 'SUCCESS' ? "bg-emerald-500" : "bg-[#E53935]"
+              )} />
+              
+              {/* The Wheel */}
+              <div className="relative h-32 w-32 rounded-full bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] flex items-center justify-center border border-black/[0.02]">
+                {state !== 'SUCCESS' && state !== 'FAILED' && (
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <motion.circle
+                      cx="64"
+                      cy="64"
+                      r="60"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="transparent"
+                      strokeDasharray="377"
+                      initial={{ strokeDashoffset: 377 }}
+                      animate={{ 
+                        strokeDashoffset: [377, 100, 377],
+                        rotate: 360
+                      }}
+                      transition={{ 
+                        duration: 3, 
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className={cn(config.color, "opacity-40")}
+                    />
+                    <motion.circle
+                      cx="64"
+                      cy="64"
+                      r="50"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray="314"
+                      initial={{ strokeDashoffset: 314 }}
+                      animate={{ 
+                        strokeDashoffset: [314, 200, 314],
+                        rotate: -360
+                      }}
+                      transition={{ 
+                        duration: 4, 
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      className={config.color}
+                    />
+                  </svg>
+                )}
+                
+                <div className={cn("relative z-20", config.color)}>
+                   {state === 'SUCCESS' ? <CheckCircle2 size={48} strokeWidth={3} className="animate-in zoom-in duration-500" /> :
+                    state === 'FAILED' ? <AlertCircle size={48} strokeWidth={3} /> :
+                    <Icon size={32} strokeWidth={2.5} className="animate-pulse" />}
+                </div>
+              </div>
             </motion.div>
           </AnimatePresence>
-
-          {state === 'SUCCESS' && (
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="absolute inset-0 bg-emerald-200 rounded-full blur-3xl -z-10"
-            />
-          )}
         </div>
 
         {/* TEXT CONTENT */}
-        <div className="space-y-3">
+        <div className="space-y-4 max-w-xs">
           <motion.h2 
             key={`title-${state}`}
-            initial={{ y: 10, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className={cn(
-              "text-3xl font-black italic uppercase tracking-tight",
+              "text-4xl font-black italic uppercase tracking-tighter leading-[0.8]",
               config.color
             )}
           >
@@ -123,20 +164,22 @@ export default function AuthSubmissionStatus({ state, error, onRetry }: AuthSubm
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-[12px] font-bold text-slate-400 uppercase tracking-widest"
+            className="text-[11px] font-black text-black/20 uppercase tracking-[0.2em] leading-relaxed"
           >
             {error || config.description}
           </motion.p>
         </div>
 
         {/* ACTIONS */}
-        <div className="pt-8">
+        <div className="w-full">
           {state === 'FAILED' && (
             <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onRetry}
-              className="h-16 w-full bg-black text-white rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"
+              className="h-16 w-full bg-black text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
             >
               Try Again
             </motion.button>

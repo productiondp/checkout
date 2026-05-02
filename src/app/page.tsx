@@ -161,8 +161,8 @@ function AuthContent() {
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
                <h1 className="text-5xl lg:text-7xl tracking-tighter leading-[0.85] lg:leading-[0.85] mb-8">
-                  <span className="font-thin text-gray-400">Connect. Grow.</span> <br />
-                  <span className="font-bold text-[#E53935]">Succeed.</span>
+                  <span className="font-thin text-gray-300">Connect. Grow.</span> <br />
+                  <span className="font-medium text-[#E53935]">Succeed.</span>
                </h1>
 
                <AnimatePresence mode="wait">

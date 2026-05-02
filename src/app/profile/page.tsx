@@ -91,10 +91,10 @@ export default function PremiumProfilePage() {
   ], [userData.email, userData.phone, userData.website]);
 
   const performanceMetrics = [
-    { label: "Trust Score", value: 98, color: "bg-[#292828]", icon: ShieldCheck },
-    { label: "Match Score", value: userData.metadata?.match_score || 84, color: "bg-[#E53935]", icon: Target },
-    { label: "Credit Score", value: 92, color: "bg-[#292828]/60", icon: CreditCard },
-    { label: "Speed Score", value: 76, color: "bg-[#E53935]/60", icon: Zap },
+    { label: "Network Reliability", value: 98, color: "bg-[#292828]", icon: ShieldCheck },
+    { label: "Strategic Match", value: userData.metadata?.match_score || 84, color: "bg-[#E53935]", icon: Target },
+    { label: "Market Authority", value: 92, color: "bg-[#292828]/60", icon: Award },
+    { label: "Activity Level", value: 76, color: "bg-[#E53935]/60", icon: Activity },
   ];
 
   useEffect(() => {

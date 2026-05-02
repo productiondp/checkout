@@ -86,10 +86,10 @@ function ProfileContent() {
   if (!profile) return <div className="min-h-screen flex items-center justify-center bg-white text-black">Profile Not Found</div>;
 
   const performanceMetrics = [
-    { label: "Trust Score", value: profile.match + 2, color: "bg-emerald-500", icon: ShieldCheck },
-    { label: "Networking Score", value: profile.match, color: "bg-[#E53935]", icon: Target },
-    { label: "Credit Score", value: 92, color: "bg-black", icon: CreditCard },
-    { label: "Response Time", value: 76, color: "bg-red-600", icon: Zap },
+    { label: "Network Reliability", value: profile.match + 2, color: "bg-emerald-500", icon: ShieldCheck },
+    { label: "Strategic Match", value: profile.match, color: "bg-[#E53935]", icon: Target },
+    { label: "Market Authority", value: 92, color: "bg-black", icon: Award },
+    { label: "Activity Level", value: 76, color: "bg-red-600", icon: Activity },
   ];
 
   const contactInfo = [

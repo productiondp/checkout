@@ -77,16 +77,100 @@ export default function ClientLayout({
 
   if (!mounted) {
     return (
-      <div className="h-screen-safe w-full max-w-[1920px] mx-auto flex flex-col items-center justify-center bg-[#0A0A0A] selection:bg-[#E53935]/20 shadow-2xl">
-         <div className="h-12 w-32 relative animate-pulse mb-4">
-            <img 
-              src="/images/logo.png" 
-              alt="Loading..." 
-              className="h-full object-contain opacity-20 brightness-0 invert" 
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#050505] overflow-hidden selection:none">
+         <div className="relative flex flex-col items-center">
+            {/* AMBIENT GLOW */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: [0.1, 0.2, 0.1], scale: [0.8, 1.1, 0.8] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 bg-[#E53935] rounded-full blur-[120px] -z-10"
             />
+            
+            {/* LOGO REVEAL */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-16 w-40 relative mb-12"
+            >
+               <img 
+                 src="/images/logo.png" 
+                 alt="Checkout OS" 
+                 className="h-full object-contain brightness-0 invert opacity-40" 
+               />
+               
+               {/* SCANNER LINE */}
+               <motion.div 
+                 animate={{ top: ["0%", "100%", "0%"] }}
+                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                 className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#E53935] to-transparent z-20 shadow-[0_0_15px_#E53935]"
+               />
+            </motion.div>
+
+            {/* PROGRESS SYSTEM */}
+            <div className="w-64 space-y-4">
+               <div className="flex justify-between items-end">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-outfit"
+                  >
+                    System Boot
+                  </motion.div>
+                  <motion.div 
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="text-[9px] font-bold text-[#E53935] uppercase tracking-widest"
+                  >
+                    Active
+                  </motion.div>
+               </div>
+
+               <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden relative">
+                  <motion.div 
+                    initial={{ left: "-100%" }}
+                    animate={{ left: "100%" }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E53935] to-transparent w-1/2"
+                  />
+               </div>
+
+               <div className="flex flex-col items-center gap-2">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] animate-pulse"
+                  >
+                    Initializing CheckOut OS
+                  </motion.div>
+                  <div className="flex gap-1">
+                     {[1, 2, 3].map((i) => (
+                       <motion.div
+                         key={i}
+                         animate={{ opacity: [0.1, 1, 0.1] }}
+                         transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                         className="h-1 w-1 bg-[#E53935] rounded-full"
+                       />
+                     ))}
+                  </div>
+               </div>
+            </div>
          </div>
-         <div className="animate-pulse text-[9px] font-black text-white/20 uppercase ">
-            Initializing CheckOut OS...
+         
+         {/* DECORATIVE ELEMENTS */}
+         <div className="absolute bottom-12 left-12 right-12 flex justify-between pointer-events-none">
+            <div className="text-[7px] font-bold text-white/5 uppercase tracking-[0.2em] space-y-1">
+               <div>Core.Kernel.Init()</div>
+               <div>Network.Handshake.Secure()</div>
+               <div>Identity.Verify.Wait()</div>
+            </div>
+            <div className="text-[7px] font-bold text-white/5 uppercase tracking-[0.2em] text-right space-y-1">
+               <div>Build 1.4.22-Prod</div>
+               <div>V-Sync.Enabled</div>
+               <div>Neural.Cache.Warm</div>
+            </div>
          </div>
       </div>
     );

@@ -93,10 +93,10 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
            
            <div className="space-y-2">
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-tight font-outfit leading-none">
-                 Post <span className="text-emerald-500 italic">Activated</span>
+                 Post <span className="text-emerald-500 italic">Published</span>
               </h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] max-w-md mx-auto leading-relaxed">
-                 Neural Match Engine is scanning the network
+                 Our matching engine is scanning the network
               </p>
            </div>
         </div>
@@ -107,10 +107,10 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
               <div className="space-y-2 text-left">
                  <div className="flex items-center gap-3">
                     <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-ping" />
-                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#292828]">Top Neural Matches</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#292828]">Strategic Matches</h4>
                  </div>
                  <p className="text-[10px] font-medium text-slate-400 uppercase leading-relaxed max-w-lg">
-                    High-precision matches identified based on your context and network proximity.
+                    Recommended connections identified based on your profile and industry.
                  </p>
               </div>
               
@@ -187,9 +187,9 @@ export default function MomentumView({ type, postId, onClose }: MomentumViewProp
                  <TrendingUp size={24} className="relative z-10" />
               </div>
               <div className="text-center md:text-left space-y-1">
-                 <p className="text-[15px] font-black text-[#292828] uppercase tracking-tight">Expand Neural Reach</p>
+                 <p className="text-[15px] font-black text-[#292828] uppercase tracking-tight">Grow Your Network</p>
                  <p className="text-[10px] font-medium text-slate-400 uppercase leading-relaxed max-w-xl italic">
-                    Most high-value collaborations start with multiple nodes. Continue exploring the map to find the perfect synergy.
+                    The best collaborations start with meaningful connections. Keep exploring to find the perfect partners.
                  </p>
               </div>
               <button 

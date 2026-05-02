@@ -289,7 +289,7 @@ const UniversalFeedCard = React.memo(({
     >
       {isOwner && (
         <div className="absolute top-0 right-0 px-5 py-2 bg-[#F5F5F7] text-[#86868B] text-[9px] font-black uppercase tracking-[0.2em] z-20 rounded-bl-2xl border-l border-b border-black/[0.03]">
-           {post.hasNewActivity ? "Activity Detected" : "My Broadcast"}
+           {post.hasNewActivity ? "New Activity" : "My Post"}
         </div>
       )}
 
@@ -463,13 +463,13 @@ const UniversalFeedCard = React.memo(({
                        onClick={(e) => { e.stopPropagation(); onEdit?.(post); }}
                        className="flex-1 h-10 px-4 rounded-lg border border-black/[0.05] text-[9px] font-black uppercase tracking-widest text-[#86868B] hover:bg-slate-50 transition-all"
                     >
-                       Modify
+                       Edit
                     </button>
                     <button 
                        onClick={(e) => { e.stopPropagation(); setShowConfirmDelete(true); }}
                        className="flex-1 h-10 px-4 rounded-lg border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
                     >
-                       Remove
+                       Delete
                     </button>
                  </div>
               )}
@@ -484,7 +484,7 @@ const UniversalFeedCard = React.memo(({
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                className="absolute inset-0 z-[100] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-10 text-center"
             >
-               <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-4">Deactivate Broadcast?</h4>
+               <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-4">Delete Post?</h4>
                <div className="flex gap-4 w-full max-w-xs">
                   <button onClick={() => setShowConfirmDelete(false)} className="flex-1 h-14 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest">Keep</button>
                   <button onClick={() => onDelete?.(post)} className="flex-1 h-14 rounded-2xl bg-[#E53935] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20">Remove</button>

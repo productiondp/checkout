@@ -424,10 +424,10 @@ export default function HomeFeed({
            
            <div className="space-y-4 max-w-md mx-auto">
               <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#1D1D1F]">
-                 Founding Node <span className="text-[#E53935]">Detected</span>
+                 Network <span className="text-[#E53935]">Is Live</span>
               </h3>
               <p className="text-[12px] font-bold text-slate-400 uppercase leading-relaxed tracking-widest">
-                 The network is currently in prime-state. As a founding member, your first post will define the collective momentum. 
+                 The platform is now open for members. As a founding member, your first post will help start the community's growth. 
               </p>
            </div>
 
@@ -436,7 +436,7 @@ export default function HomeFeed({
              className="group relative h-16 px-12 bg-[#1D1D1F] text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#E53935] transition-all duration-500 shadow-2xl overflow-hidden"
            >
               <span className="relative z-10 flex items-center gap-3">
-                 Activate the Network <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+                 Create Your First Post <Plus size={16} className="group-hover:rotate-90 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
            </button>
@@ -498,14 +498,14 @@ export default function HomeFeed({
                               <div className="space-y-8">
                                  <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#34C759]/10 border border-[#34C759]/20 rounded-full text-[#34C759] text-[11px] font-black uppercase tracking-[0.2em]">
                                     <div className="h-2 w-2 rounded-full bg-[#34C759] shadow-[0_0_15px_#34C759] animate-pulse" />
-                                    Post Live & Neural-Indexed
+                                    Post Published & Live
                                  </div>
                                  <h1 className="text-6xl lg:text-8xl font-black text-white leading-[0.8] uppercase tracking-tighter italic">
-                                    Network <br /> 
-                                    <span className="text-[#E53935] drop-shadow-[0_0_30px_rgba(229,57,53,0.3)]">Activated</span>
+                                    Requirement <br /> 
+                                    <span className="text-[#E53935] drop-shadow-[0_0_30px_rgba(229,57,53,0.3)]">Published</span>
                                  </h1>
                                  <p className="text-white/50 font-bold text-xl lg:text-2xl max-w-lg leading-tight font-outfit">
-                                    Your requirement is now propagating through the neural mesh. Visibility maximized for optimal conversion.
+                                    Your requirement is now visible to the network. We're matching you with relevant experts and partners.
                                  </p>
                               </div>
 
@@ -528,7 +528,7 @@ export default function HomeFeed({
                            {/* RIGHT: INTELLIGENT MATCHES */}
                            <div className="w-full xl:w-[520px] space-y-8">
                               <div className="flex items-center justify-between">
-                                 <h3 className="text-[11px] font-black uppercase text-white/30 tracking-[0.4em]">Neural Proximity Detection</h3>
+                                 <h3 className="text-[11px] font-black uppercase text-white/30 tracking-[0.4em]">Smart Match Detection</h3>
                                  <div className="flex gap-1">
                                     <div className="h-1 w-4 bg-[#34C759] rounded-full" />
                                     <div className="h-1 w-1 bg-white/20 rounded-full" />
@@ -555,7 +555,7 @@ export default function HomeFeed({
                                           <p className="text-[17px] font-black text-white uppercase truncate mb-0.5 font-outfit">{profile.name}</p>
                                           <div className="flex items-center gap-2">
                                              <div className="h-1 w-1 rounded-full bg-[#E53935] animate-pulse" />
-                                             <p className="text-[11px] font-black text-[#E53935] uppercase tracking-widest">{profile.score}% Neural Score</p>
+                                             <p className="text-[11px] font-black text-[#E53935] uppercase tracking-widest">{profile.score}% Match Score</p>
                                           </div>
                                        </div>
                                      </div>
@@ -582,7 +582,7 @@ export default function HomeFeed({
                                   onClick={() => router.push('/matches')}
                                   className="h-18 bg-white/5 border border-white/10 rounded-[24px] text-[11px] font-black uppercase text-white/50 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-4 group/btn"
                                 >
-                                  Neural Map <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
+                                  View Matches <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
                                 </button>
                                 <button 
                                   onClick={() => {

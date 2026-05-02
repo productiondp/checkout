@@ -35,7 +35,7 @@ const STATE_CONFIG = {
     icon: ShieldCheck,
     color: "text-[#E53935]",
     bg: "bg-red-50",
-    description: "Authenticating with the neural mesh"
+    description: "Connecting to the secure network"
   },
   SYNCING: {
     label: "Syncing Workspace",

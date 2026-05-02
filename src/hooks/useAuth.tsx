@@ -67,11 +67,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setSession(currentSession);
     try {
-      const { data: profile } = await supabase
+      // ⚡ FAILSAFE: Don't wait more than 4s for the profile
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', currentSession.user.id)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Profile sync timeout")), 4000)
+      );
+
+      const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (profile) {
         const userData = {
@@ -97,9 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthState("onboarding");
       }
     } catch (err) {
-      console.error("[AUTH] Profile Sync Error:", err);
-      // Fallback to cached state if available, or onboarding
-      if (!user) setAuthState("onboarding");
+      console.error("[AUTH] Profile Sync Error or Timeout:", err);
+      // Fallback: If we have a session but sync failed/timed out, assume onboarding
+      setAuthState("onboarding");
     }
   };
 
@@ -123,10 +130,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const init = async () => {
       try {
-        // ⚡ OPTIMISTIC INITIAL STATE
-        if (user) {
-          if (user.onboarding_completed) setAuthState("authenticated");
-          else setAuthState("onboarding");
+        // Clear local cache in development to prevent loops
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+           localStorage.removeItem('checkout_user_cache');
         }
 
         const { data: { session: initialSession } } = await supabase.auth.getSession();
@@ -191,8 +197,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } 
     else if (authState === "onboarding") {
-      // If we are in onboarding mode, push to /onboarding unless we are ALREADY there
-      if (currentPath !== "/onboarding") {
+      // 🛡️ Redirect to onboarding if we're not there yet
+      // We allow redirect FROM root (/) to onboarding, but block it from other public pages to prevent loops
+      if (currentPath !== "/onboarding" && (currentPath === "/" || !PUBLIC_ROUTES.includes(currentPath))) {
         console.log(`[AUTH] Redirecting ONBOARDING from ${currentPath} to /onboarding`);
         window.location.href = "/onboarding";
       }

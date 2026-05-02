@@ -126,7 +126,9 @@ export default function OnboardingPage() {
     setIsSaving(true);
     setError(null);
     
+    console.log("ONBOARDING: Starting save...", { isFinal, userId });
     try {
+      console.log("ONBOARDING: Syncing focus library...");
       for (const intent of onboardingData.intents) {
         await saveCustomFocus(intent, onboardingData.industry);
       }
@@ -138,7 +140,7 @@ export default function OnboardingPage() {
     const finalIntents = onboardingData.intents.length > 0 ? onboardingData.intents : ["general"];
 
     const payload = {
-      id: userId, // Ensure ID is present for upsert
+      id: userId,
       full_name: onboardingData.name,
       role: onboardingData.role,
       industry: onboardingData.industry || "General",
@@ -151,31 +153,44 @@ export default function OnboardingPage() {
       onboarding_completed: isFinal
     };
 
+    console.log("ONBOARDING: Upserting profile...", payload);
     try {
-      const { data, error: saveError } = await supabase
+      // ⚡ SAFE-SAVE: Timeout after 5s to prevent permanent hang
+      const savePromise = supabase
         .from('profiles')
-        .upsert(payload, { onConflict: 'id' })
-        .select();
+        .upsert(payload, { onConflict: 'id' });
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Database timeout")), 5000)
+      );
+
+      const { error: saveError } = await Promise.race([savePromise, timeoutPromise]) as any;
       
       if (saveError) {
-        console.error("ONBOARDING SAVE ERROR:", saveError);
-        // If it's a column missing error, we still want to let the user proceed locally
+        console.error("ONBOARDING: Save Error caught:", saveError);
+        // If it's a timeout or schema error, let them proceed locally if it's the final step
         if (isFinal) {
+           console.warn("ONBOARDING: Proceeding with local fallback due to save error.");
            completeOnboardingLocally();
         } else {
-           setError(saveError.message);
+           setError(saveError.message || "Connection slow. Please try again.");
         }
       } else {
-        console.log("ONBOARDING PROGRESS SAVED:", isFinal ? "FINAL" : "PARTIAL", data);
+        console.log("ONBOARDING: Save Success!");
         if (isFinal) {
           completeOnboardingLocally();
         }
       }
     } catch (err: any) {
-      console.error("CRITICAL ONBOARDING ERROR:", err);
-      if (isFinal) completeOnboardingLocally();
-      else setError(err.message);
+      console.error("ONBOARDING: Critical exception:", err);
+      if (isFinal || err.message === "Database timeout") {
+        console.warn("ONBOARDING: Triggering local fallback.");
+        completeOnboardingLocally();
+      } else {
+        setError(err.message);
+      }
     } finally {
+      console.log("ONBOARDING: Save process finished.");
       setIsSaving(false);
     }
   };

@@ -114,7 +114,7 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
                       <item.icon size={18} className={item.color} />
                    </div>
                    <div>
-                      <p className="text-[12px] font-black text-white uppercase italic leading-none mb-1">{item.val}</p>
+                      <p className="text-[12px] font-black text-white uppercase leading-none mb-1">{item.val}</p>
                       <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
                    </div>
                 </div>

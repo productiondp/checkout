@@ -231,59 +231,61 @@ export default function HomeFeed({
       >
         <div className="flex flex-col md:flex-row gap-4">
            {/* ACTION CARD 1: POST */}
-           <motion.div 
-             whileHover={{ y: -5 }}
-             className="flex-1 group relative overflow-hidden bg-white border border-black/[0.05] rounded-[2.5rem] p-8 lg:p-10 shadow-xl shadow-black/[0.02] cursor-pointer"
-             onClick={() => onCreate?.()}
-           >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-[40px] group-hover:bg-[#E53935]/10 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="h-14 w-14 bg-[#E53935] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#E53935]/20 group-hover:scale-110 transition-transform">
-                    <Target size={28} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-[#1D1D1F]">
-                       {hasPosted ? "Update Requirement" : "Post Requirement"}
-                    </h3>
-                    <p className="text-[#86868B] text-[12px] font-bold uppercase leading-tight max-w-[200px]">
-                       Share what you need and get matched with experts instantly.
-                    </p>
-                 </div>
-                 <div className="flex items-center gap-3 text-[#E53935] text-[10px] font-black uppercase tracking-widest pt-4 border-t border-black/[0.03]">
-                    <span>Broadcast Now</span>
-                    <Plus size={14} className="group-hover:rotate-90 transition-transform" />
-                 </div>
-              </div>
-           </motion.div>
+            <motion.div 
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 group relative overflow-hidden bg-white border border-black/[0.05] rounded-[2.5rem] p-8 lg:p-12 shadow-2xl shadow-black/[0.03] cursor-pointer transition-all duration-500"
+              onClick={() => onCreate?.()}
+            >
+               <div className="absolute top-0 right-0 w-48 h-48 bg-[#E53935]/5 rounded-full blur-[60px] group-hover:bg-[#E53935]/10 transition-all duration-700" />
+               <div className="relative z-10 space-y-8">
+                  <div className="h-16 w-16 bg-[#E53935] text-white rounded-[1.25rem] flex items-center justify-center shadow-[0_20px_40px_rgba(229,57,51,0.2)] group-hover:scale-110 transition-all duration-500 group-hover:rotate-3">
+                     <Target size={32} strokeWidth={2.5} />
+                  </div>
+                  <div className="space-y-3">
+                     <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-[#1D1D1F] leading-none">
+                        {hasPosted ? "Update Requirement" : "Post Requirement"}
+                     </h3>
+                     <p className="text-[#86868B] text-[13px] font-bold uppercase tracking-wide leading-relaxed max-w-[260px]">
+                        Share what you need and get matched with experts instantly.
+                     </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-[#E53935] text-[11px] font-black uppercase tracking-[0.2em] pt-6 border-t border-black/[0.03]">
+                     <span>Broadcast Now</span>
+                     <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+                  </div>
+               </div>
+            </motion.div>
 
            {/* ACTION CARD 2: FIND PARTNER (NEW DESIGN) */}
-           <motion.div 
-             whileHover={{ y: -5 }}
-             className="flex-1 group relative overflow-hidden bg-[#1D1D1F] rounded-[2.5rem] p-8 lg:p-10 shadow-2xl shadow-black/10 cursor-pointer"
-             onClick={() => { registerAction('see_people'); router.push('/matches'); }}
-           >
-              <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px] group-hover:bg-indigo-500/20 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="h-14 w-14 bg-white/5 border border-white/10 text-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:bg-white group-hover:text-black transition-all">
-                    <Users size={28} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-white">
-                       {hasConnected ? "Network Active" : "Find Partner"}
-                    </h3>
-                    <p className="text-white/40 text-[12px] font-bold uppercase leading-tight max-w-[200px]">
-                       Explore the network and find the right partners to build with.
-                    </p>
-                 </div>
-                 <div className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-widest pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2">
-                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                       <span>{hasConnected ? "Explore Deeply" : "Start Discovery"}</span>
-                    </div>
-                    <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform ml-auto" />
-                 </div>
-              </div>
-           </motion.div>
+            <motion.div 
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 group relative overflow-hidden bg-[#1D1D1F] rounded-[2.5rem] p-8 lg:p-12 shadow-2xl shadow-black/20 cursor-pointer transition-all duration-500"
+              onClick={() => { registerAction('see_people'); router.push('/matches'); }}
+            >
+               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] group-hover:bg-indigo-500/20 transition-all duration-700" />
+               <div className="relative z-10 space-y-8">
+                  <div className="h-16 w-16 bg-white/5 border border-white/10 text-white rounded-[1.25rem] flex items-center justify-center shadow-2xl group-hover:bg-white group-hover:text-black transition-all duration-500 group-hover:-rotate-3">
+                     <Users size={32} strokeWidth={2.5} />
+                  </div>
+                  <div className="space-y-3">
+                     <h3 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-none">
+                        {hasConnected ? "Network Active" : "Find Partner"}
+                     </h3>
+                     <p className="text-white/40 text-[13px] font-bold uppercase tracking-wide leading-relaxed max-w-[260px]">
+                        Explore the network and find the right partners to build with.
+                     </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-white text-[11px] font-black uppercase tracking-[0.2em] pt-6 border-t border-white/5">
+                     <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+                        <span>{hasConnected ? "Explore Deeply" : "Start Discovery"}</span>
+                     </div>
+                     <ArrowRight size={16} strokeWidth={3} className="group-hover:translate-x-3 transition-transform duration-500 ml-auto" />
+                  </div>
+               </div>
+            </motion.div>
         </div>
 
         {/* STRATEGIC INSIGHTS STRIP */}

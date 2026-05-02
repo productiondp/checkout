@@ -178,6 +178,7 @@ export default function PremiumProfilePage() {
           domains: dataToSave.intents,
           phone: dataToSave.phone,
           website: dataToSave.website,
+          email: dataToSave.email,
           metadata: {
             ...userData.metadata,
             company_name: dataToSave.company
@@ -557,6 +558,23 @@ export default function PremiumProfilePage() {
                             <input type="text" value={userData.role} onChange={(e) => setUserData({...userData, role: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase text-sm outline-none focus:border-[#E53935] transition-all shadow-inner" />
                          </div>
                       </div>
+
+                      <div className="grid grid-cols-2 gap-8">
+                         <div className="space-y-3">
+                            <p className="text-[9px] font-black text-[#0A0A0A] uppercase ">Phone Number</p>
+                            <input type="text" value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase text-sm outline-none focus:border-[#E53935] transition-all shadow-inner" />
+                         </div>
+                         <div className="space-y-3">
+                            <p className="text-[9px] font-black text-[#0A0A0A] uppercase ">Website URL</p>
+                            <input type="text" value={userData.website} onChange={(e) => setUserData({...userData, website: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase text-sm outline-none focus:border-[#E53935] transition-all shadow-inner" />
+                         </div>
+                      </div>
+
+                      <div className="space-y-3">
+                         <p className="text-[9px] font-black text-[#0A0A0A] uppercase ">Email Address (Public)</p>
+                         <input type="email" value={userData.email} onChange={(e) => setUserData({...userData, email: e.target.value})} className="w-full h-16 px-6 rounded-[8px] bg-slate-50 border border-slate-100 font-black uppercase text-sm outline-none focus:border-[#E53935] transition-all shadow-inner" />
+                      </div>
+
                       <div className="space-y-3">
                          <p className="text-[9px] font-black text-[#0A0A0A] uppercase ">Node Bio / Intent</p>
                          <textarea value={userData.bio} onChange={(e) => setUserData({...userData, bio: e.target.value})} className="w-full h-32 p-6 rounded-[8px] bg-slate-50 border border-slate-100 font-bold text-sm outline-none focus:border-[#E53935] transition-all resize-none shadow-inner" />

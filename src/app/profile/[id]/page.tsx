@@ -93,9 +93,9 @@ function ProfileContent() {
   ];
 
   const contactInfo = [
-    { label: "Email", value: `${profile.name.toLowerCase().replace(" ", ".")}@${profile.company.toLowerCase().replace(" ", "")}.com`, icon: Mail },
-    { label: "Phone", value: "+91 9XX XXXXXXX", icon: Phone },
-    { label: "Website", value: `${profile.company.toLowerCase().replace(" ", "")}.io`, icon: Globe, link: true },
+    { label: "Email", value: profile.email || "No email listed", icon: Mail },
+    { label: "Phone", value: profile.phone || "No phone listed", icon: Phone },
+    { label: "Website", value: profile.website || "No website listed", icon: Globe, link: !!profile.website },
   ];
 
   return (
@@ -168,8 +168,7 @@ function ProfileContent() {
                        About
                     </h3>
                     <p className="text-lg text-black font-bold leading-relaxed uppercase italic opacity-60">
-                       "{profile.name} is a high-trust partner at {profile.company}. Focused on improving local distribution 
-                       through strategic collaboration in Kerala."
+                       "{profile.bio || `${profile.name} is a high-trust partner focused on strategic growth and collaboration.`}"
                     </p>
                     
                     <div className="mt-10 pt-10 border-t border-black/[0.03] space-y-8">

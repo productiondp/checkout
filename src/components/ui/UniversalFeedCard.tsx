@@ -243,7 +243,7 @@ const UniversalFeedCard = React.memo(({
   
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/home?post=${post.id}`;
+    const shareUrl = `${window.location.origin}/p/${post.id}`;
     try {
       if (navigator.share) {
         await navigator.share({

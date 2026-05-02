@@ -320,8 +320,8 @@ function OnboardingContent() {
 
                 <div className="pt-10 border-t border-black/[0.03] grid grid-cols-1 sm:grid-cols-3 gap-6">
                    {[
-                     { icon: Globe, label: "Global Scope", desc: "Access 8K+ Nodes", color: "text-[#E53935]", bg: "bg-[#E53935]/5" },
-                     { icon: Zap, label: "Smart Match", desc: "Contextual Synergy", color: "text-[#FF9500]", bg: "bg-[#FF9500]/5" },
+                      { icon: Globe, label: "Global Scope", desc: "8K+ Partners", color: "text-[#E53935]", bg: "bg-[#E53935]/5" },
+                      { icon: Zap, label: "Smart Match", desc: "Strategic Matching", color: "text-[#FF9500]", bg: "bg-[#FF9500]/5" },
                      { icon: Rocket, label: "Fast Track", desc: "Start in 60s", color: "text-[#34C759]", bg: "bg-[#34C759]/5" }
                    ].map((stat, i) => (
                      <div key={i} className="flex items-center gap-4">
@@ -364,7 +364,7 @@ function OnboardingContent() {
                 </button>
 
                 <p className="text-center text-[10px] font-bold text-[#86868B] uppercase tracking-widest pt-4">
-                   Step into the ecosystem
+                   Step into the network
                 </p>
              </div>
           </div>

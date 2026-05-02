@@ -80,7 +80,7 @@ export default function RightSocialRail() {
       {/* 1. MARKET INSIGHTS */}
       <section className="space-y-4">
          <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-black text-[#292828]/20 uppercase  flex items-center gap-2">
+            <h4 className="text-[10px] font-black italic text-[#292828] uppercase tracking-widest flex items-center gap-2">
                <BrainCircuit size={12} className="text-[#E53935]" /> Market Insights
             </h4>
             <div className="flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -112,9 +112,9 @@ export default function RightSocialRail() {
                <div className="bg-white/90 backdrop-blur-md border border-[#292828]/5 p-4 rounded-lg shadow-xl transform group-hover:-translate-y-1 transition-transform">
                   <div className="flex items-center gap-3 mb-2">
                      <Sparkles size={12} className="text-[#E53935]" />
-                     <p className="text-[9px] font-black text-[#292828]/30 uppercase ">Opportunity</p>
+                     <p className="text-[9px] font-black italic text-[#E53935] uppercase tracking-tighter">High Priority</p>
                   </div>
-                  <p className="text-[11px] font-bold text-[#292828] uppercase leading-tight animate-in fade-in slide-in-from-bottom-1 duration-500" key={insightIndex}>
+                  <p className="text-[11px] font-black italic text-[#292828] uppercase leading-tight animate-in fade-in slide-in-from-bottom-1 duration-500" key={insightIndex}>
                      {aiInsights[insightIndex]}
                   </p>
                </div>
@@ -122,7 +122,7 @@ export default function RightSocialRail() {
 
             {/* Hover Action Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#292828]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-               <div className="bg-[#292828] text-white px-5 py-2.5 rounded-lg text-[10px] font-black uppercase  flex items-center gap-2 shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+               <div className="bg-[#292828] text-white px-5 py-2.5 rounded-lg text-[10px] font-black uppercase italic flex items-center gap-2 shadow-2xl scale-90 group-hover:scale-100 transition-transform">
                   Map View <ArrowUpRight size={14} />
                </div>
             </div>
@@ -132,8 +132,8 @@ export default function RightSocialRail() {
       {/* 2. TOP MATCHES (PEOPLE YOU SHOULD KNOW) */}
       <section className="space-y-6">
          <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-black text-[#292828]/20 uppercase flex items-center gap-2">
-               <Users size={12} className="text-[#E53935]" /> People you should know
+            <h4 className="text-[10px] font-black italic text-[#292828] uppercase tracking-widest flex items-center gap-2">
+               <Users size={12} className="text-[#E53935]" /> Connect Now
             </h4>
          </div>
 
@@ -160,11 +160,11 @@ export default function RightSocialRail() {
                      
                      <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between mb-1">
-                           <p className="text-[14px] font-black text-[#292828] uppercase truncate leading-none">
+                           <p className="text-[14px] font-black italic text-[#292828] uppercase tracking-tighter truncate leading-none">
                               {p.full_name?.split(' ')[0]} {p.full_name?.split(' ')[1]?.[0]}.
                            </p>
                            <span className="text-[10px] font-black text-[#E53935] uppercase italic">
-                              {98 - (i * 3)}% Match
+                              {98 - (i * 3)}%
                            </span>
                         </div>
                         <p className="text-[10px] font-bold text-[#86868B] uppercase truncate mb-2">

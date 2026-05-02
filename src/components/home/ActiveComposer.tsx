@@ -38,35 +38,35 @@ export default function ActiveComposer({ user, onPost }: ActiveComposerProps) {
           className="flex-1 h-16 bg-[#F5F5F7] rounded-2xl px-6 flex items-center justify-between cursor-pointer group hover:bg-[#E8E8ED] transition-all"
         >
           <div>
-            <h3 className="text-[14px] font-bold text-[#1D1D1F]/60 group-hover:text-[#1D1D1F] transition-colors">
+            <h3 className="text-[15px] font-black italic uppercase tracking-tighter text-[#1D1D1F]/60 group-hover:text-[#1D1D1F] transition-colors leading-none mb-1">
               I need help with...
             </h3>
-            <p className="text-[11px] font-medium text-[#86868B]">
-              Share what you're working on
+            <p className="text-[9px] font-black uppercase text-[#86868B] tracking-widest">
+              Launch a new requirement
             </p>
           </div>
-          <div className="h-8 w-8 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-            <Plus size={18} className="text-[#E53935]" />
+          <div className="h-10 w-10 bg-[#E53935] rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform">
+            <Plus size={20} className="text-white" strokeWidth={3} />
           </div>
         </motion.div>
       </div>
 
       {/* 2. ACTION TABS */}
-      <div className="flex items-center justify-start gap-2 mt-6 pt-5 border-t border-black/[0.03]">
+      <div className="flex flex-wrap items-center justify-start gap-2 mt-6 pt-5 border-t border-black/[0.03]">
         {[
-          { id: 'REQUIREMENT', label: 'Post Requirement', icon: Target },
-          { id: 'PARTNERSHIP', label: 'Find Partner', icon: Sparkles },
-          { id: 'MEETUP', label: 'Host Meetup', icon: Users },
+          { id: 'REQUIREMENT', label: 'Broadcast', icon: Target },
+          { id: 'PARTNERSHIP', label: 'Connect', icon: Sparkles },
+          { id: 'MEETUP', label: 'Meetup', icon: Users },
         ].map(item => (
           <motion.button 
             key={item.id}
             whileHover={{ y: -2, backgroundColor: "#F5F5F7" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onPost(item.id as any)}
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full transition-all border border-transparent hover:border-black/[0.05]"
+            className="flex items-center gap-2.5 px-6 py-3 rounded-xl transition-all border border-black/[0.03] bg-white hover:border-black/[0.08] shadow-sm"
           >
-            <item.icon size={16} className="text-[#86868B]" />
-            <span className="text-[12px] font-bold text-[#86868B] group-hover:text-[#1D1D1F]">
+            <item.icon size={16} className="text-[#E53935]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#1D1D1F]/40 hover:text-[#1D1D1F]">
               {item.label}
             </span>
           </motion.button>

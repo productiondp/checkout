@@ -160,9 +160,9 @@ function AuthContent() {
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
-               <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.9]">
+               <h1 className="text-5xl lg:text-9xl font-black text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.8] uppercase">
                   <span className="font-extralight opacity-60">Connect.</span><br className="hidden lg:block" /> Grow. <br />
-                  <span className="text-[#E53935]">Succeed.</span>
+                  <span className="text-[#E53935] italic">Succeed.</span>
                </h1>
 
                <AnimatePresence mode="wait">
@@ -322,18 +322,71 @@ function AuthContent() {
          </div>
       </main>
 
-      <section className="bg-gray-100 py-[63px]">
+      <section className="bg-gray-50 py-20 border-t border-black/[0.02]">
          <div className="max-w-[1128px] mx-auto px-6">
-            <h2 className="text-3xl font-light mb-8">Find the right people, Business and Opportunities</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-               {[
-                 "Engineering", "Business Development", "Finance", "Sales",
-                 "Marketing", "Design", "Human Resources", "Operations"
-               ].map((topic) => (
-                  <button key={topic} className="p-4 bg-white border border-gray-200 rounded font-bold hover:shadow-md transition-all text-left">
-                     {topic}
-                  </button>
-               ))}
+            <h2 className="text-4xl lg:text-5xl font-black italic uppercase tracking-tighter mb-12 text-[#1D1D1F]">
+               Start <span className="text-[#E53935]">Launching</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {/* CARD 1: POST REQUIREMENT */}
+               <motion.div 
+                 whileHover={{ y: -8 }}
+                 onClick={() => setMode("signup")}
+                 className="relative bg-white rounded-[3rem] p-10 lg:p-14 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.06)] border border-black/[0.03] cursor-pointer group overflow-hidden h-full flex flex-col justify-between"
+               >
+                 <div className="space-y-10">
+                    <div className="h-20 w-20 bg-[#E53935] rounded-3xl flex items-center justify-center shadow-[0_15px_40px_rgba(229,57,51,0.3)] group-hover:scale-110 transition-transform duration-500">
+                       <Briefcase size={40} className="text-white" strokeWidth={2.5} />
+                    </div>
+                    
+                    <div className="space-y-6">
+                       <h3 className="text-4xl lg:text-5xl font-black italic tracking-tighter text-[#1D1D1F] uppercase leading-none">
+                          Post<br />Requirement
+                       </h3>
+                       <p className="text-[14px] font-black text-[#86868B] uppercase tracking-wider leading-relaxed max-w-[320px]">
+                          Share what you need and get matched with experts instantly.
+                       </p>
+                    </div>
+                 </div>
+
+                 <div className="pt-12 flex items-center gap-3 text-[#E53935] font-black uppercase tracking-widest text-[13px] group-hover:gap-6 transition-all">
+                    Broadcast Now <ArrowRight size={20} strokeWidth={4} />
+                 </div>
+               </motion.div>
+
+               {/* CARD 2: FIND PARTNER */}
+               <motion.div 
+                 whileHover={{ y: -8 }}
+                 onClick={() => setMode("signup")}
+                 className="relative bg-[#0A0A0A] rounded-[3rem] p-10 lg:p-14 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] border border-white/5 cursor-pointer group overflow-hidden h-full flex flex-col justify-between"
+               >
+                 <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-20">
+                    <div className="absolute top-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#E53935]/20 blur-[100px] rounded-full" />
+                 </div>
+
+                 <div className="space-y-10 relative z-10">
+                    <div className="h-20 w-20 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-500">
+                       <Users size={40} className="text-white" strokeWidth={2} />
+                    </div>
+                    
+                    <div className="space-y-6">
+                       <h3 className="text-4xl lg:text-5xl font-black italic tracking-tighter text-white uppercase leading-none">
+                          Find<br />Partner
+                       </h3>
+                       <p className="text-[14px] font-black text-white/30 uppercase tracking-wider leading-relaxed max-w-[320px]">
+                          Explore the network and find the right partners to build with.
+                       </p>
+                    </div>
+                 </div>
+
+                 <div className="pt-12 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-4 text-white font-black uppercase tracking-widest text-[13px]">
+                       <div className="h-2 w-2 rounded-full bg-[#34C759] animate-pulse shadow-[0_0_12px_#34C759]" />
+                       Start Discovery
+                    </div>
+                    <ArrowRight size={24} className="text-white/40 group-hover:text-white group-hover:translate-x-3 transition-all" strokeWidth={3} />
+                 </div>
+               </motion.div>
             </div>
          </div>
       </section>

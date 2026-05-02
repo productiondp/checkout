@@ -42,86 +42,74 @@ export default function StartHereCard({ onAction, onExplore }: StartHereCardProp
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-10"
+      className="relative mb-10 grid grid-cols-1 md:grid-cols-2 gap-6"
     >
-      <div className="bg-[#0A0A0A] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden group border border-white/5">
-        
-        {/* Dynamic Background Accents */}
-        <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-50">
-           <div className="absolute top-[-40%] right-[-10%] w-[500px] h-[500px] bg-[#E53935]/10 blur-[100px] rounded-full" />
-           <div className="absolute bottom-[-20%] left-[-10%] w-[300px] h-[300px] bg-indigo-500/5 blur-[80px] rounded-full" />
-        </div>
-        
-        <button 
-          onClick={dismiss}
-          className="absolute top-6 right-6 h-8 w-8 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center transition-all group z-20"
-        >
-          <X size={14} className="text-white/40 group-hover:text-white" />
-        </button>
-
-        <div className="relative z-10">
-           <div className="flex flex-col gap-8">
-              <div className="space-y-4">
-                 {/* STATUS BADGE */}
-                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#E53935]/10 border border-[#E53935]/20 rounded-lg">
-                    <div className="h-1 w-1 bg-[#E53935] rounded-full animate-pulse" />
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#E53935]">Account Ready</span>
-                 </div>
-                 
-                 <div className="space-y-3">
-                    <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white uppercase">
-                       Build with the right partners.
-                    </h2>
-                    <p className="text-[15px] font-bold text-white/40 leading-relaxed max-w-2xl">
-                       Your profile is verified. Post what you are looking for or find people to grow your business faster.
-                    </p>
-                 </div>
-              </div>
-
-              {/* ENHANCED ACTION BUTTONS */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-                 <motion.button 
-                   whileHover={{ scale: 1.02, y: -2 }}
-                   whileTap={{ scale: 0.98 }}
-                   onClick={onAction}
-                   className="h-14 px-8 bg-gradient-to-br from-[#E53935] to-[#D32F2F] text-white rounded-xl text-[12px] font-black uppercase tracking-widest shadow-[0_10px_30px_rgba(229,57,51,0.3)] hover:shadow-[0_20px_40px_rgba(229,57,51,0.4)] transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-                 >
-                    <Plus size={18} strokeWidth={3} />
-                    <span>Post Now</span>
-                 </motion.button>
-                 
-                 <motion.button 
-                   whileHover={{ scale: 1.02, y: -2 }}
-                   whileTap={{ scale: 0.98 }}
-                   onClick={onExplore}
-                   className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-black uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-                 >
-                    <span>Find Partners</span>
-                    <ArrowRight size={18} strokeWidth={3} />
-                 </motion.button>
-              </div>
+      {/* CARD 1: POST REQUIREMENT */}
+      <motion.div 
+        whileHover={{ y: -5 }}
+        onClick={onAction}
+        className="relative bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] border border-black/[0.03] cursor-pointer group overflow-hidden h-full flex flex-col justify-between"
+      >
+        <div className="space-y-8">
+           <div className="h-16 w-16 bg-[#E53935] rounded-2xl flex items-center justify-center shadow-[0_10px_30px_rgba(229,57,51,0.3)] group-hover:scale-110 transition-transform duration-500">
+              <Target size={32} className="text-white fill-white/20" strokeWidth={2.5} />
            </div>
-
-           {/* CONDENSED FOOTER */}
-           <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-x-12 gap-y-6">
-              {[
-                 { icon: Globe, label: "Network", val: "8,400+ People", color: "text-[#E53935]" },
-                 { icon: Zap, label: "Success", val: "98% Match", color: "text-amber-400" },
-                 { icon: Rocket, label: "Speed", val: "2x Faster", color: "text-emerald-400" }
-              ].map((item) => (
-                <div key={item.label} className="flex items-center gap-4">
-                   <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      <item.icon size={18} className={item.color} />
-                   </div>
-                   <div>
-                      <p className="text-[12px] font-black text-white uppercase italic leading-none mb-1">{item.val}</p>
-                      <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
-                   </div>
-                </div>
-              ))}
+           
+           <div className="space-y-4">
+              <h2 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-[#1D1D1F] uppercase leading-none">
+                 Post<br />Requirement
+              </h2>
+              <p className="text-[12px] font-black text-[#86868B] uppercase tracking-wider leading-relaxed max-w-[240px]">
+                 Share what you need and get matched with experts instantly.
+              </p>
            </div>
         </div>
-      </div>
+
+        <div className="pt-8 flex items-center gap-2 text-[#E53935] font-black uppercase tracking-widest text-[11px] group-hover:gap-4 transition-all">
+           Broadcast Now <Plus size={16} strokeWidth={4} />
+        </div>
+      </motion.div>
+
+      {/* CARD 2: FIND PARTNER */}
+      <motion.div 
+        whileHover={{ y: -5 }}
+        onClick={onExplore}
+        className="relative bg-[#0A0A0A] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] border border-white/5 cursor-pointer group overflow-hidden h-full flex flex-col justify-between"
+      >
+        <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-20">
+           <div className="absolute top-[-20%] right-[-10%] w-[300px] h-[300px] bg-[#E53935]/20 blur-[80px] rounded-full" />
+        </div>
+
+        <div className="space-y-8 relative z-10">
+           <div className="h-16 w-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-500">
+              <Users size={32} className="text-white" strokeWidth={2} />
+           </div>
+           
+           <div className="space-y-4">
+              <h2 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+                 Find<br />Partner
+              </h2>
+              <p className="text-[12px] font-black text-white/30 uppercase tracking-wider leading-relaxed max-w-[240px]">
+                 Explore the network and find the right partners to build with.
+              </p>
+           </div>
+        </div>
+
+        <div className="pt-8 flex items-center justify-between relative z-10">
+           <div className="flex items-center gap-3 text-white font-black uppercase tracking-widest text-[11px]">
+              <div className="h-1.5 w-1.5 rounded-full bg-[#34C759] animate-pulse shadow-[0_0_8px_#34C759]" />
+              Start Discovery
+           </div>
+           <ArrowRight size={20} className="text-white/40 group-hover:text-white group-hover:translate-x-2 transition-all" strokeWidth={3} />
+        </div>
+      </motion.div>
+
+      <button 
+        onClick={dismiss}
+        className="absolute -top-3 -right-3 h-8 w-8 bg-white border border-black/[0.05] shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all z-20"
+      >
+        <X size={14} />
+      </button>
     </motion.div>
   );
 }

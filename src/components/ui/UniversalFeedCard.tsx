@@ -389,7 +389,7 @@ const UniversalFeedCard = React.memo(({
                     </div>
                  )}
               </div>
-              <h3 className="text-lg sm:text-xl lg:text-2xl text-[#1D1D1F] leading-tight transition-colors duration-500">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-black italic text-[#1D1D1F] leading-tight transition-colors duration-500 uppercase tracking-tighter">
                  <HighlightTitle text={title} />
               </h3>
            </div>
@@ -478,18 +478,18 @@ const UniversalFeedCard = React.memo(({
                           )
                        )}
                     >
-                       <div className="flex items-center justify-center gap-2 min-w-0">
-                          {nType === 'MEETUP' ? <Users size={14} className="shrink-0" /> : <MessageSquare size={14} className="shrink-0" />}
-                          <span className="truncate">
-                             {isPublicPreview ? "Join Now" : (
-                               nType === 'MEETUP' ? (
-                                  joinStatus === 'JOINED' ? "Chat Open" : 
-                                  joinStatus === 'REQUESTED' ? "Pending" : 
-                                  joinStatus === 'FULL' ? "Full" : "Join"
-                               ) : "Respond"
-                             )}
-                          </span>
-                       </div>
+                        <div className="flex items-center justify-center gap-2 min-w-0">
+                           {nType === 'MEETUP' ? <Users size={14} className="shrink-0" /> : <MessageSquare size={14} className="shrink-0" />}
+                           <span className="truncate font-black italic tracking-tighter">
+                              {isPublicPreview ? "JOIN NOW +" : (
+                                nType === 'MEETUP' ? (
+                                   joinStatus === 'JOINED' ? "CHAT OPEN" : 
+                                   joinStatus === 'REQUESTED' ? "PENDING" : 
+                                   joinStatus === 'FULL' ? "FULL" : "JOIN NOW +"
+                                ) : (nType === 'PARTNER' ? "CONNECT NOW +" : "RESPOND NOW +")
+                              )}
+                           </span>
+                        </div>
                     </motion.button>
                  </div>
               ) : (

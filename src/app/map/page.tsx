@@ -17,20 +17,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { 
-  MapPin, 
-  Search, 
-  Filter, 
-  Navigation, 
-  Layers, 
-  ZoomIn, 
-  ZoomOut,
-  Maximize2,
-  Users,
-  Building2,
-  Sparkles
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 

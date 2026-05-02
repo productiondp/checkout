@@ -592,7 +592,12 @@ export default function MeetupPage() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.1 }}
                             key={i} 
-                            className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-lg group hover:border-[#E53935] transition-all cursor-pointer shadow-sm hover:shadow-xl"
+                            onClick={() => {
+                              setShowAiArchitect(false);
+                              setShowHostModal(true);
+                              setHostStep(1);
+                            }}
+                            className="flex items-center justify-between p-5 bg-white border border-[#292828]/10 rounded-lg group hover:border-[#E53935] transition-all cursor-pointer shadow-sm hover:shadow-xl active:scale-[0.98]"
                            >
                               <span className="text-[14px] font-medium text-[#292828] uppercase">{ob}</span>
                               <div className="h-8 w-8 bg-[#292828]/5 rounded-lg flex items-center justify-center text-[#292828]/30 group-hover:text-[#E53935] transition-colors">
@@ -633,7 +638,14 @@ export default function MeetupPage() {
                              "Network activity is stabilizing. I recommend hosting a community sync to catalyze local hub growth."
                            )}
                         </p>
-                        <button className="w-full h-16 bg-white text-[#E53935] rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all group-hover/card:bg-black group-hover/card:text-white">
+                        <button 
+                          onClick={() => {
+                            setShowAiArchitect(false);
+                            setShowHostModal(true);
+                            setHostStep(1);
+                          }}
+                          className="w-full h-16 bg-white text-[#E53935] rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all group-hover/card:bg-black group-hover/card:text-white"
+                        >
                            Auto-Plan meeting
                         </button>
                       </div>

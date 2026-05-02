@@ -39,6 +39,7 @@ export default function DesktopSidebar() {
         { label: "Network Hub", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
         { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount.toString() : null },
         { label: "Communities", icon: Globe, href: "/communities" },
+        { label: "Map", icon: MapPin, href: "/map" },
       ]
     },
     {

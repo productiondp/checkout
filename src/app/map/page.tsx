@@ -19,12 +19,107 @@ import {
 import { cn } from "@/lib/utils";
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { createClient } from "@/utils/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 export default function MapPage() {
+  const searchParams = useSearchParams();
   const [activeLayer, setActiveLayer] = useState<"Partners" | "Businesses" | "Events">("Partners");
   const [mapError, setMapError] = useState<string | null>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const supabase = createClient();
+
+  // Parse target location from URL
+  const targetLat = searchParams.get('lat');
+  const targetLng = searchParams.get('lng');
+  const searchName = searchParams.get('search');
+
+  useEffect(() => {
+    if (map.current && targetLat && targetLng) {
+      map.current.flyTo({
+        center: [parseFloat(targetLng), parseFloat(targetLat)],
+        zoom: 15,
+        essential: true
+      });
+    } else if (map.current && searchName) {
+      // Simple geocoding for search name
+      fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(searchName)}&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.features?.length > 0) {
+            const [lng, lat] = data.features[0].geometry.coordinates;
+            map.current?.flyTo({ center: [lng, lat], zoom: 14, essential: true });
+          }
+        });
+    }
+  }, [targetLat, targetLng, searchName]);
+
+  // Load Real Data
+  useEffect(() => {
+    async function loadNetworkNodes() {
+      try {
+        // Fetch Meetups (Events) with Geo metadata
+        const { data: posts } = await supabase
+          .from('posts')
+          .select(`*, author:profiles(*)`)
+          .eq('type', 'MEETUP')
+          .not('metadata->geo', 'is', null);
+
+        // Fetch Profiles (Partners/Businesses)
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('*')
+          .limit(50);
+
+        const nodes: any[] = [];
+
+        // Map Meetups
+        (posts || []).forEach(p => {
+          if (p.metadata?.geo) {
+            nodes.push({
+              id: p.id,
+              type: 'Events',
+              lat: p.metadata.geo.lat,
+              lng: p.metadata.geo.lng,
+              title: p.title,
+              content: p.content,
+              author: p.author?.full_name || "Member"
+            });
+          }
+        });
+
+        // Map Profiles (Simulate Trivandrum spread if no precise geo yet)
+        (profiles || []).forEach((p, idx) => {
+          const isBusiness = p.role === 'BUSINESS';
+          // Basic spread around Trivandrum center for demo if no geo
+          const spread = 0.02;
+          const lat = 8.5241 + (Math.random() - 0.5) * spread;
+          const lng = 76.9467 + (Math.random() - 0.5) * spread;
+
+          nodes.push({
+            id: p.id,
+            type: isBusiness ? 'Businesses' : 'Partners',
+            lat,
+            lng,
+            title: p.full_name,
+            content: p.bio,
+            avatar: p.avatar_url
+          });
+        });
+
+        setMarkers(nodes);
+      } catch (err) {
+        console.error('[MAP_DATA_ERROR]', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadNetworkNodes();
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -36,18 +131,13 @@ export default function MapPage() {
         container: mapContainer.current,
         style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
         center: [76.9467, 8.5241], // Trivandrum
-        zoom: 13,
+        zoom: 12.5,
         attributionControl: false,
         failIfMajorPerformanceCaveat: false
       });
 
       map.current.on('load', () => {
         console.log('[MAP] Live tiles loaded successfully');
-      });
-
-      map.current.on('error', (e) => {
-        console.error('[MAP] Runtime error:', e);
-        // Don't show error for simple tile load failures unless it's critical
       });
 
       // Add navigation controls
@@ -67,6 +157,45 @@ export default function MapPage() {
       }
     };
   }, []);
+
+  const [mapSearchQuery, setMapSearchQuery] = useState("");
+
+  const filteredMarkers = useMemo(() => {
+    if (!mapSearchQuery) return markers.filter(m => m.type === activeLayer);
+    return markers.filter(m => 
+      m.type === activeLayer && 
+      (m.title.toLowerCase().includes(mapSearchQuery.toLowerCase()) || 
+       m.content.toLowerCase().includes(mapSearchQuery.toLowerCase()))
+    );
+  }, [markers, activeLayer, mapSearchQuery]);
+
+  // Update Markers based on Layer and Data
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Clear existing markers
+    const currentMarkers = document.querySelectorAll('.mapboxgl-marker');
+    currentMarkers.forEach(m => m.remove());
+
+    filteredMarkers.forEach(node => {
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.innerHTML = `
+        <div class="relative group cursor-pointer">
+          <div class="h-3 w-3 bg-${activeLayer === 'Events' ? '[#E53935]' : activeLayer === 'Businesses' ? 'indigo-500' : 'emerald-500'} rounded-full shadow-[0_0_15px_rgba(229,57,53,0.5)] border-2 border-white/20 transition-all group-hover:scale-150"></div>
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
+            <div class="bg-black/90 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg whitespace-nowrap">
+              <p class="text-[9px] font-black uppercase text-white">${node.title}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      new maplibregl.Marker(el)
+        .setLngLat([node.lng, node.lat])
+        .addTo(map.current!);
+    });
+  }, [filteredMarkers, activeLayer]);
 
   return (
     <TerminalLayout>
@@ -103,6 +232,8 @@ export default function MapPage() {
                 <input 
                   type="text" 
                   placeholder="Search Location..." 
+                  value={mapSearchQuery}
+                  onChange={(e) => setMapSearchQuery(e.target.value)}
                   className="h-11 pl-10 pr-6 bg-white/[0.03] border border-transparent rounded-lg text-[11px] font-bold outline-none focus:bg-white/[0.08] focus:border-[#E53935]/20 text-white transition-all w-[240px]"
                 />
               </div>

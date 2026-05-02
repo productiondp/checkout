@@ -350,12 +350,22 @@ const UniversalFeedCard = React.memo(({
                        {isNew ? <span className="text-emerald-500 font-black">Just now</span> : time}
                     </span>
                     <div className="h-1 w-1 rounded-full bg-slate-200" />
-                    <span className="flex items-center gap-1.5">
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (post.metadata?.geo) {
+                          router.push(`/map?lat=${post.metadata.geo.lat}&lng=${post.metadata.geo.lng}`);
+                        } else {
+                          router.push(`/map?search=${encodeURIComponent(location || "Trivandrum")}`);
+                        }
+                      }}
+                      className="flex items-center gap-1.5 cursor-pointer hover:text-[#E53935] transition-colors"
+                    >
                        <MapPin size={11} className="text-[#E53935]/40" /> {location || "Remote"}
                        {distance !== undefined && distance !== null && (
                          <span className="text-[#34C759] font-black">  {distance < 1 ? "< 1 km" : `${distance.toFixed(1)} km`}</span>
                        )}
-                    </span>
+                    </div>
                   </div>
               </div>
            </div>

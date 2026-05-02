@@ -199,8 +199,5 @@ export default function AuthSubmissionStatus({ state, error, onRetry }: AuthSubm
 
       </div>
     </motion.div>
-
-      </div>
-    </motion.div>
   );
 }

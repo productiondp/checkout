@@ -13,22 +13,22 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const { state, isAuthResolved } = useAuth();
   
-  // 🛡️ PROTOCOL SIGNAL
+  //  PROTOCOL SIGNAL
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.__CHECKOUT_AUTH_GUARD_ACTIVE__ = true;
     }
   }, []);
 
-  // 🛡️ DECENTRALIZED AUTH GUARD
+  //  DECENTRALIZED AUTH GUARD
   useAuthGuard('authenticated');
 
-  // 🛡️ INITIALIZING BLOCK
+  //  INITIALIZING BLOCK
   if (state.tag === 'initializing' || !isAuthResolved) {
     return <LoadingScreen />;
   }
 
-  // 🛡️ STATE-SPECIFIC RENDERING BLOCKS (Wait for useAuthGuard to redirect)
+  //  STATE-SPECIFIC RENDERING BLOCKS (Wait for useAuthGuard to redirect)
   if (state.tag === 'unauthenticated' || state.tag === 'onboarding') {
     return <LoadingScreen />;
   }

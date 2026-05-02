@@ -96,7 +96,7 @@ function AdvisorProfileContent() {
                <div className="h-28 w-28 rounded-[10px] overflow-hidden border-4 border-[#F5F5F7] shadow-lg shrink-0"><img src={advisor.avatar} className="w-full h-full object-cover grayscale" alt="" /></div>
                <div>
                   <div className="flex items-center gap-2 mb-2"><h1 className="text-3xl font-black text-[#1D1D1F] uppercase font-outfit leading-none">{advisor.name}</h1>{advisor.score >= 4.0 && <ShieldCheck size={20} className="text-emerald-500" />}</div>
-                  <p className="text-[10px] font-black text-black/20 uppercase tracking-widest">{advisor.role} • {advisor.industry}</p>
+                  <p className="text-[10px] font-black text-black/20 uppercase tracking-widest">{advisor.role}  {advisor.industry}</p>
                </div>
             </div>
             {advisor.bio && <p className="text-2xl font-black text-black uppercase font-outfit leading-tight italic mb-10">"{advisor.bio}"</p>}

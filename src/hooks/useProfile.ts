@@ -8,7 +8,7 @@ import { rpc } from '@/rpc/client';
 const supabase = createClient();
 
 /**
- * 🛡️ OPTIMIZED DOMAIN RPC HOOK (V6.0)
+ *  OPTIMIZED DOMAIN RPC HOOK (V6.0)
  * 
  * Features:
  * 1. Domain-Split RPC: Uses rpc.profile namespace for better splitting.
@@ -18,13 +18,13 @@ const supabase = createClient();
 export function useProfile(userId: string | undefined) {
   const scopedKey = userId ? { type: 'profile' as const, userId } : null;
 
-  // 📡 OPTIMIZED RPC FETCH
+  //  OPTIMIZED RPC FETCH
   const query = useQuery(scopedKey, async () => {
     if (!userId) throw new Error("UserId required");
     return rpc.profile.getProfile({ userId });
   }, { priority: 'high' });
 
-  // 🔒 OPTIMIZED RPC MUTATION
+  //  OPTIMIZED RPC MUTATION
   const updateProfile = async (input: Parameters<typeof rpc.profile.updateProfile>[0]) => {
     if (!userId || !scopedKey) return;
 

@@ -20,7 +20,7 @@ export interface PageContent {
 
 export const DISCOVER_CONTENT: PageContent = {
   title: "Discover",
-  subtitle: "What’s happening right now",
+  subtitle: "Whats happening right now",
   sections: [],
 };
 
@@ -49,7 +49,7 @@ export const WHAT_IS_CHECKOUT_CONTENT: PageContent = {
     {
       title: "Our Vision",
       items: [
-        { id: "v1", title: "One System, Total Control", type: "Vision", actionText: "Learn more", subtitle: "Checkout is more than an app—it's an operating system for your professional life." },
+        { id: "v1", title: "One System, Total Control", type: "Vision", actionText: "Learn more", subtitle: "Checkout is more than an appit's an operating system for your professional life." },
         { id: "v2", title: "Community First", type: "Vision", actionText: "Learn more", subtitle: "We believe commerce should be built on trust, not just transactions." }
       ]
     }

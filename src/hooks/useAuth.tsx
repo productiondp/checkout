@@ -37,22 +37,27 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const supabase = createClient();
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  console.log('[AUTH HOOK MOUNTED]');
+  const [authState, setAuthState] = useState<{
+    state: AuthState;
+    isAuthResolved: boolean;
+  }>({ state: { tag: 'initializing' }, isAuthResolved: false });
 
-  const [state, setState] = useState<AuthState>({ tag: 'initializing' });
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isAuthResolved, setIsAuthResolved] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
   const sessionAuthorityRef = useRef<string | null>(null);
+  const isResolvingRef = useRef(false);
 
   const dispatch = (event: AuthEvent) => {
-    setState(prev => {
-      const next = monitoredTransition(prev, event);
-      return next;
+    setAuthState(prev => {
+      const nextState = monitoredTransition(prev.state, event);
+      return {
+        state: nextState,
+        isAuthResolved: prev.isAuthResolved
+      };
     });
   };
 
@@ -63,29 +68,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let mounted = true;
 
     const startSystem = async () => {
+      if (isResolvingRef.current) return;
       try {
         await runAuthSafe(async () => {
+          if (!mounted) return;
           try {
-            // [SEC] INITIAL SESSION TIMEOUT (V16.11)
-            const sessionWithTimeout = Promise.race([
+            const { data: { session: initialSession } } = await Promise.race([
               supabase.auth.getSession(),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_FETCH_TIMEOUT')), 3000))
-            ]) as Promise<{ data: { session: Session | null } }>;
-
-            const { data: { session: initialSession } } = await sessionWithTimeout;
+              new Promise((_, reject) => setTimeout(() => reject(new Error('BOOT_TIMEOUT')), 3000))
+            ]) as any;
             
-            if (!mounted) return;
-            console.log('[AUTH EVENT] INITIAL_BOOT', !!initialSession);
             await resolveSession(initialSession);
           } catch (e) {
-            console.error("[AUTH] Internal Resolve Failure:", e);
-            dispatch({ type: 'NO_SESSION' });
-            setIsAuthResolved(true);
+            console.error("[AUTH] Boot Failure:", e);
+            setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: true });
           }
         }, { label: 'INITIAL_BOOT' });
-      } catch (mutexError) {
-        console.error("[AUTH] Mutex Timeout during Boot:", mutexError);
-        setIsAuthResolved(true);
+      } catch (err) {
+        setAuthState(prev => ({ ...prev, isAuthResolved: true }));
       }
     };
 
@@ -93,21 +93,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (!mounted) return;
-      console.log('[AUTH EVENT]', event, !!currentSession);
 
-      try {
-        await runAuthSafe(async () => {
-          try {
-            // [SEC] UNIVERSAL RESOLUTION TRIGGER
-            await resolveSession(currentSession);
-          } finally {
-            console.log(`[AUTH EVENT: ${event}] Processed`);
-          }
-        }, { label: 'AUTH_CHANGE' });
-      } catch (mutexError) {
-        console.error("[AUTH] Mutex Timeout during AuthChange:", mutexError);
-        setIsAuthResolved(true);
-      }
+      runAuthSafe(async () => {
+        if (!mounted) return;
+        await resolveSession(currentSession);
+      }, { label: `AUTH_CHANGE_${event}` });
     });
 
     return () => {
@@ -117,175 +107,99 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   /**
-   * [DEBUG] STUCK-STATE WATCHDOG (V16.25)
-   * Monitors for genuine initialization hangs.
+   * [SEC] AUTH FAILSAFE (V16.30)
    */
   useEffect(() => {
-    if (state.tag !== 'initializing') return;
-
-    const debugTimer = setTimeout(() => {
-      if (state.tag === 'initializing') {
-        console.warn('[AUTH DEBUG] System stuck in initializing after 6s. Mutex depth:', metrics.mutexQueueLength);
-      }
-    }, 6000);
-
-    return () => clearTimeout(debugTimer);
-  }, [state.tag]);
-
-  /**
-   * [SEC] AUTH FAILSAFE (PRODUCTION GUARD)
-   * 
-   * Ensures that the system NEVER remains stuck in 'initializing'.
-   */
-  useEffect(() => {
-    if (isAuthResolved) return;
-
+    if (authState.isAuthResolved) return;
     const failsafe = setTimeout(() => {
-      if (!isAuthResolved) {
-        console.error('[AUTH FAILSAFE] System took too long to resolve. Forcing fallback.');
-        dispatch({ type: 'NO_SESSION' });
-        setIsAuthResolved(true);
+      if (!authState.isAuthResolved) {
+        console.error('[AUTH FAILSAFE] Forced resolution triggered.');
+        setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: true });
       }
-    }, 8000);
-
+    }, 5000);
     return () => clearTimeout(failsafe);
-  }, [isAuthResolved]);
+  }, [authState.isAuthResolved]);
 
   /**
-   * 2. SESSION RESOLUTION (AUTHORITATIVE)
+   * 2. SESSION RESOLUTION
    */
   const resolveSession = async (currentSession: Session | null) => {
     const timestamp = () => new Date().toISOString();
-    console.log('[RESOLVE START]', timestamp());
-
-    if (!currentSession) {
-      console.warn('[RESOLVE] 1. No session found → Treating as guest', timestamp());
-      sessionAuthorityRef.current = 'GUEST';
-      
-      if (state.tag !== 'unauthenticated') {
-        dispatch({ type: 'NO_SESSION' });
-      } else {
-        console.log('[RESOLVE] 1a. Already guest. Skipping dispatch.', timestamp());
-      }
-      
-      setIsAuthResolved(true);
+    
+    // Concurrency Lock
+    if (isResolvingRef.current && currentSession?.access_token === sessionAuthorityRef.current) {
+      console.log('[RESOLVE] Redundant request ignored.');
       return;
     }
-
-    sessionAuthorityRef.current = currentSession.access_token;
+    
+    isResolvingRef.current = true;
+    console.log('[RESOLVE START]', timestamp());
 
     try {
-      setSession(currentSession);
-      setUser(currentSession.user);
-
-      console.log('[RESOLVE] 2. Initiating Profile Fetch...', timestamp());
-
-      // [SEC] ACCELERATED FETCH TIMEOUT (V16.7)
-      console.log('[RESOLVE] 2a. Accelerated timeout active (2s)', timestamp());
-      const profileWithTimeout = Promise.race([
-        supabase.from('profiles').select('*').eq('id', currentSession.user.id).maybeSingle(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('PROFILE_FETCH_TIMEOUT')), 2000)
-        )
-      ]) as Promise<{ data: any; error: any }>;
-
-      const { data, error } = await profileWithTimeout;
-      if (error) throw error;
-
-      // 🛡️ STALE PROTECTION
-      const isCurrent = sessionAuthorityRef.current === currentSession.access_token;
-      if (!isCurrent) {
-        console.warn('[RESOLVE] 2b. Authority changed during fetch. Aborting.', timestamp());
+      if (!currentSession) {
+        console.log('[RESOLVE] No session. Setting unauthenticated.');
+        sessionAuthorityRef.current = 'GUEST';
+        setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: true });
         return;
       }
 
+      sessionAuthorityRef.current = currentSession.access_token;
+      setSession(currentSession);
+      setUser(currentSession.user);
+
+      const { data, error } = await Promise.race([
+        supabase.from('profiles').select('*').eq('id', currentSession.user.id).maybeSingle(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('PROFILE_TIMEOUT')), 2500))
+      ]) as any;
+
+      if (error) throw error;
+
       setProfile(data);
-      console.log(`[RESOLVE] 3. Profile synced. Target: ${data ? 'authenticated' : 'onboarding'}`, timestamp());
-      dispatch({ type: 'SESSION_FOUND', hasProfile: !!data });
+      // [SEC] DETERMINISTIC ONBOARDING CHECK
+      // Must have a profile AND have completed the onboarding steps
+      const nextTag = (data && data.onboarding_completed) ? 'authenticated' : 'onboarding';
+      
+      setAuthState({ 
+        state: { tag: nextTag as any }, 
+        isAuthResolved: true 
+      });
       
     } catch (e: any) {
-      console.error('[RESOLVE] Critical Error:', e.message || e, timestamp());
-      dispatch({ type: 'SESSION_FOUND', hasProfile: false });
+      console.error('[RESOLVE] Error:', e.message || e);
+      setAuthState({ state: { tag: 'onboarding' }, isAuthResolved: true });
     } finally {
-      setIsAuthResolved(true);
+      isResolvingRef.current = false;
       console.log('[RESOLVE COMPLETE]', timestamp());
     }
   };
 
   const logout = async () => {
     await runAuthSafe(async () => {
-      try {
-        console.log('[LOGOUT] 1. Instant local state reset...');
-        setIsAuthResolved(false);
-        
-        // [UI-FIRST] RESET (V16.19)
-        // Clear all identity state immediately to unmount protected components
-        setUser(null);
-        setProfile(null);
-        setSession(null);
-        sessionAuthorityRef.current = 'GUEST';
-        
-        console.log('[LOGOUT] 2. Submitting SignOut to Supabase...');
-        // 🛡️ SIGNOUT TIMEOUT (V16.15)
-        try {
-          await Promise.race([
-            supabase.auth.signOut(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('SIGNOUT_TIMEOUT')), 3000))
-          ]);
-          console.log('[LOGOUT] 2a. Supabase SignOut Complete.');
-        } catch (signOutError) {
-          console.warn('[LOGOUT] 2b. SignOut network hang, continuing with local reset.', signOutError);
-        }
-
-        clearCache();
-        dispatch({ type: 'LOGOUT' });
-        setIsAuthResolved(true);
-        console.log('[LOGOUT] 3. Cleanup complete.');
-      } catch (e) {
-        console.error("[LOGOUT] Critical Failure:", e);
-        setIsAuthResolved(true);
-      }
+      setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: false });
+      await supabase.auth.signOut();
+      clearCache();
+      setAuthState({ state: { tag: 'unauthenticated' }, isAuthResolved: true });
     }, { priority: 'high', label: 'LOGOUT' });
   };
 
   const login = async (email: string, password: string) => {
-    const timestamp = () => new Date().toISOString();
-    console.log('[LOGIN] Initiating high-priority task...', timestamp());
     await runAuthSafe(async () => {
-      console.log('[LOGIN] 1. Submitting credentials to Supabase...', timestamp());
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        console.error('[LOGIN] Supabase Error:', error.message, timestamp());
-        throw error;
-      }
-      
-      if (data.session) {
-        console.log('[LOGIN] 2. Success. Transitioning to resolution...', timestamp());
-        await resolveSession(data.session);
-        console.log('[LOGIN] 3. Terminal state achieved.', timestamp());
-      } else {
-        console.warn('[LOGIN] No session returned from Supabase.', timestamp());
-      }
+      if (error) throw error;
+      if (data.session) await resolveSession(data.session);
     }, { priority: 'high', label: 'LOGIN' });
   };
 
-  /**
-   * 🛡️ RESTORED: HARD-SYNC PROFILE (c9cb87d)
-   */
   const updateProfile = (data: Partial<UserProfile>) => {
     setProfile(prev => {
       const updated = prev ? { ...prev, ...data } : { ...data } as UserProfile;
       if (data.onboarding_completed) {
-        dispatch({ type: 'SESSION_FOUND', hasProfile: true });
+        setAuthState({ state: { tag: 'authenticated' }, isAuthResolved: true });
       }
       return updated;
     });
   };
 
-  /**
-   * 🛡️ RESTORED: MANUAL INIT (c9cb87d)
-   */
   const initAuth = async () => {
     await runAuthSafe(async () => {
       const { data: { session: s } } = await supabase.auth.getSession();
@@ -294,10 +208,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const value = useMemo(() => ({
-    state, session, user, profile, isAuthResolved, logout, login, updateProfile, initAuth
-  }), [session, user, profile, state, isAuthResolved]);
+    state: authState.state, 
+    session, 
+    user, 
+    profile, 
+    isAuthResolved: authState.isAuthResolved, 
+    logout, 
+    login, 
+    updateProfile, 
+    initAuth
+  }), [session, user, profile, authState]);
 
-  if (state.tag === "initializing" || !isAuthResolved) {
+  if (!authState.isAuthResolved) {
     return <LoadingScreen />;
   }
 
@@ -316,7 +238,7 @@ export const useAuth = () => {
 };
 
 /**
- * 🛡️ DETERMINISTIC ROUTE GUARD HOOK
+ *  DETERMINISTIC ROUTE GUARD HOOK
  */
 export function useAuthGuard(required: 'authenticated' | 'unauthenticated' | 'onboarding') {
   const { state, isAuthResolved } = useAuth();
@@ -330,15 +252,22 @@ export function useAuthGuard(required: 'authenticated' | 'unauthenticated' | 'on
 
   useEffect(() => {
     if (!isAuthResolved || state.tag === 'initializing') return;
-    if (hasRedirectedRef.current) return;
+    
+    // [SEC] SELF-HEALING: Reset redirect lock if still on wrong page after 2s
+    const recovery = setTimeout(() => {
+      hasRedirectedRef.current = false;
+    }, 2000);
 
-    // Guest trying to access protected route
-    if (required === 'authenticated' && state.tag === 'unauthenticated') {
+    if (hasRedirectedRef.current) return () => clearTimeout(recovery);
+
+    // Guest trying to access protected route (Home or Onboarding)
+    if ((required === 'authenticated' || required === 'onboarding') && state.tag === 'unauthenticated') {
+      if (pathname === '/') return;
       console.log('[GUARD] Unauthenticated user on protected route. Redirecting to /');
       hasRedirectedRef.current = true;
       router.replace('/');
 
-      // 🛡️ HARD REDIRECT FALLBACK
+      //  HARD REDIRECT FALLBACK
       setTimeout(() => {
         if (window.location.pathname !== '/') window.location.href = '/';
       }, 2000);
@@ -347,30 +276,51 @@ export function useAuthGuard(required: 'authenticated' | 'unauthenticated' | 'on
 
     // Authenticated user trying to access landing/guest page
     if (required === 'unauthenticated' && state.tag === 'authenticated') {
+      if (pathname === '/home') return;
       console.log('[GUARD] Authenticated user on guest route. Redirecting to /home');
       hasRedirectedRef.current = true;
       router.replace('/home');
 
-      // 🛡️ HARD REDIRECT FALLBACK
+      //  HARD REDIRECT FALLBACK
       setTimeout(() => {
         if (window.location.pathname !== '/home') window.location.href = '/home';
       }, 2000);
       return;
     }
 
-    // New user needs onboarding
-    if (state.tag === 'onboarding' && required !== 'onboarding') {
-      console.log('[GUARD] User needs onboarding. Redirecting to /onboarding');
+    // [SEC] ONBOARDING COMPLETION REDIRECT
+    // If user is on onboarding but already finished, send to home
+    if (required === 'onboarding' && state.tag === 'authenticated') {
+      console.log('[GUARD] Onboarding complete. Redirecting to /home');
       hasRedirectedRef.current = true;
-      router.replace('/onboarding');
-
-      // 🛡️ HARD REDIRECT FALLBACK
-      setTimeout(() => {
-        if (window.location.pathname !== '/onboarding') window.location.href = '/onboarding';
-      }, 2000);
+      router.replace('/home');
       return;
     }
-  }, [state.tag, isAuthResolved, required, router]);
+
+    // New user needs onboarding
+    if (state.tag === 'onboarding' && required !== 'onboarding') {
+      if (pathname === '/onboarding') return; // [SEC] Prevent self-redirect loop
+      
+      console.log('[GUARD] User needs onboarding. Waiting for cookie sync...');
+      hasRedirectedRef.current = true;
+      
+      //  COOKIE SYNC DELAY (Allow Supabase to write cookies before redirect)
+      setTimeout(() => {
+        console.log('[GUARD] Redirecting to /onboarding');
+        router.replace('/onboarding');
+      }, 150);
+
+      //  HARD REDIRECT FALLBACK
+      setTimeout(() => {
+        const current = window.location.pathname;
+        if (current !== '/onboarding' && !current.startsWith('/onboarding')) {
+          console.log('[GUARD] Hard redirect fallback triggered');
+          window.location.href = '/onboarding';
+        }
+      }, 800);
+      return;
+    }
+  }, [state.tag, isAuthResolved, required, router, pathname]);
 
   return { loading: state.tag === 'initializing' || !isAuthResolved, state };
 }

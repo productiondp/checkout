@@ -85,7 +85,7 @@ export default function UnifiedSearch() {
                     <h4 className="text-lg font-black uppercase  truncate">{result.name || result.title}</h4>
                     <span className="px-2 py-0.5 bg-slate-100 text-[8px] font-black uppercase text-slate-400 rounded-md">{result.type}</span>
                   </div>
-                  <p className="text-[10px] font-black text-slate-300 uppercase ">{result.category} • {result.location}</p>
+                  <p className="text-[10px] font-black text-slate-300 uppercase ">{result.category}  {result.location}</p>
                 </div>
                 <div className="text-right shrink-0">
                    <p className="text-2xl font-black text-[#E53935]  leading-none">{result.matchScore}%</p>

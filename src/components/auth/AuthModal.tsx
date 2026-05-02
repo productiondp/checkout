@@ -75,7 +75,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 🛡️ FRONTEND GUARD: Anti-Spam UX
+    //  FRONTEND GUARD: Anti-Spam UX
     const now = Date.now();
     if (mode === "signup") {
       if (now - lastSignupTime < 10000) {
@@ -92,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "signin" }: A
     setError(null);
     const supabase = createClient();
 
-    // 🛡️ SUBMISSION WATCHDOG (5s)
+    //  SUBMISSION WATCHDOG (5s)
     const watchdog = setTimeout(() => {
       if (isLoading) {
         setIsLoading(false);

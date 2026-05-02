@@ -43,9 +43,10 @@ const ROLES: { value: Role; icon: any; desc: string }[] = [
 ];
 
 function AuthContent() {
-  // 🛡️ DECENTRALIZED GUEST GUARD
+  const { state, isAuthResolved, login, signup } = useAuth();
+
+  //  DECENTRALIZED GUEST GUARD
   useAuthGuard('unauthenticated');
-  const { login } = useAuth();
   
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<AuthMode>((searchParams.get("mode") as AuthMode) || "signup");
@@ -62,7 +63,7 @@ function AuthContent() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // ── ROLE DROP-DOWN FLASH ANIMATION ──
+  //  ROLE DROP-DOWN FLASH ANIMATION 
   useEffect(() => {
     if (mode === "signup" && mounted) {
       setIsRoleOpen(true);
@@ -83,7 +84,7 @@ function AuthContent() {
     setIsLoading(true);
     setError(null);
 
-    // 🛡️ SUBMISSION WATCHDOG (5s)
+    //  SUBMISSION WATCHDOG (5s)
     const watchdog = setTimeout(() => {
       if (isLoading) {
         setIsLoading(false);
@@ -127,6 +128,18 @@ function AuthContent() {
       setTimeout(() => setSubmissionState(null), 500);
 
     } catch (err: any) {
+      const isAlreadyRegistered = err.message?.toLowerCase().includes("already registered");
+      
+      if (isAlreadyRegistered) {
+        setSubmissionState(null); // Clear overlay
+        try {
+          await login(formData.email, formData.password);
+          return; 
+        } catch (loginErr) {
+          // Fallback to error display if login fails
+        }
+      }
+
       console.error("[AUTH] Nuclear Failure:", err);
       clearTimeout(watchdog);
       setSubmissionState('FAILED');
@@ -369,7 +382,7 @@ function AuthContent() {
                </div>
             </div>
             <div className="pt-8 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400 font-bold">
-               <span>CheckOut © 2026</span>
+               <span>CheckOut  2026</span>
                <div className="flex gap-4">
                   <span>Accessibility</span>
                   <span>Community Guidelines</span>

@@ -1,5 +1,5 @@
 /**
- * 🧠 RPC SERVER HUB
+ *  RPC SERVER HUB
  * 
  * Maps domain modules to the global RPC namespace.
  * This structure enables the lazy-loading executor to dynamically

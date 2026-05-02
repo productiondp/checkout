@@ -6,7 +6,7 @@
 interface DiscoveryPreferences {
   preferredView: 'MAP' | 'LIST';
   dismissedCount: number;
-  sessionsJoinedCount: number; // 🧠 V1.32 Progress Tracking
+  sessionsJoinedCount: number; //  V1.32 Progress Tracking
   filterWeights: Record<string, number>;
   focusAffinities: Record<string, number>;
   lastUpdate: string;

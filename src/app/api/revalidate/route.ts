@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ message: 'Tag is required' }), { status: 400 });
     }
 
-    // 🔥 Invalidate the specific tag in Next.js Cache
+    //  Invalidate the specific tag in Next.js Cache
     revalidateTag(tag);
 
     return new Response(JSON.stringify({ 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * 🛡️ PRODUCTION SECURITY UTILITIES (V14.2)
+ *  PRODUCTION SECURITY UTILITIES (V14.2)
  * 
  * Provides authorization, rate limiting, and telemetry features 
  * for production-grade API protection.
@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const rateLimitStore = new Map<string, { count: number; reset: number }>();
 
 /**
- * ⚡ SURGICAL RATE LIMITER
+ *  SURGICAL RATE LIMITER
  * Limits requests per IP to prevent infrastructure abuse.
  */
 export function rateLimit(req: NextRequest, limit: number = 100, windowMs: number = 60000) {
@@ -36,7 +36,7 @@ export function rateLimit(req: NextRequest, limit: number = 100, windowMs: numbe
 }
 
 /**
- * 📊 SECURITY TELEMETRY
+ *  SECURITY TELEMETRY
  * Logs sensitive events for production visibility.
  */
 export function logSecurityEvent(event: string, details: any) {
@@ -47,7 +47,7 @@ export function logSecurityEvent(event: string, details: any) {
 }
 
 /**
- * 🛡️ AUTHORIZATION GUARD (AuthZ)
+ *  AUTHORIZATION GUARD (AuthZ)
  * Ensures the authenticated user has permission to access the resource.
  */
 export function assertAuthorization(userId: string, resourceOwnerId: string) {

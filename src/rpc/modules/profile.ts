@@ -1,5 +1,5 @@
 /**
- * 👤 OPTIMIZED PROFILE RPC MODULE
+ *  OPTIMIZED PROFILE RPC MODULE
  * 
  * Performance Optimizations:
  * 1. Selective Field Selection: Minimizes DB payload and bandwidth.
@@ -25,7 +25,7 @@ export const profileRPC = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    // ⚡ OPTIMIZED UPDATE: Only return necessary fields
+    //  OPTIMIZED UPDATE: Only return necessary fields
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -42,7 +42,7 @@ export const profileRPC = {
     if (error) throw new Error(error.message);
     if (!data) throw new Error("Profile update failed");
 
-    // ⚡ INSTANT INVALIDATION: Purge Edge cache for this user
+    //  INSTANT INVALIDATION: Purge Edge cache for this user
     invalidate([`profile-${user.id}`]);
 
     const response = {
@@ -66,7 +66,7 @@ export const profileRPC = {
 
     const parsed = rpcContracts.getProfile.input.parse(input);
 
-    // ⚡ OPTIMIZED READ: Selective fields + Indexed query
+    //  OPTIMIZED READ: Selective fields + Indexed query
     const { data, error } = await supabase
       .from('profiles')
       .select('id, name, avatar_url, onboarding_completed, skills, intent_tags')
@@ -85,7 +85,7 @@ export const profileRPC = {
       intents: data.intent_tags || [],
     };
 
-    // ⚡ PERFORMANCE TIP: The executor will handle Cache-Control headers
+    //  PERFORMANCE TIP: The executor will handle Cache-Control headers
     return rpcContracts.getProfile.output.parse(response);
   }
 };

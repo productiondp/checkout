@@ -178,7 +178,7 @@ export default function CommunityDetailPage() {
                </div>
                <div>
                   <h1 className="text-[14px] font-black uppercase font-outfit">{community.name}</h1>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-black/20">{community.category} • {members.length} Members</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-black/20">{community.category}  {members.length} Members</p>
                </div>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function CommunityDetailPage() {
                                        </div>
                                        <div>
                                           <h4 className="text-[14px] font-bold text-black uppercase leading-none mb-1">{post.author?.full_name}</h4>
-                                          <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{post.type} • {new Date(post.created_at).toLocaleDateString()}</p>
+                                          <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{post.type}  {new Date(post.created_at).toLocaleDateString()}</p>
                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">

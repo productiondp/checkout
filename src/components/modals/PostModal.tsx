@@ -392,7 +392,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                                   <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-[#E53935]"><Sparkles size={16} /></div>
                                   <div className="flex-1">
                                      <p className="text-[9px] font-black uppercase text-slate-400">Suggested Category</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label} • {suggestedIndustry.focus}</p>
+                                     <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label}  {suggestedIndustry.focus}</p>
                                   </div>
                                   <button 
                                     onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
@@ -563,7 +563,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                                     <Navigation size={18} />
                                  </button>
                               </div>
-                              <p className="text-[10px] font-bold text-center text-slate-400 uppercase tracking-widest">📍 {meetupGeo.address || "Kochi, Kerala"}</p>
+                              <p className="text-[10px] font-bold text-center text-slate-400 uppercase tracking-widest"> {meetupGeo.address || "Kochi, Kerala"}</p>
                            </div>
                         ) : (
                            <div className="space-y-4">
@@ -622,7 +622,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                               <div><p className="text-[10px] font-black uppercase text-slate-300">Topic</p><p className="text-[14px] font-black text-[#1D1D1F] line-clamp-1">{content.split('\n')[0]}</p></div>
                            </div>
                            <div className="grid grid-cols-2 gap-6">
-                              <div><p className="text-[9px] font-black uppercase text-slate-300">When</p><p className="text-[11px] font-black uppercase text-[#1D1D1F]">{new Date(meetupDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • {meetupTime}</p></div>
+                              <div><p className="text-[9px] font-black uppercase text-slate-300">When</p><p className="text-[11px] font-black uppercase text-[#1D1D1F]">{new Date(meetupDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}  {meetupTime}</p></div>
                               <div><p className="text-[9px] font-black uppercase text-slate-300">Where</p><p className="text-[11px] font-black uppercase text-[#1D1D1F] truncate">{meetupFormat === 'Online' ? meetupPlatform : meetupGeo.address}</p></div>
                               <div><p className="text-[9px] font-black uppercase text-slate-300">Cost</p><p className="text-[11px] font-black uppercase text-[#1D1D1F]">{meetupPrice}</p></div>
                               <div><p className="text-[9px] font-black uppercase text-slate-300">Seats</p><p className="text-[11px] font-black uppercase text-[#1D1D1F]">{meetupCapacity} Seats</p></div>

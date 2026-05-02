@@ -92,7 +92,7 @@ export class TrustEngine {
     const now = Date.now();
 
     for (const m of meetups) {
-      // 🛡️ ANTI-GAMING FILTERS
+      //  ANTI-GAMING FILTERS
       const participants = m.joined_count || 0;
       const durationMs = (m.live_at && m.completed_at) 
         ? new Date(m.completed_at).getTime() - new Date(m.live_at).getTime() 

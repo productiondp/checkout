@@ -55,7 +55,7 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
                 <Link href={`/advisor/${meetup.author_id}`} className="hover:opacity-80 transition-opacity">
                   <h4 className="text-[14px] font-bold text-[#E53935] uppercase leading-none mb-1.5 ">{meetup.authorName}</h4>
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{meetup.category} • {meetup.timeAgo}</p>
+                    <p className="text-[10px] font-bold text-[#292828]/30 uppercase ">{meetup.category}  {meetup.timeAgo}</p>
                     <div className="h-1 w-1 bg-black/10 rounded-full" />
                     <div className="flex items-center gap-1">
                       <Target size={10} className="text-emerald-500" />
@@ -118,7 +118,7 @@ const MeetupCard = ({ meetup, isJoined, onJoin, viewMode }: { meetup: any; isJoi
                   )}
                 >
                   {isJoined ? (
-                    <><CheckCircle2 size={18} strokeWidth={3} /> You're In • Chat Open</>
+                    <><CheckCircle2 size={18} strokeWidth={3} /> You're In  Chat Open</>
                   ) : meetup.attendees >= meetup.maxAttendees ? (
                     "Full"
                   ) : (
@@ -526,7 +526,7 @@ export default function MeetupPage() {
                         "h-10 w-10 rounded-lg border-4 border-white shadow-2xl flex items-center justify-center text-lg transition-transform hover:scale-125 hover:z-10",
                         m.status === "joined" ? "bg-emerald-500 scale-110" : "bg-[#292828] text-white hover:bg-[#E53935]"
                       )}>
-                         {m.category === "Tech" ? "💻" : m.category === "Logistics" ? "📦" : "🏢"}
+                         {m.category === "Tech" ? "" : m.category === "Logistics" ? "" : ""}
                       </div>
                    </div>
                  ))}
@@ -716,7 +716,7 @@ export default function MeetupPage() {
                                      <div className="h-16 w-16 bg-slate-200 rounded-xl overflow-hidden shrink-0"><img src={adv.avatar_url || `https://i.pravatar.cc/150?u=${adv.id}`} className="w-full h-full object-cover" alt="" /></div>
                                      <div className="text-left">
                                         <h4 className="text-lg font-black uppercase leading-none mb-1">{adv.full_name}</h4>
-                                        <p className="text-[10px] font-bold text-black/30 uppercase">{adv.role} • 98% Match</p>
+                                        <p className="text-[10px] font-bold text-black/30 uppercase">{adv.role}  98% Match</p>
                                      </div>
                                   </button>
                                 ))}

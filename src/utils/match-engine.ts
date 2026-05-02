@@ -86,7 +86,7 @@ export const calculateMatchScore = (user: any, post: any, index: number = 0, mod
   
   const hasUrgency = URGENCY_KEYWORDS.some(k => postText.includes(k));
   
-  // 🚀 SUCCESS PROBABILITY LAYER (V1.90)
+  //  SUCCESS PROBABILITY LAYER (V1.90)
   const completionRate = user.metrics?.meaningful_replies ? (user.metrics.meaningful_replies / (user.metrics.replies || 1)) : 0.7;
   const responseRate = user.author_profile?.response_rate || 0.8;
   const repeatRate = (user.metrics?.connections || 0) > 5 ? 0.9 : 0.6;
@@ -97,7 +97,7 @@ export const calculateMatchScore = (user: any, post: any, index: number = 0, mod
   const successLabel = successProbability > 0.85 ? "High chance of success" : 
                        successProbability > 0.75 ? "Strong match for this project" : null;
 
-  // 🏛️ STRUCTURED TAXONOMY BOOST (V2.0 - KERALA OPTIMIZED)
+  //  STRUCTURED TAXONOMY BOOST (V2.0 - KERALA OPTIMIZED)
   let taxonomyBoost = 0;
   if (user.industry && post.industry === user.industry) {
     taxonomyBoost += 0.40; // Same Industry
@@ -112,7 +112,7 @@ export const calculateMatchScore = (user: any, post: any, index: number = 0, mod
     }
   }
 
-  // 📍 LOCAL RELEVANCE BOOST (+15%)
+  //  LOCAL RELEVANCE BOOST (+15%)
   if (user.location && post.location && user.location.toLowerCase() === post.location.toLowerCase()) {
     taxonomyBoost += 0.15;
     signals.push("Local Relevance");

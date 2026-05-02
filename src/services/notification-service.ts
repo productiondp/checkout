@@ -18,7 +18,7 @@ export interface Notification {
 
 export const NotificationService = {
   /**
-   * 📣 CREATE NOTIFICATION
+   *  CREATE NOTIFICATION
    */
   async create(payload: {
     user_id: string;
@@ -44,7 +44,7 @@ export const NotificationService = {
   },
 
   /**
-   * 📋 LIST NOTIFICATIONS
+   *  LIST NOTIFICATIONS
    */
   async list(userId: string) {
     const supabase = createClient();
@@ -66,7 +66,7 @@ export const NotificationService = {
   },
 
   /**
-   * ✅ MARK AS READ
+   *  MARK AS READ
    */
   async markAsRead(userId: string) {
     const supabase = createClient();
@@ -80,7 +80,7 @@ export const NotificationService = {
   },
 
   /**
-   * 📡 SUBSCRIBE
+   *  SUBSCRIBE
    */
   subscribe(userId: string, callback: (notification: Notification) => void) {
     const supabase = createClient();

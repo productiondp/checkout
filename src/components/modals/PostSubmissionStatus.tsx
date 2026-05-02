@@ -39,7 +39,7 @@ const STATE_CONFIG = {
     animate: true
   },
   RETRYING: {
-    label: "Retrying… almost there",
+    label: "Retrying almost there",
     icon: RotateCcw,
     color: "text-amber-500",
     bg: "bg-amber-50",
@@ -54,11 +54,11 @@ const STATE_CONFIG = {
     description: "Visible to matching profiles now"
   },
   FAILED: {
-    label: "We couldn’t post",
+    label: "We couldnt post",
     icon: AlertCircle,
     color: "text-[#E53935]",
     bg: "bg-red-50",
-    description: "Your draft is محفوظ (saved safely)"
+    description: "Your draft is  (saved safely)"
   }
 };
 

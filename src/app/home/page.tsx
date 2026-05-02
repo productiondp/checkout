@@ -19,7 +19,7 @@ export default async function Home() {
   let initialProfile = null;
 
   try {
-    // ⚡ Concurrent fetching for maximum speed
+    //  Concurrent fetching for maximum speed
     const [postsRes, profileRes] = await Promise.all([
       // Fetch from our Edge API (cached at Vercel Edge)
       fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public-feed`, {

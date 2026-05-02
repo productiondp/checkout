@@ -331,7 +331,7 @@ const UniversalFeedCard = React.memo(({
                     <span className="flex items-center gap-1.5">
                        <MapPin size={11} className="text-[#E53935]/40" /> {location || "Remote"}
                        {distance !== undefined && distance !== null && (
-                         <span className="text-[#34C759] font-black"> • {distance < 1 ? "< 1 km" : `${distance.toFixed(1)} km`}</span>
+                         <span className="text-[#34C759] font-black">  {distance < 1 ? "< 1 km" : `${distance.toFixed(1)} km`}</span>
                        )}
                     </span>
                  </div>
@@ -389,7 +389,7 @@ const UniversalFeedCard = React.memo(({
            )}
            {nType === "MEETUP" && (
               <>
-                 <MetaChip icon={Calendar} label={post.dateTime ? `Today • ${post.dateTime.split(' ')[1]}` : "Strategic Timing"} isPrimary />
+                 <MetaChip icon={Calendar} label={post.dateTime ? `Today  ${post.dateTime.split(' ')[1]}` : "Strategic Timing"} isPrimary />
                  <MetaChip icon={Users} label={`${maxSlots - participantCount} spots left`} />
                  {post.metadata?.meetup_type === 'ADVISOR' && <MetaChip icon={ShieldCheck} label="Advisor-led" className="bg-[#E53935]/5 text-[#E53935] border-[#E53935]/10" />}
                  {countdown && <MetaChip icon={Clock} label={`Starts in ${countdown}`} className="bg-amber-50 text-amber-600 border-amber-100" />}
@@ -449,7 +449,7 @@ const UniversalFeedCard = React.memo(({
                           {nType === 'MEETUP' ? <Users size={14} /> : <MessageSquare size={14} />}
                           <span className="whitespace-nowrap">
                              {nType === 'MEETUP' ? (
-                                joinStatus === 'JOINED' ? "You're in • Chat is open" : 
+                                joinStatus === 'JOINED' ? "You're in  Chat is open" : 
                                 joinStatus === 'REQUESTED' ? "Awaiting Approval" : 
                                 joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
                              ) : cfg.ctaLabel}

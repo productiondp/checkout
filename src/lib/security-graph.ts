@@ -1,5 +1,5 @@
 /**
- * 🧠 SECURITY GRAPH & REPUTATION LAYER (V35)
+ *  SECURITY GRAPH & REPUTATION LAYER (V35)
  * 
  * Server-side simulation for computing user reputation, sybil cluster detection,
  * and slow-burn spam filtering.
@@ -95,7 +95,7 @@ export class SecurityGraphService {
     avgReputation: number,
     isSybilFlagged: boolean
   ): boolean {
-    // 🛡️ STEP 7: TREND VALIDATION
+    //  STEP 7: TREND VALIDATION
     if (uniqueUsers >= 15 && avgReputation >= 0.5 && !isSybilFlagged) {
       return true;
     }

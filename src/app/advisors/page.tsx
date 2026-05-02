@@ -156,7 +156,7 @@ function AdvisorsContent() {
                       <div className="relative h-16 w-16 flex items-center justify-center"><svg className="w-full h-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F5F5F7" strokeWidth="8" /><circle cx="50" cy="50" r="45" fill="none" stroke="#E53935" strokeWidth="8" strokeDasharray={2 * Math.PI * 45} strokeDashoffset={(2 * Math.PI * 45) * (1 - advisor.matchScore / 100)} strokeLinecap="round" /></svg><span className="absolute text-[12px] font-black text-black font-outfit">{advisor.matchScore}%</span></div>
                     </div>
                     <h3 className="text-2xl font-black text-[#1D1D1F] uppercase font-outfit mb-2 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role} • {advisor.industry}</p>
+                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-6">{advisor.role}  {advisor.industry}</p>
                     <div className="p-6 bg-[#F5F5F7] rounded-[10px] border border-black/[0.02] mb-8"><p className="text-xs font-bold text-black/60 leading-relaxed italic uppercase">"{advisor.bestFor}"</p></div>
                     <div className="mt-auto pt-6 border-t border-black/[0.03] flex items-center justify-between"><div className="flex items-center gap-2"><Award size={16} className="text-emerald-500" /><span className="text-[10px] font-black text-black uppercase tracking-widest">{advisor.experience} Exp</span></div><ConnectButton userId={advisor.id} userName={advisor.name} label="Start Conversation" /></div>
                   </div>
@@ -204,7 +204,7 @@ function AdvisorCard({ advisor, viewMode }: { advisor: Advisor; viewMode: "list"
             <span className="text-[9px] font-black text-black/20 uppercase tracking-widest">{advisor.experience}</span>
           </div>
           <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors">{advisor.name}</h3>
-          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{advisor.role} • {advisor.industry}</p>
+          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{advisor.role}  {advisor.industry}</p>
           <div className="flex flex-wrap gap-2">
             {advisor.expertise.slice(0, 4).map(tag => (
               <span key={tag} className="px-3 py-1 bg-[#F5F5F7] text-black/40 rounded-lg text-[8px] font-black uppercase tracking-widest">

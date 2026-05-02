@@ -1,5 +1,5 @@
 /**
- * 📊 AUTHENTICATION RUNTIME MONITOR & SELF-HEALING (V9.0)
+ *  AUTHENTICATION RUNTIME MONITOR & SELF-HEALING (V9.0)
  * 
  * Features:
  * 1. Metrics: Tracks transitions, violations, and mismatches.
@@ -39,7 +39,7 @@ const eventHistory: any[] = [];
 let totalLatency = 0;
 
 /**
- * 🛠️ SELF-HEALING GUARD
+ *  SELF-HEALING GUARD
  */
 function healState(prev: AuthState, event: AuthEvent): AuthState {
   console.error(`[AUTH MONITOR] Invariant violation detected! Healing from:`, { prev, event });
@@ -53,7 +53,7 @@ function healState(prev: AuthState, event: AuthEvent): AuthState {
 }
 
 /**
- * 📈 MONITORED TRANSITION WRAPPER
+ *  MONITORED TRANSITION WRAPPER
  */
 export function monitoredTransition(state: AuthState, event: AuthEvent): AuthState {
   const start = performance.now();
@@ -82,7 +82,7 @@ export function monitoredTransition(state: AuthState, event: AuthEvent): AuthSta
   // 2. Execute Transition
   let next = transition(state, event);
 
-  // 🛡️ NO-EXIT PROTECTION: Force exit if stuck in initializing
+  //  NO-EXIT PROTECTION: Force exit if stuck in initializing
   if (next.tag === 'initializing' && state.tag !== 'initializing') {
     console.warn('[AUTH MONITOR] Forced Exit: Transition attempted to return to initializing', { event });
     next = { tag: 'unauthenticated' };
@@ -115,7 +115,7 @@ export function monitoredTransition(state: AuthState, event: AuthEvent): AuthSta
 }
 
 /**
- * 🚨 HARD RECOVERY FALLBACK
+ *  HARD RECOVERY FALLBACK
  */
 export function forceRecovery() {
   console.error("[AUTH MONITOR] Critical instability detected. Forcing hard recovery...");
@@ -127,7 +127,7 @@ export function forceRecovery() {
 }
 
 /**
- * 🔍 DEBUG ACCESS
+ *  DEBUG ACCESS
  */
 if (typeof window !== 'undefined') {
   (window as any).__AUTH_MONITOR__ = {

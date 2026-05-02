@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export const runtime = 'edge';
 
 /**
- * 📊 SYSTEM HEALTH MONITOR (V1.0)
+ *  SYSTEM HEALTH MONITOR (V1.0)
  * 
  * Usage: GET /api/health
  * Purpose: Automated health checks for Vercel/Monitoring tools.

@@ -18,7 +18,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { suggestionTelemetry } from "@/utils/suggestion_telemetry";
 
-// ── MATRIX RAIN COMPONENT ──
+//  MATRIX RAIN COMPONENT 
 const MatrixRain = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -50,7 +50,7 @@ const MatrixRain = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none opacity-[0.1] z-0" />;
 };
 
-// ── TYPES ──
+//  TYPES 
 interface SystemMetrics {
   totalUsers: number;
   activeUsers: number;
@@ -234,7 +234,7 @@ function SentinelDashboardContent() {
       <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
       <MatrixRain />
       
-      {/* ── ATMOSPHERICS ── */}
+      {/*  ATMOSPHERICS  */}
       <div className="fixed inset-0 pointer-events-none z-[100] bg-[radial-gradient(circle_at_center,transparent_30%,rgba(255,0,0,0.15)_100%)]" />
       <div className="fixed inset-0 pointer-events-none z-[101] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
       
@@ -242,7 +242,7 @@ function SentinelDashboardContent() {
         {isGlitching && <motion.div initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0, 0.8, 0] }} className="fixed inset-0 z-[5000] bg-white mix-blend-overlay pointer-events-none" />}
       </AnimatePresence>
 
-      {/* ── HEADER ── */}
+      {/*  HEADER  */}
       <header className="h-16 border-b flex items-center justify-between px-10 bg-black/80 relative z-[110] backdrop-blur-xl" style={{ borderColor: `${theme.primary}44` }}>
         <div className="flex items-center gap-12">
           <div className="flex items-center gap-4">
@@ -266,7 +266,7 @@ function SentinelDashboardContent() {
         </div>
       </header>
 
-      {/* ── MAIN CONTENT ── */}
+      {/*  MAIN CONTENT  */}
       <div className="flex-1 grid grid-cols-12 grid-rows-6 gap-px overflow-hidden relative z-10 bg-red-900/5">
          
          {/* LEFT PANEL: DEEP SCAN RADAR */}
@@ -316,7 +316,7 @@ function SentinelDashboardContent() {
                      );
                   })}
                </div>
-               <DiagMetric label="DIRECTION" value="142.4°" color={theme.primary} />
+               <DiagMetric label="DIRECTION" value="142.4" color={theme.primary} />
             </div>
          </div>
 
@@ -421,7 +421,7 @@ function SentinelDashboardContent() {
          </div>
       </div>
 
-      {/* ── FOOTER ── */}
+      {/*  FOOTER  */}
       <footer className="h-12 border-t bg-black px-10 flex items-center justify-between shrink-0 relative z-[110]" style={{ borderColor: `${theme.primary}22` }}>
          <div className="flex gap-12 text-[11px] font-black text-white/10 uppercase">
             <span>Active Time: 14:22:04</span>
@@ -435,7 +435,7 @@ function SentinelDashboardContent() {
   );
 }
 
-// ── MICRO COMPONENTS ──
+//  MICRO COMPONENTS 
 
 function TopStat({ label, value, color }: any) {
   return (

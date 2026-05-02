@@ -15,7 +15,7 @@ export async function GET(
   }
 
   try {
-    // 🧠 V1.17 SERVER-SIDE CACHED FETCH
+    //  V1.17 SERVER-SIDE CACHED FETCH
     const data = await nextSafeCache(
       `advisor:${id}`,
       async () => {

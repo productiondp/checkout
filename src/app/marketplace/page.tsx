@@ -462,7 +462,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
           </div>
           
           <h3 className="text-xl font-black text-[#1D1D1F] uppercase font-outfit mb-1 group-hover:text-[#E53935] transition-colors line-clamp-1">{item.title}</h3>
-          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{item.author.name} • {item.industry} • {item.location}</p>
+          <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mb-4">{item.author.name}  {item.industry}  {item.location}</p>
           
           <div className="flex items-center gap-6">
             <p className="text-[13px] font-bold text-black/60 line-clamp-1 flex-1">
@@ -508,7 +508,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
              )}
            >
               {item.type === 'MEETUP' ? (
-                joinStatus === 'JOINED' ? "You're in • Chat open" :
+                joinStatus === 'JOINED' ? "You're in  Chat open" :
                 joinStatus === 'REQUESTED' ? "Awaiting Approval" :
                 joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
               ) : cta.label}
@@ -554,7 +554,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
       
       <div className="flex-1 space-y-2 mb-6">
         <h3 className="text-lg font-black text-[#1D1D1F] uppercase font-outfit group-hover:text-[#E53935] transition-colors leading-tight line-clamp-2">{item.title}</h3>
-        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest line-clamp-1">{item.author.name} • {item.industry}</p>
+        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest line-clamp-1">{item.author.name}  {item.industry}</p>
         <p className="text-[12px] font-bold text-black/50 line-clamp-2 pt-2 leading-relaxed">{item.description}</p>
       </div>
 
@@ -584,7 +584,7 @@ function OpportunityCard({ item, isPinned, index, viewMode }: { item: Marketplac
            )}
          >
             {item.type === 'MEETUP' ? (
-               joinStatus === 'JOINED' ? "You're in • Chat open" :
+               joinStatus === 'JOINED' ? "You're in  Chat open" :
                joinStatus === 'REQUESTED' ? "Awaiting Approval" :
                joinStatus === 'FULL' ? "Meetup Full" : "Join Meetup"
             ) : cta.label}

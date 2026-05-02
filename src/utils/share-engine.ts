@@ -5,7 +5,7 @@
  */
 
 export const shareToWhatsApp = (text: string, url: string) => {
-  const message = encodeURIComponent(`${text}\n\nCheck this out on Checkout → ${url}`);
+  const message = encodeURIComponent(`${text}\n\nCheck this out on Checkout  ${url}`);
   window.open(`https://wa.me/?text=${message}`, '_blank');
 };
 

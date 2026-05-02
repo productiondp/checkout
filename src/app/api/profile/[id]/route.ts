@@ -6,7 +6,7 @@ import { ProfileResponseSchema, mapToProfileResponse } from '@/contracts/profile
 import { rateLimit, logSecurityEvent } from '@/utils/security';
 
 /**
- * 🌐 TYPED PROFILE API ROUTE
+ *  TYPED PROFILE API ROUTE
  * 
  * Provides a RESTful interface for retrieving profile data with strict
  * contract enforcement.
@@ -15,7 +15,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // ⚡ RATE LIMITING (100 requests / min)
+  //  RATE LIMITING (100 requests / min)
   if (!rateLimit(req, 100)) {
     return NextResponse.json({ message: "Too many requests" }, { status: 429 });
   }
@@ -23,7 +23,7 @@ export async function GET(
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 🛡️ SERVER-SIDE AUTH GUARD (DEFENSE IN DEPTH)
+  //  SERVER-SIDE AUTH GUARD (DEFENSE IN DEPTH)
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     logSecurityEvent('UNAUTHORIZED_ACCESS_ATTEMPT', { path: req.url, ip: req.ip });

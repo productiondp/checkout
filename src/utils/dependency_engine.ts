@@ -1,7 +1,7 @@
 import { UserProfile } from "@/types/core";
 
 /**
- * 🧠 DEPENDENCY ENGINE (SHADOW BRAIN)
+ *  DEPENDENCY ENGINE (SHADOW BRAIN)
  * 
  * Maps a user's primary selection (Business Type or Role) into a set
  * of inferred contextual needs. This prevents UI overload while ensuring
@@ -17,7 +17,7 @@ type InferredNeed = {
   weight: number;
 };
 
-// ── MASTER DEPENDENCY MAP ──
+//  MASTER DEPENDENCY MAP 
 const BUSINESS_TYPE_DEPENDENCIES: Record<string, InferredNeed[]> = {
   // Retail & FMCG
   "FMCG": [

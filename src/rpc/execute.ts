@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * ⚡ LAZY-LOADING RPC EXECUTOR
+ *  LAZY-LOADING RPC EXECUTOR
  * 
  * Centralized server action that dynamically imports domain modules.
  * 1. Minimizes cold starts by loading only the target code.

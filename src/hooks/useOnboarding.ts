@@ -33,7 +33,7 @@ export function useOnboarding(userId: string | undefined) {
     return data as OnboardingState;
   }, { priority: 'high' });
 
-  // 🔄 REALTIME SYNC
+  //  REALTIME SYNC
   useEffect(() => {
     if (!userId || !scopedKey) return;
 

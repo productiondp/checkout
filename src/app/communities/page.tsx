@@ -200,7 +200,7 @@ export default function CommunitiesPage() {
                       "h-10 px-6 rounded-[10px] text-[10px] font-black uppercase tracking-widest transition-all",
                       userMemberships.includes(comm.id) ? "bg-emerald-500 text-white" : "bg-black text-white group-hover:bg-[#E53935]"
                     )}>
-                      {userMemberships.includes(comm.id) ? "You're in • Chat is open" : "Join Community"}
+                      {userMemberships.includes(comm.id) ? "You're in  Chat is open" : "Join Community"}
                     </button>
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default function CommunitiesPage() {
                       </div>
                       <div>
                         <h4 className="text-[15px] font-black text-[#1D1D1F] uppercase font-outfit">{comm.name}</h4>
-                        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{comm.category} • {comm.member_count || 0} Members</p>
+                        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{comm.category}  {comm.member_count || 0} Members</p>
                       </div>
                     </div>
                     <ChevronRight size={18} className="text-black/10 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
@@ -271,7 +271,7 @@ export default function CommunitiesPage() {
                       </div>
                       <div>
                         <h4 className="text-[15px] font-black text-[#1D1D1F] uppercase font-outfit">{comm.name}</h4>
-                        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{comm.category} • {comm.member_count || 0} Members</p>
+                        <p className="text-[9px] font-black text-black/20 uppercase tracking-widest">{comm.category}  {comm.member_count || 0} Members</p>
                       </div>
                     </div>
                     <ChevronRight size={18} className="text-black/10 group-hover:text-[#E53935] group-hover:translate-x-1 transition-all" />
@@ -330,7 +330,7 @@ function CommunityCard({ community, isJoined, onJoinLeave }: { community: any, i
             isJoined ? "bg-emerald-500 text-white" : "bg-white border border-black/[0.08] text-[#1D1D1F] hover:bg-black hover:text-white"
           )}
         >
-          {isJoined ? "You're in • Chat is open" : "Join Community"}
+          {isJoined ? "You're in  Chat is open" : "Join Community"}
         </button>
       </div>
     </div>
@@ -410,7 +410,7 @@ function CreateCommunityFlow({ onClose }: { onClose: () => void }) {
         <div className="bg-black p-10 text-white relative">
           <div className="flex items-center justify-between mb-8">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Step {step} of 6</span>
-            <button onClick={onClose} className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all">×</button>
+            <button onClick={onClose} className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all"></button>
           </div>
           <h2 className="text-3xl font-black uppercase font-outfit">Create Community</h2>
           <div className="flex gap-2 mt-8">

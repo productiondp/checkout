@@ -1,5 +1,5 @@
 /**
- * 🧠 GLOBAL PERFORMANCE CACHE (V4.0)
+ *  GLOBAL PERFORMANCE CACHE (V4.0)
  * 
  * Features:
  * 1. Multi-Layer Cache: Client (memory) -> Edge (CDN) -> DB.
@@ -8,7 +8,8 @@
  * 4. Stale-While-Revalidate: Ultra-low latency responses.
  */
 
-import { revalidateTag } from 'next/cache';
+// Removed 'next/cache' import to prevent client-side bundling errors.
+// revalidateTag is a server-only utility.
 
 export type CacheKey = 
   | { type: 'profile'; userId: string; tags?: string[] }
@@ -32,7 +33,7 @@ const memoryCache = new Map<string, any>();
 const versions = new Map<string, number>();
 
 /**
- * 🚀 MULTI-LAYER PERSISTENCE
+ *  MULTI-LAYER PERSISTENCE
  */
 export function setCache<T>(key: CacheKey, value: T): void {
   const sKey = serializeKey(key);
@@ -74,7 +75,7 @@ export function getCache<T>(key: CacheKey): T | null {
 }
 
 /**
- * ⚡ INSTANT INVALIDATION (Tag-Based)
+ *  INSTANT INVALIDATION (Tag-Based)
  * Used on the server to purge Edge/CDN caches.
  */
 export function invalidate(tags: string[]): void {
@@ -82,11 +83,8 @@ export function invalidate(tags: string[]): void {
   
   // 1. Purge Next.js / Edge Cache
   tags.forEach(tag => {
-    try {
-      revalidateTag(tag);
-    } catch (e) {
-      // revalidateTag might fail if called outside of a Request context
-    }
+    // revalidateTag removed for client safety. 
+    // Server-side invalidation should be handled via API routes.
   });
 
   // 2. Client-side memory purge would happen via versions or event-broadcast

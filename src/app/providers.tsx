@@ -8,7 +8,7 @@ import ProtocolGuard from "@/components/auth/ProtocolGuard";
 import ClientLayout from "@/components/layout/ClientLayout";
 
 /**
- * 🛠️ CLIENT PROVIDERS WRAPPER
+ *  CLIENT PROVIDERS WRAPPER
  * 
  * This component acts as the client-side boundary for all global providers.
  * It ensures that the Auth and Notification contexts are persistent and stable
@@ -19,7 +19,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <NotificationProvider>
         <ErrorBoundary>
-          <ProtocolGuard />
           <ClientLayout>
             {children}
           </ClientLayout>

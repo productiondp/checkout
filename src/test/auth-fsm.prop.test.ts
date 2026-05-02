@@ -10,7 +10,7 @@ import {
 } from '../lib/auth-fsm';
 
 /**
- * 🎲 ARBITRARY GENERATORS
+ *  ARBITRARY GENERATORS
  */
 const authEventArb: fc.Arbitrary<AuthEvent> = fc.oneof(
   fc.constant({ type: 'BOOT' as const }),

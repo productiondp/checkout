@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
 /**
- * 💎 PREMIUM LOADING SCREEN
+ *  PREMIUM LOADING SCREEN
  * 
  * Provides a high-fidelity wait experience during auth initialization
  * and routing resolution. Features smooth micro-animations and

@@ -51,7 +51,7 @@ export default function HomeFeed({
   const insights = useUserSuccess(user?.id);
   const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   
-  // 🛡️ ACTION & CONTEXT TRACKING
+  //  ACTION & CONTEXT TRACKING
   const [sessionActions, setSessionActions] = useState<string[]>([]);
   const [newlyCreatedPostId, setNewlyCreatedPostId] = useState<string | null>(null);
   const [connectedIds, setConnectedIds] = useState<string[]>([]);
@@ -71,7 +71,7 @@ export default function HomeFeed({
   const [sortMode, setSortMode] = useState<'NEARBY' | 'RELEVANT' | 'LATEST'>('NEARBY');
   const [selectedPost, setSelectedPost] = useState<any>(null);
 
-  // ── HELPER: HAVERSINE DISTANCE ──
+  //  HELPER: HAVERSINE DISTANCE 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
     const R = 6371; // km
@@ -85,7 +85,7 @@ export default function HomeFeed({
     return R * c;
   };
 
-  // ── STEP 3: PASSIVE MATCH EXPANSION ──
+  //  STEP 3: PASSIVE MATCH EXPANSION 
   useEffect(() => {
     if (hasPosted && !hasConnected) {
       const timer = setTimeout(() => setShowPassiveMatch(true), 15000); // 15s delay
@@ -95,7 +95,7 @@ export default function HomeFeed({
 
     // Notification system is now driven by real context events.
 
-  // ── STEP 1: POST VISIBILITY LOCK ──
+  //  STEP 1: POST VISIBILITY LOCK 
   useEffect(() => {
     const lastPost = JSON.parse(localStorage.getItem('checkout_last_post') || '{}');
     if (lastPost.time && Date.now() - lastPost.time < 5000) {
@@ -153,7 +153,7 @@ export default function HomeFeed({
       };
     });
 
-    // ── V1.10 FEED GUARDRAILS ──
+    //  V1.10 FEED GUARDRAILS 
     const guarded = SignalGuard.applyFeedGuardrails(processed, {
       maxTopOpportunities: 3,
       neutralRatio: 0.35
@@ -321,7 +321,7 @@ export default function HomeFeed({
                ))}
             </div>
 
-            {/* ── STEP 4: DAILY PRIORITY LIST ── */}
+            {/*  STEP 4: DAILY PRIORITY LIST  */}
             {dailyPriorities.length > 0 && (
               <div className="bg-[#0A0A0A] rounded-[2.5rem] p-10 text-white relative overflow-hidden border border-white/5 shadow-2xl">
                  <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
@@ -484,7 +484,7 @@ export default function HomeFeed({
                     >
                       <div className="bg-[#1D1D1F] rounded-[32px] p-10 lg:p-16 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] group/success border border-white/10 relative">
                         
-                        {/* THE NEURAL SYNC BACKGROUND — ENHANCED */}
+                        {/* THE NEURAL SYNC BACKGROUND  ENHANCED */}
                         <div className="absolute inset-0 pointer-events-none">
                            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E53935]/15 rounded-full blur-[140px] -mr-64 -mt-64 animate-pulse" />
                            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#34C759]/10 rounded-full blur-[120px] -ml-48 -mb-48 opacity-50" />

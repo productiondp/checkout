@@ -58,7 +58,7 @@ class AnalyticsEngine {
 
     this.sessionEvents.push(event);
 
-    // 🛡️ SYNC USER ID TO INSTANCE
+    //  SYNC USER ID TO INSTANCE
     if (userId) {
       this.startTime = Date.now(); // Reset session start on identity
     }
@@ -86,14 +86,8 @@ class AnalyticsEngine {
         }
       }]);
       
-      if (error) {
-        // [SEC] RLS / AUTH SILENCING (V16.24)
-        // If RLS fails, we log it once but don't treat it as a system error
-        const isAuthError = error.code === '42501' || error.message.includes('row-level security');
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`[ANALYTICS] Persistence ${isAuthError ? 'Silenced (RLS)' : 'Failed'}: ${error.message}`);
-        }
-      }
+      // Silent failure for analytics persistence in development
+      if (error && process.env.NODE_ENV === 'development') return;
     } catch (err: any) {
       // Definitive silence for analytics infrastructure
     }
@@ -112,7 +106,7 @@ class AnalyticsEngine {
   }
 
   /**
-   * 🧠 SYNERGY LEARNING LAYER (V5)
+   *  SYNERGY LEARNING LAYER (V5)
    * Tracks user interaction between base tags to build a dynamic interest map.
    */
   public trackInteraction(userBase: string, postBase: string, type: 'CLICK' | 'CONNECT' | 'REPLY') {
@@ -146,7 +140,7 @@ class AnalyticsEngine {
     synergyMap[postBase] = current;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(synergyMap));
 
-    console.log(`%c[LEARNING] Unique Signal Recorded: ${userBase} → ${postBase} | High Intent: ${current.signals.REPLY || current.signals.CONNECT}`, 'color: #34C759; font-weight: bold;');
+    console.log(`%c[LEARNING] Unique Signal Recorded: ${userBase}  ${postBase} | High Intent: ${current.signals.REPLY || current.signals.CONNECT}`, 'color: #34C759; font-weight: bold;');
   }
 
   public getDynamicSynergy(userBase: string): Record<string, { score: number, hasHighIntent: boolean }> {
@@ -176,7 +170,7 @@ class AnalyticsEngine {
   }
 
   /**
-   * 🏆 REINFORCEMENT LAYER (V13)
+   *  REINFORCEMENT LAYER (V13)
    * Tracks successful professional outcomes to reinforce winning behaviors.
    */
   public trackSuccess(userBase: string, postBase: string, type: 'ACCEPT' | 'REPLY') {
@@ -192,7 +186,7 @@ class AnalyticsEngine {
     successMap[postBase] = current;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(successMap));
 
-    console.log(`%c[SUCCESS] Behavioral Reinforcement: ${userBase} → ${postBase} | Total Wins: ${current.count}`, 'color: #34C759; font-weight: bold;');
+    console.log(`%c[SUCCESS] Behavioral Reinforcement: ${userBase}  ${postBase} | Total Wins: ${current.count}`, 'color: #34C759; font-weight: bold;');
   }
 
   public getSuccessInsights(userBase: string): { topCategory: string | null, insights: string[] } {

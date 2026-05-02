@@ -1,5 +1,5 @@
 /**
- * 🛣️ CENTRALIZED ROUTE CONFIGURATION (V14.0)
+ *  CENTRALIZED ROUTE CONFIGURATION (V14.0)
  * 
  * Defines all protected and public route patterns for the Checkout Business OS.
  * Used by Middleware and Client-Side guards to ensure consistent access control.

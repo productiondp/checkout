@@ -23,7 +23,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
   const [message, setMessage] = useState("");
 
   const INTENTS = [
-    { id: 'IDEA', label: 'Share Idea', icon: Sparkles, defaultMsg: "Hi, I’m interested in your idea. I’d like to contribute and build this together." },
+    { id: 'IDEA', label: 'Share Idea', icon: Sparkles, defaultMsg: "Hi, Im interested in your idea. Id like to contribute and build this together." },
     { id: 'DETAILS', label: 'Ask Details', icon: MessageSquare, defaultMsg: "Hi, can you share more details about this?" },
     { id: 'HELP', label: 'Offer Help', icon: Send, defaultMsg: "Hi, I have experience in this area and can help with your project." },
   ];
@@ -155,7 +155,7 @@ export function ConnectButton({ userId, userName = "this user", variant = "prima
                     <Check size={40} strokeWidth={3} />
                   </div>
                   <h3 className="text-xl font-black text-[#292828] uppercase mb-2">Intent Sent</h3>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed max-w-[240px] mx-auto">Conversation initiated. You’ll be notified when they reply.</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase leading-relaxed max-w-[240px] mx-auto">Conversation initiated. Youll be notified when they reply.</p>
                   <button 
                     onClick={() => setShowModal(false)}
                     className="mt-10 w-full h-16 bg-[#292828] text-white rounded-lg font-black text-[10px] uppercase hover:bg-[#E53935] transition-all"

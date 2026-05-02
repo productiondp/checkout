@@ -1,5 +1,5 @@
 /**
- * 📊 LIGHTWEIGHT TELEMETRY LOGGER (V1.0)
+ *  LIGHTWEIGHT TELEMETRY LOGGER (V1.0)
  * 
  * Purpose: Observability without overhead.
  * Principles: Privacy-safe, development-focused, performance-neutral.

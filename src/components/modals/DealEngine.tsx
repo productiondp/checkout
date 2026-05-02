@@ -256,7 +256,7 @@ export default function DealEngine({ isOpen, onClose, deal }: DealEngineProps) {
 
         {/* FOOTER */}
         <div className="px-10 py-8 bg-[#F5F5F7] border-t border-black/[0.03] text-center shrink-0">
-          <p className="text-[10px] font-bold uppercase text-[#86868B] tracking-widest">Simple • Direct • Secure</p>
+          <p className="text-[10px] font-bold uppercase text-[#86868B] tracking-widest">Simple  Direct  Secure</p>
         </div>
       </div>
     </div>

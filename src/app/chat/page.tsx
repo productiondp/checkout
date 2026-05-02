@@ -396,7 +396,7 @@ function ChatContent() {
                            )}
                         </div>
                         <span className="text-[9px] font-black text-black/20 uppercase tracking-widest">
-                           {selectedChat.isGroup ? `${participants.length} Participants • ${meetupDetails?.industry || 'Networking'}` : selectedChat.role}
+                           {selectedChat.isGroup ? `${participants.length} Participants  ${meetupDetails?.industry || 'Networking'}` : selectedChat.role}
                         </span>
                      </div>
                   </div>

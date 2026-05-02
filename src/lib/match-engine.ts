@@ -2,7 +2,7 @@ import { UserProfile } from "@/types/core";
 import { dependencyEngine } from "@/utils/dependency_engine";
 
 /**
- * 🧠 SIGNAL PROTECTION & ANOMALY DEFENSE (V34)
+ *  SIGNAL PROTECTION & ANOMALY DEFENSE (V34)
  * 
  * Secures outcome-driven learning against manipulation and spam.
  * Principles: Integrity-First, Unique-Weighted, Spam-Resistant.
@@ -123,13 +123,13 @@ export function calculatePersonalizedScore(
   const reputation = item.author_profile?.metadata?.checkout_score || 50;
   score += reputation * WEIGHTS.ACTIVITY;
 
-  // 🛡️ STEP 5: TRUST ENGINE BOOST (NEW)
+  //  STEP 5: TRUST ENGINE BOOST (NEW)
   const trustScore = item.author_profile?.advisor_score || 0;
   // Boost by up to 20 points for high trust (normalized to weight if needed, but here we add as a tactical boost)
   const trustBoost = Math.min(20, trustScore * 4); 
   score += trustBoost;
 
-  // 🛡️ STEP 1 & 5: PROTECTED GLOBAL QUALITY BOOST (V34)
+  //  STEP 1 & 5: PROTECTED GLOBAL QUALITY BOOST (V34)
   let networkBoost = 0;
   const stats = context.network_stats;
   let isNetworkConfident = false;
@@ -154,10 +154,10 @@ export function calculatePersonalizedScore(
     }
   }
 
-  // 🛡️ STEP 3: APPLY PERSONAL + GLOBAL BALANCE
+  //  STEP 3: APPLY PERSONAL + GLOBAL BALANCE
   score *= (1 + networkBoost);
 
-  // 🛡️ ADAPTIVE FEEDBACK (V32 Protocol) + SPAM FILTER (V34)
+  //  ADAPTIVE FEEDBACK (V32 Protocol) + SPAM FILTER (V34)
   const { interactions } = context;
   const imps = interactions.impressions[itemType] || 0;
   const clicks = interactions.clicks[itemType] || 0;
@@ -167,7 +167,7 @@ export function calculatePersonalizedScore(
   let qualityBoost = 0;
   let confidence = Math.min(1, imps / 10);
 
-  // 🛡️ STEP 3: LOW-QUALITY USER FILTER (Apply user trust weight)
+  //  STEP 3: LOW-QUALITY USER FILTER (Apply user trust weight)
   const userTrustWeight = context.user_trust_weight ?? 1.0;
 
   if (imps >= 5 && totalInteractions >= 3) {
@@ -185,7 +185,7 @@ export function calculatePersonalizedScore(
   let behavioralMultiplier = idleTime < 10 * 60 * 1000 ? 1.0 : idleTime < 30 * 60 * 1000 ? 0.7 : 0.4;
   score *= (1 + (qualityBoost * behavioralMultiplier));
 
-  // 🛡️ STEP 9: STRICT TRUST SIGNAL LABELS
+  //  STEP 9: STRICT TRUST SIGNAL LABELS
   let label = undefined;
   if (confidence > 0.5 && qualityBoost > 0.05 && itemType === context.last_clicked_category && userTrustWeight > 0.5) {
     label = "Based on your recent activity";

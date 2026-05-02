@@ -1,5 +1,5 @@
 /**
- * 🧠 FORMALLY VERIFIABLE AUTHENTICATION FSM (V7.0)
+ *  FORMALLY VERIFIABLE AUTHENTICATION FSM (V7.0)
  * 
  * This module defines the core state machine, transition logic, 
  * and routing resolution as pure, testable functions.
@@ -19,7 +19,7 @@ export type AuthEvent =
   | { type: 'PROFILE_LOADED'; hasProfile: boolean };
 
 /**
- * 🔄 DETERMINISTIC TRANSITION FUNCTION
+ *  DETERMINISTIC TRANSITION FUNCTION
  * Pure function that computes the next state based on current state and event.
  */
 export function transition(state: AuthState, event: AuthEvent): AuthState {
@@ -64,7 +64,7 @@ export function transition(state: AuthState, event: AuthEvent): AuthState {
 }
 
 /**
- * 🧭 AUTHORITATIVE ROUTE RESOLVER
+ *  AUTHORITATIVE ROUTE RESOLVER
  * Pure function mapping state to route.
  */
 export function resolveRoute(state: AuthState, currentPath: string): string | null {
@@ -89,7 +89,7 @@ export function resolveRoute(state: AuthState, currentPath: string): string | nu
 }
 
 /**
- * 🛡️ BIDIRECTIONAL ROUTE VALIDATOR
+ *  BIDIRECTIONAL ROUTE VALIDATOR
  */
 export function isRouteValid(state: AuthState, currentPath: string): boolean {
   if (state.tag === 'initializing') return true;
@@ -110,7 +110,7 @@ export function isRouteValid(state: AuthState, currentPath: string): boolean {
 }
 
 /**
- * 🔐 INVARIANT ENFORCEMENT
+ *  INVARIANT ENFORCEMENT
  */
 export function assertInvariants(state: AuthState) {
   // Add formal invariants here if needed

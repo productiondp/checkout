@@ -182,7 +182,7 @@ export default function SignupPage() {
                        required
                        onChange={handleInput}
                        className="w-full h-16 bg-gray-50 border border-gray-100 rounded-xl pl-14 pr-6 font-bold text-sm outline-none focus:border-red-500 focus:bg-white transition-all shadow-sm"
-                       placeholder="••••••••"
+                       placeholder=""
                      />
                   </div>
                </div>

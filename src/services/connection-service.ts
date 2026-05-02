@@ -5,7 +5,7 @@ export type ConnectionStatus = "none" | "pending" | "accepted";
 
 export const ConnectionService = {
   /**
-   * ⚡ INSTANT CONNECT
+   *  INSTANT CONNECT
    * Creates a connection with minimal friction.
    */
   async connect(senderId: string, receiverId: string) {
@@ -37,7 +37,7 @@ export const ConnectionService = {
 
     if (error) throw error;
 
-    // 📣 TRIGGER NOTIFICATION
+    //  TRIGGER NOTIFICATION
     try {
       const { NotificationService } = await import("./notification-service");
       await NotificationService.create({
@@ -54,7 +54,7 @@ export const ConnectionService = {
   },
 
   /**
-   * 🔍 CHECK STATUS
+   *  CHECK STATUS
    */
   async getStatus(senderId: string, receiverId: string): Promise<ConnectionStatus> {
     const supabase = createClient();
@@ -68,7 +68,7 @@ export const ConnectionService = {
   },
 
   /**
-   * 📋 LIST CONNECTIONS
+   *  LIST CONNECTIONS
    */
   async listConnections(userId: string) {
     const supabase = createClient();
@@ -107,7 +107,7 @@ export const ConnectionService = {
   },
 
   /**
-   * ✅ ACCEPT CONNECTION
+   *  ACCEPT CONNECTION
    */
   async accept(connectionId: string) {
     const supabase = createClient();
@@ -123,7 +123,7 @@ export const ConnectionService = {
     console.log("Update result:", { data, error });
     if (error) throw error;
 
-    // 📣 TRIGGER NOTIFICATION
+    //  TRIGGER NOTIFICATION
     try {
       const { NotificationService } = await import("./notification-service");
       await NotificationService.create({
@@ -140,7 +140,7 @@ export const ConnectionService = {
   },
 
   /**
-   * 💬 ENSURE CONNECTION (FOR CHAT)
+   *  ENSURE CONNECTION (FOR CHAT)
    * Returns existing or creates a PENDING connection.
    */
   async ensureConnection(userId: string, partnerId: string) {
@@ -168,7 +168,7 @@ export const ConnectionService = {
   },
 
   /**
-   * 🗑️ REMOVE CONNECTION
+   *  REMOVE CONNECTION
    */
   async removeConnection(connectionId: string) {
     const supabase = createClient();
@@ -182,7 +182,7 @@ export const ConnectionService = {
   },
 
   /**
-   * 🚫 BLOCK USER
+   *  BLOCK USER
    */
   async blockUser(connectionId: string) {
     const supabase = createClient();

@@ -142,7 +142,6 @@ class OptimizationEngine {
 
     // 1. Throttle: Only run once per interval
     if (now - this.lastRunTimestamp < OPTIMIZATION_INTERVAL_MS) {
-      console.log('[OPTIMIZATION] Skipping run: Interval not yet reached.');
       return;
     }
 
@@ -152,7 +151,6 @@ class OptimizationEngine {
 
     // 2. Data Threshold Check
     if ((eventCount || 0) < MIN_EVENTS_REQUIRED) {
-      console.log(`[OPTIMIZATION] Insufficient data: ${eventCount}/${MIN_EVENTS_REQUIRED} events.`);
       return;
     }
 

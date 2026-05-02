@@ -102,7 +102,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     fetchConnections();
 
-    // ── REALTIME SYNC ──
+    //  REALTIME SYNC 
     if (!user?.id) return;
 
     const channel = supabase

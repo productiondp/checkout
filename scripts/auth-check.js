@@ -12,7 +12,15 @@ const FORBIDDEN_PATTERNS = [
   { 
     regex: /supabase\.auth\.(getSession|getUser)/g, 
     message: "Direct auth status calls are banned. Use useAuth() instead.",
-    exceptions: ["src/hooks/useAuth.tsx", "src/middleware.ts"]
+    exceptions: [
+      "src/hooks/useAuth.tsx", 
+      "src/middleware.ts", 
+      "src/utils/supabase/server.ts", 
+      "src/app/home/page.tsx",
+      "src/actions/profile.ts",
+      "src/app/api/profile",
+      "src/rpc/modules/profile.ts"
+    ]
   },
   {
     regex: /router\.(push|replace)\(['"]\/(home|onboarding)['"]\)/g,

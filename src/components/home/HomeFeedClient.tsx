@@ -75,7 +75,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
   const lastActionTime = useRef<number>(0);
   const supabase = createClient();
 
-  // ⚡ HYDRATION: Seed the client-side cache with server-provided data
+  //  HYDRATION: Seed the client-side cache with server-provided data
   useEffect(() => {
     if (initialProfile && authUser?.id) {
       setCache({ type: 'profile', userId: authUser.id }, initialProfile);

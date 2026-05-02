@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from './lib/routes'
 
 /**
- * 🧠 SURGICAL AUTH MIDDLEWARE (V14.1)
+ *  SURGICAL AUTH MIDDLEWARE (V14.1)
  * 
  * Performance-optimized middleware that only executes on protected routes.
  * Ensures Service Workers and static assets are never intercepted.
@@ -11,12 +11,12 @@ import { PROTECTED_ROUTES, PUBLIC_ROUTES } from './lib/routes'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // ⚡ CRITICAL BYPASS: Service Worker & PWA Manifest
+  //  CRITICAL BYPASS: Service Worker & PWA Manifest
   if (pathname === '/sw.js' || pathname === '/manifest.json') {
     return NextResponse.next()
   }
 
-  // 🛡️ ROUTE SAFETY ASSERTION (DEV ONLY)
+  //  ROUTE SAFETY ASSERTION (DEV ONLY)
   // Ensures all new routes are explicitly categorized as protected or public.
   if (process.env.NODE_ENV === 'development') {
     const knownRoutes = new Set([...PROTECTED_ROUTES, ...PUBLIC_ROUTES]);
@@ -31,14 +31,14 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // 🛡️ AUTHORITATIVE PROTECTION CHECK
+  //  AUTHORITATIVE PROTECTION CHECK
   const isProtected = PROTECTED_ROUTES.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   )
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "",
     {
       cookies: {
         get(name: string) {
@@ -62,8 +62,8 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: We use getUser() to ensure the session is valid and not spoofed.
-  const { data: { user } } = await supabase.auth.getUser()
+  //  SECURE SESSION VERIFICATION
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
     console.log(`[MIDDLEWARE] Authenticated access to: ${pathname}`);
@@ -75,7 +75,7 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-// 🧠 SURGICAL MATCHER
+//  SURGICAL MATCHER
 // Only run middleware on paths that actually require authentication logic.
 export const config = {
   matcher: [

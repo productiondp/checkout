@@ -5,7 +5,7 @@ type Tables = Database['public']['Tables'];
 type DbProfile = Tables['profiles']['Row'];
 
 /**
- * 🔐 PROFILE UPDATE CONTRACT
+ *  PROFILE UPDATE CONTRACT
  * Enforces runtime validation for profile modifications.
  */
 export const UpdateProfileSchema = z.object({
@@ -19,7 +19,7 @@ export const UpdateProfileSchema = z.object({
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
 
 /**
- * 🛡️ PROFILE RESPONSE CONTRACT
+ *  PROFILE RESPONSE CONTRACT
  * Shared data structure between server and client.
  */
 export const ProfileResponseSchema = z.object({

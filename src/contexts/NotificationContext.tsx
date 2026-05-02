@@ -33,7 +33,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => { unreadRef.current = unreadMessagesCount; }, [unreadMessagesCount]);
   useEffect(() => { pendingRef.current = pendingRequestsCount; }, [pendingRequestsCount]);
 
-  // ── TAB SYNC (BroadcastChannel) ──
+  //  TAB SYNC (BroadcastChannel) 
   useEffect(() => {
     syncChannel.current = new BroadcastChannel("checkout_notifications_sync");
     syncChannel.current.onmessage = (event) => {
@@ -97,7 +97,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [user?.id, supabase, broadcastCounts]);
 
-  // ── TAB FOCUS REFRESH ──
+  //  TAB FOCUS REFRESH 
   useEffect(() => {
     const handleFocus = () => {
       fetchCounts();
@@ -117,7 +117,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     fetchCounts();
 
-    // ── REALTIME HARDENING ──
+    //  REALTIME HARDENING 
     
     // 1. Messages Listener (Timestamp Guard + receiver check + active chat skip + ID Guard)
     const msgChannel = supabase

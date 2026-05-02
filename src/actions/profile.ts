@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * 🔒 TYPED PROFILE ACTIONS
+ *  TYPED PROFILE ACTIONS
  * 
  * Enforces runtime validation and absolute type safety for all profile mutations.
  */

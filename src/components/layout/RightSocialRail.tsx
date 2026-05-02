@@ -168,7 +168,7 @@ export default function RightSocialRail() {
                            </span>
                         </div>
                         <p className="text-[10px] font-bold text-[#86868B] uppercase truncate mb-2">
-                           {p.role || "Professional"} • {p.industry || "Network"}
+                           {p.role || "Professional"}  {p.industry || "Network"}
                         </p>
                         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#34C759]/5 border border-[#34C759]/10 rounded-full">
                            <div className="h-1 w-1 rounded-full bg-[#34C759]" />
@@ -212,7 +212,7 @@ export default function RightSocialRail() {
                   </div>
                   <div className="flex-1 min-w-0">
                      <p className="text-[13px] font-bold text-[#292828] uppercase leading-none mb-1.5 group-hover:text-[#E53935] transition-colors truncate">{p.name}</p>
-                     <p className="text-[9px] font-bold text-[#292828]/40 uppercase ">{p.role} • {p.action}</p>
+                     <p className="text-[9px] font-bold text-[#292828]/40 uppercase ">{p.role}  {p.action}</p>
                   </div>
                   <ChevronRight size={16} className="text-[#292828]/10 group-hover:text-[#E53935] transition-all transform group-hover:translate-x-1" />
                </div>

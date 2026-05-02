@@ -26,7 +26,7 @@ export async function GET() {
     return new Response(JSON.stringify(posts), {
       headers: {
         'Content-Type': 'application/json',
-        // ⚡ Edge Caching Strategy:
+        //  Edge Caching Strategy:
         // s-maxage=60: Cache on Vercel Edge for 60 seconds
         // stale-while-revalidate=300: Serve stale data while revalidating for up to 5 minutes
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',

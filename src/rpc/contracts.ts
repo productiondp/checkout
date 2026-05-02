@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * 🧬 RPC CONTRACT DEFINITIONS
+ *  RPC CONTRACT DEFINITIONS
  * 
  * The single source of truth for all client-server communications.
  * Every method defines its input and output schema for mandatory

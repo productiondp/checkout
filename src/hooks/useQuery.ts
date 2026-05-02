@@ -48,7 +48,7 @@ export function useQuery<T>(
     const userId = 'userId' in key ? (key as any).userId : undefined;
     const isNewDataLayerActive = isFeatureEnabled('newDataLayer', userId);
 
-    // 📴 OFFLINE CHECK
+    //  OFFLINE CHECK
     if (!isOnline()) {
       const cached = getCache<T>(key);
       if (cached) setData(cached);
@@ -60,14 +60,14 @@ export function useQuery<T>(
     const startTime = performance.now();
 
     try {
-      // ⚡ Conditional Deduplication & Rollout Logic
+      //  Conditional Deduplication & Rollout Logic
       const freshData = (isNewDataLayerActive && flags.newDataLayer.enabled)
         ? await fetchWithDedupe(key, fetcher)
         : await fetcher();
       
       const duration = performance.now() - startTime;
 
-      // 🚨 BLAST RADIUS CONTROL: High Latency
+      //  BLAST RADIUS CONTROL: High Latency
       if (duration > 3000 && isNewDataLayerActive) {
         killRollout('newDataLayer');
       }
@@ -77,14 +77,14 @@ export function useQuery<T>(
       setError(null);
       lastVersion.current = getVersion(key);
     } catch (err: any) {
-      // 🚨 AUTOMATIC KILL-SWITCH: Error Threshold
+      //  AUTOMATIC KILL-SWITCH: Error Threshold
       if (metrics.errors > 5 && isNewDataLayerActive) {
         killRollout('newDataLayer');
       }
 
       setError(err instanceof Error ? err : new Error(String(err)));
       
-      // 🛡️ ERROR FALLBACK: If fetch fails, try to serve stale cache
+      //  ERROR FALLBACK: If fetch fails, try to serve stale cache
       const cached = getCache<T>(key);
       if (cached) setData(cached);
     } finally {

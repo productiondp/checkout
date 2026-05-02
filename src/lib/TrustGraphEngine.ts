@@ -1,4 +1,4 @@
-// 🧠 TRUST GRAPH ENGINE (V1.51)
+//  TRUST GRAPH ENGINE (V1.51)
 // Manages network-level trust propagation and intelligent ranking boosts.
 
 export type TrustOutcome = 'COLLAB' | 'PAID' | 'LEARNED';
@@ -25,7 +25,7 @@ class TrustGraphEngine {
   }
 
   /**
-   * 🧠 Create or update a trust link between two users after verification.
+   *  Create or update a trust link between two users after verification.
    */
   public recordVerifiedCollab(userA: string, userB: string, outcome: TrustOutcome) {
     const weightMap: Record<TrustOutcome, number> = {
@@ -54,7 +54,7 @@ class TrustGraphEngine {
   }
 
   /**
-   * 🧠 Calculate network trust propagation (A -> B -> C)
+   *  Calculate network trust propagation (A -> B -> C)
    */
   public getNetworkTrustScore(currentUserId: string, targetUserId: string): number {
     // 1. Direct Trust
@@ -77,7 +77,7 @@ class TrustGraphEngine {
   }
 
   /**
-   * 🧠 Recency Decay: Older trust is less valuable.
+   *  Recency Decay: Older trust is less valuable.
    */
   private applyDecay(weight: number, timestamp: number): number {
     const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
@@ -87,7 +87,7 @@ class TrustGraphEngine {
   }
 
   /**
-   * 🧠 Intelligent Ranking Boost
+   *  Intelligent Ranking Boost
    */
   public getRankingBoost(userId: string, targetId: string): number {
     const score = this.getNetworkTrustScore(userId, targetId);
@@ -97,7 +97,7 @@ class TrustGraphEngine {
   }
 
   /**
-   * 🧠 Opportunity Routing: Find if a project is a "Top Match" for a user.
+   *  Opportunity Routing: Find if a project is a "Top Match" for a user.
    */
   public getRoutingContext(userId: string, projectMetadata: any) {
     const networkScore = this.getNetworkTrustScore(userId, projectMetadata.creatorId || '');

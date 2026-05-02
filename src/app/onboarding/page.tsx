@@ -24,7 +24,7 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useAuthGuard } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,11 +47,13 @@ import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/ident
 import { detectBaseTag } from "@/utils/match-engine";
 
 export default function OnboardingPage() {
-  return (
-    <ProtectedRoute>
-      <OnboardingContent />
-    </ProtectedRoute>
-  );
+  const { state, loading } = useAuthGuard('onboarding');
+  
+  if (loading || state.tag === 'initializing') {
+    return <LoadingScreen />;
+  }
+
+  return <OnboardingContent />;
 }
 
 function OnboardingContent() {
@@ -170,7 +172,7 @@ function OnboardingContent() {
 
     console.log("ONBOARDING: Upserting profile...", payload);
     try {
-      // ⚡ SAFE-SAVE: Timeout after 5s to prevent permanent hang
+      //  SAFE-SAVE: Timeout after 5s to prevent permanent hang
       const savePromise = supabase
         .from('profiles')
         .upsert(payload, { onConflict: 'id' });
@@ -193,7 +195,7 @@ function OnboardingContent() {
       } else {
         console.log("ONBOARDING: Save Success!");
         if (isFinal) {
-          // 🛡️ Deterministic: Update the independent onboarding_state tracker
+          //  Deterministic: Update the independent onboarding_state tracker
           await supabase
             .from('onboarding_state')
             .upsert({
@@ -234,12 +236,8 @@ function OnboardingContent() {
       onboarding_completed: true 
     });
     
-    setIsCompleted(true);
-    
-    // Auto-redirect after a short delay
-    setTimeout(() => {
-      router.push("/home");
-    }, 2000);
+    //  Immediate redirect to home (useAuth state machine will also enforce this)
+    router.replace('/home');
   };
 
   const nextStep = async () => {

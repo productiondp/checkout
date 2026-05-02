@@ -122,7 +122,7 @@ export const ClarityService = {
   },
 
   /**
-   * ✨ PROFESSIONAL UPGRADE
+   *  PROFESSIONAL UPGRADE
    * Advanced professional restructuring.
    */
   async refine(text: string, type: string = 'POST'): Promise<string> {

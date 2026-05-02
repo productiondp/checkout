@@ -1,5 +1,5 @@
 /**
- * 🌐 TYPE-SAFE API CLIENT
+ *  TYPE-SAFE API CLIENT
  * 
  * Provides a hardened wrapper around fetch to ensure all network requests
  * are strictly typed and handle errors deterministically.

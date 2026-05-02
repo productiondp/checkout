@@ -1,5 +1,5 @@
 /**
- * 🔗 DYNAMIC RPC PROXY CLIENT
+ *  DYNAMIC RPC PROXY CLIENT
  * 
  * Uses a nested Proxy to enable a tree-shakable and domain-aware 
  * RPC interface.

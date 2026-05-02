@@ -5,7 +5,8 @@ import {
   Sparkles, 
   LayoutGrid, 
   Users, 
-  Plus
+  Plus,
+  MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR } from "@/utils/constants";
@@ -33,6 +34,7 @@ const SMART_FILTERS = [
   { id: 'REQUIREMENT', label: 'Requirements', icon: Target },
   { id: 'PARTNER', label: 'Partners', icon: Sparkles },
   { id: 'MEETUP', label: 'Meetups', icon: Users },
+  { id: 'MAP', label: 'Map', icon: MapPin },
 ];
 
 interface HomeFeedClientProps {
@@ -157,7 +159,13 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
                 {SMART_FILTERS.map(f => (
                     <button 
                       key={f.id}
-                      onClick={() => { setActiveFilter(f.id); trackAction('CLICK', f.id); }}
+                      onClick={() => { 
+                        if (f.id === 'MAP') router.push('/discover');
+                        else {
+                          setActiveFilter(f.id); 
+                          trackAction('CLICK', f.id); 
+                        }
+                      }}
                       className={cn(
                         "px-5 h-10 rounded-full text-[11px] font-bold tracking-wide transition-all border shrink-0",
                         activeFilter === f.id ? "bg-black text-white border-black" : "bg-[#F5F5F7] text-black/40 border-transparent hover:border-black/10"

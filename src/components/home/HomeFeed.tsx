@@ -229,63 +229,6 @@ export default function HomeFeed({
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <div className="flex flex-col md:flex-row gap-4">
-           {/* ACTION CARD 1: POST */}
-           <motion.div 
-             whileHover={{ y: -5 }}
-             className="flex-1 group relative overflow-hidden bg-white border border-black/[0.05] rounded-[2.5rem] p-8 lg:p-10 shadow-xl shadow-black/[0.02] cursor-pointer"
-             onClick={() => onCreate?.()}
-           >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53935]/5 rounded-full blur-[40px] group-hover:bg-[#E53935]/10 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="h-14 w-14 bg-[#E53935] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#E53935]/20 group-hover:scale-110 transition-transform">
-                    <Target size={28} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-[#1D1D1F]">
-                       {hasPosted ? "Update Requirement" : "Post Requirement"}
-                    </h3>
-                    <p className="text-[#86868B] text-[12px] font-bold uppercase leading-tight max-w-[200px]">
-                       Share what you need and get matched with experts instantly.
-                    </p>
-                 </div>
-                 <div className="flex items-center gap-3 text-[#E53935] text-[10px] font-black uppercase tracking-widest pt-4 border-t border-black/[0.03]">
-                    <span>Broadcast Now</span>
-                    <Plus size={14} className="group-hover:rotate-90 transition-transform" />
-                 </div>
-              </div>
-           </motion.div>
-
-           {/* ACTION CARD 2: FIND PARTNER (NEW DESIGN) */}
-           <motion.div 
-             whileHover={{ y: -5 }}
-             className="flex-1 group relative overflow-hidden bg-[#1D1D1F] rounded-[2.5rem] p-8 lg:p-10 shadow-2xl shadow-black/10 cursor-pointer"
-             onClick={() => { registerAction('see_people'); router.push('/matches'); }}
-           >
-              <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px] group-hover:bg-indigo-500/20 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="h-14 w-14 bg-white/5 border border-white/10 text-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:bg-white group-hover:text-black transition-all">
-                    <Users size={28} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tight text-white">
-                       {hasConnected ? "Network Active" : "Find Partner"}
-                    </h3>
-                    <p className="text-white/40 text-[12px] font-bold uppercase leading-tight max-w-[200px]">
-                       Explore the network and find the right partners to build with.
-                    </p>
-                 </div>
-                 <div className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-widest pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2">
-                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                       <span>{hasConnected ? "Explore Deeply" : "Start Discovery"}</span>
-                    </div>
-                    <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform ml-auto" />
-                 </div>
-              </div>
-           </motion.div>
-        </div>
-
         {/* STRATEGIC INSIGHTS STRIP */}
         <div className="flex flex-wrap items-center gap-4 px-2">
            {insights.map((insight, i) => (
@@ -301,25 +244,6 @@ export default function HomeFeed({
               </motion.div>
            ))}
         </div>
-
-
-            {/* SORT MODES */}
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-black/[0.03] ml-auto">
-               {(['NEARBY', 'RELEVANT', 'LATEST'] as const).map((mode) => (
-                  <button
-                     key={mode}
-                     onClick={() => setSortMode(mode)}
-                     className={cn(
-                        "px-4 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
-                        sortMode === mode 
-                           ? "bg-white text-black shadow-sm" 
-                           : "text-slate-400 hover:text-slate-600"
-                     )}
-                  >
-                     {mode.charAt(0) + mode.slice(1).toLowerCase()}
-                  </button>
-               ))}
-            </div>
 
             {/*  STEP 4: DAILY PRIORITY LIST  */}
             {dailyPriorities.length > 0 && (

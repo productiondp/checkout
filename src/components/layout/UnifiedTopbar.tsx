@@ -25,7 +25,7 @@ interface UnifiedTopbarProps {
 }
 
 export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
-  const { user: authUser, logout } = useAuth();
+  const { profile: authUser, logout } = useAuth();
   const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
   const router = useRouter();
   const supabase = createClient();

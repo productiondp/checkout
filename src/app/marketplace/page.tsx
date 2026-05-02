@@ -100,68 +100,45 @@ function MarketplaceContent() {
       setIsLoading(true);
       
       try {
-        // Fetch posts and listings
-        const [postsRes, listingsRes] = await Promise.all([
-          supabase.from('posts').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).neq('author_id', user.id).order('created_at', { ascending: false }),
-          supabase.from('listings').select(`*, author:profiles(id, full_name, avatar_url, role, metadata)`).neq('author_id', user.id).order('created_at', { ascending: false })
-        ]);
+        // Fetch all relevant posts from ecosystem
+        const { data: postsData, error: postsError } = await supabase
+          .from('posts')
+          .select(`*, profiles(id, full_name, avatar_url, role)`)
+          .neq('author_id', user.id)
+          .order('created_at', { ascending: false });
 
-        const unified: MarketplaceItem[] = [];
+        if (postsError) throw postsError;
 
-        if (postsRes.data) {
-          postsRes.data.forEach(p => {
-            const type = p.type === 'MEETUP' ? 'MEETUP' : (p.type === 'PARTNERSHIP' ? 'PARTNERSHIP' : 'REQUIREMENT');
-            unified.push({
-              id: p.id,
-              title: p.title,
-              type,
-              description: p.content,
-              location: p.location || "Remote",
-              industry: p.metadata?.industry || "Tech",
-              focus_area: p.metadata?.focus_area || "General",
-              experience_level: p.metadata?.experience_level || "Any",
-              signals: p.tier === 1 ? ["Top opportunity", "Best match"] : ["New"],
-              relevanceScore: p.actionScore || 0.5,
-              created_at: p.created_at,
-              author: {
-                id: p.author?.id,
-                name: p.author?.full_name || "Member",
-                avatar: p.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.author?.id}`,
-                role: p.author?.role || "Professional",
-                isVerified: p.author?.metadata?.subscription_tier !== 'FREE'
-              },
-              metadata: p.metadata,
-              status: 'IDLE'
-            });
-          });
-        }
-
-        if (listingsRes.data) {
-          listingsRes.data.forEach(l => {
-            unified.push({
-              id: l.id,
-              title: l.title,
-              type: "PARTNER",
-              description: l.description,
-              location: l.location || "Remote",
-              industry: l.metadata?.industry || "Creative",
-              focus_area: l.metadata?.focus_area || "Strategy",
-              experience_level: l.metadata?.experience_level || "Senior",
-              signals: ["High success rate"],
-              relevanceScore: 0.7,
-              created_at: l.created_at,
-              author: {
-                id: l.author?.id,
-                name: l.author?.full_name || "Partner",
-                avatar: l.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${l.author?.id}`,
-                role: l.author?.role || "Founder",
-                isVerified: l.author?.metadata?.subscription_tier !== 'FREE'
-              },
-              metadata: l.metadata,
-              status: 'IDLE'
-            });
-          });
-        }
+        const unified: MarketplaceItem[] = (postsData || []).map(p => {
+          // Normalize type
+          const rawType = p.type?.toUpperCase() || 'REQUIREMENT';
+          let normalizedType: MarketplaceType = 'REQUIREMENT';
+          if (rawType === 'MEETUP') normalizedType = 'MEETUP';
+          if (rawType === 'PARTNERSHIP' || rawType === 'PARTNER') normalizedType = 'PARTNERSHIP';
+          
+          return {
+            id: p.id,
+            title: p.title || "Untitled Opportunity",
+            type: normalizedType,
+            description: p.content || "",
+            location: p.location || "Remote",
+            industry: p.industry || p.metadata?.industry || "Tech",
+            focus_area: p.metadata?.focus_area || "General",
+            experience_level: p.metadata?.experience_level || "Any",
+            signals: p.tier === 1 ? ["Top opportunity", "Best match"] : ["New"],
+            relevanceScore: p.actionScore || 0.5,
+            created_at: p.created_at,
+            author: {
+              id: p.profiles?.id,
+              name: p.profiles?.full_name || "Member",
+              avatar: p.profiles?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.profiles?.id}`,
+              role: p.profiles?.role || "Professional",
+              isVerified: !!p.profiles?.full_name
+            },
+            metadata: p.metadata,
+            status: 'IDLE'
+          };
+        });
 
         // Auto-sort by Relevance + Match
         setItems(unified.sort((a, b) => b.relevanceScore - a.relevanceScore));

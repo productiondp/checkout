@@ -105,7 +105,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
     if (!authUser) return;
     if (posts.length === 0) setIsLoading(true);
     try {
-      const { data: postsData, error: fetchErr } = await supabase.from('posts').select(`*, profiles(*)`).order('created_at', { ascending: false }).limit(100);
+      const { data: postsData, error: fetchErr } = await supabase.from('posts').select(`*, profiles(id, full_name, avatar_url, role)`).order('created_at', { ascending: false }).limit(100);
       if (fetchErr) console.error("[FEED_FATAL_ERROR] Supabase rejected fetch:", fetchErr);
       
       const { data: connections } = await supabase.from('connections').select('*').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
@@ -151,7 +151,10 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
   return (
     <ProtectedRoute>
       {!authUser ? null : (
-        <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
+        <TerminalLayout
+          rightSidebar={<RightSocialRail />}
+        >
+          <div className="bg-white border-b border-black/[0.03] px-4 md:px-8 py-3 sticky top-0 z-40">
           <div className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
              {SMART_FILTERS.map(f => (
                  <button 
@@ -206,7 +209,7 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                className="h-6 w-6 md:h-7 md:w-7 flex items-center justify-center"
              >
-               <Plus size={24} md:size={28} strokeWidth={3} />
+               <Plus size={28} strokeWidth={3} />
              </motion.div>
           </motion.button>
         </div>

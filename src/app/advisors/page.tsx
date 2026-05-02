@@ -126,7 +126,7 @@ function AdvisorsContent() {
       <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-12">
         {/* SEARCH SECTION */}
         <div className="relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={18} md:size={20} />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-black/10 group-focus-within:text-[#E53935] transition-colors" size={20} />
           <input 
             type="text" 
             placeholder="Search experts, mentors, or advisors..." 

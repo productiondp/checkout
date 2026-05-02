@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 
 import TerminalLayout from "@/components/layout/TerminalLayout";
+import ConnectButton from "@/components/ui/ConnectButton";
 
 export default function DynamicProfilePage() {
   return (
@@ -99,7 +100,7 @@ function ProfileContent() {
     <TerminalLayout>
       <div className="bg-white font-sans selection:bg-[#E53935]/10 pb-40">
         
-        {/* EXECUTIVE HEADER */}
+        {/* PROFILE HEADER */}
         <div className="relative h-[380px] w-full overflow-hidden bg-black shadow-2xl">
            <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-[#E53935]/20 opacity-80" />
            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-30 grayscale" />
@@ -130,7 +131,11 @@ function ProfileContent() {
                  </div>
 
                  <div className="flex items-center gap-4">
-                    <button className="h-16 px-10 bg-[#E53935] text-white rounded-[10px] font-black text-[11px] uppercase shadow-2xl shadow-red-500/20 hover:bg-black transition-all active:scale-95">Link Partner</button>
+                    <ConnectButton 
+                       userId={profileId} 
+                       userName={profile.name}
+                       className="h-16 px-10 rounded-[10px] text-[11px] font-black uppercase"
+                    />
                     <button className="h-16 w-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-[10px] flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
                        <Plus size={24} />
                     </button>
@@ -149,7 +154,7 @@ function ProfileContent() {
                  <div className="bg-white rounded-[1.625rem] p-10 shadow-sm border border-black/[0.03]">
                     <h3 className="text-[10px] font-black text-black/20 uppercase mb-8 flex items-center gap-2 tracking-[0.2em]">
                        <div className="h-1 w-4 bg-[#E53935] rounded-full" />
-                       Intelligence
+                       About
                     </h3>
                     <p className="text-lg text-black font-bold leading-relaxed uppercase italic opacity-60">
                        "{profile.name} is a high-trust partner at {profile.company}. Focused on improving local distribution 
@@ -207,7 +212,7 @@ function ProfileContent() {
                              Performance
                           </p>
                           {[
-                             { label: "Completed Syncs", val: "12/20", progress: 60 },
+                             { label: "Successful Connections", val: "12/20", progress: 60 },
                              { label: "Match Score", val: `${profile.match}%`, progress: profile.match },
                           ].map((param, i) => (
                              <div key={i} className="space-y-2">
@@ -284,7 +289,7 @@ function ProfileContent() {
                  <div className="py-20 text-center bg-white border border-black/[0.03] rounded-[10px]">
                     <Activity size={40} className="text-black/10 mx-auto mb-6" />
                     <h4 className="text-xl font-black text-black uppercase font-outfit">No Activity Logs</h4>
-                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mt-2">Active syncs will appear here.</p>
+                    <p className="text-[10px] font-black text-black/20 uppercase tracking-widest mt-2">Activity will appear here.</p>
                  </div>
 
               </div>

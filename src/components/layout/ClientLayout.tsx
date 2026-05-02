@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import GlobalHeader from "./GlobalHeader";
 import MobileNav from "./MobileNav";
 import DesktopSidebar from "./DesktopSidebar";

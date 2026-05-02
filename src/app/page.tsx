@@ -160,7 +160,7 @@ function AuthContent() {
       <main className="pt-[98px] lg:pt-[138px] pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
-               <h1 className="text-5xl lg:text-[100px] font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.85] mb-8">
+               <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.85] lg:leading-[0.85] mb-8">
                   Connect. Grow. <br />
                   <span className="text-[#E53935]">Succeed.</span>
                </h1>

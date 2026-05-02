@@ -29,6 +29,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import MeetupPreviewModal from "@/components/modals/MeetupPreviewModal";
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 type MarketplaceType = "All" | "REQUIREMENT" | "PARTNERSHIP" | "MEETUP" | "PARTNER";
 

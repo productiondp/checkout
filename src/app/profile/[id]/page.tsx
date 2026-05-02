@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import { 
   User, 

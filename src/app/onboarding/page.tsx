@@ -246,13 +246,43 @@ function OnboardingContent() {
   };
 
   const nextStep = async () => {
-    if (step === 1 && !onboardingData.name) {
-      setError("Enter your name.");
-      return;
+    setError(null);
+    
+    if (step === 1) {
+      if (!onboardingData.name.trim()) {
+        setError("Please enter your name to continue.");
+        return;
+      }
+      if (onboardingData.name.trim().length < 2) {
+        setError("Name is too short.");
+        return;
+      }
     }
+    
+    if (step === 2) {
+      if (!onboardingData.jobRole.trim()) {
+        setError("Please specify what you do.");
+        return;
+      }
+      if (!onboardingData.industry) {
+        setError("Please select an industry sector.");
+        return;
+      }
+      if (onboardingData.intents.length === 0) {
+        setError("Select at least one area of focus.");
+        return;
+      }
+    }
+
+    if (step === 3) {
+      if (onboardingData.bio.trim().length < 10) {
+        setError("Please provide a slightly longer bio (min 10 chars).");
+        return;
+      }
+    }
+
     await saveProgress();
     setStep(prev => prev + 1);
-    setError(null);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -433,8 +463,14 @@ function OnboardingContent() {
                  >
                     {step === 1 && (
                        <div className="space-y-10">
-                          <div className="space-y-4">
-                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Your Name</label>
+                           <div className="space-y-4">
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
+                                    Your Name
+                                    <div className="h-1 w-1 rounded-full bg-[#FF3B30]" />
+                                 </label>
+                                 <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tight ml-1">How should we address you in the network?</p>
+                              </div>
                              <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
                                 <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
                                 <input 
@@ -478,9 +514,15 @@ function OnboardingContent() {
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                           <div className="space-y-4">
                              <div className="flex items-center justify-between">
-                                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                                   {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
-                                </label>
+                                <div className="flex flex-col gap-1">
+                                   <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
+                                      {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
+                                      <div className="h-1 w-1 rounded-full bg-[#FF3B30]" />
+                                   </label>
+                                   <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tight ml-1">
+                                      {onboardingData.role === 'ADVISOR' ? "Define your primary area of expertise." : "Your primary role in the professional ecosystem."}
+                                   </p>
+                                </div>
                                 <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">I am a</span>
                                    <span className="text-[9px] font-black text-[#FF3B30] uppercase">
@@ -603,12 +645,13 @@ function OnboardingContent() {
                              </div>
                              
                              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
-                                   <div className="flex items-center gap-2">
-                                      <div className="h-1 w-1 rounded-full bg-[#FF3B30] animate-pulse" />
-                                      <span className="text-[10px] font-black uppercase text-[#FF3B30] tracking-widest">
-                                        Industry Detected
-                                      </span>
-                                   </div>
+                                    <div className="flex items-center gap-2">
+                                       <div className="h-1 w-1 rounded-full bg-[#FF3B30] animate-pulse" />
+                                       <span className="text-[10px] font-black uppercase text-[#FF3B30] tracking-widest">
+                                         Industry Sector
+                                       </span>
+                                    </div>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight ml-1">Required: Select the category that best fits your role.</p>
                                    <div className="flex flex-wrap gap-2">
                                       {(detectIndustry(onboardingData.jobRole).industries.length > 0 
                                         ? Array.from(new Set([...detectIndustry(onboardingData.jobRole).industries, onboardingData.industry].filter(Boolean)))
@@ -641,11 +684,17 @@ function OnboardingContent() {
                                  </motion.div>
                           </div>
 
-                          <div className="space-y-6">
-                             <div className="flex items-center justify-between">
-                                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Suggested for you</label>
-                                <span className="text-[10px] font-bold text-slate-300 uppercase">{onboardingData.intents.length}/3</span>
-                             </div>
+                           <div className="space-y-6">
+                              <div className="flex items-center justify-between">
+                                 <div className="flex flex-col gap-1">
+                                    <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
+                                       Suggested for you
+                                       <div className="h-1 w-1 rounded-full bg-[#FF3B30]" />
+                                    </label>
+                                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tight ml-1">Select up to 3 focus areas to optimize your discovery.</p>
+                                 </div>
+                                 <span className="text-[10px] font-bold text-slate-300 uppercase">{onboardingData.intents.length}/3</span>
+                              </div>
 
                              <div className="flex flex-wrap gap-2.5">
                                  {/* Selected Tags First */}
@@ -716,8 +765,14 @@ function OnboardingContent() {
                               </div>
                           </div>
 
-                          <div className="space-y-4">
-                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">About You</label>
+                           <div className="space-y-4">
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
+                                    About you
+                                    <div className="h-1 w-1 rounded-full bg-[#FF3B30]" />
+                                 </label>
+                                 <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tight ml-1">A brief introduction for your public profile.</p>
+                              </div>
                              <textarea 
                                value={onboardingData.bio}
                                onChange={e => setOnboardingData(prev => ({ ...prev, bio: e.target.value }))}
@@ -748,8 +803,14 @@ function OnboardingContent() {
                              </div>
                           </div>
 
-                          <div className="space-y-4">
-                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">Location</label>
+                           <div className="space-y-4">
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
+                                    Location
+                                    <div className="h-1 w-1 rounded-full bg-[#FF3B30]" />
+                                 </label>
+                                 <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tight ml-1">Where are you based for local opportunities?</p>
+                              </div>
                              <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
                                 <MapPin size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" />
                                 <input type="text" value={onboardingData.location} onChange={e => setOnboardingData(prev => ({ ...prev, location: e.target.value }))} className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none uppercase" />
@@ -763,9 +824,20 @@ function OnboardingContent() {
                                 <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-tight">Your profile is ready to go.</p>
                              </div>
                           </div>
-                       </div>
-                    )}
-                 </motion.div>
+                        </div>
+                     )}
+
+                     {error && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 text-[11px] font-black uppercase tracking-wider"
+                        >
+                           <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                           {error}
+                        </motion.div>
+                     )}
+                  </motion.div>
               </AnimatePresence>
            </main>
 

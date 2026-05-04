@@ -477,9 +477,20 @@ function OnboardingContent() {
                      {step === 2 && (
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                           <div className="space-y-4">
-                             <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                                {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
-                             </label>
+                             <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                                   {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
+                                </label>
+                                <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
+                                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">I am a</span>
+                                   <span className="text-[9px] font-black text-[#FF3B30] uppercase">
+                                      {onboardingData.role === 'BUSINESS' && 'Company'}
+                                      {onboardingData.role === 'PROFESSIONAL' && 'Individual'}
+                                      {onboardingData.role === 'ADVISOR' && 'Advisor'}
+                                      {onboardingData.role === 'STUDENT' && 'Student'}
+                                   </span>
+                                </div>
+                             </div>
                              <div className="relative bg-slate-50 rounded-lg border border-slate-100 focus-within:bg-white transition-all shadow-sm">
                                 {onboardingData.role === 'ADVISOR' ? (
                                    <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E53935]" size={24} />

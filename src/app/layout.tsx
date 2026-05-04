@@ -19,8 +19,8 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Checkout",
-  description: "The premium Business OS for local commerce.",
+  title: "Checkout Business OS",
+  description: "Initialize your Core Network Mission. The strategic roadmap for professional partnerships and business growth.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

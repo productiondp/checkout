@@ -139,7 +139,7 @@ export const ALL_INDUSTRIES = [
   "Automotive", "Energy", "Mining & Metals", "Natural Resources", "Chemicals", 
   "Logistics & Supply Chain", "Food & Beverage", "Hospitality & Tourism", "Aviation", 
   "Agriculture", "Environment", "Government & Public Sector", "Public Safety", 
-  "Social Services", "Social Impact", "Transportation"
+  "Social Services", "Social Impact", "Transportation", "General"
 ];
 
 export const INDUSTRY_TO_FOCUS: Record<string, string[]> = {
@@ -194,7 +194,8 @@ export const INDUSTRY_TO_FOCUS: Record<string, string[]> = {
   "Public Safety": ["Police", "Fire", "EMS", "Military", "Emergency Mgmt"],
   "Social Services": ["Social Work", "Community", "Counseling", "Advocacy"],
   "Social Impact": ["NGOs", "Philanthropy", "Sustainability", "Grants"],
-  "Transportation": ["Public Transit", "Logistics", "Autonomous", "Fleet Mgmt"]
+  "Transportation": ["Public Transit", "Logistics", "Autonomous", "Fleet Mgmt"],
+  "General": ["Networking", "Advice", "Mentorship", "Opportunities", "Collaboration"]
 };
 
 export interface DetectionResult {

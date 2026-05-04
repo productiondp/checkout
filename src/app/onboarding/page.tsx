@@ -625,7 +625,7 @@ function OnboardingContent() {
 
                                  {/* Suggested Tags (Filtered by Industry) */}
                                  {[
-                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"]),
+                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"] || []),
                                    ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
                                  ].filter(intent => !onboardingData.intents.includes(intent)).slice(0, 5).map(intent => {
                                    return (

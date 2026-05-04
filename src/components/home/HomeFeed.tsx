@@ -412,72 +412,42 @@ export default function HomeFeed({
       </div>
 
        {posts.length === 0 ? (
-         <div className="relative py-32 lg:py-48 flex flex-col items-center justify-center text-center px-6 overflow-hidden rounded-[3rem] bg-white border border-black/[0.03] shadow-inner">
-            {/* Background Atmosphere */}
+         <div className="relative py-24 lg:py-32 flex flex-col items-center justify-center text-center px-6 overflow-hidden rounded-[2rem] bg-white border border-black/[0.03]">
+            {/* Soft Ambient Background */}
             <div className="absolute inset-0 pointer-events-none">
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#FF3B30]/10 via-white to-transparent rounded-full blur-[120px] animate-pulse" />
-               <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FF3B30]/5 rounded-full blur-[100px]" />
             </div>
 
-            <div className="relative z-10 space-y-16 max-w-2xl mx-auto">
-               {/* Hero Icon with Neural Orbit */}
-               <div className="relative mx-auto w-48 h-48 flex items-center justify-center">
+            <div className="relative z-10 space-y-10 max-w-xl mx-auto">
+               {/* Clean Icon */}
+               <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+                  <div className="absolute inset-0 border border-slate-100 rounded-full" />
                   <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 border-[1px] border-dashed border-[#FF3B30]/30 rounded-full"
-                  />
-                  <motion.div 
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-4 border-[1px] border-dashed border-slate-200 rounded-full"
-                  />
-                  <motion.div 
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="relative h-28 w-28 bg-[#1A1A1A] rounded-[2.5rem] flex items-center justify-center shadow-[0_40px_80px_rgba(0,0,0,0.15)] border border-white/10 group cursor-pointer"
+                    whileHover={{ scale: 1.05 }}
+                    className="relative h-20 w-20 bg-[#1A1A1A] rounded-3xl flex items-center justify-center shadow-xl border border-white/5 group cursor-pointer"
                   >
-                     <Zap size={40} className="text-[#FF3B30] fill-[#FF3B30] drop-shadow-[0_0_15px_rgba(255,59,48,0.5)] group-hover:scale-110 transition-transform" />
-                     <div className="absolute -inset-1 bg-gradient-to-tr from-[#FF3B30]/20 to-transparent rounded-[2.6rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                     <Zap size={32} className="text-[#FF3B30] fill-[#FF3B30]" />
                   </motion.div>
                </div>
                
-               <div className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                     <h3 className="text-5xl lg:text-8xl font-black uppercase italic tracking-tighter text-[#1A1A1A] leading-[0.8]">
-                        Network <br />
-                        <span className="text-[#FF3B30] drop-shadow-[0_0_30px_rgba(255,59,48,0.2)]">Is Live</span>
-                     </h3>
-                  </motion.div>
+               <div className="space-y-4">
+                  <h3 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter text-[#1A1A1A] leading-tight">
+                     Network <span className="text-[#FF3B30]">Is Live</span>
+                  </h3>
                   
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-[13px] lg:text-[15px] font-bold text-slate-400 uppercase leading-relaxed tracking-[0.2em] max-w-md mx-auto"
-                  >
-                     The platform is now open for elite members. As a founding partner, your first strategic requirement will catalyze the ecosystem's growth.
-                  </motion.p>
+                  <p className="text-sm lg:text-base font-bold text-slate-400 uppercase leading-relaxed tracking-widest max-w-md mx-auto">
+                     The platform is now open for members. As a founding member, your first post will help start the community's growth.
+                  </p>
                </div>
 
-               <motion.div
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.6 }}
+               <button 
+                 onClick={onCreate}
+                 className="group relative h-16 px-10 bg-[#1A1A1A] text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-black transition-all duration-300 shadow-xl"
                >
-                  <button 
-                    onClick={onCreate}
-                    className="group relative h-20 px-16 bg-[#1A1A1A] text-white rounded-2xl text-[12px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all duration-500 shadow-[0_30px_60px_rgba(0,0,0,0.2)] overflow-hidden"
-                  >
-                     <span className="relative z-10 flex items-center gap-4">
-                        Initialize First Requirement <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-                     </span>
-                     <div className="absolute inset-0 bg-gradient-to-r from-[#FF3B30] via-red-500 to-[#FF3B30] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  </button>
-               </motion.div>
+                  <span className="flex items-center gap-3">
+                     Create Your First Post <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+                  </span>
+               </button>
             </div>
          </div>
        ) : (

@@ -29,6 +29,7 @@ import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
+  const { profile: authUser } = useAuth();
   const { unreadMessagesCount, pendingRequestsCount } = useNotifications();
 
   const navGroups = [
@@ -70,6 +71,12 @@ export default function DesktopSidebar() {
             className="h-14 lg:h-16 w-auto object-contain" 
           />
         </Link>
+        <div className="flex items-center gap-1.5 mt-2.5 px-0.5">
+          <MapPin size={10} className="text-[#E53935] shrink-0" />
+          <span className="text-[9px] font-black uppercase tracking-widest text-[#292828]/30 leading-none">
+            {authUser?.location || "Trivandrum"}
+          </span>
+        </div>
       </div>
 
       {/* 1. NAVIGATION GROUPS */}

@@ -81,20 +81,13 @@ export default function ClientLayout({
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#050505] overflow-hidden selection:none">
          <div className="relative flex flex-col items-center">
             {/* AMBIENT GLOW */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: [0.1, 0.2, 0.1], scale: [0.8, 1.1, 0.8] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            <div 
               className="absolute inset-0 bg-[#E53935] rounded-full blur-[120px] -z-10"
+              style={{ opacity: 0.1, transform: 'scale(0.8)' }}
             />
             
             {/* LOGO REVEAL */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-16 w-40 relative mb-12"
-            >
+            <div className="h-16 w-40 relative mb-12" style={{ opacity: 0.4 }}>
                <img 
                  src="/images/logo.png" 
                  alt="Checkout OS" 
@@ -102,50 +95,31 @@ export default function ClientLayout({
                />
                
                {/* SCANNER LINE */}
-               <motion.div 
-                 animate={{ top: ["0%", "100%", "0%"] }}
-                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+               <div 
                  className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#E53935] to-transparent z-20 shadow-[0_0_15px_#E53935]"
+                 style={{ top: '0%' }}
                />
-            </motion.div>
+            </div>
 
             {/* PROGRESS SYSTEM */}
             <div className="w-64 space-y-4">
                <div className="flex justify-between items-end">
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-outfit"
-                  >
+                  <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-outfit">
                     System Boot
-                  </motion.div>
-                  <motion.div 
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="text-[9px] font-bold text-[#E53935] uppercase tracking-widest"
-                  >
+                  </div>
+                  <div className="text-[9px] font-bold text-[#E53935] uppercase tracking-widest opacity-60">
                     Active
-                  </motion.div>
+                  </div>
                </div>
 
                <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden relative">
-                  <motion.div 
-                    initial={{ left: "-100%" }}
-                    animate={{ left: "100%" }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E53935] to-transparent w-1/2"
-                  />
+                  <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-[#E53935] to-transparent w-1/2" style={{ left: '-50%' }} />
                </div>
 
                <div className="flex flex-col items-center gap-2">
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] animate-pulse"
-                  >
+                  <div className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em]">
                     Initializing CheckOut OS
-                  </motion.div>
+                  </div>
                   <div className="flex gap-1">
                      {[1, 2, 3].map((i) => (
                        <motion.div

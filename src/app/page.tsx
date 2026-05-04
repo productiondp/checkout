@@ -74,15 +74,59 @@ function AuthContent() {
 
   if (!mounted) return null;
 
+
+  // ── Friendly error mapper ────────────────────────────────────────────────
+  const friendlyAuthError = (err: any): string => {
+    const msg = (err?.message || "").toLowerCase();
+    const code = err?.code || "";
+
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials") || code === "invalid_credentials")
+      return "Email or password is incorrect. Please try again.";
+    if (msg.includes("email not confirmed") || code === "email_not_confirmed")
+      return "Please verify your email address before signing in.";
+    if (msg.includes("user not found"))
+      return "No account found with this email address.";
+    if (msg.includes("password should be at least") || msg.includes("password is too short"))
+      return "Password must be at least 6 characters.";
+    if (msg.includes("email address is invalid") || msg.includes("unable to validate email"))
+      return "Please enter a valid email address.";
+    if (msg.includes("too many requests") || code === "over_request_rate_limit")
+      return "Too many attempts. Please wait a moment and try again.";
+    if (msg.includes("network") || msg.includes("fetch"))
+      return "Connection failed. Please check your internet and try again.";
+    if (msg.includes("boot_timeout") || msg.includes("timed out"))
+      return "Request timed out. Please try again.";
+    if (msg.includes("signup is disabled"))
+      return "New sign-ups are currently unavailable. Please try later.";
+    return "Something went wrong. Please try again.";
+  };
+
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError(null);
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
+
+    // ── Client-side validation ───────────────────────────────────────────────
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (mode === "signup" && formData.fullName.trim().length < 2) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    setIsLoading(true);
 
     //  SUBMISSION WATCHDOG (5s)
     const watchdog = setTimeout(() => {
@@ -143,7 +187,7 @@ function AuthContent() {
       console.error("[AUTH] Nuclear Failure:", err);
       clearTimeout(watchdog);
       setSubmissionState('FAILED');
-      setError(err.message || "Authentication failed. Please try again.");
+      setError(friendlyAuthError(err));
     } finally {
       setIsLoading(false);
       // Removed the closure-captured safety reset that was wiping out the FAILED state!
@@ -165,151 +209,256 @@ function AuthContent() {
                   <span className="font-bold text-[#E53935]">Succeed.</span>
                </h1>
 
-               <AnimatePresence mode="wait">
-                  {!isSuccess ? (
-                    <motion.div 
-                      key="form"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-6 w-full max-w-[400px]"
-                    >
-                       <form onSubmit={handleSubmit} className="space-y-4">
-                          {mode === "signup" && (
-                             <div className="space-y-4">
-                                <div className="space-y-1.5 relative">
-                                   <label className="text-[12px] font-bold text-gray-900 ml-1">I am a...</label>
-                                   <div className="relative">
-                                      <button 
-                                        type="button"
-                                        onClick={() => setIsRoleOpen(!isRoleOpen)}
-                                        className="w-full h-14 px-6 border border-gray-200 rounded-2xl hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all bg-white font-bold text-[13px] flex items-center justify-between group"
-                                      >
-                                         <div className="flex items-center gap-3">
-                                            <div className="text-[#E53935]">
-                                               {(() => {
-                                                  const activeRole = ROLES.find(r => r.value === role);
-                                                  const Icon = activeRole?.icon || User;
-                                                  return <Icon size={18} />;
-                                               })()}
-                                            </div>
-                                            <span>{role}</span>
-                                         </div>
-                                         <ChevronRight size={16} className={cn("transition-transform", isRoleOpen ? "-rotate-90" : "rotate-90")} />
-                                      </button>
+               {mounted && (
+                 <AnimatePresence mode="wait">
+                    {!isAuthResolved ? (
+                      <motion.div
+                        key="verifying"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="w-full max-w-[400px] py-10 flex flex-col items-center gap-8 text-center"
+                      >
+                        {/* Icon */}
+                        <div className="relative h-28 w-28 flex items-center justify-center">
+                          <motion.div
+                            animate={{ scale: [1, 1.08, 1], opacity: [0.15, 0.3, 0.15] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                            className="absolute inset-0 bg-[#E53935] rounded-full blur-2xl"
+                          />
+                          <div className="relative h-20 w-20 rounded-[1.5rem] bg-red-50 border border-red-100 flex items-center justify-center shadow-lg shadow-red-100">
+                            <svg className="absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] animate-[spin_4s_linear_infinite]">
+                              <circle cx="50%" cy="50%" r="48%" stroke="#E53935" strokeWidth="1" fill="none" strokeDasharray="4 8" opacity="0.3" />
+                            </svg>
+                            <ShieldCheck size={30} className="text-[#E53935] relative z-10" strokeWidth={2} />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <motion.h2
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="text-[28px] font-black uppercase tracking-tighter leading-none italic text-[#E53935] font-outfit"
+                          >
+                            Verifying Identity
+                          </motion.h2>
+                          <p className="text-[10px] font-black text-black/20 uppercase tracking-[0.3em]">
+                            Connecting to the secure network
+                          </p>
+                        </div>
+                        <div className="flex gap-1.5">
+                          {[0, 1, 2].map((i) => (
+                            <motion.div
+                              key={i}
+                              animate={{ opacity: [0.15, 1, 0.15] }}
+                              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                              className="h-1.5 w-1.5 bg-[#E53935] rounded-full"
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
 
-                                      <AnimatePresence>
-                                         {isRoleOpen && (
-                                            <motion.div 
-                                               initial={{ opacity: 0, y: -10 }}
-                                               animate={{ opacity: 1, y: 0 }}
-                                               exit={{ opacity: 0, y: -10 }}
-                                               className="absolute top-[115%] inset-x-0 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden"
-                                            >
-                                               {ROLES.map(r => (
-                                                  <button
-                                                     key={r.value}
-                                                     type="button"
-                                                     onClick={() => { setRole(r.value); setIsRoleOpen(false); }}
-                                                     className={cn(
-                                                        "w-full px-5 py-3.5 flex items-center gap-3 hover:bg-red-50 transition-colors text-left",
-                                                        role === r.value ? "bg-red-50 text-[#E53935]" : "text-gray-700"
-                                                     )}
-                                                  >
-                                                     <r.icon size={18} className={role === r.value ? "text-[#E53935]" : "text-gray-400"} />
-                                                     <div className="flex flex-col">
-                                                        <span className="text-[13px] font-bold">{r.value}</span>
-                                                        <span className="text-[10px] opacity-60 font-medium">{r.desc}</span>
-                                                     </div>
-                                                  </button>
-                                               ))}
-                                            </motion.div>
-                                         )}
-                                      </AnimatePresence>
-                                   </div>
-                                </div>
+                    ) : submissionState ? (
+                      /* ── INLINE SUBMISSION STATUS ─────────────────────────────── */
+                      <motion.div
+                        key="submitting"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="w-full max-w-[400px] py-10 flex flex-col items-center gap-8 text-center"
+                      >
+                        {/* Icon */}
+                        <div className="relative h-28 w-28 flex items-center justify-center">
+                          <motion.div
+                            animate={{ scale: [1, 1.08, 1], opacity: [0.1, 0.25, 0.1] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                            className={`absolute inset-0 rounded-full blur-2xl ${submissionState === 'FAILED' ? 'bg-red-500' : 'bg-[#E53935]'}`}
+                          />
+                          <div className="relative h-20 w-20 rounded-[1.5rem] bg-red-50 border border-red-100 flex items-center justify-center shadow-lg shadow-red-100">
+                            {submissionState === 'FAILED' ? (
+                              <motion.div animate={{ x: [-1, 1, -1] }} transition={{ repeat: 3, duration: 0.08 }}>
+                                <X size={30} className="text-[#E53935]" strokeWidth={2.5} />
+                              </motion.div>
+                            ) : (
+                              <>
+                                <svg className="absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] animate-[spin_4s_linear_infinite]">
+                                  <circle cx="50%" cy="50%" r="48%" stroke="#E53935" strokeWidth="1" fill="none" strokeDasharray="4 8" opacity="0.3" />
+                                </svg>
+                                <ShieldCheck size={30} className="text-[#E53935] relative z-10 animate-pulse" strokeWidth={2} />
+                              </>
+                            )}
+                          </div>
+                        </div>
 
-                                <div className="space-y-1.5">
-                                   <label className="text-[12px] font-bold text-gray-900 ml-1">Full name</label>
+                        {/* Text */}
+                        <div className="space-y-3">
+                          <h2 className="text-[28px] font-black uppercase tracking-tighter leading-none italic text-[#E53935] font-outfit">
+                            {submissionState === 'FAILED' ? 'Login Failed' : 'Verifying Identity'}
+                          </h2>
+                          <p className="text-[10px] font-black text-black/20 uppercase tracking-[0.3em]">
+                            {submissionState === 'FAILED' ? 'Check your credentials and try again' : 'Connecting to the secure network'}
+                          </p>
+                          {error && (
+                            <div className="bg-red-50 border border-red-100 text-[#E53935] px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider inline-block">
+                              {error}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action */}
+                        {submissionState === 'FAILED' ? (
+                          <button
+                            onClick={() => { setSubmissionState(null); setError(null); }}
+                            className="h-12 px-8 bg-[#1A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all"
+                          >
+                            Try Again
+                          </button>
+                        ) : (
+                          <div className="flex gap-1.5">
+                            {[0, 1, 2].map((i) => (
+                              <motion.div
+                                key={i}
+                                animate={{ opacity: [0.15, 1, 0.15] }}
+                                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                                className="h-1.5 w-1.5 bg-[#E53935] rounded-full"
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+
+                    ) : !isSuccess ? (
+                      <motion.div 
+                        key="form"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6 w-full max-w-[400px]"
+                      >
+                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {mode === "signup" && (
+                               <div className="space-y-4">
+                                  <div className="space-y-1.5 relative">
+                                     <label className="text-[12px] font-bold text-gray-900 ml-1">I am a...</label>
+                                     <div className="relative">
+                                        <button 
+                                          type="button"
+                                          onClick={() => setIsRoleOpen(!isRoleOpen)}
+                                          className="w-full h-14 px-6 border border-gray-200 rounded-2xl hover:border-black focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all bg-white font-bold text-[13px] flex items-center justify-between group"
+                                        >
+                                           <div className="flex items-center gap-3">
+                                              <div className="text-[#E53935]">
+                                                 {(() => {
+                                                    const activeRole = ROLES.find(r => r.value === role);
+                                                    const Icon = activeRole?.icon || User;
+                                                    return <Icon size={18} />;
+                                                 })()}
+                                              </div>
+                                              <span>{role}</span>
+                                           </div>
+                                           <ChevronRight size={16} className={cn("transition-transform", isRoleOpen ? "-rotate-90" : "rotate-90")} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                           {isRoleOpen && (
+                                              <motion.div 
+                                                 initial={{ opacity: 0, y: -10 }}
+                                                 animate={{ opacity: 1, y: 0 }}
+                                                 exit={{ opacity: 0, y: -10 }}
+                                                 className="absolute top-[115%] inset-x-0 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden"
+                                              >
+                                                 {ROLES.map(r => (
+                                                    <button
+                                                       key={r.value}
+                                                       type="button"
+                                                       onClick={() => { setRole(r.value); setIsRoleOpen(false); }}
+                                                       className={cn(
+                                                          "w-full px-5 py-3.5 flex items-center gap-3 hover:bg-red-50 transition-colors text-left",
+                                                          role === r.value ? "bg-red-50 text-[#E53935]" : "text-gray-700"
+                                                       )}
+                                                    >
+                                                       <r.icon size={18} className={role === r.value ? "text-[#E53935]" : "text-gray-400"} />
+                                                       <div className="flex flex-col">
+                                                          <span className="text-[13px] font-bold">{r.value}</span>
+                                                          <span className="text-[10px] opacity-60 font-medium">{r.desc}</span>
+                                                       </div>
+                                                    </button>
+                                                 ))}
+                                              </motion.div>
+                                           )}
+                                        </AnimatePresence>
+                                     </div>
+                                  </div>
+
+                                  <div className="space-y-1.5">
+                                     <label className="text-[12px] font-bold text-gray-900 ml-1">Full name</label>
+                                     <input
+                                        type="text"
+                                        name="fullName"
+                                        value={formData.fullName}
+                                        onChange={handleInput}
+                                        placeholder="John Doe"
+                                        className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
+                                        required
+                                     />
+                                  </div>
+                               </div>
+                            )}
+
+                            <div className="space-y-1.5">
+                               <label className="text-[12px] font-bold text-gray-900 ml-1">Email</label>
+                               <input
+                                  type="email"
+                                  name="email"
+                                  value={formData.email}
+                                  onChange={handleInput}
+                                  placeholder="name@company.com"
+                                  className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
+                                  required
+                               />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[12px] font-bold text-gray-900 ml-1">Password</label>
+                                <div className="relative group">
                                    <input
-                                      type="text"
-                                      name="fullName"
-                                      value={formData.fullName}
+                                      type={showPassword ? "text" : "password"}
+                                      name="password"
+                                      value={formData.password}
                                       onChange={handleInput}
-                                      placeholder="John Doe"
-                                      className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
+                                      placeholder="••••••"
+                                      className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px] pr-12"
                                       required
                                    />
+                                   <button 
+                                     type="button" 
+                                     onClick={() => setShowPassword(!showPassword)}
+                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E53935] transition-all p-1"
+                                   >
+                                      {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                                   </button>
                                 </div>
                              </div>
-                          )}
 
-                          <div className="space-y-1.5">
-                             <label className="text-[12px] font-bold text-gray-900 ml-1">Email</label>
-                             <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInput}
-                                placeholder="name@company.com"
-                                className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px]"
-                                required
-                             />
-                          </div>
+                            {error && <p className="text-red-600 text-xs font-bold px-1">{error}</p>}
 
-                          <div className="space-y-1.5">
-                              <label className="text-[12px] font-bold text-gray-900 ml-1">Password</label>
-                              <div className="relative group">
-                                 <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInput}
-                                    placeholder="••••••"
-                                    className="w-full h-12 px-5 bg-white border border-gray-300 rounded-lg focus:border-[#E53935] outline-none transition-all font-medium text-[14px] pr-12"
-                                    required
-                                 />
-                                 <button 
-                                   type="button" 
-                                   onClick={() => setShowPassword(!showPassword)}
-                                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E53935] transition-all p-1"
-                                 >
-                                    {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
-                                 </button>
-                              </div>
-                           </div>
+                             <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full h-14 bg-[#E53935] text-white font-bold rounded-xl shadow-lg hover:bg-[#D32F2F] transition-all flex items-center justify-center gap-3 mt-6"
+                             >
+                                {isLoading ? <Loader2 size={18} className="animate-spin" /> : (mode === "signup" ? "Agree & join" : "Sign in")}
+                             </button>
+                          </form>
 
-                          {error && <p className="text-red-600 text-xs font-bold px-1">{error}</p>}
-
-                           <button
-                              type="submit"
-                              disabled={isLoading}
-                              className="w-full h-14 bg-[#E53935] text-white font-bold rounded-xl shadow-lg hover:bg-[#D32F2F] transition-all flex items-center justify-center gap-3 mt-6"
-                           >
-                              {isLoading ? <Loader2 size={18} className="animate-spin" /> : (mode === "signup" ? "Agree & join" : "Sign in")}
-                           </button>
-                        </form>
-
-                        <AnimatePresence>
-                           {submissionState && (
-                              <AuthSubmissionStatus 
-                                 state={submissionState} 
-                                 error={error}
-                                 onRetry={() => {
-                                    setSubmissionState(null);
-                                    setError(null);
-                                 }}
-                              />
-                           )}
-                        </AnimatePresence>
-                     </motion.div>
-                  ) : (
-                    <div className="py-10 space-y-4">
-                       <CheckCircle2 size={48} className="text-[#E53935]" />
-                       <h2 className="text-2xl font-bold">Welcome!</h2>
-                       <p className="text-gray-500">Going to your dashboard...</p>
-                    </div>
-                  )}
-               </AnimatePresence>
+                       </motion.div>
+                    ) : (
+                      <div className="py-10 space-y-4">
+                         <CheckCircle2 size={48} className="text-[#E53935]" />
+                         <h2 className="text-2xl font-bold">Welcome!</h2>
+                         <p className="text-gray-500">Going to your dashboard...</p>
+                      </div>
+                    )}
+                 </AnimatePresence>
+               )}
             </div>
 
             <div className="hidden lg:block w-1/2">

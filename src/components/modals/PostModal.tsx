@@ -112,6 +112,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   const [isImproving, setIsImproving] = useState(false);
 
   const [suggestion, setSuggestion] = useState<{ industry: string, focus: string } | null>(null);
+  const [activeSuggestions, setActiveSuggestions] = useState<string[]>([]);
   const [submissionState, setSubmissionState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -140,16 +141,44 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
     }
   }, [isOpen, editPost]);
 
-  // SMART: INDUSTRY AUTO-DETECTION
+  // SMART: INDUSTRY AUTO-DETECTION & CONTEXT SUGGESTIONS
   useEffect(() => {
-    if (content.length > 5 && !industry) {
-      const detected = detectTaxonomy(content);
-      if (detected) setSuggestedIndustry(detected);
-      else setSuggestedIndustry(null);
+    if (content.length > 5) {
+      // 1. Industry Detection
+      if (!industry) {
+        const detected = detectTaxonomy(content);
+        if (detected) setSuggestedIndustry(detected);
+        else setSuggestedIndustry(null);
+      }
+
+      // 2. Contextual Suggestions
+      const suggestions: string[] = [];
+      const lowContent = content.toLowerCase();
+
+      if (lowContent.includes("need") || lowContent.includes("looking")) {
+        suggestions.push("What are you solving for?");
+        suggestions.push("Add Objective");
+      }
+      
+      if (lowContent.includes("developer") || lowContent.includes("build") || lowContent.includes("mvp")) {
+        suggestions.push("Strategic Roadmap");
+        suggestions.push("Current Stage");
+      }
+
+      if (authUser?.industry && !lowContent.includes(authUser.industry.toLowerCase())) {
+        suggestions.push(`Relation to ${authUser.industry}`);
+      }
+
+      if (content.split(' ').length > 10 && !lowContent.includes("timeline")) {
+        suggestions.push("Project Timeline");
+      }
+
+      setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
     } else {
       setSuggestedIndustry(null);
+      setActiveSuggestions([]);
     }
-  }, [content, industry]);
+  }, [content, industry, authUser]);
 
   // SMART: LOCATION SEARCH (PHOTON API)
   useEffect(() => {
@@ -386,6 +415,29 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                           type={type}
                           className="min-h-[180px] text-lg p-6 bg-slate-50 border-none rounded-[1.5rem] focus:ring-2 focus:ring-black/5"
                         />
+
+                        {activeSuggestions.length > 0 && (
+                          <div className="absolute bottom-4 left-6 right-6 flex flex-wrap gap-2 pointer-events-none">
+                             {activeSuggestions.map((s, i) => (
+                               <motion.button
+                                 key={s}
+                                 initial={{ opacity: 0, scale: 0.9 }}
+                                 animate={{ opacity: 1, scale: 1 }}
+                                 transition={{ delay: i * 0.1 }}
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s + ': ';
+                                   setContent(newContent);
+                                   inputRef.current?.focus();
+                                 }}
+                                 className="pointer-events-auto h-8 px-4 bg-white/90 backdrop-blur-md border border-black/[0.05] rounded-full text-[9px] font-black uppercase tracking-wider text-[#1A1A1A] hover:bg-[#FF3B30] hover:text-white hover:border-[#FF3B30] transition-all shadow-sm flex items-center gap-2 group/sug"
+                               >
+                                 <Plus size={10} className="group-hover/sug:rotate-90 transition-transform" />
+                                 {s}
+                               </motion.button>
+                             ))}
+                          </div>
+                        )}
                       </div>
 
                       {(suggestedIndustry || content.length > 20) && (

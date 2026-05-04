@@ -413,145 +413,120 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Keep it simple and clear</p>
                       </div>
                       
-                      <div className="relative group">
-                       <div className="space-y-4">
-                          <div className="flex items-center justify-between px-1">
-                             <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">{coachTip}</span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-black uppercase text-slate-400">Clarity</span>
-                                <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
-                                   <div className="h-full bg-[#FF3B30] transition-all duration-500" style={{ width: `${clarityScore}%` }} />
-                                </div>
-                             </div>
-                          </div>
+                      <div className="space-y-6">
+                        <ClarityTextarea
+                          ref={inputRef}
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          placeholder={
+                            type === 'MEETUP' ? "E.g. Coffee & Code at Kochi Marina..." : 
+                            type === 'PARTNERSHIP' ? "E.g. Building a fintech startup for Kerala..." : 
+                            "E.g. Need a senior dev for a 2-week sprint..."
+                          }
+                          type={type}
+                          className="min-h-[240px] text-lg p-8 bg-slate-50 border-none rounded-[2.5rem] focus:ring-4 focus:ring-black/5"
+                        />
 
-                          <div className="relative group">
-                            <ClarityTextarea
-                              ref={inputRef}
-                              value={content}
-                              onChange={(e) => setContent(e.target.value)}
-                              placeholder={
-                                type === 'MEETUP' ? "E.g. Coffee & Code at Kochi Marina..." : 
-                                type === 'PARTNERSHIP' ? "E.g. Building a fintech startup for Kerala..." : 
-                                "E.g. Need a senior dev for a 2-week sprint..."
-                              }
-                              type={type}
-                              className="min-h-[220px] text-lg p-8 bg-slate-50 border-none rounded-[2rem] focus:ring-4 focus:ring-black/5"
-                            />
+                        {/* UNIFIED INTELLIGENCE HUB */}
+                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-black/[0.03] space-y-6">
+                           <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                 <div className="h-8 w-8 bg-white rounded-xl flex items-center justify-center text-[#FF3B30] shadow-sm"><Sparkles size={16} /></div>
+                                 <span className="text-[11px] font-black uppercase tracking-widest text-[#1A1A1A]">{coachTip}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                 <span className="text-[10px] font-black uppercase text-slate-300">Clarity</span>
+                                 <div className="h-1.5 w-20 bg-slate-200 rounded-full overflow-hidden">
+                                    <div className="h-full bg-[#FF3B30] transition-all duration-500" style={{ width: `${clarityScore}%` }} />
+                                 </div>
+                              </div>
+                           </div>
 
-                            {activeSuggestions.length > 0 && (
-                              <div className="absolute bottom-6 left-6 right-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
-                                 {activeSuggestions.map((s, i) => (
-                                   <div key={s} className="relative">
-                                     <motion.button
-                                       initial={{ opacity: 0, scale: 0.9 }}
-                                       animate={{ opacity: 1, scale: 1 }}
-                                       transition={{ delay: i * 0.1 }}
-                                       onClick={() => setActiveMenu(activeMenu === s ? null : s)}
-                                       className={cn(
-                                         "h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl border flex items-center gap-3 shrink-0 whitespace-nowrap",
-                                         activeMenu === s ? "bg-[#FF3B30] text-white border-[#FF3B30]" : "bg-white text-slate-500 border-black/[0.05] hover:border-[#FF3B30] hover:text-[#FF3B30]"
-                                       )}
-                                     >
-                                       {s === "What are you solving for?" ? <Activity size={12} /> : <Target size={12} />}
-                                       {s}
-                                       <Plus size={10} className={cn("transition-transform", activeMenu === s && "rotate-45")} />
-                                     </motion.button>
+                           <div className="flex flex-wrap gap-2">
+                              {activeSuggestions.map((s, i) => (
+                                <div key={s} className="relative">
+                                  <motion.button
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    onClick={() => setActiveMenu(activeMenu === s ? null : s)}
+                                    className={cn(
+                                      "h-11 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-3 whitespace-nowrap shadow-sm",
+                                      activeMenu === s ? "bg-[#FF3B30] text-white border-[#FF3B30]" : "bg-white text-slate-500 border-black/[0.05] hover:border-black/20"
+                                    )}
+                                  >
+                                    {s === "What are you solving for?" ? <Activity size={12} /> : <Target size={12} />}
+                                    {s}
+                                    <Plus size={10} className={cn("transition-transform", activeMenu === s && "rotate-45")} />
+                                  </motion.button>
 
-                                 <AnimatePresence>
-                                   {activeMenu === s && (
-                                     <motion.div
-                                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                       className="absolute top-full left-0 mt-3 w-72 bg-white rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-black/[0.03] p-4 z-[200] space-y-2 backdrop-blur-xl"
-                                     >
-                                       {(s === "What are you solving for?" ? [
-                                         "Product Market Fit", "Technical Scalability", "Operational Efficiency", "Market Expansion", "Customer Acquisition"
-                                       ] : [
-                                         "Launch MVP (30 Days)", "Secure First 100 Users", "Hire Core Team", "Validate Model", "Optimize Strategy"
-                                       ]).map(option => (
-                                         <button
-                                           key={option}
-                                           onClick={() => {
-                                             const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + option;
-                                             setContent(newContent);
-                                             setActiveMenu(null);
-                                             inputRef.current?.focus();
-                                           }}
-                                           className="w-full h-12 px-5 bg-slate-50 hover:bg-[#FF3B30] hover:text-white rounded-2xl text-[10px] font-bold text-slate-600 transition-all text-left uppercase tracking-tight"
-                                         >
-                                           {option}
-                                         </button>
-                                       ))}
-                                       <div className="pt-2 mt-2 border-t border-black/[0.03]">
-                                          <input 
-                                            placeholder="Type custom..."
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                const val = (e.target as HTMLInputElement).value;
-                                                if (val) {
-                                                  const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + val;
-                                                  setContent(newContent);
-                                                  setActiveMenu(null);
-                                                  inputRef.current?.focus();
-                                                }
-                                              }
+                                  <AnimatePresence>
+                                    {activeMenu === s && (
+                                      <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        className="absolute top-full left-0 mt-3 w-72 bg-white rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.2)] border border-black/[0.03] p-5 z-[200] space-y-2 backdrop-blur-xl"
+                                      >
+                                        {(s === "What are you solving for?" ? [
+                                          "Product Market Fit", "Technical Scalability", "Operational Efficiency", "Market Expansion", "Customer Acquisition"
+                                        ] : [
+                                          "Launch MVP (30 Days)", "Secure First 100 Users", "Hire Core Team", "Validate Model", "Optimize Strategy"
+                                        ]).map(option => (
+                                          <button
+                                            key={option}
+                                            onClick={() => {
+                                              const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + option;
+                                              setContent(newContent);
+                                              setActiveMenu(null);
+                                              inputRef.current?.focus();
                                             }}
-                                            className="w-full h-12 px-5 bg-white border border-black/[0.05] rounded-2xl text-[10px] font-bold outline-none focus:border-[#FF3B30] transition-all"
-                                          />
-                                       </div>
-                                     </motion.div>
-                                   )}
-                                 </AnimatePresence>
-                               </div>
-                             ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                                            className="w-full h-12 px-6 bg-slate-50 hover:bg-[#FF3B30] hover:text-white rounded-2xl text-[11px] font-bold text-slate-600 transition-all text-left uppercase tracking-tight"
+                                          >
+                                            {option}
+                                          </button>
+                                        ))}
+                                        <div className="pt-3 mt-3 border-t border-black/[0.03]">
+                                           <input 
+                                             placeholder="Type custom..."
+                                             onKeyDown={(e) => {
+                                               if (e.key === 'Enter') {
+                                                 const val = (e.target as HTMLInputElement).value;
+                                                 if (val) {
+                                                   const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + val;
+                                                   setContent(newContent);
+                                                   setActiveMenu(null);
+                                                   inputRef.current?.focus();
+                                                 }
+                                               }
+                                             }}
+                                             className="w-full h-12 px-6 bg-white border border-black/[0.05] rounded-2xl text-[11px] font-bold outline-none focus:border-[#FF3B30] transition-all shadow-inner"
+                                           />
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              ))}
+                           </div>
 
-                      {(suggestedIndustry || content.length > 20) && (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                            {suggestedIndustry?.confidence >= 70 ? (
-                               <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-[#E53935]"><Sparkles size={16} /></div>
-                                  <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Suggested Category</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">{getIndustryById(suggestedIndustry.industry)?.label}  {suggestedIndustry.focus}</p>
-                                  </div>
-                                  <button 
-                                    onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
-                                    className="h-8 px-3 bg-black text-white rounded-lg text-[9px] font-black uppercase"
-                                  >Apply</button>
-                               </>
-                            ) : suggestedIndustry?.isPartial ? (
-                               <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-amber-500"><Info size={16} /></div>
-                                  <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Select category manually</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">Closest match: {getIndustryById(suggestedIndustry.industry)?.label}</p>
-                                  </div>
-                                  <button 
-                                    onClick={() => { setIndustry(suggestedIndustry.industry); setSuggestedIndustry(null); }}
-                                    className="h-8 px-3 bg-white border border-slate-200 text-slate-400 rounded-lg text-[9px] font-black uppercase hover:text-black hover:border-black transition-all"
-                                  >Use Guess</button>
-                               </>
-                            ) : (
-                               <>
-                                  <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-slate-400"><TagIcon size={16} /></div>
-                                  <div className="flex-1">
-                                     <p className="text-[9px] font-black uppercase text-slate-400">Manual Selection Required</p>
-                                     <p className="text-[11px] font-black uppercase text-slate-700">Topic not in taxonomy. Select manually.</p>
-                                  </div>
-                               </>
-                            )}
-                         </motion.div>
-                      )}
+                           {suggestedIndustry && (
+                              <div className="pt-6 border-t border-black/[0.03] flex items-center justify-between">
+                                 <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 bg-white rounded-2xl flex items-center justify-center text-[#FF3B30] shadow-sm"><Sparkles size={18} /></div>
+                                    <div>
+                                       <p className="text-[10px] font-black uppercase text-slate-300">Category Detected</p>
+                                       <p className="text-[12px] font-black uppercase text-[#1A1A1A]">{getIndustryById(suggestedIndustry.industry)?.label}  {suggestedIndustry.focus}</p>
+                                    </div>
+                                 </div>
+                                 <button 
+                                   onClick={() => { setIndustry(suggestedIndustry.industry); setFocusAreas([suggestedIndustry.focus]); setSuggestedIndustry(null); }}
+                                   className="h-12 px-6 bg-black text-white rounded-2xl text-[11px] font-black uppercase hover:bg-[#FF3B30] transition-all shadow-lg"
+                                 >Apply Category</button>
+                              </div>
+                           )}
+                        </div>
+                      </div>
                    </div>
                 )}
 

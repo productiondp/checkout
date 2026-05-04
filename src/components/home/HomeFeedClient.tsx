@@ -211,7 +211,23 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
           </motion.button>
         </div>
 
-          {isPosting && <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} initialFormType={postInitialType} onPostSuccess={(newPost) => { trackAction('POST', newPost.type); initHome(); setIsPosting(false); setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type }); }} editPost={editPost} />}
+          {isPosting && (
+            <PostModal 
+              isOpen={isPosting} 
+              onClose={() => setIsPosting(false)} 
+              initialFormType={postInitialType} 
+              onPostSuccess={(newPost) => { 
+                setIsPosting(false); 
+                trackAction('POST', newPost.type);
+                // Cinematic delay to ensure clean transition
+                setTimeout(() => {
+                  setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type });
+                  initHome(); 
+                }, 300);
+              }} 
+              editPost={editPost} 
+            />
+          )}
           {isPostActionLoop.active && (
             <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto no-scrollbar py-10">
               <MomentumView 

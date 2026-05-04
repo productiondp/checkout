@@ -212,7 +212,15 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
         </div>
 
           {isPosting && <PostModal isOpen={isPosting} onClose={() => setIsPosting(false)} initialFormType={postInitialType} onPostSuccess={(newPost) => { trackAction('POST', newPost.type); initHome(); setIsPosting(false); setIsPostActionLoop({ active: true, postId: newPost.id, type: newPost.type }); }} editPost={editPost} />}
-          {isPostActionLoop.active && <MomentumView postId={isPostActionLoop.postId} type={isPostActionLoop.type} onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })} />}
+          {isPostActionLoop.active && (
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto no-scrollbar py-10">
+              <MomentumView 
+                postId={isPostActionLoop.postId} 
+                type={isPostActionLoop.type} 
+                onClose={() => setIsPostActionLoop({ active: false, postId: '', type: 'REQUIREMENT' })} 
+              />
+            </div>
+          )}
           {selectedDeal && <DealEngine isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} deal={selectedDeal} />}
         </TerminalLayout>
       )}

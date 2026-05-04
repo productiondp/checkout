@@ -145,58 +145,67 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
     }
   }, [isOpen, editPost]);
 
-  // SMART: INDUSTRY AUTO-DETECTION & CONTEXT SUGGESTIONS
-  useEffect(() => {
+  // OPTIMIZED: MEMOIZED INTENT & SUGGESTION LOGIC
+  const { intentId, intentConfig, suggestions, score, currentTip, detectedTaxo } = useMemo(() => {
     // 1. Intent Detection
-    const intentId = detectIntent(content);
-    setDetectedIntent(intentId);
-    const intentConfig = getIntentConfig(intentId);
+    const id = detectIntent(content);
+    const config = getIntentConfig(id);
 
-    // 2. Contextual Suggestions - ALWAYS POPULATED
-    let suggestions: string[] = ["What are you solving for?", "Add Objective"];
+    // 2. Contextual Suggestions
+    let sug: string[] = ["What are you solving for?", "Add Objective"];
+    if (config && id !== 'GENERAL') sug = [...config.suggestions, "What are you solving for?"];
     
-    if (intentConfig && intentId !== 'GENERAL') {
-      suggestions = [...intentConfig.suggestions, "What are you solving for?"];
-    }
-
     const lowContent = content.toLowerCase();
-
     if (lowContent.includes("developer") || lowContent.includes("build") || lowContent.includes("mvp")) {
-      if (!suggestions.includes("Strategic Roadmap")) suggestions.push("Strategic Roadmap");
+      if (!sug.includes("Strategic Roadmap")) sug.push("Strategic Roadmap");
     }
-
     if (authUser?.industry && !lowContent.includes(authUser.industry.toLowerCase())) {
-      suggestions.push(`Relation to ${authUser.industry}`);
+      sug.push(`Relation to ${authUser.industry}`);
     }
 
-    setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
+    const filteredSuggestions = sug.filter(s => !content.includes(s)).slice(0, 3);
 
-    // 3. Clarity Coaching & Industry Detection
+    // 3. Clarity & Taxonomy
+    let sIndustry = null;
+    let sScore = 0;
+    let sTip = "Start by describing your need";
+
     if (content.length > 5) {
       if (!industry) {
-        const detected = detectTaxonomy(content);
-        if (detected) setSuggestedIndustry(detected);
-        else setSuggestedIndustry(null);
+        sIndustry = detectTaxonomy(content);
       }
 
-      let score = 0;
-      if (content.length > 20) score += 30;
-      if (content.length > 60) score += 20;
-      if (intentId !== 'GENERAL') score += 20; // Bonus for clear intent
-      if (lowContent.includes("objective") || lowContent.includes("launch")) score += 15;
-      if (lowContent.includes("solving") || lowContent.includes("roadmap")) score += 15;
-      setClarityScore(Math.min(score, 100));
+      if (content.length > 20) sScore += 30;
+      if (content.length > 60) sScore += 20;
+      if (id !== 'GENERAL') sScore += 20;
+      if (lowContent.includes("objective") || lowContent.includes("launch")) sScore += 15;
+      if (lowContent.includes("solving") || lowContent.includes("roadmap")) sScore += 15;
+      sScore = Math.min(sScore, 100);
 
-      if (score < 30) setCoachTip(intentId !== 'GENERAL' ? `Detected ${intentConfig?.label}. Keep going!` : "Keep typing for better matches");
-      else if (score < 50) setCoachTip("Structure recognized. Increasing visibility...");
-      else if (score < 80) setCoachTip("Strong intent found. Experts will love this.");
-      else setCoachTip("Perfect! This is a high-intent requirement.");
-    } else {
-      setSuggestedIndustry(null);
-      setClarityScore(0);
-      setCoachTip("Start by describing your need");
+      if (sScore < 30) sTip = id !== 'GENERAL' ? `Detected ${config?.label}. Keep going!` : "Keep typing for better matches";
+      else if (sScore < 50) sTip = "Structure recognized. Increasing visibility...";
+      else if (sScore < 80) sTip = "Strong intent found. Experts will love this.";
+      else sTip = "Perfect! This is a high-intent requirement.";
     }
+
+    return { 
+      intentId: id, 
+      intentConfig: config, 
+      suggestions: filteredSuggestions, 
+      score: sScore, 
+      currentTip: sTip,
+      detectedTaxo: sIndustry
+    };
   }, [content, industry, authUser]);
+
+  // Sync memoized values to state efficiently
+  useEffect(() => {
+    setDetectedIntent(intentId);
+    setActiveSuggestions(suggestions);
+    setClarityScore(score);
+    setCoachTip(currentTip);
+    setSuggestedIndustry(detectedTaxo);
+  }, [intentId, suggestions, score, currentTip, detectedTaxo]);
 
   // SMART: LOCATION SEARCH (PHOTON API)
   useEffect(() => {

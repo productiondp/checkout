@@ -172,22 +172,27 @@ export const INTENT_DATA: IntentConfig[] = [
 ];
 
 export const detectIntent = (text: string): IntentType => {
+  if (text.length < 3) return 'GENERAL';
   const lower = text.toLowerCase();
+  
+  // OPTIMIZED: Weighted intent scanning with early exit
   let bestIntent: IntentType = 'GENERAL';
   let maxScore = 0;
 
   for (const intent of INTENT_DATA) {
     let score = 0;
     for (const key of intent.keywords) {
-      if (lower.includes(key)) score += 1;
+      if (lower.includes(key)) score += 2; // Exact match weight
+      else if (key.length > 5 && lower.includes(key.substring(0, 5))) score += 1; // Partial match weight
     }
     if (score > maxScore) {
       maxScore = score;
       bestIntent = intent.id;
     }
+    if (maxScore > 10) break; // High confidence threshold reached
   }
 
-  return maxScore >= 1 ? bestIntent : 'GENERAL';
+  return maxScore >= 2 ? bestIntent : 'GENERAL';
 };
 
 export const getIntentConfig = (id: IntentType) => INTENT_DATA.find(i => i.id === id);
@@ -197,6 +202,7 @@ export const getIntentConfig = (id: IntentType) => INTENT_DATA.find(i => i.id ==
  * Suggest industry/focus based on weighted keyword confidence.
  */
 export const detectTaxonomy = (text: string) => {
+  if (text.length < 5) return null;
   const lower = text.toLowerCase();
   let bestMatch = { industry: "", focus: "", confidence: 0 };
 
@@ -215,43 +221,29 @@ export const detectTaxonomy = (text: string) => {
     }
   }
 
-  // 2. Focus Area & Industry Weighted Scanning
+  // 2. Optimized Weighted Scanning
   for (const industry of INDUSTRY_DATA) {
-    let score = 0;
-    
-    // Industry label match (Score: 50)
-    if (lower.includes(industry.label.toLowerCase().split(' ')[0])) score += 50;
+    let baseScore = 0;
+    if (lower.includes(industry.label.toLowerCase().split(' ')[0])) baseScore += 40;
     
     for (const focus of industry.focusAreas) {
-      let focusScore = score;
+      let focusScore = baseScore;
+      const lowFocus = focus.toLowerCase();
       
-      // Focus area direct match (Score: 80)
-      if (lower.includes(focus.toLowerCase())) focusScore += 80;
+      if (lower.includes(lowFocus)) focusScore += 80;
       
-      // Partial keyword overlap (Score: 20 per keyword)
-      const focusKeywords = focus.toLowerCase().split(' ');
-      focusKeywords.forEach(k => {
-        if (k.length > 3 && lower.includes(k)) focusScore += 20;
-      });
-
       if (focusScore > bestMatch.confidence) {
         bestMatch = { industry: industry.id, focus: focus, confidence: focusScore };
       }
+      if (bestMatch.confidence >= 100) break;
     }
+    if (bestMatch.confidence >= 100) break;
   }
 
-  // Cap confidence at 100
   bestMatch.confidence = Math.min(bestMatch.confidence, 100);
 
-  // Success Condition: Confidence > 70
-  if (bestMatch.confidence >= 70) {
-    return bestMatch;
-  }
-  
-  // Partial Condition: Confidence > 30 (for "Closest Match")
-  if (bestMatch.confidence > 30) {
-    return { ...bestMatch, isPartial: true };
-  }
+  if (bestMatch.confidence >= 70) return bestMatch;
+  if (bestMatch.confidence > 30) return { ...bestMatch, isPartial: true };
   
   return null;
 };

@@ -491,18 +491,23 @@ function OnboardingContent() {
                                    </span>
                                 </div>
                              </div>
-                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 focus-within:bg-white transition-all shadow-sm">
-                                {onboardingData.role === 'ADVISOR' ? (
-                                   <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E53935]" size={24} />
-                                ) : (
-                                   <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
-                                )}
+                             <div className="relative flex items-center bg-slate-50 rounded-lg border border-slate-100 focus-within:bg-white transition-all shadow-sm px-6">
+                                <div className="shrink-0">
+                                   {onboardingData.role === 'ADVISOR' ? (
+                                      <Sparkles className="text-[#E53935]" size={24} />
+                                   ) : (
+                                      <Laptop className="text-[#FF3B30]" size={24} />
+                                   )}
+                                </div>
+
                                  {onboardingData.industry && (
-                                   <div className="absolute left-16 top-1/2 -translate-y-1/2 flex items-center">
+                                   <div className="flex items-center ml-4 shrink-0">
                                       <div className="h-8 px-4 rounded-full bg-[#1A1A1A] text-white text-[10px] font-black uppercase flex items-center gap-2 shadow-lg animate-in fade-in zoom-in-95 duration-300">
                                          {onboardingData.industry}
                                          <button 
+                                           type="button"
                                            onClick={(e) => {
+                                             e.preventDefault();
                                              e.stopPropagation();
                                              setOnboardingData(prev => ({ ...prev, industry: "" }));
                                           }}
@@ -514,12 +519,12 @@ function OnboardingContent() {
                                       <div className="w-[1px] h-6 bg-slate-200 mx-4" />
                                    </div>
                                  )}
+
                                  <input 
                                   type="text" 
                                   value={onboardingData.jobRole}
                                   onFocus={() => setShowSuggestions(true)}
                                   onBlur={() => {
-                                    // Small delay to allow click on suggestion to register
                                     setTimeout(() => setShowSuggestions(false), 200);
                                   }}
                                   onChange={e => {
@@ -527,7 +532,6 @@ function OnboardingContent() {
                                     const detection = detectIndustry(val);
                                     const highConfidence = detection.confidence > 0.6;
                                     
-                                    // Filter suggestions
                                     if (val.length >= 2) {
                                       const filtered = Object.keys(ROLE_TO_INDUSTRY).filter(r => 
                                         r.toLowerCase().includes(val.toLowerCase())
@@ -545,13 +549,10 @@ function OnboardingContent() {
                                     }));
                                   }}
                                   placeholder={onboardingData.role === 'ADVISOR' ? "e.g. Startup Strategy, Marketing Guidance" : "e.g. Video Editor, Founder, Developer"}
-                                  className={cn(
-                                    "w-full h-16 lg:h-20 bg-transparent pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200",
-                                    onboardingData.industry ? "pl-44" : "pl-16"
-                                  )}
+                                  className="flex-1 h-16 lg:h-20 bg-transparent pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
 
-                                {/* Auto-suggestion Dropdown */}
+                                {/* Auto-suggestion Dropdown - kept absolute to the relative parent */}
                                 <AnimatePresence>
                                   {showSuggestions && roleSuggestions.length > 0 && (
                                     <motion.div 
@@ -601,9 +602,7 @@ function OnboardingContent() {
                                 </AnimatePresence>
                              </div>
                              
-                             <AnimatePresence>
-                               {(onboardingData.jobRole.length > 1 || onboardingData.industry) && (
-                                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
+                             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
                                    <div className="flex items-center gap-2">
                                       <div className="h-1 w-1 rounded-full bg-[#FF3B30] animate-pulse" />
                                       <span className="text-[10px] font-black uppercase text-[#FF3B30] tracking-widest">

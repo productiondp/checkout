@@ -765,6 +765,12 @@ function OnboardingContent() {
                               </div>
                           </div>
 
+                           </div>
+                        </div>
+                     )}
+
+                    {step === 3 && (
+                       <div className="space-y-12">
                            <div className="space-y-4">
                               <div className="flex flex-col gap-1">
                                  <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1 flex items-center gap-2">
@@ -780,11 +786,7 @@ function OnboardingContent() {
                                className="w-full h-24 bg-slate-50 border border-slate-100 rounded-lg p-6 text-lg font-bold text-[#1A1A1A] outline-none placeholder:text-slate-200 focus:bg-white transition-all resize-none shadow-sm"
                              />
                           </div>
-                       </div>
-                    )}
 
-                    {step === 3 && (
-                       <div className="space-y-12">
                           <div className="flex justify-center">
                              <div className="relative group">
                                 <div className="h-44 w-44 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 relative shadow-xl">

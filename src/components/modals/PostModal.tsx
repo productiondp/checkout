@@ -514,11 +514,12 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                                      </motion.div>
                                    )}
                                  </AnimatePresence>
-                               </motion.div>
+                               </div>
                              ))}
                           </div>
                         )}
                       </div>
+                    </div>
 
                       {(suggestedIndustry || content.length > 20) && (
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">

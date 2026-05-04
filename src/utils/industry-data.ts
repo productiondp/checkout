@@ -120,12 +120,86 @@ export const getIndustryById = (id: string) => INDUSTRY_DATA.find(i => i.id === 
 export const getAllFocusAreas = () => INDUSTRY_DATA.flatMap(i => i.focusAreas);
 
 /**
+ * INTENT ENGINE (V1.0)
+ * Detects the core objective of a post to provide targeted tools.
+ */
+export type IntentType = 'HIRING' | 'GROWTH' | 'FUNDING' | 'MENTORSHIP' | 'PARTNERSHIP' | 'GENERAL';
+
+export interface IntentConfig {
+  id: IntentType;
+  label: string;
+  keywords: string[];
+  suggestions: string[];
+  color: string;
+}
+
+export const INTENT_DATA: IntentConfig[] = [
+  {
+    id: 'HIRING',
+    label: 'Hiring & Talent',
+    keywords: ['need', 'hiring', 'dev', 'designer', 'looking for', 'hire', 'vacancy', 'job', 'recruit', 'salary', 'experience'],
+    suggestions: ['Role Responsibility', 'Experience Required', 'Budget / Salary', 'Tech Stack'],
+    color: 'text-blue-500'
+  },
+  {
+    id: 'GROWTH',
+    label: 'Marketing & Growth',
+    keywords: ['users', 'marketing', 'ads', 'scale', 'acquisition', 'traffic', 'seo', 'content', 'social media', 'customers'],
+    suggestions: ['Target Audience', 'Growth Objective', 'Current Metrics', 'Channels'],
+    color: 'text-emerald-500'
+  },
+  {
+    id: 'FUNDING',
+    label: 'Funding & Investment',
+    keywords: ['funding', 'investor', 'seed', 'equity', 'vc', 'pitch', 'capital', 'fundraising', 'pre-seed', 'series a'],
+    suggestions: ['Equity Offered', 'Fund Usage', 'Traction So Far', 'Pitch Deck Link'],
+    color: 'text-amber-500'
+  },
+  {
+    id: 'MENTORSHIP',
+    label: 'Mentorship & Advice',
+    keywords: ['advice', 'mentor', 'guide', 'learn', 'how to', 'coaching', 'expertise', 'roadmap', 'clarity'],
+    suggestions: ['Specific Problem', 'Frequency', 'Ideal Mentor Profile', 'Expectation'],
+    color: 'text-purple-500'
+  },
+  {
+    id: 'PARTNERSHIP',
+    label: 'Partnership & Vision',
+    keywords: ['co-founder', 'partner', 'vision', 'collaboration', 'joint venture', 'strategic', 'synergy'],
+    suggestions: ['Equity Split', 'Commitment Level', 'Shared Vision', 'Complementary Skills'],
+    color: 'text-rose-500'
+  }
+];
+
+export const detectIntent = (text: string): IntentType => {
+  const lower = text.toLowerCase();
+  let bestIntent: IntentType = 'GENERAL';
+  let maxScore = 0;
+
+  for (const intent of INTENT_DATA) {
+    let score = 0;
+    for (const key of intent.keywords) {
+      if (lower.includes(key)) score += 1;
+    }
+    if (score > maxScore) {
+      maxScore = score;
+      bestIntent = intent.id;
+    }
+  }
+
+  return maxScore >= 1 ? bestIntent : 'GENERAL';
+};
+
+export const getIntentConfig = (id: IntentType) => INTENT_DATA.find(i => i.id === id);
+
+/**
  * AUTO-DETECTION (V2.1 - WEIGHTED MATCHING)
  * Suggest industry/focus based on weighted keyword confidence.
  */
 export const detectTaxonomy = (text: string) => {
   const lower = text.toLowerCase();
   let bestMatch = { industry: "", focus: "", confidence: 0 };
+... (rest of the file remains the same)
 
   // 1. High-Precision Direct Rules (Confidence: 100)
   const directRules = [

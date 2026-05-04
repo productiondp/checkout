@@ -17,7 +17,7 @@ import { analytics } from "@/utils/analytics";
 import { motion, AnimatePresence } from "framer-motion";
 import { detectBaseTag } from "@/utils/match-engine";
 import { ClarityTextarea } from "@/components/ui/ClarityTextarea";
-import { INDUSTRY_DATA, getIndustryById, detectTaxonomy, EXPERIENCE_LEVELS } from "@/utils/industry-data";
+import { INDUSTRY_DATA, getIndustryById, detectTaxonomy, EXPERIENCE_LEVELS, detectIntent, getIntentConfig, IntentType } from "@/utils/industry-data";
 import { DEFAULT_AVATAR } from "@/utils/constants";
 import PostSubmissionStatus, { SubmissionState } from "./PostSubmissionStatus";
 
@@ -116,6 +116,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [clarityScore, setClarityScore] = useState(0);
   const [coachTip, setCoachTip] = useState("Start by describing your need");
+  const [detectedIntent, setDetectedIntent] = useState<IntentType>('GENERAL');
   const [submissionState, setSubmissionState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -146,26 +147,31 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
 
   // SMART: INDUSTRY AUTO-DETECTION & CONTEXT SUGGESTIONS
   useEffect(() => {
-    // 1. Contextual Suggestions - ALWAYS POPULATED
-    const suggestions: string[] = ["What are you solving for?", "Add Objective"];
+    // 1. Intent Detection
+    const intentId = detectIntent(content);
+    setDetectedIntent(intentId);
+    const intentConfig = getIntentConfig(intentId);
+
+    // 2. Contextual Suggestions - ALWAYS POPULATED
+    let suggestions: string[] = ["What are you solving for?", "Add Objective"];
+    
+    if (intentConfig && intentId !== 'GENERAL') {
+      suggestions = [...intentConfig.suggestions, "What are you solving for?"];
+    }
+
     const lowContent = content.toLowerCase();
 
     if (lowContent.includes("developer") || lowContent.includes("build") || lowContent.includes("mvp")) {
       if (!suggestions.includes("Strategic Roadmap")) suggestions.push("Strategic Roadmap");
-      if (!suggestions.includes("Current Stage")) suggestions.push("Current Stage");
     }
 
     if (authUser?.industry && !lowContent.includes(authUser.industry.toLowerCase())) {
       suggestions.push(`Relation to ${authUser.industry}`);
     }
 
-    if (content.split(' ').length > 10 && !lowContent.includes("timeline")) {
-      suggestions.push("Project Timeline");
-    }
-
     setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
 
-    // 2. Clarity Coaching & Industry Detection
+    // 3. Clarity Coaching & Industry Detection
     if (content.length > 5) {
       if (!industry) {
         const detected = detectTaxonomy(content);
@@ -176,14 +182,15 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
       let score = 0;
       if (content.length > 20) score += 30;
       if (content.length > 60) score += 20;
-      if (lowContent.includes("objective") || lowContent.includes("launch")) score += 25;
-      if (lowContent.includes("solving") || lowContent.includes("roadmap")) score += 25;
-      setClarityScore(score);
+      if (intentId !== 'GENERAL') score += 20; // Bonus for clear intent
+      if (lowContent.includes("objective") || lowContent.includes("launch")) score += 15;
+      if (lowContent.includes("solving") || lowContent.includes("roadmap")) score += 15;
+      setClarityScore(Math.min(score, 100));
 
-      if (score < 30) setCoachTip("Keep typing for better matches");
-      else if (score < 50) setCoachTip("Objective added! Improving visibility...");
-      else if (score < 80) setCoachTip("Great detail. Experts will love this.");
-      else setCoachTip("Perfect! Your requirement is high-quality");
+      if (score < 30) setCoachTip(intentId !== 'GENERAL' ? `Detected ${intentConfig?.label}. Keep going!` : "Keep typing for better matches");
+      else if (score < 50) setCoachTip("Structure recognized. Increasing visibility...");
+      else if (score < 80) setCoachTip("Strong intent found. Experts will love this.");
+      else setCoachTip("Perfect! This is a high-intent requirement.");
     } else {
       setSuggestedIndustry(null);
       setClarityScore(0);
@@ -432,7 +439,14 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                  <div className="h-8 w-8 bg-white rounded-xl flex items-center justify-center text-[#FF3B30] shadow-sm"><Sparkles size={16} /></div>
-                                 <span className="text-[11px] font-black uppercase tracking-widest text-[#1A1A1A]">{coachTip}</span>
+                                 <div className="flex flex-col">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-[#1A1A1A]">{coachTip}</span>
+                                    {detectedIntent !== 'GENERAL' && (
+                                       <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] mt-0.5", getIntentConfig(detectedIntent)?.color)}>
+                                          Intent: {getIntentConfig(detectedIntent)?.label}
+                                       </span>
+                                    )}
+                                 </div>
                               </div>
                               <div className="flex items-center gap-4">
                                  <span className="text-[10px] font-black uppercase text-slate-300">Clarity</span>
@@ -468,11 +482,17 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                         className="absolute top-full left-0 mt-3 w-72 bg-white rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.2)] border border-black/[0.03] p-5 z-[200] space-y-2 backdrop-blur-xl"
                                       >
-                                        {(s === "What are you solving for?" ? [
+                                        {(getIntentConfig(detectedIntent)?.suggestions.includes(s) ? (
+                                          s === 'Equity Offered' ? ['1-5%', '5-10%', '10-20%', 'Open to Discuss'] :
+                                          s === 'Budget / Salary' ? ['₹10k - ₹30k', '₹30k - ₹70k', '₹70k+', 'Commission Only'] :
+                                          s === 'Experience Required' ? ['Junior (1-2y)', 'Mid (3-5y)', 'Senior (5y+)', 'Expert'] :
+                                          s === 'Growth Objective' ? ['User Acquisition', 'Brand Awareness', 'Revenue Growth', 'Retention'] :
+                                          ['Option 1', 'Option 2', 'Option 3']
+                                        ) : (s === "What are you solving for?" ? [
                                           "Product Market Fit", "Technical Scalability", "Operational Efficiency", "Market Expansion", "Customer Acquisition"
                                         ] : [
                                           "Launch MVP (30 Days)", "Secure First 100 Users", "Hire Core Team", "Validate Model", "Optimize Strategy"
-                                        ]).map(option => (
+                                        ])).map(option => (
                                           <button
                                             key={option}
                                             onClick={() => {

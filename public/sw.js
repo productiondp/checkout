@@ -1,10 +1,10 @@
 // Checkout PWA Service Worker — Static-Only Cache Strategy
 // Auth, API, and Supabase requests are NEVER cached — always network-only.
 
-const CACHE_NAME = 'checkout-static-v2';
+const CACHE_NAME = 'checkout-static-v3';
 
 // Pre-cache these on install
-const PRECACHE = ['/manifest.json', '/logo.png'];
+const PRECACHE = ['/manifest.json', '/logo.png', '/app-icon.png', '/favicon.png', '/apple-touch-icon.png'];
 
 // These URL patterns are ALWAYS passed through to the network — no caching ever
 const BYPASS_PATTERNS = [

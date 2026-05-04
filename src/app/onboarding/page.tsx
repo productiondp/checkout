@@ -43,7 +43,7 @@ type OnboardingState = {
   avatar_url: string;
 };
 
-import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES, ROLE_TO_INDUSTRY } from "@/utils/identity-engine";
+import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES, ROLE_TO_INDUSTRY, GLOBAL_TRENDING_FOCUS } from "@/utils/identity-engine";
 
 import { detectBaseTag } from "@/utils/match-engine";
 
@@ -69,6 +69,7 @@ function OnboardingContent() {
   const [roleSuggestions, setRoleSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showAllIndustries, setShowAllIndustries] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -633,11 +634,14 @@ function OnboardingContent() {
                                    </button>
                                  ))}
 
-                                 {/* Suggested Tags (Filtered by Industry) */}
+                                 {/* Suggested Tags (Filtered by Industry + Trending Fallback) */}
                                  {[
-                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"] || []),
+                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || []),
+                                   ...GLOBAL_TRENDING_FOCUS,
                                    ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
-                                 ].filter(intent => !onboardingData.intents.includes(intent)).slice(0, 5).map(intent => {
+                                 ].filter(intent => !onboardingData.intents.includes(intent))
+                                  .filter((v, i, a) => a.indexOf(v) === i) // Unique
+                                  .slice(0, showAllTags ? undefined : 12).map(intent => {
                                    return (
                                      <button 
                                        key={intent}
@@ -652,6 +656,15 @@ function OnboardingContent() {
                                      </button>
                                    );
                                  })}
+
+                                 {!showAllTags && (
+                                   <button 
+                                     onClick={() => setShowAllTags(true)}
+                                     className="h-11 px-6 rounded-lg border border-dashed border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 text-[11px] font-black uppercase tracking-wider"
+                                   >
+                                     + View All
+                                   </button>
+                                 )}
 
                                  <div className="relative">
                                     <input 

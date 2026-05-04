@@ -194,9 +194,16 @@ export const INDUSTRY_TO_FOCUS: Record<string, string[]> = {
   "Public Safety": ["Police", "Fire", "EMS", "Military", "Emergency Mgmt"],
   "Social Services": ["Social Work", "Community", "Counseling", "Advocacy"],
   "Social Impact": ["NGOs", "Philanthropy", "Sustainability", "Grants"],
-  "Transportation": ["Public Transit", "Logistics", "Autonomous", "Fleet Mgmt"],
-  "General": ["Networking", "Advice", "Mentorship", "Opportunities", "Collaboration"]
+  "General": ["Networking", "Advice", "Mentorship", "Opportunities", "Collaboration"],
+  "Transportation": ["Public Transit", "Logistics", "Autonomous", "Fleet Mgmt"]
 };
+
+export const GLOBAL_TRENDING_FOCUS = [
+  "Strategy", "Scaling", "Funding", "Hiring", "Branding", "Content", "Networking", 
+  "Product", "Growth", "Ads", "SEO", "PR", "Investment", "Compliance", "IP", 
+  "Research", "Telehealth", "EdTech", "Mentorship", "Sustainability", "Innovation",
+  "Design", "UX/UI", "Analytics", "Automation", "E-commerce", "B2B", "Crypto", "Web3"
+];
 
 export interface DetectionResult {
   industries: string[];

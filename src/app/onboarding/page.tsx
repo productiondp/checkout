@@ -260,8 +260,8 @@ function OnboardingContent() {
     }
     
     if (step === 2) {
-      if (!onboardingData.jobRole.trim()) {
-        setError("Please specify what you do.");
+      if (!onboardingData.jobRole.trim() && !onboardingData.industry) {
+        setError("Please type your job role or select an industry sector.");
         return;
       }
       if (!onboardingData.industry) {
@@ -433,7 +433,7 @@ function OnboardingContent() {
               <div className="space-y-4">
                  <div className="inline-flex items-center gap-2 text-[#FF3B30] text-[11px] font-black uppercase tracking-wider">
                     <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
-                    Step {step} of 3 // About you
+                    Step {step} of 3 // {step === 1 ? "Identity" : step === 2 ? "Professional" : "Biography"}
                  </div>
                  <h1 className="text-4xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
                     {step === 1 && "Who are you?"}

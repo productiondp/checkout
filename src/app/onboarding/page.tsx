@@ -486,6 +486,23 @@ function OnboardingContent() {
                                 ) : (
                                    <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
                                 )}
+                                 {onboardingData.industry && (
+                                   <div className="absolute left-16 top-1/2 -translate-y-1/2 flex items-center">
+                                      <div className="h-8 px-4 rounded-full bg-[#1A1A1A] text-white text-[10px] font-black uppercase flex items-center gap-2 shadow-lg animate-in fade-in zoom-in-95 duration-300">
+                                         {onboardingData.industry}
+                                         <button 
+                                           onClick={(e) => {
+                                             e.stopPropagation();
+                                             setOnboardingData(prev => ({ ...prev, industry: "" }));
+                                          }}
+                                          className="hover:text-[#FF3B30] transition-colors"
+                                         >
+                                           <X size={10} />
+                                         </button>
+                                      </div>
+                                      <div className="w-[1px] h-6 bg-slate-200 mx-4" />
+                                   </div>
+                                 )}
                                  <input 
                                   type="text" 
                                   value={onboardingData.jobRole}
@@ -517,7 +534,10 @@ function OnboardingContent() {
                                     }));
                                   }}
                                   placeholder={onboardingData.role === 'ADVISOR' ? "e.g. Startup Strategy, Marketing Guidance" : "e.g. Video Editor, Founder, Developer"}
-                                  className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
+                                  className={cn(
+                                    "w-full h-16 lg:h-20 bg-transparent pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200",
+                                    onboardingData.industry ? "pl-44" : "pl-16"
+                                  )}
                                 />
 
                                 {/* Auto-suggestion Dropdown */}

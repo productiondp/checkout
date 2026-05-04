@@ -43,7 +43,7 @@ type OnboardingState = {
   avatar_url: string;
 };
 
-import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES } from "@/utils/identity-engine";
+import { detectIndustry, INDUSTRY_TO_FOCUS, ALL_INDUSTRIES, ROLE_TO_INDUSTRY } from "@/utils/identity-engine";
 
 import { detectBaseTag } from "@/utils/match-engine";
 
@@ -66,6 +66,8 @@ function OnboardingContent() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [customFocus, setCustomFocus] = useState("");
   const [libraryFocus, setLibraryFocus] = useState<any[]>([]);
+  const [roleSuggestions, setRoleSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -482,13 +484,26 @@ function OnboardingContent() {
                                 ) : (
                                    <Laptop className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FF3B30]" size={24} />
                                 )}
-                                <input 
+                                 <input 
                                   type="text" 
                                   value={onboardingData.jobRole}
+                                  onFocus={() => setShowSuggestions(true)}
                                   onChange={e => {
                                     const val = e.target.value;
                                     const detection = detectIndustry(val);
                                     const highConfidence = detection.confidence > 0.6;
+                                    
+                                    // Filter suggestions
+                                    if (val.length > 1) {
+                                      const filtered = Object.keys(ROLE_TO_INDUSTRY).filter(r => 
+                                        r.includes(val.toLowerCase())
+                                      );
+                                      setRoleSuggestions(filtered);
+                                      setShowSuggestions(true);
+                                    } else {
+                                      setRoleSuggestions([]);
+                                    }
+
                                     setOnboardingData(prev => ({ 
                                       ...prev, 
                                       jobRole: val,
@@ -498,25 +513,60 @@ function OnboardingContent() {
                                   placeholder={onboardingData.role === 'ADVISOR' ? "e.g. Startup Strategy, Marketing Guidance" : "e.g. Video Editor, Founder, Developer"}
                                   className="w-full h-16 lg:h-20 bg-transparent pl-16 pr-8 text-xl lg:text-2xl font-black text-[#1A1A1A] outline-none placeholder:text-slate-200"
                                 />
+
+                                {/* Auto-suggestion Dropdown */}
+                                <AnimatePresence>
+                                  {showSuggestions && roleSuggestions.length > 0 && (
+                                    <motion.div 
+                                      initial={{ opacity: 0, y: -10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -10 }}
+                                      className="absolute top-full left-0 right-0 bg-white border border-slate-100 shadow-xl rounded-b-xl z-[60] overflow-hidden"
+                                    >
+                                      {roleSuggestions.map(s => (
+                                        <button 
+                                          key={s}
+                                          onClick={() => {
+                                            const detection = detectIndustry(s);
+                                            setOnboardingData(prev => ({ 
+                                              ...prev, 
+                                              jobRole: s.charAt(0).toUpperCase() + s.slice(1),
+                                              industry: detection.industries[0] || prev.industry
+                                            }));
+                                            setShowSuggestions(false);
+                                          }}
+                                          className="w-full h-14 px-16 text-left hover:bg-slate-50 text-slate-600 font-bold uppercase text-xs flex items-center border-b border-slate-50 last:border-0"
+                                        >
+                                          {s}
+                                        </button>
+                                      ))}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                              </div>
                              
                              <AnimatePresence>
-                               {onboardingData.jobRole.length > 2 && (
+                               {(onboardingData.jobRole.length > 1 || onboardingData.industry) && (
                                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-3 px-1">
-                                   <span className="text-[10px] font-black uppercase text-slate-400">
-                                     {detectIndustry(onboardingData.jobRole).industries.length > 1 ? "Did you mean:" : "Industry Detected:"}
-                                   </span>
+                                   <div className="flex items-center gap-2">
+                                      <div className="h-1 w-1 rounded-full bg-[#FF3B30] animate-pulse" />
+                                      <span className="text-[10px] font-black uppercase text-[#FF3B30] tracking-widest">
+                                        Industry Detected
+                                      </span>
+                                   </div>
                                    <div className="flex flex-wrap gap-2">
                                       {(detectIndustry(onboardingData.jobRole).industries.length > 0 
-                                        ? detectIndustry(onboardingData.jobRole).industries 
+                                        ? Array.from(new Set([...detectIndustry(onboardingData.jobRole).industries, onboardingData.industry].filter(Boolean)))
                                         : ALL_INDUSTRIES
                                       ).map(ind => (
                                         <button 
                                           key={ind}
                                           onClick={() => setOnboardingData(prev => ({ ...prev, industry: ind }))}
                                           className={cn(
-                                            "h-8 px-4 rounded-full text-[10px] font-black uppercase flex items-center gap-2 transition-all",
-                                            onboardingData.industry === ind ? "bg-[#1A1A1A] text-white shadow-lg" : "bg-white border border-slate-100 text-slate-400 hover:border-slate-300"
+                                            "h-9 px-5 rounded-full text-[10px] font-black uppercase flex items-center gap-2 transition-all border",
+                                            onboardingData.industry === ind 
+                                              ? "bg-[#1A1A1A] text-white border-black shadow-lg shadow-black/10 scale-105" 
+                                              : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
                                           )}
                                         >
                                            {ind}
@@ -536,48 +586,60 @@ function OnboardingContent() {
                              </div>
 
                              <div className="flex flex-wrap gap-2.5">
-                                {[
-                                  ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"]),
-                                  ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
-                                ].slice(0, 4).map(intent => {
-                                  const isSelected = onboardingData.intents.includes(intent);
-                                  return (
-                                    <button 
-                                      key={intent}
-                                      onClick={() => { 
-                                        const current = onboardingData.intents; 
-                                        if (isSelected) setOnboardingData(prev => ({ ...prev, intents: current.filter(x => x !== intent) }));
-                                        else if (current.length < 3) setOnboardingData(prev => ({ ...prev, intents: [...current, intent] }));
-                                      }} 
-                                      className={cn(
-                                        "h-11 px-6 rounded-lg border transition-all text-[11px] font-black uppercase tracking-wider",
-                                        isSelected ? "bg-[#FF3B30] text-white border-[#FF3B30] shadow-lg shadow-[#FF3B30]/20" : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                                      )}
-                                    >
-                                       {intent}
-                                    </button>
-                                  );
-                                })}
+                                 {/* Selected Tags First */}
+                                 {onboardingData.intents.map(intent => (
+                                   <button 
+                                     key={intent}
+                                     onClick={() => { 
+                                       setOnboardingData(prev => ({ ...prev, intents: prev.intents.filter(x => x !== intent) }));
+                                     }} 
+                                     className="h-11 px-6 rounded-lg bg-[#FF3B30] text-white border border-[#FF3B30] shadow-lg shadow-[#FF3B30]/20 text-[11px] font-black uppercase tracking-wider flex items-center gap-2"
+                                   >
+                                      {intent}
+                                      <X size={12} />
+                                   </button>
+                                 ))}
 
-                                <div className="relative">
-                                   <input 
-                                     type="text"
-                                     value={customFocus}
-                                     onChange={e => setCustomFocus(e.target.value)}
-                                     onKeyDown={e => {
-                                       if (e.key === 'Enter' && customFocus.trim() && onboardingData.intents.length < 3) {
-                                         const val = customFocus.trim().toLowerCase();
-                                         if (!onboardingData.intents.includes(val)) {
-                                            setOnboardingData(prev => ({ ...prev, intents: [...prev.intents, val] }));
+                                 {/* Suggested Tags (Filtered by Industry) */}
+                                 {[
+                                   ...(INDUSTRY_TO_FOCUS[onboardingData.industry] || INDUSTRY_TO_FOCUS["General"]),
+                                   ...(libraryFocus.filter(f => f.industry === onboardingData.industry && f.usage_count >= 2).map(f => f.label))
+                                 ].filter(intent => !onboardingData.intents.includes(intent)).slice(0, 5).map(intent => {
+                                   return (
+                                     <button 
+                                       key={intent}
+                                       onClick={() => { 
+                                         if (onboardingData.intents.length < 3) {
+                                           setOnboardingData(prev => ({ ...prev, intents: [...prev.intents, intent] }));
                                          }
-                                         setCustomFocus("");
-                                       }
-                                     }}
-                                     placeholder="+ Add your own"
-                                     className="h-11 px-6 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-[11px] font-black uppercase outline-none focus:bg-white focus:border-[#FF3B30]/30 transition-all w-44"
-                                   />
-                                </div>
-                             </div>
+                                       }} 
+                                       className="h-11 px-6 rounded-lg border border-slate-100 bg-white text-slate-400 hover:border-slate-300 transition-all text-[11px] font-black uppercase tracking-wider"
+                                     >
+                                        {intent}
+                                     </button>
+                                   );
+                                 })}
+
+                                 <div className="relative">
+                                    <input 
+                                      type="text"
+                                      value={customFocus}
+                                      onChange={e => setCustomFocus(e.target.value)}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter' && customFocus.trim()) {
+                                          e.preventDefault();
+                                          const val = customFocus.trim().toLowerCase();
+                                          if (!onboardingData.intents.includes(val) && onboardingData.intents.length < 3) {
+                                             setOnboardingData(prev => ({ ...prev, intents: [...prev.intents, val] }));
+                                          }
+                                          setCustomFocus("");
+                                        }
+                                      }}
+                                      placeholder="+ Add your own"
+                                      className="h-11 px-6 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-[11px] font-black uppercase outline-none focus:bg-white focus:border-[#FF3B30]/30 transition-all w-44"
+                                    />
+                                 </div>
+                              </div>
                           </div>
 
                           <div className="space-y-4">
@@ -655,6 +717,23 @@ function OnboardingContent() {
            </footer>
         </div>
       </div>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-6">
+       <div className="relative">
+          <div className="h-20 w-20 border-4 border-slate-50 border-t-[#FF3B30] rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="h-10 w-10 bg-[#FF3B30] rounded-lg animate-pulse" />
+          </div>
+       </div>
+       <div className="space-y-2 text-center">
+          <p className="text-[12px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Initializing</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Secure Environment</p>
+       </div>
     </div>
   );
 }

@@ -146,37 +146,33 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
 
   // SMART: INDUSTRY AUTO-DETECTION & CONTEXT SUGGESTIONS
   useEffect(() => {
+    // 1. Contextual Suggestions - ALWAYS POPULATED
+    const suggestions: string[] = ["What are you solving for?", "Add Objective"];
+    const lowContent = content.toLowerCase();
+
+    if (lowContent.includes("developer") || lowContent.includes("build") || lowContent.includes("mvp")) {
+      if (!suggestions.includes("Strategic Roadmap")) suggestions.push("Strategic Roadmap");
+      if (!suggestions.includes("Current Stage")) suggestions.push("Current Stage");
+    }
+
+    if (authUser?.industry && !lowContent.includes(authUser.industry.toLowerCase())) {
+      suggestions.push(`Relation to ${authUser.industry}`);
+    }
+
+    if (content.split(' ').length > 10 && !lowContent.includes("timeline")) {
+      suggestions.push("Project Timeline");
+    }
+
+    setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
+
+    // 2. Clarity Coaching & Industry Detection
     if (content.length > 5) {
-      // 1. Industry Detection
       if (!industry) {
         const detected = detectTaxonomy(content);
         if (detected) setSuggestedIndustry(detected);
         else setSuggestedIndustry(null);
       }
 
-      // 2. Contextual Suggestions
-      const suggestions: string[] = [];
-      const lowContent = content.toLowerCase();
-
-      if (lowContent.includes("need") || lowContent.includes("looking")) {
-        suggestions.push("What are you solving for?");
-        suggestions.push("Add Objective");
-      }
-      
-      if (lowContent.includes("developer") || lowContent.includes("build") || lowContent.includes("mvp")) {
-        suggestions.push("Strategic Roadmap");
-        suggestions.push("Current Stage");
-      }
-
-      if (authUser?.industry && !lowContent.includes(authUser.industry.toLowerCase())) {
-        suggestions.push(`Relation to ${authUser.industry}`);
-      }
-
-      if (content.split(' ').length > 10 && !lowContent.includes("timeline")) {
-        suggestions.push("Project Timeline");
-      }
-
-      // 3. Clarity Coaching
       let score = 0;
       if (content.length > 20) score += 30;
       if (content.length > 60) score += 20;
@@ -184,15 +180,12 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
       if (lowContent.includes("solving") || lowContent.includes("roadmap")) score += 25;
       setClarityScore(score);
 
-      if (score < 30) setCoachTip("Keep typing to unlock smart tools");
-      else if (score < 50) setCoachTip("Add an Objective for 2x better matches");
-      else if (score < 80) setCoachTip("Strategic roadmap will help experts find you");
+      if (score < 30) setCoachTip("Keep typing for better matches");
+      else if (score < 50) setCoachTip("Objective added! Improving visibility...");
+      else if (score < 80) setCoachTip("Great detail. Experts will love this.");
       else setCoachTip("Perfect! Your requirement is high-quality");
-
-      setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
     } else {
       setSuggestedIndustry(null);
-      setActiveSuggestions([]);
       setClarityScore(0);
       setCoachTip("Start by describing your need");
     }
@@ -449,7 +442,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                               className="min-h-[220px] text-lg p-8 bg-slate-50 border-none rounded-[2rem] focus:ring-4 focus:ring-black/5"
                             />
 
-                            {activeSuggestions.length > 0 && clarityScore >= 30 && (
+                            {activeSuggestions.length > 0 && (
                               <div className="absolute bottom-6 left-6 right-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
                                  {activeSuggestions.map((s, i) => (
                                    <div key={s} className="relative">

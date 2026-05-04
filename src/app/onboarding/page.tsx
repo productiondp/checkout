@@ -68,6 +68,7 @@ function OnboardingContent() {
   const [libraryFocus, setLibraryFocus] = useState<any[]>([]);
   const [roleSuggestions, setRoleSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showAllIndustries, setShowAllIndustries] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -581,7 +582,7 @@ function OnboardingContent() {
                                       {(detectIndustry(onboardingData.jobRole).industries.length > 0 
                                         ? Array.from(new Set([...detectIndustry(onboardingData.jobRole).industries, onboardingData.industry].filter(Boolean)))
                                         : ALL_INDUSTRIES
-                                      ).map(ind => (
+                                      ).slice(0, showAllIndustries ? undefined : 6).map(ind => (
                                         <button 
                                           key={ind}
                                           onClick={() => setOnboardingData(prev => ({ ...prev, industry: ind }))}
@@ -596,6 +597,15 @@ function OnboardingContent() {
                                            {onboardingData.industry === ind && <CheckCircle2 size={10} />}
                                         </button>
                                       ))}
+                                      
+                                      {!showAllIndustries && (ALL_INDUSTRIES.length > 6) && (
+                                        <button 
+                                          onClick={() => setShowAllIndustries(true)}
+                                          className="h-9 px-5 rounded-full text-[10px] font-black uppercase flex items-center gap-2 transition-all border border-dashed border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600"
+                                        >
+                                          + View All
+                                        </button>
+                                      )}
                                    </div>
                                  </motion.div>
                                )}

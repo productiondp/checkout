@@ -420,7 +420,7 @@ function OnboardingContent() {
       </AnimatePresence>
 
       <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
-      <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-[0_40px_100px_rgba(0,0,0,0.05)] flex flex-col h-full max-h-[85vh] overflow-hidden border border-slate-100">
+      <div className="relative w-full max-w-5xl bg-white lg:rounded-lg shadow-[0_40px_100px_rgba(0,0,0,0.05)] flex flex-col h-full lg:max-h-[85vh] overflow-hidden border-x border-slate-100">
         <div className="h-1.5 bg-slate-50 w-full flex p-0 relative z-50">
            <div 
              className="h-full bg-[#FF3B30] transition-all duration-1000 ease-out" 
@@ -435,7 +435,7 @@ function OnboardingContent() {
                     <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
                     Step {step} of 3 // {step === 1 ? "Identity" : step === 2 ? "Professional" : "Biography"}
                  </div>
-                 <h1 className="text-4xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
+                 <h1 className="text-3xl lg:text-7xl font-black uppercase text-[#1A1A1A] font-outfit tracking-tighter">
                     {step === 1 && "Who are you?"}
                     {step === 2 && (onboardingData.role === 'ADVISOR' ? "How can you help?" : "What do you do?")}
                     {step === 3 && "Almost done"}
@@ -447,9 +447,9 @@ function OnboardingContent() {
                   console.log("[AUTH] Onboarding: Cancel clicked - Logging out");
                   logout();
                 }}
-                className="h-12 px-6 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-[#1A1A1A] transition-all flex items-center gap-2 z-[99]"
+                className="h-10 lg:h-12 px-4 lg:px-6 bg-slate-50 border border-slate-100 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-[#1A1A1A] transition-all flex items-center gap-2 z-[99]"
               >
-                <X size={14} /> Cancel & Logout
+                <X size={14} /> <span className="hidden sm:inline">Cancel & Logout</span>
               </button>
            </header>
 
@@ -459,7 +459,7 @@ function OnboardingContent() {
                    key={step}
                    initial={{ opacity: 0 }}
                    animate={{ opacity: 1 }}
-                   className="space-y-12 pb-12"
+                   className="space-y-12 pb-24 lg:pb-12"
                  >
                     {step === 1 && (
                        <div className="space-y-10">

@@ -1,12 +1,12 @@
 {
   "name": "Checkout Business OS",
   "short_name": "Checkout",
-  "description": "The premium Business OS for local commerce.",
+  "description": "The premium Business OS for local commerce and professional growth.",
   "start_url": "/home",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#FF3B30",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
@@ -22,11 +22,32 @@
       "purpose": "any"
     },
     {
-      "src": "/app-icon.png",
+      "src": "/apple-touch-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity", "finance"]
+  "shortcuts": [
+    {
+      "name": "New Post",
+      "url": "/home?action=new-post",
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Messages",
+      "url": "/chat",
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["business", "productivity", "finance", "social"],
+  "screenshots": [
+    {
+      "src": "/hero-hero.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Business Discovery Feed"
+    }
+  ]
 }

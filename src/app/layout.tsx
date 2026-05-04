@@ -28,15 +28,23 @@ export const metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
   },
   formatDetection: {
      telephone: false,
   },
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.png" },
+      { url: "/app-icon.png", sizes: "192x192", type: "image/png" },
+    ],
     shortcut: "/app-icon.png",
-    apple: "/app-icon.png",
+    apple: [
+      { url: "/apple-touch-icon.png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 

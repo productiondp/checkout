@@ -114,6 +114,8 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
   const [suggestion, setSuggestion] = useState<{ industry: string, focus: string } | null>(null);
   const [activeSuggestions, setActiveSuggestions] = useState<string[]>([]);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [clarityScore, setClarityScore] = useState(0);
+  const [coachTip, setCoachTip] = useState("Start by describing your need");
   const [submissionState, setSubmissionState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -174,10 +176,25 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
         suggestions.push("Project Timeline");
       }
 
+      // 3. Clarity Coaching
+      let score = 0;
+      if (content.length > 20) score += 30;
+      if (content.length > 60) score += 20;
+      if (lowContent.includes("objective") || lowContent.includes("launch")) score += 25;
+      if (lowContent.includes("solving") || lowContent.includes("roadmap")) score += 25;
+      setClarityScore(score);
+
+      if (score < 30) setCoachTip("Keep typing to unlock smart tools");
+      else if (score < 50) setCoachTip("Add an Objective for 2x better matches");
+      else if (score < 80) setCoachTip("Strategic roadmap will help experts find you");
+      else setCoachTip("Perfect! Your requirement is high-quality");
+
       setActiveSuggestions(suggestions.filter(s => !content.includes(s)).slice(0, 3));
     } else {
       setSuggestedIndustry(null);
       setActiveSuggestions([]);
+      setClarityScore(0);
+      setCoachTip("Start by describing your need");
     }
   }, [content, industry, authUser]);
 
@@ -404,36 +421,52 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                       </div>
                       
                       <div className="relative group">
-                        <ClarityTextarea
-                          ref={inputRef}
-                          value={content}
-                          onChange={(e) => setContent(e.target.value)}
-                          placeholder={
-                            type === 'MEETUP' ? "E.g. Coffee & Code at Kochi Marina..." : 
-                            type === 'PARTNERSHIP' ? "E.g. Building a fintech startup for Kerala..." : 
-                            "E.g. Need a senior dev for a 2-week sprint..."
-                          }
-                          type={type}
-                          className="min-h-[180px] text-lg p-6 bg-slate-50 border-none rounded-[1.5rem] focus:ring-2 focus:ring-black/5"
-                        />
+                       <div className="space-y-4">
+                          <div className="flex items-center justify-between px-1">
+                             <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#FF3B30] animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">{coachTip}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400">Clarity</span>
+                                <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                                   <div className="h-full bg-[#FF3B30] transition-all duration-500" style={{ width: `${clarityScore}%` }} />
+                                </div>
+                             </div>
+                          </div>
 
-                        {activeSuggestions.length > 0 && (
-                          <div className="absolute -top-12 left-0 right-0 flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
-                             {activeSuggestions.map((s, i) => (
-                               <motion.div key={s} className="relative">
-                                 <motion.button
-                                   initial={{ opacity: 0, y: 10 }}
-                                   animate={{ opacity: 1, y: 0 }}
-                                   transition={{ delay: i * 0.1 }}
-                                   onClick={() => setActiveMenu(activeMenu === s ? null : s)}
-                                   className={cn(
-                                     "h-9 px-5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm border flex items-center gap-2 shrink-0 whitespace-nowrap",
-                                     activeMenu === s ? "bg-[#FF3B30] text-white border-[#FF3B30]" : "bg-white text-slate-500 border-black/[0.05] hover:border-black/20"
-                                   )}
-                                 >
-                                   {s === "What are you solving for?" ? <Activity size={12} /> : <Target size={12} />}
-                                   {s}
-                                 </motion.button>
+                          <div className="relative group">
+                            <ClarityTextarea
+                              ref={inputRef}
+                              value={content}
+                              onChange={(e) => setContent(e.target.value)}
+                              placeholder={
+                                type === 'MEETUP' ? "E.g. Coffee & Code at Kochi Marina..." : 
+                                type === 'PARTNERSHIP' ? "E.g. Building a fintech startup for Kerala..." : 
+                                "E.g. Need a senior dev for a 2-week sprint..."
+                              }
+                              type={type}
+                              className="min-h-[220px] text-lg p-8 bg-slate-50 border-none rounded-[2rem] focus:ring-4 focus:ring-black/5"
+                            />
+
+                            {activeSuggestions.length > 0 && clarityScore >= 30 && (
+                              <div className="absolute bottom-6 left-6 right-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
+                                 {activeSuggestions.map((s, i) => (
+                                   <div key={s} className="relative">
+                                     <motion.button
+                                       initial={{ opacity: 0, scale: 0.9 }}
+                                       animate={{ opacity: 1, scale: 1 }}
+                                       transition={{ delay: i * 0.1 }}
+                                       onClick={() => setActiveMenu(activeMenu === s ? null : s)}
+                                       className={cn(
+                                         "h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl border flex items-center gap-3 shrink-0 whitespace-nowrap",
+                                         activeMenu === s ? "bg-[#FF3B30] text-white border-[#FF3B30]" : "bg-white text-slate-500 border-black/[0.05] hover:border-[#FF3B30] hover:text-[#FF3B30]"
+                                       )}
+                                     >
+                                       {s === "What are you solving for?" ? <Activity size={12} /> : <Target size={12} />}
+                                       {s}
+                                       <Plus size={10} className={cn("transition-transform", activeMenu === s && "rotate-45")} />
+                                     </motion.button>
 
                                  <AnimatePresence>
                                    {activeMenu === s && (

@@ -498,9 +498,9 @@ function OnboardingContent() {
                                     const highConfidence = detection.confidence > 0.6;
                                     
                                     // Filter suggestions
-                                    if (val.length > 1) {
+                                    if (val.length >= 2) {
                                       const filtered = Object.keys(ROLE_TO_INDUSTRY).filter(r => 
-                                        r.includes(val.toLowerCase())
+                                        r.toLowerCase().includes(val.toLowerCase())
                                       );
                                       setRoleSuggestions(filtered);
                                       setShowSuggestions(true);

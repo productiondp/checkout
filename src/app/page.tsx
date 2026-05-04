@@ -72,6 +72,21 @@ function AuthContent() {
     }
   }, [mode, mounted]);
 
+  //  STRATEGIC PRELOADER (V1.0)
+  // Preload the feed in the background to ensure 'Zero-Latency' transition to dashboard
+  useEffect(() => {
+    if (mounted) {
+      fetch('/api/public-feed').catch(() => {});
+    }
+  }, [mounted]);
+
+  // Re-warm cache when verification starts
+  useEffect(() => {
+    if (submissionState === 'VERIFYING') {
+      fetch('/api/public-feed').catch(() => {});
+    }
+  }, [submissionState]);
+
   if (!mounted) return null;
 
 
@@ -80,25 +95,28 @@ function AuthContent() {
     const msg = (err?.message || "").toLowerCase();
     const code = err?.code || "";
 
-    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials") || code === "invalid_credentials")
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials") || msg.includes("invalid email or password") || code === "invalid_credentials")
       return "Email or password is incorrect. Please try again.";
-    if (msg.includes("email not confirmed") || code === "email_not_confirmed")
+    if (msg.includes("email not confirmed") || msg.includes("confirm your email") || code === "email_not_confirmed")
       return "Please verify your email address before signing in.";
-    if (msg.includes("user not found"))
+    if (msg.includes("user not found") || msg.includes("does not exist"))
       return "No account found with this email address.";
     if (msg.includes("password should be at least") || msg.includes("password is too short"))
       return "Password must be at least 6 characters.";
     if (msg.includes("email address is invalid") || msg.includes("unable to validate email"))
       return "Please enter a valid email address.";
-    if (msg.includes("too many requests") || code === "over_request_rate_limit")
+    if (msg.includes("too many requests") || msg.includes("rate limit") || code === "over_request_rate_limit")
       return "Too many attempts. Please wait a moment and try again.";
-    if (msg.includes("network") || msg.includes("fetch"))
+    if (msg.includes("network") || msg.includes("fetch") || msg.includes("failed to fetch"))
       return "Connection failed. Please check your internet and try again.";
-    if (msg.includes("boot_timeout") || msg.includes("timed out"))
+    if (msg.includes("boot_timeout") || msg.includes("timed out") || msg.includes("timeout"))
       return "Request timed out. Please try again.";
     if (msg.includes("signup is disabled"))
       return "New sign-ups are currently unavailable. Please try later.";
-    return "Something went wrong. Please try again.";
+    
+    // Log unknown errors for debugging
+    console.error("[AUTH] Unmapped Error:", err);
+    return msg || "Something went wrong. Please try again.";
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,7 +213,7 @@ function AuthContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#1D1D1F] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#000000] font-sans selection:bg-[#E53935]/10 relative overflow-x-hidden">
       <LandingHeader 
          onJoinClick={() => setMode("signup")} 
          onSigninClick={() => setMode("signin")} 
@@ -205,8 +223,8 @@ function AuthContent() {
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-[47px] lg:gap-[95px]">
             <div className="w-full lg:w-1/2 space-y-8">
                <h1 className="text-5xl lg:text-7xl tracking-tighter leading-[0.85] lg:leading-[0.85] mb-8">
-                  <span className="font-thin text-gray-600">Connect. Grow.</span> <br />
-                  <span className="font-bold text-[#E53935]">Succeed.</span>
+                  <span className="font-thin text-black/60 uppercase">Connect. Grow.</span> <br />
+                  <span className="font-bold text-[#E53935] uppercase">Succeed.</span>
                </h1>
 
                {mounted && (
@@ -292,10 +310,10 @@ function AuthContent() {
                         {/* Text */}
                         <div className="space-y-3">
                           <h2 className="text-[28px] font-black uppercase tracking-tighter leading-none italic text-[#E53935] font-outfit">
-                            {submissionState === 'FAILED' ? 'Login Failed' : 'Verifying Identity'}
+                            {submissionState === 'FAILED' ? (mode === 'signup' ? 'Setup Failed' : 'Login Failed') : 'Verifying Identity'}
                           </h2>
                           <p className="text-[10px] font-black text-black/20 uppercase tracking-[0.3em]">
-                            {submissionState === 'FAILED' ? 'Check your credentials and try again' : 'Connecting to the secure network'}
+                            {submissionState === 'FAILED' ? 'Review the details below and try again' : 'Connecting to the secure network'}
                           </p>
                           {error && (
                             <div className="bg-red-50 border border-red-100 text-[#E53935] px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider inline-block">
@@ -471,7 +489,7 @@ function AuthContent() {
          </div>
       </main>
 
-      <section className="bg-white border-t border-black/[0.04] py-16 lg:py-24">
+      <section className="bg-[#FFFFFF] border-t border-black/[0.04] py-16 lg:py-24">
          <div className="max-w-[1128px] mx-auto px-6">
             <div className="mb-10">
                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E53935] mb-3">Discover the Network</p>

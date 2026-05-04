@@ -93,7 +93,12 @@ export function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
   if (!url || !key) {
-    console.error("[SUPABASE] Fatal: Missing environment variables for client initialization.");
+    const errorMsg = "[SUPABASE] Fatal: Missing environment variables. Please check your .env files for NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.";
+    console.error(errorMsg);
+    // In dev, throw to make it obvious
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error(errorMsg);
+    }
   }
 
   client = createBrowserClient<Database>(url, key, {

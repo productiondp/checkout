@@ -309,14 +309,14 @@ function OnboardingContent() {
                       <CheckCircle2 size={12} className="text-[#34C759]" />
                       Setup Complete
                    </div>
-                   <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-[#1D1D1F] leading-[0.9] uppercase">
-                      Find the <br /> 
-                      <span className="text-[#FF3B30]">right people</span> <br />
-                      to work with.
-                   </h1>
-                   <p className="text-[#86868B] font-medium text-lg lg:text-xl max-w-md leading-tight">
-                      Your account is ready. Post what you're looking for or explore current projects.
-                   </p>
+                    <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-[#1D1D1F] leading-[0.9] uppercase">
+                       Core Network <br /> 
+                       <span className="text-[#FF3B30]">Mission</span> <br />
+                       Strategic Roadmap.
+                    </h1>
+                    <p className="text-[#86868B] font-medium text-lg lg:text-xl max-w-md leading-tight">
+                       Your mission is initialized. Follow the roadmap to secure your first strategic partnership.
+                    </p>
                 </div>
 
                 <div className="pt-10 border-t border-black/[0.03] grid grid-cols-1 sm:grid-cols-3 gap-6">

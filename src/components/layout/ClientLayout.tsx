@@ -153,7 +153,7 @@ export default function ClientLayout({
 
   return (
     <ConnectionProvider>
-      <div className="min-h-screen-safe w-full max-w-[1920px] mx-auto selection:bg-[#E53935] selection:text-white shadow-2xl">
+      <div className="min-h-screen-safe w-full max-w-[1920px] mx-auto bg-[#FFFFFF] selection:bg-[#E53935] selection:text-white shadow-2xl">
         {children}
       </div>
     </ConnectionProvider>

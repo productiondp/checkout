@@ -24,7 +24,7 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 h-[80px] lg:h-[100px] z-[100] px-6 lg:px-12 flex items-center justify-between bg-white/90 backdrop-blur-xl border-b border-black/[0.03]">
+      <nav className="fixed top-0 inset-x-0 h-[80px] lg:h-[100px] z-[100] px-6 lg:px-12 flex items-center justify-between bg-[#FFFFFF]/90 backdrop-blur-xl border-b border-black/[0.03]">
         <Link href="/" className="group flex items-center">
            <Image 
               src="/logo.png" 

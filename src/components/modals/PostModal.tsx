@@ -113,6 +113,7 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
 
   const [suggestion, setSuggestion] = useState<{ industry: string, focus: string } | null>(null);
   const [activeSuggestions, setActiveSuggestions] = useState<string[]>([]);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [submissionState, setSubmissionState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -417,24 +418,70 @@ export default function PostModal({ isOpen, onClose, onPostSuccess, editPost, in
                         />
 
                         {activeSuggestions.length > 0 && (
-                          <div className="absolute bottom-4 left-6 right-6 flex flex-wrap gap-2 pointer-events-none">
+                          <div className="absolute -top-12 left-0 right-0 flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
                              {activeSuggestions.map((s, i) => (
-                               <motion.button
-                                 key={s}
-                                 initial={{ opacity: 0, scale: 0.9 }}
-                                 animate={{ opacity: 1, scale: 1 }}
-                                 transition={{ delay: i * 0.1 }}
-                                 onClick={(e) => {
-                                   e.stopPropagation();
-                                   const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s + ': ';
-                                   setContent(newContent);
-                                   inputRef.current?.focus();
-                                 }}
-                                 className="pointer-events-auto h-8 px-4 bg-white/90 backdrop-blur-md border border-black/[0.05] rounded-full text-[9px] font-black uppercase tracking-wider text-[#1A1A1A] hover:bg-[#FF3B30] hover:text-white hover:border-[#FF3B30] transition-all shadow-sm flex items-center gap-2 group/sug"
-                               >
-                                 <Plus size={10} className="group-hover/sug:rotate-90 transition-transform" />
-                                 {s}
-                               </motion.button>
+                               <motion.div key={s} className="relative">
+                                 <motion.button
+                                   initial={{ opacity: 0, y: 10 }}
+                                   animate={{ opacity: 1, y: 0 }}
+                                   transition={{ delay: i * 0.1 }}
+                                   onClick={() => setActiveMenu(activeMenu === s ? null : s)}
+                                   className={cn(
+                                     "h-9 px-5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm border flex items-center gap-2 shrink-0 whitespace-nowrap",
+                                     activeMenu === s ? "bg-[#FF3B30] text-white border-[#FF3B30]" : "bg-white text-slate-500 border-black/[0.05] hover:border-black/20"
+                                   )}
+                                 >
+                                   {s === "What are you solving for?" ? <Activity size={12} /> : <Target size={12} />}
+                                   {s}
+                                 </motion.button>
+
+                                 <AnimatePresence>
+                                   {activeMenu === s && (
+                                     <motion.div
+                                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                       animate={{ opacity: 1, scale: 1, y: 0 }}
+                                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                       className="absolute top-full left-0 mt-3 w-72 bg-white rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-black/[0.03] p-4 z-[200] space-y-2 backdrop-blur-xl"
+                                     >
+                                       {(s === "What are you solving for?" ? [
+                                         "Product Market Fit", "Technical Scalability", "Operational Efficiency", "Market Expansion", "Customer Acquisition"
+                                       ] : [
+                                         "Launch MVP (30 Days)", "Secure First 100 Users", "Hire Core Team", "Validate Model", "Optimize Strategy"
+                                       ]).map(option => (
+                                         <button
+                                           key={option}
+                                           onClick={() => {
+                                             const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + option;
+                                             setContent(newContent);
+                                             setActiveMenu(null);
+                                             inputRef.current?.focus();
+                                           }}
+                                           className="w-full h-12 px-5 bg-slate-50 hover:bg-[#FF3B30] hover:text-white rounded-2xl text-[10px] font-bold text-slate-600 transition-all text-left uppercase tracking-tight"
+                                         >
+                                           {option}
+                                         </button>
+                                       ))}
+                                       <div className="pt-2 mt-2 border-t border-black/[0.03]">
+                                          <input 
+                                            placeholder="Type custom..."
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') {
+                                                const val = (e.target as HTMLInputElement).value;
+                                                if (val) {
+                                                  const newContent = content.trim() + (content.includes('\n') ? '\n\n' : '\n') + s.replace('?', '') + ': ' + val;
+                                                  setContent(newContent);
+                                                  setActiveMenu(null);
+                                                  inputRef.current?.focus();
+                                                }
+                                              }
+                                            }}
+                                            className="w-full h-12 px-5 bg-white border border-black/[0.05] rounded-2xl text-[10px] font-bold outline-none focus:border-[#FF3B30] transition-all"
+                                          />
+                                       </div>
+                                     </motion.div>
+                                   )}
+                                 </AnimatePresence>
+                               </motion.div>
                              ))}
                           </div>
                         )}

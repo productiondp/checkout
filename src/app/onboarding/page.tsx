@@ -522,32 +522,47 @@ function OnboardingContent() {
                                 <AnimatePresence>
                                   {showSuggestions && roleSuggestions.length > 0 && (
                                     <motion.div 
-                                      initial={{ opacity: 0, y: -10 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, y: -10 }}
-                                      className="absolute top-full left-0 right-0 bg-white border border-slate-100 shadow-2xl rounded-b-xl z-[70] overflow-hidden"
+                                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                      className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200/60 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] rounded-2xl z-[100] overflow-hidden backdrop-blur-xl"
                                     >
-                                      {roleSuggestions.map(s => (
-                                        <button 
-                                          key={s}
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const detection = detectIndustry(s);
-                                            setOnboardingData(prev => ({ 
-                                              ...prev, 
-                                              jobRole: s.charAt(0).toUpperCase() + s.slice(1),
-                                              industry: detection.industries[0] || prev.industry
-                                            }));
-                                            setRoleSuggestions([]);
-                                            setShowSuggestions(false);
-                                          }}
-                                          className="w-full h-14 px-16 text-left hover:bg-slate-50 text-[#1A1A1A] font-black uppercase text-[10px] flex items-center border-b border-slate-50 last:border-0 transition-colors"
-                                        >
-                                          {s}
-                                        </button>
-                                      ))}
+                                      <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                                         <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.15em]">Matching Roles</span>
+                                         <div className="h-1.5 w-1.5 rounded-full bg-[#FF3B30] animate-pulse" />
+                                      </div>
+                                      <div className="max-h-[320px] overflow-y-auto no-scrollbar py-2">
+                                        {roleSuggestions.map(s => (
+                                          <button 
+                                            key={s}
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              const detection = detectIndustry(s);
+                                              setOnboardingData(prev => ({ 
+                                                ...prev, 
+                                                jobRole: s.charAt(0).toUpperCase() + s.slice(1),
+                                                industry: detection.industries[0] || prev.industry
+                                              }));
+                                              setRoleSuggestions([]);
+                                              setShowSuggestions(false);
+                                            }}
+                                            className="w-full px-6 py-4 text-left hover:bg-slate-50 flex items-center justify-between group transition-all"
+                                          >
+                                            <div className="flex items-center gap-4">
+                                               <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#FF3B30] group-hover:border-[#FF3B30]/20 transition-all">
+                                                  <Compass size={18} />
+                                               </div>
+                                               <div className="flex flex-col">
+                                                  <span className="text-[13px] font-black uppercase text-[#1A1A1A] tracking-tight group-hover:translate-x-1 transition-transform">{s}</span>
+                                                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Industry: {detectIndustry(s).industries[0] || "General"}</span>
+                                               </div>
+                                            </div>
+                                            <ArrowRight size={14} className="text-slate-200 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                          </button>
+                                        ))}
+                                      </div>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>

@@ -639,8 +639,6 @@ function OnboardingContent() {
                                       )}
                                    </div>
                                  </motion.div>
-                               )}
-                             </AnimatePresence>
                           </div>
 
                           <div className="space-y-6">

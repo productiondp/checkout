@@ -478,7 +478,7 @@ function OnboardingContent() {
                              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">
                                 {onboardingData.role === 'ADVISOR' ? "What can you help with?" : "What do you do?"}
                              </label>
-                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 overflow-hidden focus-within:bg-white transition-all shadow-sm">
+                             <div className="relative bg-slate-50 rounded-lg border border-slate-100 focus-within:bg-white transition-all shadow-sm">
                                 {onboardingData.role === 'ADVISOR' ? (
                                    <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E53935]" size={24} />
                                 ) : (
@@ -488,6 +488,10 @@ function OnboardingContent() {
                                   type="text" 
                                   value={onboardingData.jobRole}
                                   onFocus={() => setShowSuggestions(true)}
+                                  onBlur={() => {
+                                    // Small delay to allow click on suggestion to register
+                                    setTimeout(() => setShowSuggestions(false), 200);
+                                  }}
                                   onChange={e => {
                                     const val = e.target.value;
                                     const detection = detectIndustry(val);
@@ -521,21 +525,25 @@ function OnboardingContent() {
                                       initial={{ opacity: 0, y: -10 }}
                                       animate={{ opacity: 1, y: 0 }}
                                       exit={{ opacity: 0, y: -10 }}
-                                      className="absolute top-full left-0 right-0 bg-white border border-slate-100 shadow-xl rounded-b-xl z-[60] overflow-hidden"
+                                      className="absolute top-full left-0 right-0 bg-white border border-slate-100 shadow-2xl rounded-b-xl z-[70] overflow-hidden"
                                     >
                                       {roleSuggestions.map(s => (
                                         <button 
                                           key={s}
-                                          onClick={() => {
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
                                             const detection = detectIndustry(s);
                                             setOnboardingData(prev => ({ 
                                               ...prev, 
                                               jobRole: s.charAt(0).toUpperCase() + s.slice(1),
                                               industry: detection.industries[0] || prev.industry
                                             }));
+                                            setRoleSuggestions([]);
                                             setShowSuggestions(false);
                                           }}
-                                          className="w-full h-14 px-16 text-left hover:bg-slate-50 text-slate-600 font-bold uppercase text-xs flex items-center border-b border-slate-50 last:border-0"
+                                          className="w-full h-14 px-16 text-left hover:bg-slate-50 text-[#1A1A1A] font-black uppercase text-[10px] flex items-center border-b border-slate-50 last:border-0 transition-colors"
                                         >
                                           {s}
                                         </button>

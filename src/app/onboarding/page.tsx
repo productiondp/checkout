@@ -765,7 +765,6 @@ function OnboardingContent() {
                               </div>
                           </div>
 
-                           </div>
                         </div>
                      )}
 

@@ -199,7 +199,6 @@ export const getIntentConfig = (id: IntentType) => INTENT_DATA.find(i => i.id ==
 export const detectTaxonomy = (text: string) => {
   const lower = text.toLowerCase();
   let bestMatch = { industry: "", focus: "", confidence: 0 };
-... (rest of the file remains the same)
 
   // 1. High-Precision Direct Rules (Confidence: 100)
   const directRules = [

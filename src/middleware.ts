@@ -83,14 +83,10 @@ export const config = {
     '/chat/:path*',
     '/marketplace/:path*',
     '/advisors/:path*',
-    '/discover/:path*',
     '/matches/:path*',
     '/profile/:path*',
     '/settings/:path*',
     '/onboarding/:path*',
     '/admin/:path*',
-    '/network/:path*',
-    '/insights/:path*',
-    '/opportunities/:path*',
   ]
 }

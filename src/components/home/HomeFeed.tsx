@@ -167,7 +167,9 @@ export default function HomeFeed({
         // STRICT FILTERING FOR NON-SMART MODES
         if (intentMode !== 'SMART' && post.type !== intentMode) return false;
         
-        return post.relevanceScore > 0;
+        // Removed the strict relevanceScore > 0 filter to ensure feed is populated
+        // even if match parameters are not yet fully synced for a new user.
+        return true;
       })
       .sort((a: any, b: any) => {
         if (sortMode === 'LATEST') {

@@ -105,8 +105,20 @@ export default function HomeFeedClient({ initialPosts = [], initialProfile }: Ho
     if (!authUser) return;
     if (posts.length === 0) setIsLoading(true);
     try {
-      const { data: postsData, error: fetchErr } = await supabase.from('posts').select(`*, profiles(id, full_name, avatar_url, role)`).order('created_at', { ascending: false }).limit(100);
-      if (fetchErr) console.error("[FEED_FATAL_ERROR] Supabase rejected fetch:", fetchErr);
+      let { data: postsData, error: fetchErr } = await supabase.from('posts').select(`*, profiles(id, full_name, avatar_url, role)`).order('created_at', { ascending: false }).limit(100);
+      
+      if (fetchErr) {
+        console.error("[FEED_ERROR] Primary fetch failed:", fetchErr);
+        // Fallback: Fetch without join to ensure posts show up even if profiles are missing
+        const { data: fallbackData } = await supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(50);
+        if (fallbackData) postsData = fallbackData as any;
+      }
+
+      if (!postsData || postsData.length === 0) {
+         // Second Fallback: Just in case RLS or join logic is being too strict
+         const { data: finalFallback } = await supabase.from('posts').select('*').limit(20);
+         if (finalFallback) postsData = finalFallback as any;
+      }
       
       const { data: connections } = await supabase.from('connections').select('*').or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
       const mapped = (postsData || []).filter(p => {

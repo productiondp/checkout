@@ -1,5 +1,4 @@
 import React from "react";
-import { cn } from "@/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -13,18 +12,21 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const variants = {
     primary: "btn-primary",
-    secondary: "bg-background-soft text-text hover:bg-black/[0.04] rounded-lg px-6 py-4 font-black ",
-    outline: "border-2 border-background-soft text-text hover:bg-background-soft hover:shadow-sm rounded-lg px-6 py-4 font-black ",
-    ghost: "text-text-secondary hover:text-primary transition-colors font-black ",
+    secondary: "bg-gray-100 text-black hover:bg-black/[0.04] rounded-lg px-6 py-4 font-black ",
+    outline: "border-2 border-gray-100 text-black hover:bg-gray-50 rounded-lg px-6 py-4 font-black ",
+    ghost: "text-gray-500 hover:text-red-600 transition-colors font-black ",
   };
+
+  // Inlined cn logic to resolve persistent Webpack 'is not a function' errors
+  const combinedClasses = [
+    "inline-flex items-center justify-center transition-all duration-300 disabled:opacity-50 active:scale-[0.98]",
+    variants[variant],
+    className
+  ].filter(Boolean).join(" ");
 
   return (
     <button
-      className={cn(
-        "inline-flex items-center justify-center transition-all duration-300 disabled:opacity-50 active:scale-[0.98]",
-        variants[variant],
-        className
-      )}
+      className={combinedClasses}
       {...props}
     >
       {children}

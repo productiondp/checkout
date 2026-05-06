@@ -22,6 +22,24 @@ export default function LiveOpsPage() {
             </div>
 
             <div className="flex items-center gap-4">
+               <button 
+                  onClick={async () => {
+                    const { AdminService } = await import("@/services/admin-service");
+                    const ok = confirm("Are you sure you want to run a full database cleanup? This will permanently remove orphaned records.");
+                    if (!ok) return;
+                    try {
+                      await AdminService.cleanupOrphanedData();
+                      alert("Cleanup successful! Orphaned records removed.");
+                      window.location.reload();
+                    } catch (e) {
+                      alert("Cleanup failed: " + (e as Error).message);
+                    }
+                  }}
+                  className="px-6 py-3 bg-[#1A1A1A] text-white rounded-xl shadow-lg hover:bg-black transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-3 group"
+               >
+                  <Database size={14} className="group-hover:rotate-12 transition-transform" />
+                  Run System Cleanup
+               </button>
                <div className="px-6 py-3 bg-white border border-black/5 rounded-xl shadow-sm flex items-center gap-4">
                   <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">System Healthy</span>

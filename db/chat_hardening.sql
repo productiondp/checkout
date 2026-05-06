@@ -43,21 +43,44 @@ USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 
 -- Messages RLS
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+-- 1. VIEW POLICY
 DROP POLICY IF EXISTS "Users can see messages for their connections" ON public.messages;
 CREATE POLICY "Users can see messages for their connections" ON public.messages FOR SELECT
-USING (EXISTS (
-    SELECT 1 FROM public.connections 
-    WHERE id = messages.connection_id 
-    AND (sender_id = auth.uid() OR receiver_id = auth.uid())
-));
+USING (
+    -- Individual connections
+    (connection_id IS NOT NULL AND EXISTS (
+        SELECT 1 FROM public.connections 
+        WHERE id = messages.connection_id 
+        AND (sender_id = auth.uid() OR receiver_id = auth.uid())
+    ))
+    OR
+    -- Group rooms
+    (room_id IS NOT NULL AND EXISTS (
+        SELECT 1 FROM public.participants 
+        WHERE room_id = messages.room_id 
+        AND user_id = auth.uid()
+    ))
+);
 
+-- 2. INSERT POLICY
 DROP POLICY IF EXISTS "Users can send messages to their connections" ON public.messages;
 CREATE POLICY "Users can send messages to their connections" ON public.messages FOR INSERT
-WITH CHECK (EXISTS (
-    SELECT 1 FROM public.connections 
-    WHERE id = messages.connection_id 
-    AND (sender_id = auth.uid() OR receiver_id = auth.uid())
-));
+WITH CHECK (
+    -- Individual connections
+    (connection_id IS NOT NULL AND EXISTS (
+        SELECT 1 FROM public.connections 
+        WHERE id = messages.connection_id 
+        AND (sender_id = auth.uid() OR receiver_id = auth.uid())
+    ))
+    OR
+    -- Group rooms
+    (room_id IS NOT NULL AND EXISTS (
+        SELECT 1 FROM public.participants 
+        WHERE room_id = messages.room_id 
+        AND user_id = auth.uid()
+    ))
+);
 
 -- 5. PERFORMANCE INDEXES
 CREATE INDEX IF NOT EXISTS idx_messages_connection ON public.messages(connection_id);
@@ -67,30 +90,49 @@ CREATE INDEX IF NOT EXISTS idx_connections_sender ON public.connections(sender_i
 CREATE OR REPLACE FUNCTION public.notify_new_message()
 RETURNS trigger AS $$
 DECLARE
-  v_recipient_id UUID;
   v_sender_name TEXT;
+  v_participant RECORD;
 BEGIN
-  -- 1. Identify Recipient from Connection (Step 5/6)
-  SELECT 
-    CASE WHEN sender_id = NEW.sender_id THEN receiver_id ELSE sender_id END
-  INTO v_recipient_id
-  FROM public.connections
-  WHERE id = NEW.connection_id;
-
-  -- 2. Fetch Sender Name for Notification
+  -- 1. Fetch Sender Name for Notification
   SELECT full_name INTO v_sender_name FROM public.profiles WHERE id = NEW.sender_id;
 
-  -- 3. Atomic Notification Insert
-  IF v_recipient_id IS NOT NULL THEN
-    INSERT INTO public.notifications (user_id, title, message, type, link)
-    VALUES (
-      v_recipient_id,
-      'New Message',
-      COALESCE(v_sender_name, 'Someone') || ' sent you a message.',
-      'MESSAGE',
-      '/chat?user=' || NEW.sender_id
-    );
+  -- 2. Direct Connection Notification
+  IF NEW.connection_id IS NOT NULL THEN
+    FOR v_participant IN (
+      SELECT CASE WHEN sender_id = NEW.sender_id THEN receiver_id ELSE sender_id END as user_id
+      FROM public.connections
+      WHERE id = NEW.connection_id
+    ) LOOP
+      INSERT INTO public.notifications (user_id, title, message, type, link)
+      VALUES (
+        v_participant.user_id,
+        'New Message',
+        COALESCE(v_sender_name, 'Someone') || ' sent you a message.',
+        'MESSAGE',
+        '/chat?user=' || NEW.sender_id
+      );
+    END LOOP;
   END IF;
+
+  -- 3. Room Participant Notifications
+  IF NEW.room_id IS NOT NULL THEN
+    FOR v_participant IN (
+      SELECT user_id 
+      FROM public.participants 
+      WHERE room_id = NEW.room_id 
+      AND user_id != NEW.sender_id
+    ) LOOP
+      INSERT INTO public.notifications (user_id, title, message, type, link)
+      VALUES (
+        v_participant.user_id,
+        'New Group Message',
+        COALESCE(v_sender_name, 'Someone') || ' posted in a group.',
+        'MESSAGE',
+        '/chat'
+      );
+    END LOOP;
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

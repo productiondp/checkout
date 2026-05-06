@@ -14,18 +14,20 @@ import {
   Target,
   Activity,
   Sparkles,
-  Clock
+  Clock,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ConnectionService } from "@/services/connection-service";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useConnections } from "@/hooks/useConnections";
 import ConnectButton from "@/components/ui/ConnectButton";
 import TerminalLayout from "@/components/layout/TerminalLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PartnerProfileCard from "@/components/partners/PartnerProfileCard";
 
 // --- TYPES ---
 type MatchProfile = {
@@ -46,12 +48,21 @@ type MatchProfile = {
 };
 
 export default function MatchesPage() {
-  const { user: authUser } = useAuth();
+  const { user, profile: authUser } = useAuth();
   const { connectionMap, refreshConnections } = useConnections();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const [activeTab, setActiveTab] = useState<'DISCOVER' | 'REQUESTS' | 'CONNECTED'>('DISCOVER');
+  const initialTab = (searchParams.get('tab') as any) || 'DISCOVER';
+  const [activeTab, setActiveTab] = useState<'DISCOVER' | 'REQUESTS' | 'CONNECTED'>(initialTab.toUpperCase());
+  
+  // Sync tab if URL changes (optional but good)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) setActiveTab(tab.toUpperCase() as any);
+  }, [searchParams]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("All Roles");
@@ -64,9 +75,10 @@ export default function MatchesPage() {
     partnersCount: 0
   });
   const [confirmAction, setConfirmAction] = useState<{ type: 'REMOVE' | 'BLOCK'; connectionId: string; partnerName: string } | null>(null);
+  const [requests, setRequests] = useState<any[]>([]);
 
   const initData = async () => {
-    if (!authUser) return;
+    if (!authUser?.id || authUser.id === 'null' || authUser.id === 'undefined') return;
     setIsLoading(true);
     try {
       const { data: profiles } = await supabase.from('profiles').select('*').neq('id', authUser.id);
@@ -77,7 +89,7 @@ export default function MatchesPage() {
         .select('*', { count: 'exact', head: true })
         .eq('sender_id', authUser.id)
         .gte('created_at', today.toISOString());
-      const partnersCount = Object.values(connectionMap).filter(s => s === 'ACCEPTED').length;
+      const partnersCount = Object.values(connectionMap).filter(s => s === 'CONNECTED').length;
 
       if (profiles) {
         const mapped = profiles.map(p => {
@@ -94,7 +106,7 @@ export default function MatchesPage() {
           };
         });
         setAllProfiles(mapped);
-        const avgScore = mapped.length > 0 ? Math.round(mapped.reduce((acc, p) => acc + (p.metadata.match_score || 0), 0) / mapped.length) : 0;
+        const avgScore = mapped.length > 0 ? Math.round(mapped.reduce((acc, p) => acc + (p.metadata?.match_score || 0), 0) / mapped.length) : 0;
         setStats({
           activeCount: profiles.length,
           yourScore: authUser.matchScore || avgScore || 85,
@@ -145,6 +157,24 @@ export default function MatchesPage() {
     }
   };
 
+  const handleReject = async (connectionId: string) => {
+    try {
+      await ConnectionService.reject(connectionId);
+      await refreshConnections();
+    } catch (err) {
+      alert("Action failed. Try again.");
+    }
+  };
+
+  const handleCancel = async (connectionId: string) => {
+    try {
+      await ConnectionService.removeConnection(connectionId);
+      await refreshConnections();
+    } catch (err) {
+      alert("Action failed. Try again.");
+    }
+  };
+
   const filteredList = useMemo(() => {
     return allProfiles.filter(p => {
       const matchesSearch = p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,29 +190,89 @@ export default function MatchesPage() {
   , [filteredList, connectionMap]);
 
   const connectedList = useMemo(() => 
-    filteredList.filter(p => connectionMap[p.id] === 'ACCEPTED')
+    filteredList.filter(p => connectionMap[p.id] === 'CONNECTED')
   , [filteredList, connectionMap]);
 
-  const [requests, setRequests] = useState<any[]>([]);
   useEffect(() => {
-    if (!authUser) return;
+    if (!user?.id) return;
+    
     const fetchReqs = async () => {
-      const { data } = await supabase
-        .from('connections')
-        .select(`
-          id,
-          status,
-          sender_id,
-          receiver_id,
-          sender:profiles!connections_sender_id_fkey (*),
-          receiver:profiles!connections_receiver_id_fkey (*)
-        `)
-        .eq('status', 'PENDING')
-        .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`);
-      setRequests(data || []);
+      if (!user?.id || user.id === 'null' || user.id === 'undefined') return;
+      
+      try {
+        console.log("[Matches] Starting split-fetch for requests...");
+        
+        // 1. Fetch Connection Records (No join to avoid PGRST200)
+        const [incRes, outRes] = await Promise.all([
+          supabase.from('connections').select('*').eq('receiver_id', user.id).eq('status', 'PENDING'),
+          supabase.from('connections').select('*').eq('sender_id', user.id).eq('status', 'PENDING')
+        ]);
+
+        if (incRes.error) throw incRes.error;
+        if (outRes.error) throw outRes.error;
+
+        const allConns = [...(incRes.data || []), ...(outRes.data || [])];
+        if (allConns.length === 0) {
+          setRequests([]);
+          return;
+        }
+
+        // 2. Collect Partner IDs for Hydration (Strict Firewall)
+        const partnerIds = allConns
+          .map(c => c.sender_id === user.id ? c.receiver_id : c.sender_id)
+          .filter(id => id && id !== 'null' && id !== 'undefined');
+
+        if (partnerIds.length === 0) {
+          setRequests([]);
+          return;
+        }
+        
+        // 3. Fetch Profiles for all partners
+        const { data: profiles, error: pError } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, role, location')
+          .in('id', partnerIds);
+
+        if (pError) throw pError;
+
+        const profileMap = (profiles || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as any);
+
+        // 4. Identify and Clean Orphaned Records (Auto-Fix)
+        const orphaned = allConns.filter(c => {
+          const partnerId = c.receiver_id === user.id ? c.sender_id : c.receiver_id;
+          return !profileMap[partnerId];
+        });
+
+        if (orphaned.length > 0) {
+          console.log("[Matches] Auto-cleaning orphaned records:", orphaned.length);
+          await Promise.all(orphaned.map(o => ConnectionService.removeConnection(o.id)));
+          fetchReqs(); // Re-run to get clean state
+          refreshConnections(); // Update global map
+          return;
+        }
+
+        // 5. Map valid ones
+        const mapped = allConns.map(c => {
+          const isIncoming = c.receiver_id === user.id;
+          const partnerId = isIncoming ? c.sender_id : c.receiver_id;
+          const profile = profileMap[partnerId];
+          
+          return {
+            ...c,
+            isIncoming,
+            partner: profile
+          };
+        }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        console.log("[Matches] Successfully hydrated requests:", mapped.length);
+        setRequests(mapped);
+      } catch (err) {
+        console.error("[Matches] Hydration Error:", err);
+      }
     };
+
     fetchReqs();
-  }, [authUser?.id, connectionMap]);
+  }, [user?.id, connectionMap]);
 
   return (
     <ProtectedRoute>
@@ -192,7 +282,7 @@ export default function MatchesPage() {
               <div className="flex p-1 bg-[#F5F5F7] rounded-[10px] border border-black/[0.03]">
                  {[
                    { id: 'DISCOVER', label: 'Explore', count: discoverList.length },
-                   { id: 'REQUESTS', label: 'Requests', count: requests.filter(r => r.receiver_id === authUser?.id).length },
+                   { id: 'REQUESTS', label: 'Requests', count: requests.filter(r => r.isIncoming).length },
                    { id: 'CONNECTED', label: 'Partners', count: connectedList.length }
                  ].map(tab => (
                    <button 
@@ -241,53 +331,76 @@ export default function MatchesPage() {
                  <p className="text-[11px] font-black uppercase tracking-[0.3em] text-black/20">Loading people...</p>
               </div>
            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="popLayout">
                  {activeTab === 'DISCOVER' && (
-                    discoverList.length > 0 ? (
-                       discoverList.map((p, i) => (
-                       <PartnerCard key={p.id} partner={p} index={i} setConfirmAction={setConfirmAction} />
-                       ))
-                    ) : <EmptyState title="All caught up" description="You've seen everyone for now." icon={Sparkles} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                       {discoverList.length > 0 ? (
+                          discoverList.map((p, i) => (
+                             <PartnerProfileCard key={p.id} partner={p} index={i} setConfirmAction={setConfirmAction} authUser={authUser} />
+                          ))
+                       ) : <EmptyState title="All caught up" description="You've seen everyone for now." icon={Sparkles} />}
+                    </div>
                  )}
   
                  {activeTab === 'REQUESTS' && (
-                    <>
-                       {requests.filter(r => r.receiver_id === authUser?.id).length > 0 && (
-                       <div className="col-span-full space-y-6 mb-12">
-                          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">New Requests</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                             {requests.filter(r => r.receiver_id === authUser?.id).map((req, i) => (
-                                <PartnerCard key={req.id} partner={req.sender} index={i} onAction={() => handleAccept(req.id)} actionLabel="Connect" setConfirmAction={setConfirmAction} />
-                             ))}
-                          </div>
-                       </div>
+                    <div className="space-y-16">
+                       {requests.filter(r => r.isIncoming).length > 0 && (
+                        <div className="space-y-6">
+                           <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">New Requests</h3>
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                              {requests.filter(r => r.isIncoming).map((req, i) => (
+                                 <PartnerProfileCard 
+                                    key={req.id} 
+                                    partner={req.partner} 
+                                    index={i} 
+                                    onAction={() => handleAccept(req.id)} 
+                                    onSecondaryAction={() => handleReject(req.id)}
+                                    actionLabel="Accept" 
+                                    variant="request"
+                                    setConfirmAction={setConfirmAction} 
+                                    authUser={authUser}
+                                 />
+                              ))}
+                           </div>
+                        </div>
                        )}
-                       {requests.filter(r => r.sender_id === authUser?.id).length > 0 && (
-                       <div className="col-span-full space-y-6">
-                          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">Waiting for response</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
-                             {requests.filter(r => r.sender_id === authUser?.id).map((req, i) => (
-                                <PartnerCard key={req.id} partner={req.receiver} index={i} disabled actionLabel="Waiting" setConfirmAction={setConfirmAction} />
-                             ))}
-                          </div>
-                       </div>
+                       
+                       {requests.filter(r => !r.isIncoming).length > 0 && (
+                        <div className="space-y-6">
+                           <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/20 ml-2">Waiting for response</h3>
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                              {requests.filter(r => !r.isIncoming).map((req, i) => (
+                                 <PartnerProfileCard 
+                                    key={req.id} 
+                                    partner={req.partner} 
+                                    index={i} 
+                                    onAction={() => handleCancel(req.id)} 
+                                    actionLabel="Cancel Request" 
+                                    variant="outgoing" 
+                                    setConfirmAction={setConfirmAction} 
+                                    authUser={authUser}
+                                 />
+                              ))}
+                           </div>
+                        </div>
                        )}
+
                        {requests.length === 0 && (
-                       <EmptyState title="No requests" description="Incoming and outgoing requests will appear here." icon={Clock} />
+                        <EmptyState title="No requests" description="Incoming and outgoing requests will appear here." icon={Clock} />
                        )}
-                    </>
+                    </div>
                  )}
   
                  {activeTab === 'CONNECTED' && (
-                    connectedList.length > 0 ? (
-                       connectedList.map((p, i) => (
-                       <PartnerCard key={p.id} partner={p} index={i} onAction={() => router.push(`/chat?user=${p.id}`)} actionLabel="Chat" variant="connected" setConfirmAction={setConfirmAction} />
-                       ))
-                    ) : <EmptyState title="No partners yet" description="Start by connecting with people in Explore." icon={Users} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                       {connectedList.length > 0 ? (
+                          connectedList.map((p, i) => (
+                             <PartnerProfileCard key={p.id} partner={p} index={i} onAction={() => router.push(`/chat?user=${p.id}`)} actionLabel="Chat" variant="connected" setConfirmAction={setConfirmAction} authUser={authUser} />
+                          ))
+                       ) : <EmptyState title="No partners yet" description="Start by connecting with people in Explore." icon={Users} />}
+                    </div>
                  )}
-                 </AnimatePresence>
-              </div>
+              </AnimatePresence>
            )}
         </div>
   
@@ -315,43 +428,6 @@ export default function MatchesPage() {
         </AnimatePresence>
       </TerminalLayout>
     </ProtectedRoute>
-  );
-}
-
-function PartnerCard({ partner, index, onAction, actionLabel, disabled, variant, setConfirmAction }: any) {
-  const router = useRouter();
-  const score = partner.metadata?.match_score || 0;
-  return (
-    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="group relative bg-white border border-black/[0.03] rounded-[10px] p-6 hover:shadow-xl hover:shadow-black/[0.02] hover:border-black/[0.08] transition-all duration-500 flex flex-col h-full">
-      <div className="flex items-start gap-4 mb-8">
-        <div onClick={() => router.push(`/profile/${partner.id}`)} className="h-16 w-16 rounded-[10px] overflow-hidden shadow-lg border-2 border-white shrink-0 cursor-pointer relative">
-          <img src={partner.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${partner.full_name}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-          {variant === 'connected' && <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-[#34C759] text-white rounded-[6px] flex items-center justify-center border-2 border-white"><CheckCircle2 size={12} /></div>}
-        </div>
-        <div className="min-w-0 pt-1">
-          <h4 className="text-[16px] font-black text-[#1D1D1F] truncate uppercase font-outfit mb-0.5">{partner.full_name}</h4>
-          <p className="text-[10px] font-black text-[#E53935] uppercase tracking-widest">{partner.role}</p>
-          <div className="flex items-center gap-1.5 mt-2 text-black/20"><MapPin size={10} strokeWidth={3} /><span className="text-[9px] font-black uppercase tracking-widest">{partner.metadata?.last_active || "Nearby"}</span></div>
-        </div>
-      </div>
-      <div className="flex-1 space-y-6">
-         <div className="flex flex-wrap gap-1.5">{(partner.skills || []).slice(0, 3).map((skill: string) => <span key={skill} className="px-2 py-1 bg-[#F5F5F7] text-black/40 rounded-[6px] text-[8px] font-black uppercase tracking-widest border border-black/[0.02]">{skill}</span>)}</div>
-         <div className="p-4 bg-slate-50/50 rounded-[10px] border border-black/[0.02] space-y-3">
-            <div className="flex items-center justify-between"><p className="text-[8px] font-black text-black/20 uppercase tracking-widest">Match Score</p><span className="text-4xl font-black text-[#E53935] font-outfit tracking-tighter">{score}%</span></div>
-            <div className="space-y-2">{partner.metadata?.reasons?.slice(0, 2).map((reason: string, i: number) => <div key={i} className="flex items-start gap-2 text-[10px] font-bold text-black/60 leading-tight"><div className="h-1 w-1 rounded-full bg-[#E53935] mt-1.5 shrink-0" />{reason}</div>)}</div>
-         </div>
-      </div>
-      <div className="mt-8 pt-6 border-t border-black/[0.03] flex items-center gap-2">
-         {onAction ? <button disabled={disabled} onClick={(e) => { e.stopPropagation(); onAction(); }} className={cn("flex-1 h-12 rounded-[10px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2", variant === 'connected' ? "bg-black text-white hover:bg-[#E53935]" : disabled ? "bg-black/[0.05] text-black/20 cursor-default shadow-none" : "bg-[#E53935] text-white hover:bg-black shadow-lg shadow-red-500/10")}>{actionLabel}{variant === 'connected' ? <MessageSquare size={14} /> : <Zap size={14} />}</button> : <ConnectButton targetId={partner.id} className="flex-1" />}
-         <div className="relative group/menu">
-            <button className="h-12 w-12 bg-white border border-black/[0.08] rounded-[10px] flex items-center justify-center text-black/30 hover:text-black transition-all"><MoreHorizontal size={16} /></button>
-            <div className="absolute bottom-full right-0 mb-2 w-48 bg-white border border-black/[0.08] rounded-[10px] shadow-2xl overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-50 p-1">
-               <button onClick={async (e) => { e.stopPropagation(); const supabase = createClient(); const { data } = await supabase.from('connections').select('id').or(`and(sender_id.eq.${authUser?.id},receiver_id.eq.${partner.id}),and(sender_id.eq.${partner.id},receiver_id.eq.${authUser?.id})`).maybeSingle(); if (data) setConfirmAction({ type: 'REMOVE', connectionId: data.id, partnerName: partner.full_name }); }} className="w-full h-10 px-3 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[#E53935] hover:bg-red-50 rounded-[6px] transition-all"><Trash2 size={12} /> Remove</button>
-               <button onClick={async (e) => { e.stopPropagation(); const supabase = createClient(); const { data } = await supabase.from('connections').select('id').or(`and(sender_id.eq.${authUser?.id},receiver_id.eq.${partner.id}),and(sender_id.eq.${partner.id},receiver_id.eq.${authUser?.id})`).maybeSingle(); if (data) setConfirmAction({ type: 'BLOCK', connectionId: data.id, partnerName: partner.full_name }); }} className="w-full h-10 px-3 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-black hover:bg-slate-50 rounded-[6px] transition-all"><ShieldAlert size={12} /> Block</button>
-            </div>
-         </div>
-      </div>
-    </motion.div>
   );
 }
 

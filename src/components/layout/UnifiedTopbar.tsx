@@ -174,7 +174,10 @@ export default function UnifiedTopbar({ children }: UnifiedTopbarProps) {
                </div>
             )}
           </Link>
-          <Link href="/matches" className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex">
+          <Link 
+            href={pendingRequestsCount > 0 ? "/matches?tab=REQUESTS" : "/matches"} 
+            className="h-10 w-10 flex items-center justify-center text-black/40 hover:text-black transition-all relative hidden sm:flex"
+          >
             <Users size={20} strokeWidth={1.5} />
             {pendingRequestsCount > 0 && (
                <div className="absolute top-2 right-2 h-2 w-2 bg-emerald-500 rounded-full ring-2 ring-white" />

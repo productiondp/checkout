@@ -18,12 +18,12 @@ const ConnectionContext = createContext<ConnectionContextType | undefined>(undef
 
 export function ConnectionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [connectionMap, setConnectionMap] = useState<Record<string, ConnectionStatus>>({});
+  const [connectionMap, setConnectionMap] = useState<Record<string, ConnectionState>>({});
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
   const fetchConnections = useCallback(async () => {
-    if (!user?.id) {
+    if (!user?.id || user.id === 'null' || user.id === 'undefined') {
       setConnectionMap({});
       setIsLoading(false);
       return;
@@ -38,7 +38,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
       if (error) throw error;
 
       const map: Record<string, ConnectionState> = {};
-      data?.forEach(conn => {
+      data?.forEach((conn: any) => {
         const otherId = conn.sender_id === user.id ? conn.receiver_id : conn.sender_id;
         if (conn.status === 'ACCEPTED') map[otherId] = "CONNECTED";
         else if (conn.status === 'PENDING') map[otherId] = "PENDING";
@@ -70,19 +70,16 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
-      // 2. CREATE CONNECTION
-      const { data: conn, error: connError } = await supabase.from('connections').insert({
-        sender_id: user.id,
-        receiver_id: targetId,
-        status: 'PENDING'
-      }).select().single();
+      // 2. CREATE CONNECTION (Using centralized service for deduplication & auto-accept)
+      const { ConnectionService } = await import("@/services/connection-service");
+      const { connectionId, error: connError } = await ConnectionService.connect(user.id, targetId);
 
       if (connError) throw connError;
 
       // 3. SEND FIRST MESSAGE (INTENT)
-      if (metadata) {
+      if (metadata && connectionId) {
         const { error: msgError } = await supabase.from('messages').insert({
-          connection_id: conn.id,
+          connection_id: connectionId,
           sender_id: user.id,
           receiver_id: targetId,
           content: metadata.message,
@@ -100,10 +97,13 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
   }, [user?.id, fetchConnections, supabase]);
 
   useEffect(() => {
+    if (!user?.id || user.id === 'null' || user.id === 'undefined') {
+      setConnectionMap({});
+      setIsLoading(false);
+      return;
+    }
+    
     fetchConnections();
-
-    //  REALTIME SYNC 
-    if (!user?.id) return;
 
     const channel = supabase
       .channel('connections_sync')
@@ -111,6 +111,13 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
         event: '*',
         schema: 'public',
         table: 'connections'
+      }, () => {
+        fetchConnections();
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'partners'
       }, () => {
         fetchConnections();
       })

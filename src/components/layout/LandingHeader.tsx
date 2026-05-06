@@ -66,19 +66,19 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
         <div className="h-5 w-px bg-black/[0.08]" />
         
         <div className="flex items-center gap-5">
-          <Link 
-            href="/?mode=signup" 
+          <button 
+            onClick={onSigninClick} 
             className="text-[13px] font-black uppercase tracking-widest text-black/40 hover:text-[#FF3B30] transition-colors"
           >
-            Join
-          </Link>
-          <Link 
-            href="/?mode=signin" 
+            Sign in
+          </button>
+          <button 
+            onClick={onJoinClick} 
             className="group flex items-center gap-2 px-6 h-11 bg-black text-white rounded-full hover:bg-[#FF3B30] transition-all duration-500 shadow-xl shadow-black/10 hover:shadow-[#FF3B30]/20"
           >
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Sign in</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Join</span>
             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -116,20 +116,18 @@ export default function LandingHeader({ onJoinClick, onSigninClick }: LandingHea
           </div>
 
           <div className="mt-auto space-y-4 pt-8 border-t border-black/[0.05]">
-            <Link 
-              href="/?mode=signup"
+            <button 
               className="w-full h-14 bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20"
-              onClick={() => setIsOpen(false)}
+              onClick={() => { onJoinClick?.(); setIsOpen(false); }}
             >
               Create Account
-            </Link>
-            <Link 
-              href="/?mode=signin"
+            </button>
+            <button 
               className="w-full h-14 bg-gray-50 text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl border border-black/[0.05] flex items-center justify-center"
-              onClick={() => setIsOpen(false)}
+              onClick={() => { onSigninClick?.(); setIsOpen(false); }}
             >
               Sign In
-            </Link>
+            </button>
           </div>
         </div>
       </div>

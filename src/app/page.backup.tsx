@@ -62,14 +62,6 @@ function AuthContent() {
   const supabase = createClient();
 
   useEffect(() => { setMounted(true); }, []);
-  
-  // Sync form mode if URL query params change (e.g. from Header links)
-  useEffect(() => {
-    const urlMode = searchParams.get("mode") as AuthMode;
-    if (urlMode && (urlMode === "signin" || urlMode === "signup")) {
-      setMode(urlMode);
-    }
-  }, [searchParams]);
 
   //  ROLE DROP-DOWN FLASH ANIMATION 
   useEffect(() => {
@@ -168,9 +160,8 @@ function AuthContent() {
 
       <main className="pt-[90px] lg:pt-[130px] pb-16 lg:pb-[78px] overflow-x-hidden">
          <div className="max-w-[1128px] mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-[95px]">
-            {/* Auth Form Content */}
-            <div className="w-full lg:w-1/2 space-y-6 lg:space-y-8">
-               <h1 className="text-2xl md:text-4xl lg:text-5xl tracking-tighter leading-[0.9] lg:leading-[0.85] mb-4 lg:mb-8 text-center lg:text-left">
+            <div className="w-full lg:w-1/2 space-y-6 lg:space-y-8 order-2 lg:order-1">
+               <h1 className="text-4xl md:text-6xl lg:text-7xl tracking-tighter leading-[0.9] lg:leading-[0.85] mb-4 lg:mb-8 text-center lg:text-left">
                   <span className="font-thin text-black/60 uppercase">Connect. Grow.</span> <br />
                   <span className="font-bold text-[#E53935] uppercase">Succeed.</span>
                </h1>
@@ -298,7 +289,6 @@ function AuthContent() {
                )}
             </div>
 
-            {/* Hero Image */}
             <div className="hidden lg:block w-1/2">
                <img src="/antigravity-hero.png" alt="Professional Networking" className="w-full h-auto" />
             </div>

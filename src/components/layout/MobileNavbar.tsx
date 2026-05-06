@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { 
   Home, 
   MessageSquare, 
-  UserPlus, 
+  Users, 
   ShoppingBag, 
   User
 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function MobileNavbar() {
 
   const navItems = [
     { label: "Home", icon: Home, href: "/home" },
-    { label: "Network", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount : null },
+    { label: "Network", icon: Users, href: pendingRequestsCount > 0 ? "/matches?tab=REQUESTS" : "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount : null },
     { label: "Market", icon: ShoppingBag, href: "/marketplace" },
     { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
     { label: "Profile", icon: User, href: `/profile/${user?.id}` },

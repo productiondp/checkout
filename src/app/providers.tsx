@@ -14,16 +14,25 @@ import ClientLayout from "@/components/layout/ClientLayout";
  * It ensures that the Auth and Notification contexts are persistent and stable
  * across route transitions while keeping the RootLayout as a Server Component.
  */
+import { ChatProvider } from "@/providers/ChatProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ErrorBoundary>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
-        </ErrorBoundary>
-      </NotificationProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NotificationProvider>
+          <ChatProvider>
+            <ErrorBoundary>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </ErrorBoundary>
+          </ChatProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

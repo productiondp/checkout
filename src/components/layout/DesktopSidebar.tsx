@@ -37,7 +37,7 @@ export default function DesktopSidebar() {
       group: "Network",
       items: [
         { label: "Home Feed", icon: Home, href: "/home" },
-        { label: "Network Hub", icon: UserPlus, href: "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
+        { label: "Network Hub", icon: Users, href: pendingRequestsCount > 0 ? "/matches?tab=REQUESTS" : "/matches", badge: pendingRequestsCount > 0 ? pendingRequestsCount.toString() : null },
         { label: "Chat", icon: MessageSquare, href: "/chat", badge: unreadMessagesCount > 0 ? unreadMessagesCount.toString() : null },
         { label: "Communities", icon: Globe, href: "/communities" },
         { label: "Map", icon: MapPin, href: "/map" },

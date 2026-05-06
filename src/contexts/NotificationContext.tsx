@@ -19,19 +19,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   
-  // Refs for stable access in listeners
-  const unreadRef = useRef(0);
-  const pendingRef = useRef(0);
-  
   const supabase = createClient();
-  const processedIds = useRef<Set<string>>(new Set());
-  const lastMessagePerConnection = useRef<Record<string, string>>({});
-  const lastSyncRef = useRef<number>(Date.now());
   const syncChannel = useRef<BroadcastChannel | null>(null);
-
-  // Keep refs in sync
-  useEffect(() => { unreadRef.current = unreadMessagesCount; }, [unreadMessagesCount]);
-  useEffect(() => { pendingRef.current = pendingRequestsCount; }, [pendingRequestsCount]);
 
   //  TAB SYNC (BroadcastChannel) 
   useEffect(() => {
@@ -55,7 +44,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         });
       }
     } catch (err) {
-      // Ignore "Channel is closed" errors during unmount
       if (!(err instanceof Error && err.name === 'InvalidStateError')) {
         console.warn("Broadcast Error:", err);
       }
@@ -63,35 +51,30 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const fetchCounts = useCallback(async () => {
-    if (!user?.id) {
+    if (!user?.id || user.id === 'null' || user.id === 'undefined') {
       setUnreadMessagesCount(0);
       setPendingRequestsCount(0);
       return;
     }
 
     try {
-      // 1. Unread Messages Count (Strict receiver check)
-      const { count: mCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
+      // 1. Unread Messages Count (Smart RPC)
+      const { data: unreadCount, error: unreadErr } = await supabase
+        .rpc('get_unread_message_count', { p_user_id: user.id });
       
-      const unread = mCount || 0;
-      setUnreadMessagesCount(unread);
+      if (unreadErr) throw unreadErr;
+      setUnreadMessagesCount(Number(unreadCount) || 0);
 
-      // 2. Pending Requests Count
-      const { count: reqCount } = await supabase
+      // 2. Pending Requests Count (Smart Join to avoid Ghost counts)
+      const { data: rawConns } = await supabase
         .from('connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', user.id)
-        .eq('status', 'PENDING');
+        .select('id, profiles!sender_id(id)')
+        .eq('status', 'PENDING')
+        .eq('receiver_id', user.id);
       
-      const pending = reqCount || 0;
-      setPendingRequestsCount(pending);
-
-      broadcastCounts(unread, pending);
-      lastSyncRef.current = Date.now();
+      const pendingCount = rawConns?.filter((c: any) => c.profiles).length || 0;
+      setPendingRequestsCount(pendingCount);
+      broadcastCounts(unreadCount, pendingCount);
     } catch (err) {
       console.error("Notification Sync Error:", err);
     }
@@ -99,108 +82,44 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   //  TAB FOCUS REFRESH 
   useEffect(() => {
-    const handleFocus = () => {
-      fetchCounts();
-    };
+    const handleFocus = () => fetchCounts();
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, [fetchCounts]);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || user.id === 'null' || user.id === 'undefined') {
       setUnreadMessagesCount(0);
       setPendingRequestsCount(0);
-      processedIds.current.clear();
-      lastMessagePerConnection.current = {};
       return;
     }
 
     fetchCounts();
 
-    //  REALTIME HARDENING 
-    
-    // 1. Messages Listener (Timestamp Guard + receiver check + active chat skip + ID Guard)
-    const msgChannel = supabase
-      .channel(`notifications_msg_${user.id}`)
+    //  SIMPLIFIED REALTIME (Truth Fetch)
+    const channel = supabase
+      .channel(`global_notifications_${user.id}`)
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        const msg = payload.new;
-        
-        // A. Idempotency check
-        if (processedIds.current.has(msg.id)) return;
-        processedIds.current.add(msg.id);
-
-        // B. Message ID Guard
-        const lastId = lastMessagePerConnection.current[msg.connection_id];
-        if (lastId && msg.id <= lastId) return; 
-        lastMessagePerConnection.current[msg.connection_id] = msg.id;
-
-        // C. Timestamp Guard
-        if (new Date(msg.created_at).getTime() < lastSyncRef.current - 5000) return;
-
-        // D. Active Chat Skip
-        if (activeChatId && msg.connection_id === activeChatId) return;
-
-        // E. Increment
-        setUnreadMessagesCount(prev => {
-          const next = prev + 1;
-          broadcastCounts(next, pendingRef.current);
-          return next;
-        });
-      })
+        table: 'messages'
+      }, () => fetchCounts())
       .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        if (payload.new.is_read && !payload.old.is_read) {
-          fetchCounts();
-        }
-      })
-      .subscribe();
-
-    // 2. Connections Listener
-    const connChannel = supabase
-      .channel(`notifications_conn_${user.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'connections',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        if (processedIds.current.has(payload.new.id)) return;
-        processedIds.current.add(payload.new.id);
-
-        if (payload.new.status === 'PENDING') {
-          setPendingRequestsCount(prev => {
-            const next = prev + 1;
-            broadcastCounts(unreadRef.current, next);
-            return next;
-          });
-        }
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'connections'
-      }, (payload) => {
-        // Handle ACCEPTED / REJECTED
-        if (payload.new.receiver_id === user.id || payload.new.sender_id === user.id) {
-          fetchCounts();
-        }
-      })
+      }, () => fetchCounts())
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'conversation_members'
+      }, () => fetchCounts())
       .subscribe();
 
     return () => {
-      supabase.removeChannel(msgChannel);
-      supabase.removeChannel(connChannel);
+      supabase.removeChannel(channel);
     };
-  }, [user?.id, fetchCounts, supabase, activeChatId, broadcastCounts]);
+  }, [user?.id, fetchCounts, supabase]);
 
   return (
     <NotificationContext.Provider value={{ 
